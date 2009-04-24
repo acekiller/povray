@@ -708,7 +708,7 @@ TNORMAL *Tnormal;
   y = TPoint.y;
   z = TPoint.z;
 
-  if(Tnormal->Flags && HAS_TURB)
+  if(Tnormal->Flags & HAS_TURB)
     {
     DTurbulence (&NTurbulence, x, y, z,
       Tnormal->omega,Tnormal->lambda,Tnormal->Octaves);

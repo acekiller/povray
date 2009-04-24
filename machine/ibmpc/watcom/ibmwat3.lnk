@@ -2,7 +2,7 @@ system dos4g
 option map=povray
 option stub=wstubq.exe
 option verbose
-option stack=65535
+option stack=90000
 name povray
 file povray,bezier,blob,bound,boxes
 file camera,colour,cones,csg,discs

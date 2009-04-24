@@ -480,4 +480,3 @@ extern          short far _cdecl hook_set_pal_e(short,short,...);
 /*----------------------------------*/
 #define GRAPHICS_LIB_ID 0x3C00
 
-

@@ -1,4 +1,4 @@
-# Make file for POV-Ray Version 2.0 for use with Intel's "Code Builder Kit" 
+# Make file for POV-Ray Version 2.12 for use with Intel's "Code Builder Kit" 
 # compiler to produce a 32 bit protected mode version.
 # This is the make file that the "official" POV-Ray team executable was
 # created from.
@@ -12,10 +12,10 @@
 # "make" utility shipped with Code Builder.
 # (In the HDRS, OBJS & SRCS lists for example.)
 #
-# Bill Pulver --- 9/93
+# Bill Pulver --- 1/94
 
 CC      = icc         
-CFLAGS  = /O3 /znosignedchar /zmod486 /znoansi 
+CFLAGS  = /O3 /znosignedchar /zmod486 /znoansi /zfloatsync
 
 #/D_mathh_builtin        This switch will force the compiler to use the
 #                        Library math functions instead of the faster 

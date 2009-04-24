@@ -75,7 +75,6 @@ long Ray_Blob_Tests, Ray_Blob_Tests_Succeeded;
 long Ray_Cone_Tests, Ray_Cone_Tests_Succeeded;
 long Ray_Disc_Tests, Ray_Disc_Tests_Succeeded;
 long Ray_Plane_Tests, Ray_Plane_Tests_Succeeded;
-long Ray_Plane_Tests, Ray_Plane_Tests_Succeeded;
 long Ray_Triangle_Tests, Ray_Triangle_Tests_Succeeded;
 long Ray_Quadric_Tests, Ray_Quadric_Tests_Succeeded;
 long Ray_Poly_Tests, Ray_Poly_Tests_Succeeded;
@@ -212,6 +211,8 @@ char **argv;
 
   Initialize_Tokenizer(Input_File_Name);
   fprintf (stderr,"Parsing...");
+
+
   if (Options & VERBOSE_FILE)
     {
     stat_file = fopen(Stat_File_Name,"w+t");

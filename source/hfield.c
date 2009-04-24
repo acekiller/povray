@@ -819,13 +819,13 @@ VECTOR *start, *end;
     }
   Make_Vector(next,ex,ey,ez);
   if(isdx >= 0)
-    ix = (int)floor(ex*Inv_Blk_Size);
-  else
     ix = (int)ceil(ex*Inv_Blk_Size) - 1;
-  if(isdz >= 0)
-    iz = (int)floor(ez*Inv_Blk_Size);
   else
+    ix = (int)floor(ex*Inv_Blk_Size);
+  if(isdz >= 0)
     iz = (int)ceil(ez*Inv_Blk_Size) - 1;
+  else
+    iz = (int)floor(ez*Inv_Blk_Size);
   if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
     return(TRUE);
   return (FALSE);
@@ -1103,13 +1103,13 @@ VECTOR *start, *end;
     }
   Make_Vector(next,ex,ey,ez);
   if(isdx >= 0)
-    ix = (int)floor(ex*Inv_Blk_Size);
-  else
     ix = (int)ceil(ex*Inv_Blk_Size) - 1;
-  if(isdz >= 0)
-    iz = (int)floor(ez*Inv_Blk_Size);
   else
+    ix = (int)floor(ex*Inv_Blk_Size);
+  if(isdz >= 0)
     iz = (int)ceil(ez*Inv_Blk_Size) - 1;
+  else
+    iz = (int)floor(ez*Inv_Blk_Size);
   if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
     retval = TRUE;
   return (retval);

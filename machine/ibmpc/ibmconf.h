@@ -186,12 +186,20 @@
 
 #ifdef __ZTC__
  #define QSORT_FUNCT_PARM const void *
- #ifndef __386__
-  #define COMPILER_VER ".ibmztc"
- #endif
- #ifdef __386__
+
   #define COMPILER_VER ".ibmztc386"
- #endif
+  #ifdef __SC__
+   #undef COMPILER_VER
+   #define COMPILER_VER ".ibmsym386"
+  #endif
+  #ifdef __LARGE__
+    #undef COMPILER_VER
+    #define COMPILER_VER ".ibmztc"
+   #ifdef __SC__
+    #undef COMPILER_VER
+    #define COMPILER_VER ".ibmsymc"
+   #endif
+  #endif
 #endif
 
 
@@ -268,18 +276,11 @@ void main(int, char **);
 #ifdef __WATCOMC__
 
 #ifdef __386__
+/* CCP - Corrected MK_FP, removed redefinition of FP_OFF and FP_SEG */
 #ifdef MK_FP
 #undef MK_FP
 #endif
-#define MK_FP(seg,ofs)  ((void *)(((unsigned long)(seg) << 4) | (unsigned)(ofs)))
-#ifdef FP_OFF
-#undef FP_OFF
-#endif
-#define FP_OFF(ptr) (((unsigned short)ptr) & 0x0F)
-#ifdef FP_SEG
-#undef FP_SEG
-#endif
-#define FP_SEG(ptr) (unsigned int)((unsigned long)ptr >> 4)
+#define MK_FP(seg,ofs)  ((void *)(((unsigned long)(seg) << 4) + (unsigned)(ofs)))
 #endif
 
 #else

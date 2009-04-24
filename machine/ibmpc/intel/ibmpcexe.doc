@@ -1,5 +1,5 @@
  
-            IBM-PC executable notes for POV-Ray Ver 2.00  
+            IBM-PC executable notes for POV-Ray Ver 2.10  
 -----------------------------------------------------------------------------
 
 Please read thru this file *completely*, it contains several hints & tips for
@@ -171,22 +171,28 @@ POVMOD.DOC for more information on setting the region size.) In all cases
 POV-Ray may be run in a DOS window under OS/2 2.x if the image render to 
 screen support is disabled. The +v1 command line option may be used to
 monitor the current line being rendered in this case.  
-  You may now also use the +d1 POV-Ray option to force the screen mode to 
-be set to 320x200x256, no matter what the image resolution is. This will 
-give you a scaled render to a WPS window on the desktop! However, the 
-image may appear blocky, colors may be slightly off and the render to 
-screen dithering may cause "pattern" aliasing. Also, something in the way 
-OS/2 virtualizes the image to the desk top seems to cause 3 or 4 lines of 
-the image in the window to not be displayed with some drivers. They are 
-evenly spaced blank horizontal lines. It is still quite useful for 
-following the progress of your image though.
-  The complete render to screen support CAN be used in a FULL SCREEN DOS 
-session, however, you may find that you have video sync and/or color 
-problems if you attempt to switch to another task during the render, 
-*especially* when using HiColor modes. POV-Ray addresses the video HW 
-directly, bypassing all of OS/2 2.x's video support, thus OS/2 cant 
-"track" what has been done and may not be able to reset the palette and
-Horiz/Vert sync correctly. 
+
+  You may now also use the +d1 POV-Ray option to force the render to screen 
+mode to be set to the IBM standard 320x200x256 mode. (VGA mode 13) 
+No matter what the *image* resolution is the display window will be 320x200. 
+Using this option will give you a scaled render to a WPS window on the OS/2 
+desktop! However, due to the image being scaled,the image may appear blocky, 
+colors may be slightly off, and the render to screen dithering may cause 
+"pattern" aliasing. (NOTE: The +d1 option is *all* that may be virtualized 
+reliably by OS/2 to the DeskTop. Other modes & VESA modes will produce 
+unpredictable results, depending on the OS/2 video driver in use on your 
+machine.) Also, something in the way OS/2 virtualizes the image to the 
+DeskTop seems to cause 3 or 4 lines of the image in the window to not be 
+displayed with some drivers. They are evenly spaced, blank, horizontal lines. 
+It is still quite useful for following the progress of your image though.
+
+  The complete render to screen support CAN be used in a **FULL SCREEN** DOS 
+session. However, you may find that you have video sync and/or color (palette)
+problems if you attempt to switch to another session or the DeskTop during 
+the render, **especially** when using HiColor or TrueColor modes. 
+POV-Ray addresses the video HW directly, bypassing all of OS/2 2.x's video 
+support, thus OS/2 cant "track" what has been done and may not be able to 
+reset the palette and Horiz/Vert sync correctly. 
 
 
 
@@ -281,52 +287,52 @@ Some cards may have HiColor and TrueColor modes available at the
 *hardware* level but their VESA implementations *** MAY NOT SUPPORT IT!! ***.
 Check with your specific cards manufacturer for possible updates/upgrades.
 
- An alternative is to locate a freeware program called UNIVESA by Kendall
+ An alternative is to locate a shareware program called UNIVBE by Kendall
 Bennett. It is capable of adding VESA 1.2 support, including HiColor and
-**in some cases** TrueColor, to many properly equipped SVGA cards. 
-(Of course your card must -already- support the HiColor/TrueColor 15/16bit 
+**in some cases** TrueColor, to many properly equipped SVGA cards.
+(Of course your card must -already- support the HiColor/TrueColor 15/16bit
 or 24bit modes in it's hardware.) It does not work for every case but does
-provide an option to be tried. UNIVESA will autodetect what chipset is
-used on your SVGA card and install the appropriate VESA TSR as outlined in 
-the following excerpt from the UniVESA Docs:
+provide an option to be tried. UNIVBE will autodetect what chipset is
+used on your SVGA card and install the appropriate VESA TSR as outlined in
+the following excerpt from the UniVBE Docs:
 
 ****************************************************************************
 
-The Universal VESA TSR contains '386 dependent code, so it will only
-run on machines that have an 80386 or better CPU. Currently the
-Universal VESA TSR supports the following SuperVGA chipsets (note that
-not all of these have been fully tested):
+The Universal VESA VBE will run on any 80x86 based IBM PC compatible
+running MSDOS. Currently the Universal VESA VBE supports the following
+SuperVGA cards (note that not all of these have been fully tested):
 
     - ATI Technologies 18800, 28800
     - Ahead A & B
     - Chips & Technologies 82c451/452/453
     - Everex
     - Genoa Systems GVGA
-    - OAK Technologies OTI-037C, OTI-067, OTI-077
-    - Paradise PVGA1A, WD90C00/10/11/30/31
+    - OAK Technologies OTI-037C, OTI-067, OTI-077, OTI-087
+    - Paradise PVGA1A, WD90C00/10/11/20/21/30/31
     - NCR 77C20/21/22E
     - Trident 88/8900
     - Video7 V7VGA versions 1-5
-    - Tseng Labs ET3000, ET4000
+    - Tseng Labs ET3000, ET4000, ET4000/W32
     - AcuMos AVGA2
     - S3 86c911/924/801/805/928
     - Advance Logic AL2101 SuperVGA
     - MXIC 86010 SuperVGA
     - Primus 2000 SuperVGA
     - RealTek 3106 SuperVGA
-    - Cirrus CL-GD 5422 SuperVGA
+    - Cirrus Logic CL-GD 5420, 5422, 5424, 5426, 5428
 
 ****************************************************************************
 
 It has even worked to add VESA HiColor support to my ET4000 based SpeedSTAR+
-HiColor in a DOS VDM under OS/2 2.1! It's available in the Graphics Support
-Forum (GO GRAPHSUPP) on Compuserve as VESA32.ZIP. It's also available on AOL
-in the PC Hardware forum as UVESA32.ZIP. The full source code and program
+HiColor in a DOS VDM under OS/2 2.1! It's available in the IBM Programmers
+Forum (GO IBMPRO) on Compuserve as UVBE42.ZIP. It's also available on AOL
+in the PC Hardware forum as ???????? . Source code for VESA support
 may be FTP'ed via InterNET from:
 
-   godzilla.cgl.rmit.oz.au: kjb/MGL/svgakt??.zip
+   godzilla.cgl.rmit.oz.au (131.170.14.2): kjb/MGL/univbe??.zip
 
-Best of all it's also copyrighted FREEWARE, same as POV-Ray.
+It's now shareware, priced at $15 + shipping.
+
 
 
     NOTE: Some T4000 based cards may have problems running in HiColor 
@@ -383,9 +389,11 @@ Generally the latest versions of these programs are required.
           DOS Extender:  Error X0116:  Cannot execute with DOSSHELL's task
           swapper enabled.
      
-     If you use the DOS=HIGH configuration, be sure to use a memory
-     manager, such as EMM386, QEMM-386, NETROOM, Windows, or 386MAX, to
-     ensure proper handling of the A20 address line.
+     If you use the DOS=HIGH configuration, some machines may require
+     use of a memory manager, such as EMM386 (HiMem may be used alone 
+     here as it does the actual management, EMM386 is not required. 
+     See next paragraph.), QEMM-386, NETROOM, Windows, or 386MAX, to  
+     ensure proper handling of the A20 address line. 
      
      Some systems (mostly Intel486(TM) processor-based) can exhibit
      problems relating to proper handling of the A20 address line when
@@ -407,7 +415,9 @@ Generally the latest versions of these programs are required.
      that the QEMM-386 RAM option overrides the OFF option.
 
      Note: Quarterdeck's DPMI server for QEMM may give a slight improvement 
-           in rendering speed on some machines when installed.
+           in rendering speed on some machines when installed. QDPMI is
+           available for QEMM owners many BBS' & OnLine services. It comes
+           with newer versions.
      
      ----------------------------------------
      Compatibility With Disk-caching Programs
@@ -475,7 +485,7 @@ Prodigy : NCCJ93A
 Genie   : B.Pulver
 
 
-9/26/93
+1/29/94
 
 
 Parts of this document are from the Intel Code Builder support docs.

@@ -745,6 +745,7 @@ TEXTURE *Textures;
     while (Mats != NULL)
       {
       Temp = Mats->Next_Material;
+      Mats->Next_Material = NULL;
       Destroy_Textures (Mats);
       Mats = Temp;
       }

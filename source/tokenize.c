@@ -283,7 +283,7 @@ char *filename;
   strcpy (Data_File->Filename, filename);
   Data_File->Line_Number = 0;
 
-  if ((Symbol_Table = (char **) malloc (Max_Symbols * sizeof (char *))) == NULL) 
+  if ((Symbol_Table = (char **) malloc ((Max_Symbols+1) * sizeof (char *))) == NULL) 
     MAError("symbol table");
 
   Token.Token_Line_No = 0;

@@ -33,7 +33,7 @@
 
 /* These are used by POVRAY.C and the machine specific modules */
 
-#define POV_RAY_VERSION "2.1"
+#define POV_RAY_VERSION "2.2"
 
 /* This message is for the personal distribution release. */
 #define DISTRIBUTION_MESSAGE_1 "This is an unofficial version compiled by:"

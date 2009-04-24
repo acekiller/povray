@@ -21,9 +21,6 @@
 *
 * Modifications by Dave Park.
 *
-* Note: The AGA HAM8 code does not work.  Consider what is here to be HAM8
-* 'hooks'.
-* 
 *****************************************************************************/
 
 
@@ -68,6 +65,9 @@ extern FRAME Frame;
 
 #define INT_REV 29L
 #define GR_REV 29L
+
+#define MAXDEPTHAGA	8
+#define MAXDEPTHNONAGA	6
 
 struct IntuitionBase *IntuitionBase;
 struct GfxBase *GfxBase;
@@ -161,7 +161,7 @@ UWORD chip ColorTbl[16] = { 0x000, 0x111, 0x222, 0x333, 0x444, 0x555, 0x666,
                        0x777, 0x888, 0x999, 0xaaa, 0xbbb, 0xccc, 0xddd,
                        0xeee, 0xfff };
 
-LONG last_red = 0, last_green = 0, last_blue = 0, last_x = -1, last_y = -1;
+LONG last_red, last_green, last_blue, last_x, last_y;
 
 /* Firecracker routines */
 typedef struct BOARD {
@@ -286,6 +286,10 @@ int input_height;
 	int viewmodes;
 
 
+#ifdef DBG
+ printf ("open_ham -\n");
+ printf ("  input_width: %4d input_height: %4d\n", input_width, input_height);
+#endif
 	viewmodes = HAM;
 
 	if (input_width < 1 || input_height < 1)
@@ -345,8 +349,13 @@ int input_height;
 		topedge    = (screen_height - input_height) / 2;
 		bottomedge = topedge + input_height;
 	}
-
-	depth = (IsAGA) ? 8 : 6;
+#ifdef DBG
+ printf ("  screen_width:%4d screen_height:%4d\n", screen_width, screen_height);
+ printf ("  width:       %4d height:       %4d\n", width, height);
+ printf ("  leftedge:    %4d rightedge:    %4d\n", leftedge, rightedge);
+ printf ("  topedge:     %4d bottomedge:   %4d\n", topedge, bottomedge);
+#endif
+	depth = (IsAGA) ? MAXDEPTHAGA : MAXDEPTHNONAGA;
 
 	Rect1.MaxX = width-1;
 	Rect1.MaxY = height-1;
@@ -368,6 +377,11 @@ int input_height;
 	depth = s->BitMap.Depth;
 	bytesperrow = s->BitMap.BytesPerRow;
 
+#ifdef DBG
+ printf ("  actual_width:%4d actual_height:%4d\n", width, height);
+ printf ("  actual_depth:%4d\n", depth);
+ printf ("  bytesperrow: %4d\n", bytesperrow);
+#endif
 	ShowTitle (s, FALSE);
 
 	LoadRGB4 (&(s->ViewPort), ColorTbl, 16L);
@@ -380,20 +394,24 @@ int input_height;
 #define absdif(x,y) ((x > y) ? (x - y) : (y - x))
 #define max3(x,y,z) ((x>y)?((x>z)?1:3):((y>z)?2:3))
 
+#define HAM6_MASK	0x000F
 #define HAM6_RED	0x20
 #define HAM6_GREEN	0x30
 #define HAM6_BLUE	0x10
-#define HAM8_MASK	0xFFFC
-#define HAM8_RED	0x02
-#define HAM8_GREEN	0x03
-#define HAM8_BLUE	0x01
+
+#define HAM8_MASK	0x003F
+#define HAM8_RED	0x80		//  1000 0000
+#define HAM8_GREEN	0xC0		//  1100 0000
+#define HAM8_BLUE	0x40		//  0100 0000
 
 void write_ham_pixel (x, y, Red, Green, Blue)
 UWORD x, y;
 UBYTE Red, Green, Blue;
 {
-   register short colour, index, mask, i, colour_mask;
+   register unsigned long index;
+   register int i;
    register char *addr;
+   register UBYTE colour, mask, colour_mask;
    UBYTE delta_red, delta_green, delta_blue;
 
 
@@ -414,14 +432,14 @@ UBYTE Red, Green, Blue;
    last_x = x;
 
    if (IsAGA) {
-      Red   = Red   & HAM8_MASK;
-      Green = Green & HAM8_MASK;
-      Blue  = Blue  & HAM8_MASK;
+      Red   = (Red   >> 2) & HAM8_MASK;
+      Green = (Green >> 2) & HAM8_MASK;
+      Blue  = (Blue  >> 2) & HAM8_MASK;
    }
    else {
-      Red   = (Red   >> 4) & 0x0F;
-      Green = (Green >> 4) & 0x0F;
-      Blue  = (Blue  >> 4) & 0x0F;
+      Red   = (Red   >> 4) & HAM6_MASK;
+      Green = (Green >> 4) & HAM6_MASK;
+      Blue  = (Blue  >> 4) & HAM6_MASK;
    }
 
    delta_red   = absdif (Red, last_red);
@@ -432,15 +450,15 @@ UBYTE Red, Green, Blue;
       switch (max3(delta_red, delta_green, delta_blue)) {
       case 1:
          last_red = Red;
-         colour = Red | HAM8_RED;
+         colour = HAM8_RED   | Red;
          break;
       case 2:
          last_green = Green;
-         colour = Green | HAM8_GREEN;
+         colour = HAM8_GREEN | Green;
          break;
       case 3:
          last_blue = Blue;
-         colour = Blue | HAM8_BLUE;
+         colour = HAM8_BLUE  | Blue;
          break;
       }
    }
@@ -448,15 +466,15 @@ UBYTE Red, Green, Blue;
       switch (max3(delta_red, delta_green, delta_blue)) {
       case 1:
          last_red = Red;
-         colour = HAM6_RED + Red;
+         colour = HAM6_RED   | Red;
          break;
       case 2:
          last_green = Green;
-         colour = HAM6_GREEN + Green;
+         colour = HAM6_GREEN | Green;
          break;
       case 3:
          last_blue = Blue;
-         colour = HAM6_BLUE + Blue;
+         colour = HAM6_BLUE  | Blue;
          break;
       }
    }
@@ -466,7 +484,7 @@ UBYTE Red, Green, Blue;
 
    colour_mask = 1;
 
-   for (i = 0 ; i < 6 ; i++) {
+   for (i = 0 ; i < ((IsAGA) ? MAXDEPTHAGA : MAXDEPTHNONAGA) ; i++) {
       addr = &s->BitMap.Planes[i][index];
       *addr &= ~mask;
       *addr |= (colour&colour_mask) ? mask : 0x00;
@@ -906,6 +924,9 @@ int input_width, input_height;
 
 	Delay (10);
 
+	last_red = last_green = last_blue = 0;
+	last_x = last_y = -1;
+
 	if (DisplayFormat == 'E') {
 	    if (open_hame () == TRUE) {
 		display_close ();
@@ -922,7 +943,8 @@ int input_width, input_height;
 	    if (DisplayFormat != '2')	/*  If not +d2, then force */
 		IsAGA = FALSE;		/*    AGA off              */
 
-	    IsAGA = FALSE;		/*  For now, AGA is off.   */
+	    if (IsAGA)
+		printf ("(Rendering in AGA)\n");
 
 	    if (open_ham (input_width, input_height) == TRUE) {
 		display_close ();

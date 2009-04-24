@@ -1,5 +1,5 @@
                       Persistence of Vision Raytracer
-                                Version 2.0
+                                Version 2.2
                       Copyright and Legal Information
 
 
@@ -23,7 +23,7 @@ Raytracer and all associated files in this package to create and render
 images. The use of this software for the purpose of creating images is 
 free. The creator of a scene file and the image created from the scene 
 file, retains all rights to the image and scene file they created and may 
-use them for any purpose commercial or non-commercial.  
+use them for any purpose commercial or noncommercial.  
 
 The user is also granted the right to use the scenes files and include 
 files distributed in the INCLUDE and DEMO sub-directories of the POVDOC 
@@ -45,10 +45,10 @@ No portion of this package may be separated from the package and
 distributed separately other than under the conditions specified in the 
 guidelines below.  
 
-This software may be bundled in other software packages according to the 
+This package may be bundled in other software packages according to the 
 conditions specified in the guidelines below.
 
-This software may be included in software-only compilations using media 
+This package may be included in software-only compilations using media 
 such as, but not limited to, floppy disk, CD-ROM, tape backup, optical 
 disks, hard disks, or memory cards.  There are specific rules and 
 guidelines listed below for the provider to follow in order to legally 
@@ -58,12 +58,12 @@ The user is granted the privilege to modify and compile the source for
 their own personal use in any fashion they see fit.  What you do with the 
 software in your own home is your business.
 
-If the user wishes to distribute a modified version of the software (here 
-after referred to as a "custom version") they must follow the guidelines 
-listed below.  These guidelines have been established to promote the growth 
-of POV-Ray and prevent difficulties for users and developers alike.  Please 
-follow them carefully for the benefit of all concerned when creating a 
-custom version.  
+If the user wishes to distribute a modified version of the software,
+documentation or other parts of the package (here after referred to as 
+a "custom version") they must follow the guidelines listed below.  These 
+guidelines have been established to promote the growth of POV-Ray and 
+prevent difficulties for users and developers alike.  Please follow them 
+carefully for the benefit of all concerned when creating a custom version.  
 
 You may not incorporate any portion of the POV-Ray source code in any 
 software other than a custom version of POV-Ray.  However authors who 
@@ -96,9 +96,9 @@ originals as possible.  (For example:POVDOC.ZIP to POVDOC20.ZIP)
 You must distribute a full package of archives as described in the next 
 section.
 
-Non-commercial distribution (such as a user copying the software for a 
+Noncommercial distribution (such as a user copying the software for a 
 personal friend or colleague and not charging money or services for that 
-copy) has no other restrictions.  This does not include non-profit 
+copy) has no other restrictions.  This does not include nonprofit 
 organizations or computer clubs. These groups should use the 
 Shareware/Freeware distribution company rules below.
 
@@ -129,7 +129,8 @@ need not distribute the Mac versions.
               CONDITIONS FOR DISTRIBUTION OF CUSTOM VERSIONS
 
 You may distribute custom compiled versions only if you comply with the 
-following conditions.
+following conditions.  These conditions also apply to custom documentation
+based on our files.
 
      Mark your version clearly on all modified files stating this to be a 
 modified and unofficial version.
@@ -151,11 +152,11 @@ Include all credits and credit screens for the official version.
 
                     CONDITIONS FOR COMMERCIAL BUNDLING
 
-Vendors wishing to bundle POV-Ray with commercial software or with 
-publications must first obtain explicit permission from the POV-Ray Team.  
-This includes any commercial software or publications, such as, but not 
-limited to, magazines, books, newspapers, or newsletters in print or 
-machine readable form.
+Vendors wishing to bundle POV-Ray with commercial software (including
+shareware) or with publications must first obtain explicit permission from 
+the POV-Ray Team.  This includes any commercial software or publications, 
+such as, but not limited to, magazines, books, newspapers, or newsletters 
+in print or machine readable form.
 
 The POV-Ray Team will decide if such distribution will be allowed on a 
 case-by-case basis and may impose certain restrictions as it sees fit.  The 
@@ -183,7 +184,9 @@ rules.
          CONDITIONS FOR SHAREWARE/FREEWARE DISTRIBUTION COMPANIES
 
 Shareware and freeware distribution companies may distribute the archives 
-under the conditions following this section. 
+under the conditions following this section.  This section only applies
+to distributors.  Anyone wishing to bundle the package with a shareware
+product must use the commercial bundling rules above.
 
 You must notify us that you are distributing POV-Ray and must provide us 
 with information on how to contact you should any support issues arise. 

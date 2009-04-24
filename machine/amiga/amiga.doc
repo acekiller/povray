@@ -1,23 +1,24 @@
 This file contains the documentation specific to the Amiga version of
-POVRay2.0.
+POVRay v2.1.
 
 Differences From Original Distribution:
 
-   The original distribution of POVRay2.0 is in ZIP format and contains
+   The original distribution of POVRay is in ZIP format and contains
    files in MS-DOS format.  The filenames are restricted to 8.3 characters
    and the text files contain CRLF line terminators.  A script and a
    utility to strip CRs, restore the long Amiga filenames, and create
    icons is provided in the POVRAY/MACHINE/AMIGA directory.  Note that
-   none of the POVRay2.0 data files need be stripped of CRs as POVRay2.0
+   none of the POVRay data files need be stripped of CRs as POVRay
    accepts data files both with and without CRs.
 
    There are custom Amiga executable, documentation, and scene archives
    that have been converted to LZH format and have been stripped of all CR
    characters and include long Amiga filenames and Amiga icons.  The Amiga
-   executable archive contains two executable versions of POVRay2.0, a
-   68881 and an IEEE version, and two executable programs that perform
-   image postprocessing, one to HAM6 and one to IFF24.  Otherwise, the
-   Amiga distribution is identical to the ZIP distribution.
+   executable archive contains two executable versions of POVRay, a
+   68881 and an IEEE version, two executable programs that perform image
+   postprocessing, one to HAM6 and one to IFF24, and two programs that
+   convert TGA files, one to GIF and one to DUMP.  Otherwise, the Amiga
+   distribution is identical to the ZIP distribution.
 
 SEE POVLEGAL.DOC FOR USE AND DISTRIBUTION TERMS.
 
@@ -26,32 +27,36 @@ SEE POVLEGAL.DOC FOR USE AND DISTRIBUTION TERMS.
 
 Executables:
 
-   Two executables are provided:
+   Six executables are provided:
       povray881  - The version for systems with 68881 math coprocessors.
       povrayieee - The version for systems without a coprocessor.
+      dump2iff   - Converts POV output files to Amiga HAM6.
+      dump2i24   - Converts POV output files to Amiga IFF24
+      tga2dump   - Converts TARGA format to dump format.
+      tga2gif    - Converts TARGA files to GIF.
 
-Running POVRay2.0:
+Running POVRay:
 
-   When running POVRay2.0, be sure that you have a large stack set.  If
-   the stack is too small, POVRay2.0 could crash without warning.  Mine
+   When running POVRay, be sure that you have a large stack set.  If
+   the stack is too small, POVRay could crash without warning.  Mine
    is set to 80,000 bytes.
 
 Memory Requirements:
 
-   POVRay2.0 can run on simple files with 1 Meg of memory.  I would
+   POVRay can run on simple files with 1 Meg of memory.  I would
    highly recommend having more memory to render more complicated
-   scenes.  There is a known bug in this version which prevents POVRay2.0
+   scenes.  There is a known bug in this version which prevents POVRay
    from cleaning up gracefully if it runs out of memory in some instan-
    ces.  If this occurs, the cancel requestor will not be closed.  If you
-   click on it, the system will probably hang or reboot.  This should be
-   fixed in the next release.
+   click on it, the system will probably hang or reboot.
 
 Display Formats:
 
-   The Amiga version of the raytracer supports three types of display
+   The Amiga version of the raytracer supports four types of display
    formats:
       +d, +d0 - default
       +d1     - HAM6
+      +d2     - HAM8
       +dE     - HAME
       +dF     - Firecracker
 
@@ -62,9 +67,9 @@ Display Formats:
    non-interlaced.  Images that are smaller than the nominal screen size
    are centered in the display screen.  Images that are larger than the
    nominal screen size are displayed in overscan.  Note that not all
-   machines can display a hi-res HAM6 screen.  If your machine cannot
-   display a particular screen, the screen-open call will fail and an
-   error will be displayed.
+   machines can display a hi-res HAM6 screen or an AGA screen.  If your
+   machine cannot display a particular screen, the screen-open call will
+   fail and an error will be displayed.
 
    The HAME mode is always 320 x 200 pixels.
 
@@ -83,13 +88,12 @@ File Formats:
 
 Building The Source:
 
-   POVRay2.0 was compiled using SAS C version 5.10b.  I'm sure that later
+   POVRay was compiled using SAS C version 5.10b.  I'm sure that later
    versions will work.  If you're compiling with another compiler, you'll
    have to edit the makefile to set the proper compiler options.  As far
    as that goes, you're on your own.
 
-   To compile POVRay2.0 from the original source, follow these instruc-
-   tions:
+   To compile POVRay from the original source, follow these instructions:
       1) From a shell, CD to the POVRAY/MACHINE/AMIGA directory and
          "execute dos2ami",  which is a script that will strip CRs from
          the text files, restore long filenames, and install some icons.
@@ -101,43 +105,49 @@ Building The Source:
          makefile and comment out the line for "CFLAGS = ..." for the
          '881, uncomment the line "CFLAGS = ..." for the IEEE emulator,
          and type "lmk povrayieee".
-      5) To compile a 68881 version of POVRay2.0, leave the original
+      5) To compile a 68881 version of POVRay, leave the original
          makefile unaltered and type "lmk".
 
 Post-Processing Images:
 
    Two utilities called dump2iff and dump2i24 have been included in the
-   executable archive to convert the POVRay2.0 format output to HAM6 and
+   executable archive to convert the POVRay format output to HAM6 and
    IFF24 format.  To run these utilities, you must provide the names of
    the input and output files.
    eg.
-      dump2iff picture.dis picture.ham
+      dump2i24 picture.dis picture.i24
+   or
+      dump2iff picture.dis picture.iff
 
    The dump2iff program can also write out a file containing the palette
    it used to make the image.  It can then be told to use this palette
-   for when converting other images.  This is useful for making
-   animations for animation players that can't change color palettes
-   between frames.
+   when converting other images.  This is useful for making animations for
+   animation players that can't change color palettes between frames.
 
    To output a palette, use the -p option of dump2iff:
-      dump2iff -ppicture.pal picture.dis picture.ham
+      dump2iff -ppicture.pal picture.dis picture.iff
 
    To use this palette for other images, simply add it to the command
    line:
-      dump2iff pic2.dis pic2.ham picture.pal
+      dump2iff picture.dis picture.iff picture.pal
 
    By default, dump2iff will perform dithering to help smooth out the
    color changes.  To disable dithering, use -d on the command line.
 
    The dump2i24 program does not generate a palette.  The 24-bit pixel
-   data is stored directly into 24 bit-planes.  You must provide the
-   names of the input and output files.
+   data is stored directly into 24 bit-planes.
+
+   Two other utilities called tga2dump and tga2iff are also included in
+   the executable archive to convert TARGA format files.  To run these
+   utilities you must provide the names of the input and output files.
    eg.
-      dump2i24 picture.dis picture.i24
+      tga2gif -d -m picture.tga picture.gif
+   or
+      tga2dump picture.tga picture.dis
 
    "The Art Department Professional" by ASDG does a fine job of post-
    processing images.  ADPro can accept QRT format images (which is the
-   format output by POVRay2.0 with the +fd command-line parameter).  Al-
+   format output by POVRay with the +fd command-line parameter).  Al-
    ternatively, you can output Targa (+ft) or raw (+fr).  To read the raw
    format into ADPro, use the Scuplt reader.  You'll have to type in the
    resolution you used to generate the image.

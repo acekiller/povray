@@ -1,6 +1,6 @@
-# IBM Makefile for Persistence of Vision Raytracer
+# IBM Makefile for Persistence of Vision Raytracer 2.x.
 # This file is released to the public domain.
-# For use with the Watcom C compiler on the IBM-PC
+# For use with the Watcom C compiler on the IBM-PC.
 # Note for the IBM Version:
 # Uses system environment variable LIB for the linker's .LIB file path.
 # (Example:  Set LIB=C:\LIB)  if you change this the two .LNK files will also

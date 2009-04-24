@@ -194,6 +194,7 @@ void Start_Tracing ()
 
   if (Options & DISKWRITE) 
     {
+    if (Last_Line != First_Line)
     Write_Line (Output_File_Handle, Previous_Line, Last_Line - 1);
     }
   }

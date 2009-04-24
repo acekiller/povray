@@ -1,21 +1,19 @@
-# IBM Makefile for Persistence of Vision Raytracer for Watcom "C32 for DOS"
-# Version 9.5.
-# For use with the Watcom C protected mode compiler on the IBM-PC.
-#
+# IBM Makefile for Persistence of Vision Raytracer for Watcom "C32" for DOS
+# Version 9.5a.
+# For use with the Watcom C protected mode compiler on the IBM-PC
 # Note for the IBM Version:
 # The LIB path below will need to be chaged to suite your specific system.
+# If you change this the two .LNK files will also need to be changed.  
 # The system environment variable CMODEL also may be defined for the memory 
 # model of the compiler.  This makefile uses the flat memory model.
 #
-# Target system for this set of make & link files the DOS4GW. Note that
-# DOS4GW compiles may not be able to use the HiColor or TrueColor Render
-# to screen options in a DPMI environment. (At least not with version 1.9
-# of DOS4GW.)
+# Thanks to Carl Peterson for providing fixes for Watcom & VESA & DPMI
+# environments.
 #
-# --- Bill Pulver 9/93
+# --- B. Pulver 1/94
 #
 # MAKE Macros and Such...
-# 
+#
 
 CMODEL	=f
 LIB	=D:\WATCOM\386lib
@@ -33,7 +31,7 @@ CFLAGS	=/m$(CMODEL) /omaxnet /zp4 /5r
 # The second command converts debugging info from Watcom's to Turbo Debugger's
 # if you want to use it instead of Video.
 .c.obj :
-	$(CC) $(CFLAGS) -oxamt -oe=250 $*.c
+	$(CC) $(CFLAGS) -oxamt $*.c
 #	w2td $*.obj
 
 F1 = povray.$(OBJ) bezier.$(OBJ) blob.$(OBJ) bound.$(OBJ) boxes.$(OBJ) 

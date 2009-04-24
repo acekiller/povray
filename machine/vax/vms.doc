@@ -8,15 +8,25 @@ Note: PLEASE SEE POVLEGAL.DOC.  The VMS version in ZIP format is an
    for complete details.
 
 Testing:
-   This version of POV-Ray for the VAX has only been tested on an Alpha AXP 500
-   running OpenVMS. It may need tweaking for your compiler.
+   This version of POV-Ray for the VAX may only have been tested on an
+   Alpha AXP 500 running OpenVMS 1.5. It may need tweaking for your compiler.
 
 Executables:
    At this stage, no executables are provided.
-   See the note at the end of this file about this subject.
+
+** ALPHA USERS ***
+   Please ensure you #define ALPHA in vaxconf.h (config.h).
+   This will avoid a whole heap of warnings when you compile.
+
+** Known Bug on ALPHA **
+   When you use the +B option to set a buffer > 64kB on the DEC Alpha running
+   OpenVMS 1.5, the program will halt when 65kB of data has been buffered.
+   This seems to be a problem with either DEC's implementation of setvbuf ()
+   or the file buffering associated with file output.
+   Solution : keep the bufer size < 65kB.
 
 Running POV-Ray:
-   Assign a foreign symbol to the executable.  The syntax is:
+   Assign a foreign symbol to the executable. The syntax is:
       povray :== $<your_disk>:[<directory>]povray
    An example symbol might look like:
       povray :== $dua100:[povray.build]povray
@@ -41,7 +51,7 @@ Building the source:
    You may need to edit the POVRAY.OPT file for your X library path.
    Motif is NOT needed, as POV runs with X and Xt only.
 
-   #define X_GETS_ARGS in vaxconf.h if you want to use X options such as 
+   #define X_GETS_ARGS in vaxconf.h if you want to use X options such as
    '-display xxx:n.n'. Note that some may conflict with POV options.
 
      1) create a [.source] directory.
@@ -75,7 +85,7 @@ Displaying Images:
    files to Postscript and then print them.
 
 The VMS X Windows code was developed and tested by Christopher J. Cason under
-DECWindows on a DEC Alpha AXP 500.
+DECWindows on a DEC Alpha AXP 500 running OpenVMS 1.5.
 
 Questions and problems in the VAX/VMS version can be directed to Chris Cason on
 Compuserve via mail or in the POV source section of GRAPHDEV. (currently 8).
@@ -88,11 +98,6 @@ the build files. By doing so, you will be helping others.
 If you have any problems getting it to build, you may like to contact me or
 check the POV section of GRAPHDEV on Compuserve to see if there are updated
 files. Try scanning for the keyword VMS or XWINDOWS.
-
-Expect to find a significantly enhanced X version in the near future.
-(Sometime in late 1993 or early 1994). This will include a Motif shell.
-We may also make pre-compiled executables available for VAX and Alpha.
-(But there is no guarantee of this).
 
 Chris Cason.
 CIS:100032,1644

@@ -139,18 +139,20 @@
    Added some DEBUG_VIDEO diagnostics for figuring out problems running a
    TARGA+ display on the Intel Code Builder. - Aaron A. Collins, 8/2/1993
 
+   Updated Watcom VESA support for DPMI. -- Carl Peterson 1/94
+
 */
 
 #define DITHERED        /* Defined to test Doug Muir's dithering code */
 
-/*#define DEBUG_VIDEO*/		/* Uncomment to display Video initialization info during program startup. */
-/*#define SVBOK*/			/* Uncomment to use setvbuf in GCCDOS anyway. */
+/*#define DEBUG_VIDEO*/ /* Uncomment to display Video initialization info during program startup. */
+/*#define SVBOK*/       /* Uncomment to use setvbuf in GCCDOS anyway. */
 
 #ifdef DEBUG_VIDEO
-int diaged;				/* excessive diagnostic message clamp */
+int diaged;             /* excessive diagnostic message clamp */
 #endif
 
-#include <dos.h>          /* MS-DOS specific - for int86() REGS struct, etc. */
+#include <dos.h>        /* MS-DOS specific - for int86() REGS struct, etc. */
 #include <stdarg.h>
 #include <time.h>
 #include "frame.h"
@@ -178,7 +180,27 @@ int diaged;				/* excessive diagnostic message clamp */
   unsigned short __8087cw = IC_AFFINE | RC_NEAR | PC_64  | 0x007F;
   void clear_direction(void);
   #pragma aux clear_direction = 0xFC parm [] modify nomemory;
+/* CCP - Added following defintions */
 #ifdef __386__
+typedef unsigned long DWORD;
+
+#define D32RealSeg(P)	((((DWORD) (P)) >> 4) & 0xFFFF)
+#define D32RealOff(P)	(((DWORD) (P)) & 0xF)
+
+static struct rminfo {		/* DPMI Real Mode Call structure */
+    long EDI;
+    long ESI;
+    long EBP;
+    long reserved_by_system;
+    long EBX;
+    long EDX;
+    long ECX;
+    long EAX;
+    short flags;
+    short ES,DS,FS,GS,IP,CS,SP,SS;
+} RMI;
+/* CCP - End */
+
   #define ax eax
   #define bx ebx
   #define cx ecx
@@ -401,18 +423,20 @@ int di_val, c_val, t_val, ds_val;
 #else
 #ifdef __WATCOMC__
 #ifdef __386__
-unsigned int vesabuffer;                   /* Save area for the DOS segment pointer */
-unsigned char *answer;                     /* Watcom 386 answer area for VESA BIOS calls */
+/* CCP - Added variables to save answer segment and selector */
+/*     - Changed name of vesabuffer to answerSel             */
+unsigned int answerSel;          /* Save area for the selector pointer */
+unsigned char *answer;           /* Watcom 386 answer area for VESA BIOS calls */
 #else
-unsigned char answer[260];                 /* Answer area for VESA BIOS calls */
+unsigned char answer[260];       /* Answer area for VESA BIOS calls */
 #endif
 #else
-unsigned char answer[260];                 /* Answer area for VESA BIOS calls */
+unsigned char answer[260];       /* Answer area for VESA BIOS calls */
 #endif
 #endif
 #endif
 #endif
-unsigned short vesamode;                   /* Current VESA BIOS supported mode */
+unsigned short vesamode;         /* Current VESA BIOS supported mode */
 
 #if !defined(DOS386) && !defined(_INTELC32_) && !defined(__386__) && !defined(GCCDOS)
 int dither_matrix[4][4]=
@@ -486,10 +510,10 @@ static unsigned char _far *real_ptr;
 #endif
 
 /*
-	Note: for non-32-bit compilers, we can have a long in the struct and
+    Note: for non-32-bit compilers, we can have a long in the struct and
     still get word-aligned packing.  For 32-bit compilers, we want to use
-	all shorts so we don't force longword alignment of the members, which
-	can create gaps in the structure due to the member ordering within.
+    all shorts so we don't force longword alignment of the members, which
+    can create gaps in the structure due to the member ordering within.
 */
 
 typedef struct  /* TARGA+ I/O Command Array */
@@ -516,7 +540,7 @@ typedef struct  /* TARGA+ I/O Command Array */
 } TGACommand;
 
 typedef TGACommand _far *TGACommandPtr;
-int TGAHandle;                  /* global TARGA+ file handle used by open() */
+int TGAHandle;                      /* global TARGA+ file handle used by open() */
 
 #ifdef GCCDOS
 volatile unsigned short *TGARegs;       /* global TARGA+ register array Pointer */
@@ -552,11 +576,14 @@ void display_init(width, height) /* Set video to requested or best mode */
     }
 #ifdef __WATCOMC__
 #ifdef __386__
-    inr.x.ax = 0x4800;
-    inr.x.bx = 17;
-    int86(0x21, &inr, &outr);
-    vesabuffer = outr.x.ax;
-    answer = MK_FP(outr.x.ax, 0);
+/* CCP - Changed answer alloc to DPMI call to return segment and selector */
+    inr.x.ax = 0x0100;          /* DPMI allocate DOS memory */
+    inr.x.bx = 17;              /* Number of paragraphs requested */ 
+    int86(0x31, &inr, &inr);
+
+      answerSel = inr.x.dx;     /* Save selector for free memory function */
+    answer =  (void *) ((inr.x.ax & 0xFFFF) << 4);
+/* CCP - End */
 #endif
 #endif
 #ifdef DOS16RM
@@ -822,12 +849,37 @@ if (screen_width <= 2048) {
             segs.es = 0;                    /* get segment of answer */
             int86x(0x10, &inr, &outr, &segs);
 #else
-            for (u=0; u<256; u++)
+/* CCP - Added Watcom section */
+#ifdef __WATCOMC__
+#ifdef __386__
+            for (u=0; u<256; u++)           /* clear answer buffer */
+                answer[u] = 0;
+
+               /* Set up real-mode call structure */
+
+            memset(&RMI, 0, sizeof(RMI));
+            RMI.EAX = 0x4F00;            /* Call function 0 to get VGA info */
+            RMI.ES = D32RealSeg(answer); /* put DOS seg:off of answer into es:di */
+              RMI.EDI = D32RealOff(answer);
+
+            segread(&segs);              /* init our selectors */
+            inr.x.ax = 0x0300;
+            inr.x.bx = 0x10;
+            inr.x.cx = 0;
+            segs.es = FP_SEG(&RMI);      /* get segment of rmi */
+            inr.x.di = FP_OFF(&RMI);     /* deposit results here */
+            int86x(0x31, &inr, &outr, &segs);
+               outr.x.ax = RMI.EAX;   /* for code below */
+#endif
+/* CCP - End */
+#else
+            for (u=0; u<256; u++)           /* clear answer buffer */
                 answer[u] = 0;
             inr.x.di = FP_OFF(answer);      /* deposit results here */
             segread(&segs);                 /* get our DS, etc. */
             segs.es = FP_SEG(answer);       /* get segment of answer */
             int86x(0x10, &inr, &outr, &segs);
+#endif
 #endif
 #endif
 #endif
@@ -907,11 +959,32 @@ if (screen_width <= 2048) {
                 inr.x.di = 0x580;                   /* deposit results here */
                 segs.es = 0;
                 int86x(0x10, &inr, &outr, &segs);   /* BIOS fetch attrib call */
+/* CCP - Added watcom section */
+#else
+#ifdef __WATCOMC__
+#ifdef __386__
+
+            memset(&RMI, 0, sizeof(RMI));
+            RMI.EAX = 0x4F01;              /* VESA BIOS fetch attributes call */
+            RMI.ECX = vesamodes[i];
+            RMI.ES = D32RealSeg(answer);   /* put DOS seg:off of answer into es:di */
+            RMI.EDI = D32RealOff(answer);
+
+            segread(&segs);                /* init our selectors */
+            inr.x.ax = 0x0300;
+            inr.x.bx = 0x10;
+            inr.x.cx = 0;
+            segs.es = FP_SEG(&RMI);         /* get segment of rmi */
+            inr.x.di = FP_OFF(&RMI);        /* deposit results here */
+            int86x(0x31, &inr, &outr, &segs);
+            inr.x.cx = RMI.ECX;             /* for debug code below */
+#endif
 #else
                 inr.x.di = FP_OFF(answer);          /* deposit attribs here */
                 segread(&segs);                     /* get our DS, etc. */
                 segs.es = FP_SEG(answer);           /* get segment of answer */
                 int86x(0x10, &inr, &outr, &segs);   /* BIOS fetch attrib call */
+#endif
 #endif
 #endif
 #endif
@@ -1041,11 +1114,33 @@ if (screen_width <= 2048) {
             inr.x.di = 0x580;                   /* Deposit results here */
             segs.es = 0;
             int86x(0x10, &inr, &outr, &segs);
+/* CCP - Added watcom section */
+#else
+#ifdef __WATCOMC__
+#ifdef __386__
+            memset(&RMI, 0, sizeof(RMI));
+            RMI.EAX = 0x4F01;               /* VESA BIOS fetch attributes call */
+            RMI.ECX = vesamode;             /* Get attrs for mode */
+            RMI.ES = D32RealSeg(answer);    /* put DOS seg:off of answer into es:di */
+            RMI.EDI = D32RealOff(answer);
+
+            segread(&segs);                 /* init our selectors */
+            inr.x.ax = 0x0300;
+            inr.x.bx = 0x10;
+            inr.x.cx = 0;
+            segs.es = FP_SEG(&RMI);         /* get segment of rmi */
+            inr.x.di = FP_OFF(&RMI);        /* deposit results here */
+            int86x(0x31, &inr, &outr, &segs);
+            outr.x.ax = RMI.EAX;            /* for code below */
+
+#endif
+/* CCP - End */
 #else
             inr.x.di = FP_OFF(answer);          /* Deposit attribs here */
             segread(&segs);                     /* Get our DS, etc. */
             segs.es = FP_SEG(answer);           /* Get segment of answer */
             int86x(0x10, &inr, &outr, &segs);   /* BIOS fetch attrib call */
+#endif
 #endif
 #endif
 #endif
@@ -1066,7 +1161,12 @@ if (screen_width <= 2048) {
                 granule = 1;
             gran = 1024L * granule;
 
-            inr.x.ax = 0x4F02;                  /* VESA BIOS initialize video mode call */
+            inr.x.ax = 0x4F02;       /* VESA BIOS initialize video mode call */
+#ifdef __WATCOMC__
+#ifdef __386__
+            inr.x.ebx = vesamode;    /* CCP BP */
+#endif
+#endif
             if (svga_yincr == svga_width && PaletteOption == HICOLOR)
                 if (svga_width == 640 && svga_height == 200) {
                     svga_width = 320;
@@ -1206,31 +1306,31 @@ TIGA_error:
                 int86(0x21, &inr, &inr);
 #endif
                 inr.h.dh = 0;
-                inr.h.dl |= 0x20;                               /* or in 'RAW' bit. */
+                inr.h.dl |= 0x20;                    /* or in 'RAW' bit. */
 #ifdef DEBUG_VIDEO
-				printf("DIAG: inr.h.dl = %02X\n", inr.h.dl & 0x00FF);
+                printf("DIAG: inr.h.dl = %02X\n", inr.h.dl & 0x00FF);
 #endif
-				inr.x.ax = 0x4401;                              /* write it back */
+                inr.x.ax = 0x4401;                   /* write it back */
 #ifdef DOS386
                 int86_real(0x21, &inr, &inr);
 #else
-                int86(0x21, &inr, &inr);                        /* status of operation is !regs.x.cflag */
+                int86(0x21, &inr, &inr);             /* status of operation is !regs.x.cflag */
 #endif
 #ifdef DEBUG_VIDEO
-				diaged = FALSE;
-				printf("DIAG: SetTGARegs(5, 0) -");
+                diaged = FALSE;
+                printf("DIAG: SetTGARegs(5, 0) -");
 #endif
-                SetTGARegs( 5, 0, &inr, &segs);                 /* equivalent to TARGA+ "ResetBoard()" call */
+                SetTGARegs( 5, 0, &inr, &segs);       /* equivalent to TARGA+ "ResetBoard()" call */
 #ifdef DOS386
                 int86x_real(0x21, &inr, &inr, &segs);
 #else
-                int86x(0x21, &inr, &inr, &segs);                /* call DOS */
+                int86x(0x21, &inr, &inr, &segs);       /* call DOS */
 #endif
 #ifdef DEBUG_VIDEO
-				diaged = FALSE;
-				printf("DIAG: SetTGARegs(0,1) -");
+                diaged = FALSE;
+                printf("DIAG: SetTGARegs(0,1) -");
 #endif
-                SetTGARegs( 0, 1, &inr, &segs);                 /* equivalent to TARGA+ "ReadAll()" call */
+                SetTGARegs( 0, 1, &inr, &segs);        /* equivalent to TARGA+ "ReadAll()" call */
 #ifdef GCCDOS
                 command->IORegsOff = (unsigned short)t_val;     /* real mode offset pointer to TGARegs structure */
                 command->IORegsSeg = (unsigned short)ds_val;
@@ -1239,7 +1339,7 @@ TIGA_error:
                 command->IORegsSeg = (unsigned short)FP_SEG(TGARegs);
 #endif
 #ifdef DEBUG_VIDEO
-				printf("DIAG: command = %p, TGARegs = %p, IORegsOff = %04X, IORegsSeg = %04X\n", command, TGARegs, command->IORegsOff, command->IORegsSeg);
+                printf("DIAG: command = %p, TGARegs = %p, IORegsOff = %04X, IORegsSeg = %04X\n", command, TGARegs, command->IORegsOff, command->IORegsSeg);
 #endif
 #ifdef DOS386
                 int86x_real(0x21, &inr, &inr, &segs);
@@ -1445,11 +1545,31 @@ int AutodetectVGA()           /* Autodetect (S)VGA Adapter Type */
     segs.es = 0;
     int86x(0x10, &inr, &outr, &segs);
 #else
+/* CCP - Added watcom section */
+#ifdef __WATCOMC__
+#ifdef __386__
+    memset(&RMI, 0, sizeof(RMI));       /* Test for VESA Adapter */
+    RMI.EAX = 0x4F00;                   /* Call function 0 to get VGA info */
+    RMI.ES = D32RealSeg(answer);        /* put DOS seg:off of answer into es:di */
+    RMI.EDI = D32RealOff(answer);
+
+    segread(&segs);                     /* init our selectors */
+    inr.x.ax = 0x0300;
+    inr.x.bx = 0x10;
+    inr.x.cx = 0;
+    segs.es = FP_SEG(&RMI);             /* get segment of rmi */
+    inr.x.di = FP_OFF(&RMI);            /* deposit results here */
+    int86x(0x31, &inr, &outr, &segs);
+    outr.x.ax = RMI.EAX;                /* for code below */
+#endif
+/* CCP - End */
+#else
     segread(&segs);                     /* get our DS, etc. */
     inr.x.di = FP_OFF(answer);          /* deposit results here */
     segread(&segs);                     /* get our DS, etc. */
     segs.es = FP_SEG(answer);           /* get segment of answer */
     int86x(0x10, &inr, &outr, &segs);   /* BIOS adapter identify call */
+#endif
 #endif
 #endif
 #endif
@@ -1767,7 +1887,7 @@ struct SREGS *s;                        /* segment registers */
 #else
         r->x.ax = 0x4403;               /* set up IOCTL Write */
 #endif
-	r->x.bx = TGAHandle;                /* TARGA device handle */
+    r->x.bx = TGAHandle;                /* TARGA device handle */
     r->x.cx = sizeof(TGACommand);       /* read/write a whole cmd struct */
 #ifdef GCCDOS
     r->x.dx = c_val;                    /* real mode offset of Command structure */
@@ -1776,13 +1896,13 @@ struct SREGS *s;                        /* segment registers */
     s->ds = (unsigned short) FP_SEG(command);
 #endif
 #ifdef DEBUG_VIDEO
-	if (!diaged)
-	{
-		diaged = TRUE;
-		printf(" Sizeof TGACommand = %d, command = %p, dx = %08lX, ds = %04X\n", r->x.cx, command, r->x.dx, s->ds);
-	}
+       if (!diaged)
+         {
+           diaged = TRUE;
+           printf(" Sizeof TGACommand = %d, command = %p, dx = %08lX, ds = %04X\n", r->x.cx, command, r->x.dx, s->ds);
+         }
 #endif
-	command->IOCmd = cmd;               /* set current I/O command */
+    command->IOCmd = cmd;               /* set current I/O command */
     command->IOStrucSiz = 260;          /* size in bytes of sizeof(TGARegs) = unsigned short [130] */
 }
 
@@ -1828,7 +1948,7 @@ void palette_init()             /* Fill VGA 256 color palette with colors! */
     unsigned char palbuf[256][3];
 #endif
 
-    if (PaletteOption == GREY)  /* B/W Video Mod */
+    if (PaletteOption == GREY)       /* B/W Video Mod */
     {
         for (m = 1; m < 64; m++)     /* for the 1st 64 colors... */
             set_palette_register (m, m, m, m); /* set m to rgb value */
@@ -1904,15 +2024,15 @@ void display_finished ()
         {
         fprintf (stdout,"\007\007");    /* long beep */
         fflush (stdout);                /* make sure its heard */
-        while(!kbhit())         /* wait for key hit */
+        while(!kbhit())                 /* wait for key hit */
            ;
-        if (!getch())           /* get another if ext. scancode */
+        if (!getch())                   /* get another if ext. scancode */
            getch();
         }
     }
 
 
-void display_close()            /* setup to Text 80x25 (mode 3) */
+void display_close()                    /* setup to Text 80x25 (mode 3) */
     {
     union REGS regs;
     struct SREGS segs;
@@ -1920,10 +2040,11 @@ void display_close()            /* setup to Text 80x25 (mode 3) */
 #ifdef __386__
     regs.x.ax = 0x0003;
     int86(0x10, &regs, &regs);
-    regs.x.ax = 0x4900;
-    segs.es = vesabuffer;
-    segs.ds = 0;
-    int86x(0x21, &regs, &regs, &segs);
+/* CCP - Use DPMI to free answer buffer */
+    regs.x.ax = 0x0101;            /* DPMI free DOS memory */ 
+    regs.x.dx = answerSel;         /* Descriptor (memory) to be freed */ 
+    int86 (0x31, &regs, &regs);
+/* CCP - End */
 #else
     if (whichvga < TRUECOLOR) {
         regs.x.ax = 0x0003;
@@ -1937,19 +2058,19 @@ void display_close()            /* setup to Text 80x25 (mode 3) */
 #endif
             if (whichvga <= TARGA) {
 #ifdef DEBUG_VIDEO
-				diaged = FALSE;
-				printf("DIAG: SetTGARegs(0,0) -");
+               diaged = FALSE;
+               printf("DIAG: SetTGARegs(0,0) -");
 #endif
-                SetTGARegs(0, 0, &regs, &segs);                    /* equivalent to TARGA+ "WriteAll()" call */
+                SetTGARegs(0, 0, &regs, &segs);    /* equivalent to TARGA+ "WriteAll()" call */
 #ifdef GCCDOS
-                command->IORegsOff = (unsigned short)t_val;        /* real mode offset pointer to TGARegs structure */
+                command->IORegsOff = (unsigned short)t_val;   /* real mode offset pointer to TGARegs structure */
                 command->IORegsSeg = (unsigned short)ds_val;
 #else
                 command->IORegsOff = (unsigned short)FP_OFF(TGARegs);   /* pointer to structure */
                 command->IORegsSeg = (unsigned short)FP_SEG(TGARegs);
 #endif
 #ifdef DEBUG_VIDEO
-				printf("DIAG: command = %p, TGARegs = %p, IORegsOff = %04X, IORegsSeg = %04X\n", command, TGARegs, command->IORegsOff, command->IORegsSeg);
+       printf("DIAG: command = %p, TGARegs = %p, IORegsOff = %04X, IORegsSeg = %04X\n", command, TGARegs, command->IORegsOff, command->IORegsSeg);
 #endif
 #ifdef DOS386
                 int86x_real(0x21, &regs, &regs, &segs);
@@ -2033,8 +2154,8 @@ if (screen_width <= 2048) {
     if (whichvga == TARGA)
         {
 #ifdef DEBUG_VIDEO
-		diaged = TRUE;							/* I have this particular diag turned off for now - AAC */
-/*		printf("DIAG: SetTGARegs(2,0) -");      */
+        diaged = TRUE;    /* I have this particular diag turned off for now - AAC */
+/*      printf("DIAG: SetTGARegs(2,0) -");      */
 #endif
         SetTGARegs(2, 0, &inr, &segs);          /* equivalent to TARGA+ "PutPixel()" call */
         command->IOxi = x;
@@ -2775,14 +2896,14 @@ unsigned char *find_go32(go32_offset)
    reg.x.dx = (int)"*.*";
    int86(0x21, &reg, &reg);
 
-   getcwd(buffer, sizeof(buffer));		/* somehow this is affecting where we wind up at */
-   indx = strlen(buffer);				/* get our cur. dir name len */
-   if (indx < 2)						/* bump count if in root (special case?) */
-	   indx = 2;
+   getcwd(buffer, sizeof(buffer));    /* somehow this is affecting where we wind up at */
+   indx = strlen(buffer);             /* get our cur. dir name len */
+   if (indx < 2)                      /* bump count if in root (special case?) */
+   indx = 2;
 
-   *go32_offset = (reg.x.dx & 0xFFFF) - 43;	/* this is always right */
+   *go32_offset = (reg.x.dx & 0xFFFF) - 43;  /* this is always right */
 
-   return(last_p - 3 - indx);			/* this moves around of it's own will... :-( AAC */
+   return(last_p - 3 - indx);    /* this moves around of it's own will... :-( AAC */
    }
 #endif
 

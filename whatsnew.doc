@@ -1,3 +1,17 @@
+    What's New in POV-Ray 2.2
+    --------------------------
+
+    This bug-fix release adds no new features but fixes the following
+    bugs from version 2.1.
+
+  - Fixed problem with declared material_maps or declared objects with
+    material_maps (yet again)
+  - Eliminated unnecessary turbulence calculations in normals
+  - Fixed all known problems with height fields
+  - Fixed IBM.C problems for Watcom compiler DPMI support
+  - Added Symatec C compiler make files for IBM version
+  - New video modes added to Amiga version
+
     What's New in POV-Ray 2.1
     --------------------------
 
@@ -19,7 +33,7 @@
   - Fixed compiler problems on VMS/VAX
   - Fixed scaling bug on degenerate triangles
   - Fixed problem with water_level when using +MV1.0
-  - Fixed problem with color maped TGA height fields
+  - Fixed problem with color mapped TGA height fields
 
     What's New in POV-Ray 2.0
     -------------------------

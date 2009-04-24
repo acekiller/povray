@@ -249,4 +249,3 @@ typedef struct
     short id;           /* id of font (set at install time)             */
 } FONTINFO;
 
-

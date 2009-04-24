@@ -73,7 +73,7 @@ files' section below for more info.
           universal executable, which will run on any 68020 or better Mac
           without an FPU.  The Macintosh version of POV-Ray needs a 68020
           or better CPU (Mac II series, SE/30, Quadras, some Powerbooks,
-          etc.)  It will run under Sytem 6.0.4 or newer (System 7 preferred.)
+          etc.)  It will run under System 6.0.4 or newer (System 7 preferred.)
           It also requires 32 bit Color Quickdraw, which is built into System
           7, and is an optional init in System 6.
 
@@ -137,7 +137,7 @@ files' section below for more info.
    In the POVDOC archive is the file POVRAY.DOC which contains details
 on installing and using POV-Ray. Specific instructions for
 using POV-Ray with your computer are included with the executable.
-This file also houses the essential "include" files containing predefed
+This file also houses the essential "include" files containing predefined
 colors, shapes, and textures.
 
  ** POV-Ray is copyrighted freeware written by the POV-Team.

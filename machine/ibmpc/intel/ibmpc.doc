@@ -37,6 +37,7 @@ Some Examples
        Try this if your SVGA display is not supported.
        Use this option to get a scaled image in a window
        on the OS/2 2.x desktop.
+
 +dG0 = Display to a VESA VGA adapter and
        use the HSV palette option.
 +dG3 = Display to a VESA VGA adapter and use 
@@ -53,6 +54,9 @@ Some Examples
 
 +d4  = Display to a TSENG 4000 chipset VGA using
        the 332 palette option.
+
++d4h = Display to a TSENG 4000 chipset VGA using
+       the HiColor option.
 
 If your card isn't autodetected correctly try all the options. 
 If no option works, just use +d1 for standard VGA.

@@ -1,5 +1,9 @@
-echo "amiga.c"
+echo "dos2ami"
+echo "don't interrupt this command"
+echo ""
+
 if exists amiga.c
+  echo "amiga.c"
   protect amiga.c +rd
   ceol <amiga.c >t.cr
   if exists t.cr
@@ -10,276 +14,318 @@ else
   echo "missing file: amiga.c"
 endif
 
-echo "amiga.cat"
 if exists amiga.cat
+  echo "amiga.cat"
   protect amiga.cat +rd
   ceol <amiga.cat >t.cr
   if exists t.cr
     delete amiga.cat quiet
     rename t.cr amiga.cat
   endif
+
+  if exists icons/amigainf.cat
+    echo "amiga.cat.info"
+    if exists amiga.cat.info
+      protect amiga.cat.info +rd
+    endif
+    copy icons/amigainf.cat amiga.cat.info
+  else
+    echo "missing file: icons/amigainf.cat"
+  endif
+
 else
   echo "missing file: amiga.cat"
 endif
 
-echo "amigainf.cat"
-if exists amigainf.cat
-  protect amigainf.cat +rd
-  if not exists amiga.cat.info
-    rename amigainf.cat amiga.cat.info
-  endif
-else
-  if not exists amiga.cat.info
-    echo "missing file: amigainf.cat"
-  endif
-endif
-
-echo "amiga.doc"
 if exists amiga.doc
+  echo "amiga.doc"
   protect amiga.doc +rd
   ceol <amiga.doc >t.cr
   if exists t.cr
     delete amiga.doc quiet
     rename t.cr amiga.doc
   endif
+
+  if exists icons/amigainf.doc
+    echo "amiga.doc.info"
+    if exists amiga.doc.info
+      protect amiga.doc.info +rd
+    endif
+    copy icons/amigainf.doc amiga.doc.info
+  else
+    echo "missing file: icons/amigainf.doc"
+  endif
+
 else
   echo "missing file: amiga.doc"
 endif
 
-echo "amigainf.doc"
-if exists amigainf.doc
-  protect amigainf.doc +rd
-  if not exists amiga.doc.info
-    rename amigainf.doc amiga.doc.info
-  endif
-else
-  if not exists amiga.doc.info
-    echo "missing file: amigainf.doc"
-  endif
-endif
-
-echo "amigacon.h"
-if exists amigacon.h
-  protect amigacon.h +rd
-  if not exists config.h
-    ceol <amigacon.h >config.h
-    if exists config.h
-      delete amigacon.h quiet
-    endif
-  endif
-else
-  if not exists config.h
-    echo "missing file: amigacon.h"
-  endif
-endif
-
-echo "amiga.mak"
 if exists amiga.mak
+  echo "amiga.mak"
   protect amiga.mak +rd
   if not exists makefile
     ceol <amiga.mak >makefile
-    if exists makefile
-      delete amiga.mak quiet
-    endif
+  endif
+  if exists makefile
+    delete amiga.mak quiet
   endif
 else
   if not exists makefile
-    echo "missing file: amiga.mak"
+    echo "missing file: amiga.mak (makefile)"
   endif
 endif
 
-echo "read.me"
-if exists read.me
-  protect read.me +rd
-  ceol <read.me >t.cr
-  if exists t.cr
-    delete read.me quiet
-    rename t.cr read.me
+if exists amigacon.h
+  echo "amigacon.h"
+  protect amigacon.h +rd
+  if not exists config.h
+    ceol <amigacon.h >config.h
+  endif
+  if exists config.h
+    delete amigacon.h quiet
   endif
 else
-  echo "missing file: read.me"
-endif
-
-echo "bounce.pov"
-if exists bounce.pov
-  protect bounce.pov +rd
-  ceol <bounce.pov >t.cr
-  if exists t.cr
-    delete bounce.pov quiet
-    rename t.cr bounce.pov
+  if not exists config.h
+    echo "missing file: amigacon.h (config.h)"
   endif
-else
-  echo "missing file: bounce.pov"
-endif
-
-echo "testloop.pov"
-if exists testloop.pov
-  protect testloop.pov +rd
-  ceol <testloop.pov >t.cr
-  if exists t.cr
-    delete testloop.pov quiet
-    rename t.cr testloop.pov
-  endif
-else
-  echo "missing file: testloop.pov"
 endif
 
 
 if exists //
 
-  echo "//povinf.doc"
-  if exists //povinf.doc
-    protect //povinf.doc +rd
-    ceol <//povinf.doc >t.cr
-    if exists t.cr
-      delete //povinf.doc quiet
-      rename t.cr //povinf.doc
-    endif
-  else
-    echo "missing file: //povinf.doc"
-  endif
-
-  echo "//povininf.doc"
-  if exists //povininf.doc
-    protect //povininf.doc +rd
-    if not exists //povinf.doc.info
-      rename //povininf.doc //povinf.doc.info
-    endif
-  else
-    if not exists //povinf.doc.info
-      if exists icons/povininf.doc
-        copy icons/povininf.doc //povinf.doc.info
-      endif
-    endif
-  endif
-
-  echo "//povlegal.doc"
   if exists //povlegal.doc
+    echo "//povlegal.doc"
     protect //povlegal.doc +rd
     ceol <//povlegal.doc >t.cr
     if exists t.cr
       delete //povlegal.doc quiet
       rename t.cr //povlegal.doc
     endif
+
+    if exists icons/povlginf.doc
+      echo "//povlegal.doc.info"
+      if exists //povlegal.doc.info
+        protect //povlegal.doc.info +rd
+      endif
+      copy icons/povlginf.doc //povlegal.doc.info
+    else
+      echo "missing file: icons/povlginf.doc"
+    endif
+
   else
     echo "missing file: //povlegal.doc"
   endif
 
-  echo "//povlginf.doc"
-  if exists //povlginf.doc
-    protect //povlginf.doc +rd
-    if not exists //povlegal.doc.info
-      rename //povlginf.doc //povlegal.doc.info
-    endif
-  else
-    if not exists //povlegal.doc.info
-      if exists icons/povlginf.doc
-        copy icons/povlginf.doc //povlegal.doc.info
-      endif
-    endif
-  endif
-
-  echo "//povdoc.cat"
-  if exists //povdoc.cat
-    protect //povdoc.cat +rd
-    ceol <//povdoc.cat >t.cr
+  if exists //povinf.doc
+    echo "//povinf.doc"
+    protect //povinf.doc +rd
+    ceol <//povinf.doc >t.cr
     if exists t.cr
-      delete //povdoc.cat quiet
-      rename t.cr //povdoc.cat
+      delete //povinf.doc quiet
+      rename t.cr //povinf.doc
     endif
-  else
-    echo "missing file: //povdoc.cat"
-  endif
-
-  echo "//povdoinf.cat"
-  if exists //povdoinf.cat
-    protect //povdoinf.cat +rd
-    if not exists //povdoc.cat.info
-      rename //povdoinf.cat //povdoc.cat.info
-    endif
-  else
-    if not exists //povdoc.cat.info
-      if exists icons/povdoinf.cat
-        copy icons/povdoinf.cat //povdoc.cat.info
+  
+    if exists icons/povininf.doc
+      echo "//povinf.doc.info"
+      if exists //povinf.doc.info
+        protect //povinf.doc.info +rd
       endif
-    endif
-  endif
+      copy icons/povininf.doc //povinf.doc.info
+    else
+      echo "missing file: icons/povininf.doc"
 
-  echo "//povscn.cat"
-  if exists //povscn.cat
-    protect //povscn.cat +rd
-    ceol <//povscn.cat >t.cr
-    if exists t.cr
-      delete //povscn.cat quiet
-      rename t.cr //povscn.cat
     endif
   else
-    echo "missing file: //povscn.cat"
+    echo "missing file: //povinf.doc"
   endif
 
-  echo "//povscinf.cat"
-  if exists //povscinf.cat
-    protect //povscinf.cat +rd
-    if not exists //povscn.cat.info
-      rename //povscinf.cat //povscn.cat.info
-    endif
-  else
-    if not exists //povscn.cat.info
-      if exists icons/povscinf.cat
-        copy icons/povscinf.cat //povscn.cat.info
-      endif
-    endif
-  endif
-
-  echo "//povsrc.cat"
-  if exists //povsrc.cat
-    protect //povsrc.cat +rd
-    ceol <//povsrc.cat >t.cr
-    if exists t.cr
-      delete //povsrc.cat quiet
-      rename t.cr //povsrc.cat
-    endif
-  else
-    echo "missing file: //povsrc.cat"
-  endif
-
-  echo "//povsrinf.cat"
-  if exists //povsrinf.cat
-    protect //povsrinf.cat +rd
-    if not exists //povsrc.cat.info
-      rename //povsrinf.cat //povsrc.cat.info
-    endif
-  else
-    if not exists //povsrc.cat.info
-      if exists icons/povsrinf.cat
-        copy icons/povsrinf.cat //povsrc.cat.info
-      endif
-    endif
-  endif
-
-  echo "//whatsnew.doc"
   if exists //whatsnew.doc
+    echo "//whatsnew.doc"
     protect //whatsnew.doc +rd
     ceol <//whatsnew.doc >t.cr
     if exists t.cr
       delete //whatsnew.doc quiet
       rename t.cr //whatsnew.doc
     endif
+
+    if exists icons/whnewinf.doc
+      echo "//whatsnew.doc.info"
+      if exists //whatsnew.doc.info
+        protect //whatsnew.doc.info +rd
+      endif
+      copy icons/whnewinf.doc //whatsnew.doc.info
+    else
+      echo "missing file: icons/whnewinf.doc"
+    endif
+
   else
     echo "missing file: //whatsnew.doc"
   endif
 
-  echo "//whnewinf.doc"
-  if exists //whnewinf.doc
-    protect //whnewinf.doc +rd
-    if not exists //whatsnew.doc.info
-      rename //whnewinf.doc //whatsnew.doc.info
+  if exists //knownbug.doc
+    echo "//knownbug.doc"
+    protect //knownbug.doc +rd
+    ceol <//knownbug.doc >t.cr
+    if exists t.cr
+      delete //knownbug.doc quiet
+      rename t.cr //knownbug.doc
     endif
-  else
-    if not exists //whatsnew.doc.info
-      if exists icons/whnewinf.doc
-        copy icons/whnewinf.doc //whatsnew.doc.info
+
+    if exists icons/knbuginf.doc
+      echo "//knownbug.doc.info"
+      if exists //knownbug.doc.info
+        protect //knownbug.doc.info +rd
       endif
+      copy icons/knbuginf.doc //knownbug.doc.info
+    else
+      echo "missing file: icons/knbuginf.doc"
+    endif
+
+  else
+    echo "missing file: //knownbug.doc"
+  endif
+
+  if exists //demo
+    echo "//demo.info"
+    if exists icons/demoinf.dir
+      if exists //demo.info
+        protect //demo.info +rd
+      endif
+      copy icons/demoinf.dir //demo.info
+    else
+      echo "missing file: icons/demoinf.dir"
+    endif
+  endif
+
+  if exists //docs
+    echo "//docs.info"
+    if exists icons/docsinf.dir
+      if exists //docs.info
+        protect //docs.info +rd
+      endif
+      copy icons/docsinf.dir //docs.info
+    else
+      echo "missing file: icons/docsinf.dir"
+    endif
+  endif
+
+  if exists //include
+    echo "//include.info"
+    if exists icons/incluinf.dir
+      if exists //include.info
+        protect //include.info +rd
+      endif
+      copy icons/incluinf.dir //include.info
+    else
+      echo "missing file: icons/incluinf.dir"
+    endif
+  endif
+
+  if exists //machine
+    echo "//machine.info"
+    if exists icons/machninf.dir
+      if exists //machine.info
+        protect //machine.info +rd
+      endif
+      copy icons/machninf.dir //machine.info
+    else
+      echo "missing file: icons/machninf.dir"
+    endif
+  endif
+
+  if exists //scenes
+    echo "//scenes.info"
+    if exists icons/sceneinf.dir
+      if exists //scenes.info
+        protect //scenes.info +rd
+      endif
+      copy icons/sceneinf.dir //scenes.info
+    else
+      echo "missing file: icons/sceneinf.dir"
+    endif
+  endif
+
+  if exists //source
+    echo "//source.info"
+    if exists icons/sourcinf.dir
+      if exists //source.info
+        protect //source.info +rd
+      endif
+      copy icons/sourcinf.dir //source.info
+    else
+      echo "missing file: icons/sourcinf.dir"
+    endif
+  endif
+
+  if exists //povray881
+    echo "//povray881.info"
+    if exists icons/pv881inf.exe
+      if exists //povray881.info
+        protect //povray881.info +rd
+      endif
+      copy icons/pv881inf.exe //povray881.info
+    else
+      echo "missing file: icons/pv881inf.exe"
+    endif
+  endif
+
+  if exists //povrayieee
+    echo "//povrayieee.info"
+    if exists icons/pvieeinf.exe
+      if exists //povrayieee.info
+        protect //povrayieee.info +rd
+      endif
+      copy icons/pvieeinf.exe //povrayieee.info
+    else
+      echo "missing file: icons/pvieeinf.exe"
+    endif
+  endif
+
+  if exists //dump2i24
+    echo "//dump2i24.info"
+    if exists icons/dmi24inf.exe
+      if exists //dump2i24.info
+        protect //dump2i24.info +rd
+      endif
+      copy icons/dmi24inf.exe //dump2i24.info
+    else
+      echo "missing file: icons/dmi24inf.exe"
+    endif
+  endif
+
+  if exists //dump2iff
+    echo "//dump2iff.info"
+    if exists icons/dmiffinf.exe
+      if exists //dump2iff.info
+        protect //dump2iff.info +rd
+      endif
+      copy icons/dmiffinf.exe //dump2iff.info
+    else
+      echo "missing file: icons/dmiffinf.exe"
+    endif
+  endif
+
+  if exists //tga2dump
+    echo "//tga2dump.info"
+    if exists icons/tgadminf.exe
+      if exists //tga2dump.info
+        protect //tga2dump.info +rd
+      endif
+      copy icons/tgadminf.exe //tga2dump.info
+    else
+      echo "missing file: icons/tgadminf.exe"
+    endif
+  endif
+
+  if exists //tga2gif
+    echo "//tga2gif.info"
+    if exists icons/tgagfinf.exe
+      if exists //tga2gif.info
+        protect //tga2gif.info +rd
+      endif
+      copy icons/tgagfinf.exe //tga2gif.info
+    else
+      echo "missing file: icons/tgagfinf.exe"
     endif
   endif
 
@@ -288,177 +334,385 @@ endif
 
 if exists //demo
 
-  echo "//demo/demo.cat"
   if exists //demo/demo.cat
+    echo "//demo/demo.cat"
     protect //demo/demo.cat +rd
     ceol <//demo/demo.cat >t.cr
     if exists t.cr
       delete //demo/demo.cat quiet
       rename t.cr //demo/demo.cat
     endif
+
+    if exists icons/demoinf.cat
+      echo "//demo/demo.cat.info"
+      if exists //demo/demo.cat.info
+        protect //demo/demo.cat.info +rd
+      endif
+      copy icons/demoinf.cat //demo/demo.cat.info
+    else
+      echo "missing file: icons/demoinf.cat"
+    endif
+
   else
     echo "missing file: //demo/demo.cat"
   endif
 
-  echo "//demo/demoinf.cat"
-  if exists //demo/demoinf.cat
-    protect //demo/demoinf.cat +rd
-    if not exists //demo/demo.cat.info
-      rename //demo/demoinf.cat //demo/demo.cat.info
-    endif
-  else
-    if not exists //demo/demo.cat.info
-      if exists icons/demoinf.cat
-        copy icons/demoinf.cat //demo/demo.cat.info
-      endif
-    endif
-  endif
-
 endif
+
 
 if exists //docs
 
-  echo "//docs/povray.doc"
+  if exists //docs/docs.cat
+    echo "//docs/docs.cat"
+    protect //docs/docs.cat +rd
+    ceol <//docs/docs.cat >t.cr
+    if exists t.cr
+      delete //docs/docs.cat quiet
+      rename t.cr //docs/docs.cat
+    endif
+
+    if exists icons/docsinf.cat
+      echo "//docs/docs.cat.info"
+      if exists //docs/docs.cat.info
+        protect //docs/docs.cat.info +rd
+      endif
+      copy icons/docsinf.cat //docs/docs.cat.info
+    else
+      echo "missing file: icons/docsinf.cat"
+    endif
+
+  else
+    echo "missing file: //docs/docs.cat"
+  endif
+
   if exists //docs/povray.doc
+    echo "//docs/povray.doc"
     protect //docs/povray.doc +rd
     ceol <//docs/povray.doc >t.cr
     if exists t.cr
       delete //docs/povray.doc quiet
       rename t.cr //docs/povray.doc
     endif
+
+    if exists icons/docpvinf.doc
+      echo "//docs/povray.doc.info"
+      if exists //docs/povray.doc.info
+        protect //docs/povray.doc.info +rd
+      endif
+      copy icons/docpvinf.doc //docs/povray.doc.info
+    else
+      echo "missing file: icons/docpvinf.doc"
+    endif
+
   else
     echo "missing file: //docs/povray.doc"
   endif
 
-  echo "//docs/povpvinf.doc"
-  if exists //docs/povpvinf.doc
-    protect //docs/povpvinf.doc +rd
-    if not exists //docs/povray.doc.info
-      rename //docs/povpvinf.doc //docs/povray.doc.info
-    endif
-  else
-    if not exists //docs/povray.doc.info
-      if exists icons/povpvinf.doc
-        copy icons/povpvinf.doc //docs/povray.doc.info
-      endif
-    endif
-  endif
-
-  echo "//docs/textures.doc"
   if exists //docs/textures.doc
+    echo "//docs/textures.doc"
     protect //docs/textures.doc +rd
     ceol <//docs/textures.doc >t.cr
     if exists t.cr
       delete //docs/textures.doc quiet
       rename t.cr //docs/textures.doc
     endif
+
+    if exists icons/doctxinf.doc
+      echo "//docs/textures.doc.info"
+      if exists //docs/textures.doc.info
+        protect //docs/textures.doc.info +rd
+      endif
+      copy icons/doctxinf.doc //docs/textures.doc.info
+    else
+      echo "missing file: icons/doctxinf.doc"
+    endif
+
   else
     echo "missing file: //docs/textures.doc"
   endif
 
-  echo "//docs/povtxinf.doc"
-  if exists //docs/povtxinf.doc
-    protect //docs/povtxinf.doc +rd
-    if not exists //docs/textures.doc.info
-      rename //docs/povtxinf.doc //docs/textures.doc.info
-    endif
-  else
-    if not exists //docs/textures.doc.info
-      if exists icons/povtxinf.doc
-        copy icons/povtxinf.doc //docs/textures.doc.info
-      endif
-    endif
-  endif
-
 endif
+
 
 if exists //include
 
-  echo "//include/include.cat"
   if exists //include/include.cat
+    echo "//include/include.cat"
     protect //include/include.cat +rd
     ceol <//include/include.cat >t.cr
     if exists t.cr
       delete //include/include.cat quiet
       rename t.cr //include/include.cat
     endif
+
+    if exists icons/incluinf.cat
+      echo "//include/include.cat.info"
+      if exists //include/include.cat.info
+        protect //include/include.cat.info +rd
+      endif
+      copy icons/incluinf.cat //include/include.cat.info
+    else
+      echo "missing file: icons/incluinf.cat"
+    endif
+
   else
     echo "missing file: //include/include.cat"
   endif
 
-  echo "//include/povininf.cat"
-  if exists //include/povininf.cat
-    protect //include/povininf.cat +rd
-    if not exists //include/include.cat.info
-      rename //include/povininf.cat //include/include.cat.info
-    endif
-  else
-    if not exists //include/include.cat.info
-      if exists icons/povininf.cat
-        copy icons/povininf.cat //include/include.cat.info
-      endif
-    endif
-  endif
-
 endif
+
 
 if exists //machine
 
-  echo "//machine/machine.cat"
   if exists //machine/machine.cat
+    echo "//machine/machine.cat"
     protect //machine/machine.cat +rd
     ceol <//machine/machine.cat >t.cr
     if exists t.cr
       delete //machine/machine.cat quiet
       rename t.cr //machine/machine.cat
     endif
+
+    if exists icons/machninf.cat
+      echo "//machine/machine.cat.info"
+      if exists //machine/machine.cat.info
+        protect //machine/machine.cat.info +rd
+      endif
+      copy icons/machninf.cat //machine/machine.cat.info
+    else
+      echo "missing file: icons/machninf.cat"
+    endif
+
   else
     echo "missing file: //machine/machine.cat"
   endif
 
-  echo "//machine/machninf.cat"
-  if exists //machine/machninf.cat
-    protect //machine/machninf.cat +rd
-    if not exists //machine/machine.cat.info
-      rename //machine/machninf.cat //machine/machine.cat.info
-    endif
-  else
-    if not exists //machine/machine.cat.info
-      if exists icons/machninf.cat
-        copy icons/machninf.cat //machine/machine.cat.info
+  if exists //machine/acorn
+    echo "//machine/acorn.info"
+    if exists icons/macacinf.dir
+      if exists //machine/acorn.info
+        protect //machine/acorn.info +rd
       endif
+      copy icons/macacinf.dir //machine/acorn.info
+    else
+      echo "missing file: icons/macacinf.dir"
+    endif
+  endif
+
+  if exists //machine/amiga
+    echo "//machine/amiga.info"
+    if exists icons/macaminf.dir
+      if exists //machine/amiga.info
+        protect //machine/amiga.info +rd
+      endif
+      copy icons/macaminf.dir //machine/amiga.info
+    else
+      echo "missing file: icons/macaminf.dir"
+    endif
+  endif
+
+  if exists //machine/ibmpc
+    echo "//machine/ibmpc.info"
+    if exists icons/macpcinf.dir
+      if exists //machine/ibmpc.info
+        protect //machine/ibmpc.info +rd
+      endif
+      copy icons/macpcinf.dir //machine/ibmpc.info
+    else
+      echo "missing file: icons/macpcinf.dir"
+    endif
+  endif
+
+  if exists //machine/mac
+    echo "//machine/mac.info"
+    if exists icons/macmainf.dir
+      if exists //machine/mac.info
+        protect //machine/mac.info +rd
+      endif
+      copy icons/macmainf.dir //machine/mac.info
+    else
+      echo "missing file: icons/macmainf.dir"
+    endif
+  endif
+
+  if exists //machine/unix
+    echo "//machine/unix.info"
+    if exists icons/macuxinf.dir
+      if exists //machine/unix.info
+        protect //machine/unix.info +rd
+      endif
+      copy icons/macuxinf.dir //machine/unix.info
+    else
+      echo "missing file: icons/macuxinf.dir"
+    endif
+  endif
+
+  if exists //machine/vax
+    echo "//machine/vax.info"
+    if exists icons/macvxinf.dir
+      if exists //machine/vax.info
+        protect //machine/vax.info +rd
+      endif
+      copy icons/macvxinf.dir //machine/vax.info
+    else
+      echo "missing file: icons/macvxinf.dir"
     endif
   endif
 
 endif
 
+
+if exists //scenes
+
+  if exists //scenes/scenes.cat
+    echo "//scenes/scenes.cat"
+    protect //scenes/scenes.cat +rd
+    ceol <//scenes/scenes.cat >t.cr
+    if exists t.cr
+      delete //scenes/scenes.cat quiet
+      rename t.cr //scenes/scenes.cat
+    endif
+
+    if exists icons/sceneinf.cat
+      echo "//scenes/scenes.cat.info"
+      if exists //scenes/scenes.cat.info
+        protect //scenes/scenes.cat.info +rd
+      endif
+      copy icons/sceneinf.cat //scenes/scenes.cat.info
+    else
+      echo "missing file: icons/sceneinf.cat"
+    endif
+
+  else
+    echo "missing file: //scenes/scenes.cat"
+  endif
+
+  if exists //scenes/level1
+    echo "//scenes/level1.info"
+    if exists icons/scnl1inf.dir
+      if exists //scenes/level1.info
+        protect //scenes/level1.info +rd
+      endif
+      copy icons/scnl1inf.dir //scenes/level1.info
+    else
+      echo "missing file: icons/scnl1inf.dir"
+    endif
+  endif
+
+  if exists //scenes/level2
+    echo "//scenes/level2.info"
+    if exists icons/scnl2inf.dir
+      if exists //scenes/level2.info
+        protect //scenes/level2.info +rd
+      endif
+      copy icons/scnl2inf.dir //scenes/level2.info
+    else
+      echo "missing file: icons/scnl2inf.dir"
+    endif
+  endif
+
+  if exists //scenes/level3
+    echo "//scenes/level3.info"
+    if exists icons/scnl3inf.dir
+      if exists //scenes/level3.info
+        protect //scenes/level3.info +rd
+      endif
+      copy icons/scnl3inf.dir //scenes/level3.info
+    else
+      echo "missing file: icons/scnl3inf.dir"
+    endif
+  endif
+
+  if exists //scenes/math
+    echo "//scenes/math.info"
+    if exists icons/scnmainf.dir
+      if exists //scenes/math.info
+        protect //scenes/math.info +rd
+      endif
+      copy icons/scnmainf.dir //scenes/math.info
+    else
+      echo "missing file: icons/scnmainf.dir"
+    endif
+  endif
+
+  if exists //scenes/level1/level1.cat
+    echo "//scenes/level1/level1.cat.info"
+    if exists icons/scnl1inf.cat
+      if exists //scenes/level1/level1.cat.info
+        protect //scenes/level1/level1.cat.info +rd
+      endif
+      copy icons/scnl1inf.cat //scenes/level1/level1.cat.info
+    else
+      echo "missing file: icons/scnl1inf.cat"
+    endif
+  endif
+
+  if exists //scenes/level2/level2.cat
+    echo "//scenes/level2/level2.cat.info"
+    if exists icons/scnl2inf.cat
+      if exists //scenes/level2/level2.cat.info
+        protect //scenes/level2/level2.cat.info +rd
+      endif
+      copy icons/scnl2inf.cat //scenes/level2/level2.cat.info
+    else
+      echo "missing file: icons/scnl2inf.cat"
+    endif
+  endif
+
+  if exists //scenes/level3/level3.cat
+    echo "//scenes/level3/level3.cat.info"
+    if exists icons/scnl3inf.cat
+      if exists //scenes/level3/level3.cat.info
+        protect //scenes/level3/level3.cat.info +rd
+      endif
+      copy icons/scnl3inf.cat //scenes/level3/level3.cat.info
+    else
+      echo "missing file: icons/scnl3inf.cat"
+    endif
+  endif
+
+  if exists //scenes/math/math.cat
+    echo "//scenes/math/math.cat.info"
+    if exists icons/scnmainf.cat
+      if exists //scenes/math/math.cat.info
+        protect //scenes/math/math.cat.info +rd
+      endif
+      copy icons/scnmainf.cat //scenes/math/math.cat.info
+    else
+      echo "missing file: icons/scnmainf.cat"
+    endif
+  endif
+
+endif
+
+
 if exists //source
 
-  echo "//source/source.cat"
   if exists //source/source.cat
+    echo "//source/source.cat"
     protect //source/source.cat +rd
     ceol <//source/source.cat >t.cr
     if exists t.cr
       delete //source/source.cat quiet
       rename t.cr //source/source.cat
     endif
+
+    if exists icons/sourcinf.cat
+      echo "//source/source.cat.info"
+      if exists //source/source.cat.info
+        protect //source/source.cat.info +rd
+      endif
+      copy icons/sourcinf.cat //source/source.cat.info
+    else
+      echo "missing file: icons/sourcinf.cat"
+    endif
+
   else
     echo "missing file: //source/source.cat"
   endif
 
-  echo "//source/sourcinf.cat"
-  if not exists //source/source.cat.info
-    if exists //source/sourcinf.cat
-      rename //source/sourcinf.cat //source/source.cat.info
-    else
-      if exists icons/sourcinf.cat
-        copy icons/sourcinf.cat //source/source.cat.info
-      endif
-    endif
-  endif
-
-  echo "//source/bezier.c"
   if exists //source/bezier.c
+    echo "//source/bezier.c"
     protect //source/bezier.c +rd
     ceol <//source/bezier.c >t.cr
     if exists t.cr
@@ -469,8 +723,8 @@ if exists //source
     echo "missing file: //source/bezier.c"
   endif
 
-  echo "//source/blob.c"
   if exists //source/blob.c
+    echo "//source/blob.c"
     protect //source/blob.c +rd
     ceol <//source/blob.c >t.cr
     if exists t.cr
@@ -481,8 +735,8 @@ if exists //source
     echo "missing file: //source/blob.c"
   endif
 
-  echo "//source/bound.c"
   if exists //source/bound.c
+    echo "//source/bound.c"
     protect //source/bound.c +rd
     ceol <//source/bound.c >t.cr
     if exists t.cr
@@ -493,8 +747,8 @@ if exists //source
     echo "missing file: //source/bound.c"
   endif
 
-  echo "//source/boxes.c"
   if exists //source/boxes.c
+    echo "//source/boxes.c"
     protect //source/boxes.c +rd
     ceol <//source/boxes.c >t.cr
     if exists t.cr
@@ -505,8 +759,8 @@ if exists //source
     echo "missing file: //source/boxes.c"
   endif
 
-  echo "//source/camera.c"
   if exists //source/camera.c
+    echo "//source/camera.c"
     protect //source/camera.c +rd
     ceol <//source/camera.c >t.cr
     if exists t.cr
@@ -517,8 +771,8 @@ if exists //source
     echo "missing file: //source/camera.c"
   endif
 
-  echo "//source/colour.c"
   if exists //source/colour.c
+    echo "//source/colour.c"
     protect //source/colour.c +rd
     ceol <//source/colour.c >t.cr
     if exists t.cr
@@ -529,8 +783,8 @@ if exists //source
     echo "missing file: //source/colour.c"
   endif
 
-  echo "//source/cones.c"
   if exists //source/cones.c
+    echo "//source/cones.c"
     protect //source/cones.c +rd
     ceol <//source/cones.c >t.cr
     if exists t.cr
@@ -541,8 +795,8 @@ if exists //source
     echo "missing file: //source/cones.c"
   endif
 
-  echo "//source/csg.c"
   if exists //source/csg.c
+    echo "//source/csg.c"
     protect //source/csg.c +rd
     ceol <//source/csg.c >t.cr
     if exists t.cr
@@ -553,8 +807,8 @@ if exists //source
     echo "missing file: //source/csg.c"
   endif
 
-  echo "//source/discs.c"
   if exists //source/discs.c
+    echo "//source/discs.c"
     protect //source/discs.c +rd
     ceol <//source/discs.c >t.cr
     if exists t.cr
@@ -565,8 +819,8 @@ if exists //source
     echo "missing file: //source/discs.c"
   endif
 
-  echo "//source/dump.c"
   if exists //source/dump.c
+    echo "//source/dump.c"
     protect //source/dump.c +rd
     ceol <//source/dump.c >t.cr
     if exists t.cr
@@ -577,8 +831,8 @@ if exists //source
     echo "missing file: //source/dump.c"
   endif
 
-  echo "//source/express.c"
   if exists //source/express.c
+    echo "//source/express.c"
     protect //source/express.c +rd
     ceol <//source/express.c >t.cr
     if exists t.cr
@@ -589,8 +843,8 @@ if exists //source
     echo "missing file: //source/express.c"
   endif
 
-  echo "//source/frame.h"
   if exists //source/frame.h
+    echo "//source/frame.h"
     protect //source/frame.h +rd
     ceol <//source/frame.h >t.cr
     if exists t.cr
@@ -601,8 +855,8 @@ if exists //source
     echo "missing file: //source/frame.h"
   endif
 
-  echo "//source/gif.c"
   if exists //source/gif.c
+    echo "//source/gif.c"
     protect //source/gif.c +rd
     ceol <//source/gif.c >t.cr
     if exists t.cr
@@ -613,8 +867,8 @@ if exists //source
     echo "missing file: //source/gif.c"
   endif
 
-  echo "//source/gifdecod.c"
   if exists //source/gifdecod.c
+    echo "//source/gifdecod.c"
     protect //source/gifdecod.c +rd
     ceol <//source/gifdecod.c >t.cr
     if exists t.cr
@@ -625,8 +879,8 @@ if exists //source
     echo "missing file: //source/gifdecod.c"
   endif
 
-  echo "//source/hfield.c"
   if exists //source/hfield.c
+    echo "//source/hfield.c"
     protect //source/hfield.c +rd
     ceol <//source/hfield.c >t.cr
     if exists t.cr
@@ -637,8 +891,8 @@ if exists //source
     echo "missing file: //source/hfield.c"
   endif
 
-  echo "//source/iff.c"
   if exists //source/iff.c
+    echo "//source/iff.c"
     protect //source/iff.c +rd
     ceol <//source/iff.c >t.cr
     if exists t.cr
@@ -649,8 +903,8 @@ if exists //source
     echo "missing file: //source/iff.c"
   endif
 
-  echo "//source/image.c"
   if exists //source/image.c
+    echo "//source/image.c"
     protect //source/image.c +rd
     ceol <//source/image.c >t.cr
     if exists t.cr
@@ -661,8 +915,8 @@ if exists //source
     echo "missing file: //source/image.c"
   endif
 
-  echo "//source/lighting.c"
   if exists //source/lighting.c
+    echo "//source/lighting.c"
     protect //source/lighting.c +rd
     ceol <//source/lighting.c >t.cr
     if exists t.cr
@@ -673,8 +927,8 @@ if exists //source
     echo "missing file: //source/lighting.c"
   endif
 
-  echo "//source/matrices.c"
   if exists //source/matrices.c
+    echo "//source/matrices.c"
     protect //source/matrices.c +rd
     ceol <//source/matrices.c >t.cr
     if exists t.cr
@@ -685,8 +939,8 @@ if exists //source
     echo "missing file: //source/matrices.c"
   endif
 
-  echo "//source/normal.c"
   if exists //source/normal.c
+    echo "//source/normal.c"
     protect //source/normal.c +rd
     ceol <//source/normal.c >t.cr
     if exists t.cr
@@ -697,8 +951,8 @@ if exists //source
     echo "missing file: //source/normal.c"
   endif
 
-  echo "//source/objects.c"
   if exists //source/objects.c
+    echo "//source/objects.c"
     protect //source/objects.c +rd
     ceol <//source/objects.c >t.cr
     if exists t.cr
@@ -709,8 +963,8 @@ if exists //source
     echo "missing file: //source/objects.c"
   endif
 
-  echo "//source/parse.c"
   if exists //source/parse.c
+    echo "//source/parse.c"
     protect //source/parse.c +rd
     ceol <//source/parse.c >t.cr
     if exists t.cr
@@ -721,8 +975,8 @@ if exists //source
     echo "missing file: //source/parse.c"
   endif
 
-  echo "//source/parse.h"
   if exists //source/parse.h
+    echo "//source/parse.h"
     protect //source/parse.h +rd
     ceol <//source/parse.h >t.cr
     if exists t.cr
@@ -733,8 +987,8 @@ if exists //source
     echo "missing file: //source/parse.h"
   endif
 
-  echo "//source/pigment.c"
   if exists //source/pigment.c
+    echo "//source/pigment.c"
     protect //source/pigment.c +rd
     ceol <//source/pigment.c >t.cr
     if exists t.cr
@@ -745,8 +999,8 @@ if exists //source
     echo "missing file: //source/pigment.c"
   endif
 
-  echo "//source/planes.c"
   if exists //source/planes.c
+    echo "//source/planes.c"
     protect //source/planes.c +rd
     ceol <//source/planes.c >t.cr
     if exists t.cr
@@ -757,8 +1011,8 @@ if exists //source
     echo "missing file: //source/planes.c"
   endif
 
-  echo "//source/point.c"
   if exists //source/point.c
+    echo "//source/point.c"
     protect //source/point.c +rd
     ceol <//source/point.c >t.cr
     if exists t.cr
@@ -769,8 +1023,8 @@ if exists //source
     echo "missing file: //source/point.c"
   endif
 
-  echo "//source/poly.c"
   if exists //source/poly.c
+    echo "//source/poly.c"
     protect //source/poly.c +rd
     ceol <//source/poly.c >t.cr
     if exists t.cr
@@ -781,8 +1035,8 @@ if exists //source
     echo "missing file: //source/poly.c"
   endif
 
-  echo "//source/povproto.h"
   if exists //source/povproto.h
+    echo "//source/povproto.h"
     protect //source/povproto.h +rd
     ceol <//source/povproto.h >t.cr
     if exists t.cr
@@ -793,8 +1047,8 @@ if exists //source
     echo "missing file: //source/povproto.h"
   endif
 
-  echo "//source/povray.c"
   if exists //source/povray.c
+    echo "//source/povray.c"
     protect //source/povray.c +rd
     ceol <//source/povray.c >t.cr
     if exists t.cr
@@ -805,8 +1059,8 @@ if exists //source
     echo "missing file: //source/povray.c"
   endif
 
-  echo "//source/quadrics.c"
   if exists //source/quadrics.c
+    echo "//source/quadrics.c"
     protect //source/quadrics.c +rd
     ceol <//source/quadrics.c >t.cr
     if exists t.cr
@@ -817,8 +1071,8 @@ if exists //source
     echo "missing file: //source/quadrics.c"
   endif
 
-  echo "//source/raw.c"
   if exists //source/raw.c
+    echo "//source/raw.c"
     protect //source/raw.c +rd
     ceol <//source/raw.c >t.cr
     if exists t.cr
@@ -829,8 +1083,8 @@ if exists //source
     echo "missing file: //source/raw.c"
   endif
 
-  echo "//source/ray.c"
   if exists //source/ray.c
+    echo "//source/ray.c"
     protect //source/ray.c +rd
     ceol <//source/ray.c >t.cr
     if exists t.cr
@@ -841,8 +1095,8 @@ if exists //source
     echo "missing file: //source/ray.c"
   endif
 
-  echo "//source/render.c"
   if exists //source/render.c
+    echo "//source/render.c"
     protect //source/render.c +rd
     ceol <//source/render.c >t.cr
     if exists t.cr
@@ -853,8 +1107,8 @@ if exists //source
     echo "missing file: //source/render.c"
   endif
 
-  echo "//source/spheres.c"
   if exists //source/spheres.c
+    echo "//source/spheres.c"
     protect //source/spheres.c +rd
     ceol <//source/spheres.c >t.cr
     if exists t.cr
@@ -865,8 +1119,8 @@ if exists //source
     echo "missing file: //source/spheres.c"
   endif
 
-  echo "//source/targa.c"
   if exists //source/targa.c
+    echo "//source/targa.c"
     protect //source/targa.c +rd
     ceol <//source/targa.c >t.cr
     if exists t.cr
@@ -877,8 +1131,8 @@ if exists //source
     echo "missing file: //source/targa.c"
   endif
 
-  echo "//source/texture.c"
   if exists //source/texture.c
+    echo "//source/texture.c"
     protect //source/texture.c +rd
     ceol <//source/texture.c >t.cr
     if exists t.cr
@@ -889,8 +1143,8 @@ if exists //source
     echo "missing file: //source/texture.c"
   endif
 
-  echo "//source/texture.h"
   if exists //source/texture.h
+    echo "//source/texture.h"
     protect //source/texture.h +rd
     ceol <//source/texture.h >t.cr
     if exists t.cr
@@ -901,8 +1155,8 @@ if exists //source
     echo "missing file: //source/texture.h"
   endif
 
-  echo "//source/tokenize.c"
   if exists //source/tokenize.c
+    echo "//source/tokenize.c"
     protect //source/tokenize.c +rd
     ceol <//source/tokenize.c >t.cr
     if exists t.cr
@@ -913,8 +1167,8 @@ if exists //source
     echo "missing file: //source/tokenize.c"
   endif
 
-  echo "//source/triangle.c"
   if exists //source/triangle.c
+    echo "//source/triangle.c"
     protect //source/triangle.c +rd
     ceol <//source/triangle.c >t.cr
     if exists t.cr
@@ -925,8 +1179,8 @@ if exists //source
     echo "missing file: //source/triangle.c"
   endif
 
-  echo "//source/txttest.c"
   if exists //source/txttest.c
+    echo "//source/txttest.c"
     protect //source/txttest.c +rd
     ceol <//source/txttest.c >t.cr
     if exists t.cr
@@ -937,8 +1191,8 @@ if exists //source
     echo "missing file: //source/txttest.c"
   endif
 
-  echo "//source/vect.c"
   if exists //source/vect.c
+    echo "//source/vect.c"
     protect //source/vect.c +rd
     ceol <//source/vect.c >t.cr
     if exists t.cr
@@ -949,8 +1203,8 @@ if exists //source
     echo "missing file: //source/vect.c"
   endif
 
-  echo "//source/vector.h"
   if exists //source/vector.h
+    echo "//source/vector.h"
     protect //source/vector.h +rd
     ceol <//source/vector.h >t.cr
     if exists t.cr
