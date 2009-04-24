@@ -282,7 +282,8 @@ int polysolve PARAMS((int order, DBL *Coeffs, DBL *roots));
 /* Prototypes for functions defined in lighting.c */
 void Add_Pigment PARAMS((COLOUR *Colour, PIGMENT *Pigment, VECTOR *IPoint));
 void Perturb_Normal PARAMS((VECTOR *Layer_Normal, TNORMAL *Tnormal, VECTOR *IPoint));
-void Diffuse PARAMS((FINISH *Finish, VECTOR *IPoint, RAY *Eye, VECTOR *Layer_Normal, COLOUR *Layer_Colour, COLOUR *Colour,DBL Attenuation));
+void Diffuse PARAMS((FINISH *Finish, VECTOR *IPoint, RAY *Eye, VECTOR *Layer_Normal, 
+ COLOUR *Layer_Colour, COLOUR *Colour,DBL Attenuation, OBJECT *Object));
 void Reflect PARAMS((DBL Reflection, VECTOR *IPoint, RAY *Ray, VECTOR *Layer_Normal, COLOUR *Colour));
 void Refract PARAMS((TEXTURE *Texture, VECTOR *IPoint, RAY *Ray, VECTOR *Layer_Normal, COLOUR *Colour));
 void Fog PARAMS((DBL Distance, COLOUR *Fog_Colour, DBL Fog_Distance, COLOUR *Colour));

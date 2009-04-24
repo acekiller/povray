@@ -34,7 +34,6 @@ the token.  */
 
 char String[MAX_STRING_INDEX];
 int String_Index;
-extern char Library_Path[];
 extern int Stop_Flag;
 static int pov_stricmp PARAMS ((char *s1,char *s2));
 

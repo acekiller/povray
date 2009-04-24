@@ -152,7 +152,7 @@ void Start_Tracing ()
 
     check_stats(y);
 
-    for (x = First_Column ; x <= Last_Column ; x++) 
+    for (x = First_Column ; x < Last_Column ; x++) 
       {
 
       Check_User_Abort(1);
@@ -208,7 +208,7 @@ register int y;
     {
     printf ("POV-Ray rendering %s to %s",Input_File_Name,Output_File_Name);
     if((First_Line != 0) || (Last_Line != Frame.Screen_Height))
-      printf(" from %4d to %4d:\n",First_Line, Last_Line);
+      printf(" from %4d to %4d:\n",First_Line+1, Last_Line);
     else
       printf (":\n");
     printf ("Res %4d X %4d. Calc line %4d of %4d",Frame.Screen_Width, Frame.Screen_Height, (y-First_Line)+1, Last_Line-First_Line);
@@ -480,8 +480,8 @@ int x, y, Width, Height;
      */
     JScale = 1.0/(DBL)(AntialiasDepth*AntialiasDepth);              /* LSK */
 
-    for (i=-JRange;i<=JRange;i+=JSteps)
-      for (j=-JRange;j<=JRange;j+=JSteps)
+    for (i= -JRange;i<=JRange;i+=JSteps)
+      for (j= -JRange;j<=JRange;j+=JSteps)
       {
       if (Options & JITTER)
         {
@@ -529,5 +529,4 @@ int x, y, Width, Height;
     }
 
   }
-
 

@@ -112,6 +112,10 @@
 #define volatile
 #endif
 
+#ifdef ALPHA
+#pragma message disable IMPLICITFUNC
+#endif
+
 #define EPSILON 1.0e-5
 
 /* Need prototypes for these standard routines */
@@ -123,10 +127,8 @@ void free PARAMS((void *));
 #define FILENAME_SEPARATOR        ""
 #define DEFAULT_OUTPUT_FORMAT     't'
 
-/* this is for VMS C on the Alpha. comment it out if your compiler complains  */
-/* strictly speaking, no compiler should complain about a pragma it does not  */
-/* recognise, but nevertheless, some compiler manufacturers have managed to ! */
-#pragma message disable IMPLICITFUNC
+#define MAIN_RETURN_TYPE          int
+#define FINISH_POVRAY             return (0) ;
 
 #ifdef XWINDOWS
 void XTraceEventHandler (void) ;

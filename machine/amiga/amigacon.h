@@ -137,3 +137,5 @@ void amiga_init_POVRAY PARAMS((void));
 
 #define TIME_ELAPSED ((unsigned long) tstop - (unsigned long) tstart);
 #define COMPILER_VER ".sas"
+
+#define WAIT_FOR_KEYPRESS  getchar()

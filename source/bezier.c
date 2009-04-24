@@ -51,27 +51,26 @@ static int intersect_subpatch PARAMS((BICUBIC_PATCH *, RAY *, VECTOR [3],
 DBL [3], DBL [3], DBL *, VECTOR *, VECTOR *, DBL *, DBL *));
 static void find_average PARAMS((int, VECTOR *, VECTOR *, DBL *));
 static int spherical_bounds_check PARAMS((RAY *, VECTOR *, DBL));
-static int intersect_bicubic_patch0 PARAMS((RAY *, BICUBIC_PATCH *, DBL *));
-static int intersect_bicubic_patch1 PARAMS((RAY *, BICUBIC_PATCH *, DBL *));
+static int intersect_bicubic_patch0 PARAMS((RAY *, BICUBIC_PATCH *, ISTACK *));
 static DBL point_plane_distance PARAMS((VECTOR *, VECTOR *, DBL *));
 static DBL determine_subpatch_flatness PARAMS((VECTOR (*)[4][4]));
 static int flat_enough PARAMS((BICUBIC_PATCH *, VECTOR (*)[4][4]));
 static void bezier_bounding_sphere PARAMS((VECTOR (*)[4][4], VECTOR *,DBL *));
-static void bezier_subpatch_intersect PARAMS((RAY *, BICUBIC_PATCH *,
+static int bezier_subpatch_intersect PARAMS((RAY *, BICUBIC_PATCH *,
 VECTOR (*)[4][4], DBL, DBL, DBL, DBL,
-int *, DBL *));
+ISTACK *));
 static void bezier_split_left_right PARAMS((VECTOR (*)[4][4],VECTOR (*)[4][4],
 VECTOR (*)[4][4]));
 static void bezier_split_up_down PARAMS((VECTOR (*)[4][4], VECTOR (*)[4][4],
 VECTOR (*)[4][4]));
-static void bezier_subdivider PARAMS((RAY *, BICUBIC_PATCH *,VECTOR (*)[4][4],
-DBL, DBL, DBL, DBL, int, int *, DBL *));
+static int bezier_subdivider PARAMS((RAY *, BICUBIC_PATCH *,VECTOR (*)[4][4],
+DBL, DBL, DBL, DBL, int, ISTACK *));
 static void bezier_tree_deleter PARAMS((BEZIER_NODE *Node));
 static BEZIER_NODE *bezier_tree_builder PARAMS((BICUBIC_PATCH *Object,
 VECTOR(*Patch)[4][4], DBL u0, DBL u1,
 DBL v0, DBL v1, int depth));
-static void bezier_tree_walker PARAMS((RAY *, BICUBIC_PATCH *, BEZIER_NODE *,
-int, int *, DBL *));
+static int bezier_tree_walker PARAMS((RAY *, BICUBIC_PATCH *, BEZIER_NODE *,
+ISTACK *));
 static BEZIER_NODE *create_new_bezier_node PARAMS((void));
 static BEZIER_VERTICES *create_bezier_vertex_block PARAMS((void));
 static BEZIER_CHILDREN *create_bezier_child_block PARAMS((void));
@@ -550,38 +549,31 @@ DBL *d;
   return temp1;
   }
 
-static void
-bezier_subpatch_intersect(ray, Shape, Patch, u0, u1, v0, v1,
-depth_count, Depths)
+static int
+bezier_subpatch_intersect(ray, Shape, Patch, u0, u1, v0, v1, Depth_Stack)
 RAY *ray;
 BICUBIC_PATCH *Shape;
 VECTOR (*Patch)[4][4];
 DBL u0, u1, v0, v1;
-int *depth_count;
-DBL *Depths;
+ISTACK *Depth_Stack;
   {
-  int tcnt = Shape->Intersection_Count;
+  int cnt = 0;
   VECTOR V[3];
   DBL u, v, Depth, uu[3], vv[3];
   VECTOR P, N;
 
-  if (tcnt + *depth_count >= MAX_BICUBIC_INTERSECTIONS) return;
   V[0] = (*Patch)[0][0];
   V[1] = (*Patch)[0][3];
-  V[2] = (*Patch)[3][0];
+  V[2] = (*Patch)[3][3];
 
   uu[0] = u0; uu[1] = u0; uu[2] = u1;
   vv[0] = v0; vv[1] = v1; vv[2] = v1;
 
   if (intersect_subpatch(Shape, ray, V, uu, vv, &Depth, &P, &N, &u, &v)) 
     {
-    Shape->IPoint[tcnt + *depth_count] = P;
-    Shape->Normal_Vector[tcnt + *depth_count] = N;
-    Depths[*depth_count] = Depth;
-    *depth_count += 1;
+    push_normal_entry(Depth, P, N, (OBJECT *)Shape, Depth_Stack);
+    cnt++;
     }
-
-  if (tcnt + *depth_count >= MAX_BICUBIC_INTERSECTIONS) return;
 
   V[1] = V[2];
   V[2] = (*Patch)[3][0];
@@ -590,11 +582,11 @@ DBL *Depths;
 
   if (intersect_subpatch(Shape, ray, V, uu, vv, &Depth, &P, &N, &u, &v)) 
     {
-    Shape->IPoint[tcnt + *depth_count] = P;
-    Shape->Normal_Vector[tcnt + *depth_count] = N;
-    Depths[*depth_count] = Depth;
-    *depth_count += 1;
+    push_normal_entry(Depth, P, N, (OBJECT *)Shape, Depth_Stack);
+    cnt++;
     }
+
+  return cnt;
   }
 
 
@@ -748,89 +740,79 @@ VECTOR (*Patch)[4][4];
     return 0;
   }
 
-static void bezier_subdivider(Ray, Object, Patch, u0, u1, v0, v1,
-recursion_depth, depth_count, Depths)
+static int bezier_subdivider(Ray, Object, Patch, u0, u1, v0, v1,
+recursion_depth, Depth_Stack)
 RAY *Ray;
 BICUBIC_PATCH *Object;
 VECTOR (*Patch)[4][4];
 DBL u0, u1, v0, v1;
-int recursion_depth, *depth_count;
-DBL *Depths;
+int recursion_depth;
+ISTACK *Depth_Stack;
   {
   VECTOR Lower_Left[4][4], Lower_Right[4][4];
   VECTOR Upper_Left[4][4], Upper_Right[4][4];
   VECTOR center;
   DBL ut, vt, radius;
-  int tcnt = Object->Intersection_Count;
-
-  /* Don't waste time if there are already too many intersections */
-  if (tcnt >= MAX_BICUBIC_INTERSECTIONS) return;
+  int cnt = 0;
 
   /* Make sure the ray passes through a sphere bounding the control points of
       the patch */
   bezier_bounding_sphere(Patch, &center, &radius);
   if (!spherical_bounds_check(Ray, &center, radius))
-    return;
+    return 0;
 
   /* If the patch is close to being flat, then just perform a ray-plane
       intersection test. */
   if (flat_enough(Object, Patch))
-    bezier_subpatch_intersect(Ray, Object, Patch, u0, u1, v0, v1,
-      depth_count, Depths);
+    return bezier_subpatch_intersect(Ray, Object, Patch, u0, u1, v0, v1,
+				     Depth_Stack);
 
   if (recursion_depth >= Object->U_Steps)
     if (recursion_depth >= Object->V_Steps)
-      bezier_subpatch_intersect(Ray, Object, Patch, u0, u1, v0, v1,
-        depth_count, Depths);
+       return bezier_subpatch_intersect(Ray, Object, Patch, u0, u1, v0, v1,
+					Depth_Stack);
     else 
       {
       bezier_split_up_down(Patch, (VECTOR (*)[4][4])Lower_Left,
         (VECTOR (*)[4][4])Upper_Left);
       vt = (v1 - v0) / 2.0;
-      bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Left,
-        u0, u1, v0, vt,
-        recursion_depth+1, depth_count, Depths);
-      bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Upper_Left,
-        u0, u1, vt, v1,
-        recursion_depth+1, depth_count, Depths);
+      cnt += bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Left,
+			       u0, u1, v0, vt, recursion_depth+1, Depth_Stack);
+      cnt += bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Upper_Left,
+			       u0, u1, vt, v1, recursion_depth+1, Depth_Stack);
       }
   else if (recursion_depth >= Object->V_Steps) 
     {
     bezier_split_left_right(Patch, (VECTOR (*)[4][4])Lower_Left,
       (VECTOR (*)[4][4])Lower_Right);
     ut = (u1 - u0) / 2.0;
-    bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Left,
-      u0, ut, v0, v1,
-      recursion_depth+1, depth_count, Depths);
-    bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Right,
-      ut, u1, v0, v1,
-      recursion_depth+1, depth_count, Depths);
+    cnt += bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Left,
+			     u0, ut, v0, v1, recursion_depth+1, Depth_Stack);
+    cnt += bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Right,
+			     ut, u1, v0, v1, recursion_depth+1, Depth_Stack);
     }
   else 
     {
     ut = (u1 - u0) / 2.0;
     vt = (v1 - v0) / 2.0;
     bezier_split_left_right(Patch, (VECTOR (*)[4][4])Lower_Left,
-      (VECTOR (*)[4][4])Lower_Right);
+			    (VECTOR (*)[4][4])Lower_Right);
     bezier_split_up_down((VECTOR (*)[4][4])Lower_Left,
-      (VECTOR (*)[4][4])Lower_Left,
-      (VECTOR (*)[4][4])Upper_Left);
+			 (VECTOR (*)[4][4])Lower_Left,
+			 (VECTOR (*)[4][4])Upper_Left) ;
     bezier_split_up_down((VECTOR (*)[4][4])Lower_Right,
-      (VECTOR (*)[4][4])Lower_Right,
-      (VECTOR (*)[4][4])Upper_Right);
-    bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Left,
-      u0, ut, v0, vt,
-      recursion_depth+1, depth_count, Depths);
-    bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Upper_Left,
-      u0, ut, vt, v1,
-      recursion_depth+1, depth_count, Depths);
-    bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Right,
-      ut, u1, v0, vt,
-      recursion_depth+1, depth_count, Depths);
-    bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Upper_Right,
-      ut, u1, vt, v1,
-      recursion_depth+1, depth_count, Depths);
+			 (VECTOR (*)[4][4])Lower_Right,
+			 (VECTOR (*)[4][4])Upper_Right);
+    cnt += bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Left,
+			     u0, ut, v0, vt, recursion_depth+1, Depth_Stack);
+    cnt += bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Upper_Left,
+			     u0, ut, vt, v1, recursion_depth+1, Depth_Stack);
+    cnt += bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Lower_Right,
+			     ut, u1, v0, vt, recursion_depth+1, Depth_Stack);
+    cnt += bezier_subdivider(Ray, Object, (VECTOR (*)[4][4])Upper_Right,
+			     ut, u1, vt, v1, recursion_depth+1, Depth_Stack);
     }
+  return cnt;
   }
 
 static void bezier_tree_deleter(Node)
@@ -856,26 +838,22 @@ BEZIER_NODE *Node;
   free((void *)Node);
   }
 
-static void bezier_tree_walker(Ray, Shape, Node, depth, depth_count, Depths)
+static int bezier_tree_walker(Ray, Shape, Node, Depth_Stack)
 RAY *Ray;
 BICUBIC_PATCH *Shape;
 BEZIER_NODE *Node;
-int depth, *depth_count;
-DBL *Depths;
+ISTACK *Depth_Stack;
   {
   BEZIER_CHILDREN *Children;
   BEZIER_VERTICES *Vertices;
   VECTOR N, P, V[3];
   DBL Depth, u, v, uu[3], vv[3];
-  int i, tcnt = Shape->Intersection_Count;
-
-  /* Don't waste time if there are already too many intersections */
-  if (tcnt >= MAX_BICUBIC_INTERSECTIONS) return;
+  int i, cnt = 0;
 
   /* Make sure the ray passes through a sphere bounding the control points of
       the patch */
   if (!spherical_bounds_check(Ray, &(Node->Center), Node->Radius_Squared))
-    return;
+    return 0;
 
   /* If this is an interior node then continue the descent, else
       do a check against the vertices. */
@@ -883,8 +861,7 @@ DBL *Depths;
     {
     Children = (BEZIER_CHILDREN *)Node->Data_Ptr;
     for (i=0;i<Node->Count;i++)
-      bezier_tree_walker(Ray, Shape, Children->Children[i],
-        depth+1, depth_count, Depths);
+      cnt += bezier_tree_walker(Ray, Shape, Children->Children[i], Depth_Stack);
     }
   else if (Node->Node_Type == BEZIER_LEAF_NODE) 
     {
@@ -901,56 +878,38 @@ DBL *Depths;
     vv[2] = Vertices->uvbnds[3];
 
     /* Triangulate this subpatch, then check for intersections in
-         the triangles. */
-    if (intersect_subpatch(Shape, Ray, V, uu, vv, &Depth, &P, &N, &u, &v)) 
-      {
-      Shape->IPoint[tcnt + *depth_count] = P;
-      Shape->Normal_Vector[tcnt + *depth_count] = N;
-      Depths[*depth_count] = Depth;
-      *depth_count += 1;
+       the triangles. */
+    if (intersect_subpatch(Shape, Ray, V, uu, vv, &Depth, &P, &N, &u, &v)) {
+      push_normal_entry(Depth, P, N, (OBJECT *)Shape, Depth_Stack);
+      cnt++;
       }
-    if (*depth_count + tcnt >= MAX_BICUBIC_INTERSECTIONS) return;
 
     V[1] = V[2];
     V[2] = Vertices->Vertices[3];
     uu[1] = uu[2]; uu[2] = Vertices->uvbnds[1];
     vv[1] = vv[2]; vv[2] = Vertices->uvbnds[2];
 
-    if (intersect_subpatch(Shape, Ray, V, uu, vv, &Depth, &P, &N, &u, &v)) 
-      {
-      Shape->IPoint[tcnt + *depth_count] = P;
-      Shape->Normal_Vector[tcnt + *depth_count] = N;
-      Depths[*depth_count] = Depth;
-      *depth_count += 1;
+    if (intersect_subpatch(Shape, Ray, V, uu, vv, &Depth, &P, &N, &u, &v)) {
+      push_normal_entry(Depth, P, N, (OBJECT *)Shape, Depth_Stack);
+      cnt++;
       }
     }
   else 
     {
-    printf("Bad Node type at depth %d\n", depth);
+    /* This should be a fatal error */
+    printf("Bad Node type\n");
     }
+  return cnt;
   }
 
-static int intersect_bicubic_patch0(Ray, Shape, Depths)
+static int intersect_bicubic_patch0(Ray, Shape, Depth_Stack)
 RAY *Ray;
 BICUBIC_PATCH *Shape;
-DBL *Depths;
+ISTACK *Depth_Stack;
   {
-  int cnt = 0;
   VECTOR (*Patch)[4][4] = (VECTOR (*)[4][4]) Shape->Control_Points;
-
-  bezier_subdivider(Ray, Shape, Patch, 0.0, 1.0, 0.0, 1.0,
-    0, &cnt, Depths);
-  return cnt;
-  }
-
-static int intersect_bicubic_patch1(Ray, Shape, Depths)
-RAY *Ray;
-BICUBIC_PATCH *Shape;
-DBL *Depths;
-  {
-  int cnt = 0;
-  bezier_tree_walker(Ray, Shape, Shape->Node_Tree, 0, &cnt, Depths);
-  return cnt;
+  return bezier_subdivider(Ray, Shape, Patch, 0.0, 1.0, 0.0, 1.0, 0,
+			   Depth_Stack);
   }
 
 int All_Bicubic_Patch_Intersections(Object, Ray, Depth_Stack)
@@ -958,43 +917,30 @@ OBJECT *Object;
 RAY *Ray;
 ISTACK *Depth_Stack;
   {
-  DBL Depths[MAX_BICUBIC_INTERSECTIONS];
-  VECTOR IPoint;
-  int cnt, tcnt, i, Found;
+  int Found, cnt = 0;
 
   Found = FALSE;
   Ray_Bicubic_Tests++;
 
-  if (Ray == CM_Ray)
-    ((BICUBIC_PATCH *)Object)->Intersection_Count = 0;
-
-  tcnt = ((BICUBIC_PATCH *)Object)->Intersection_Count;
-
   switch (((BICUBIC_PATCH *)Object)->Patch_Type)
   {
   case 0: 
-    cnt = intersect_bicubic_patch0(Ray, ((BICUBIC_PATCH *)Object), &Depths[0]);
+    cnt = intersect_bicubic_patch0(Ray, ((BICUBIC_PATCH *)Object), Depth_Stack);
     break;
   case 1: 
-    cnt = intersect_bicubic_patch1(Ray, ((BICUBIC_PATCH *)Object), &Depths[0]);
+    cnt = bezier_tree_walker(Ray, (BICUBIC_PATCH *)Object,
+			     ((BICUBIC_PATCH *)Object)->Node_Tree, Depth_Stack);
     break;
-  default: 
+  default:
     Error("Bad patch type\n");
   }
 
-  if (cnt > 0) Ray_Bicubic_Tests_Succeeded++;
-  for (i=0;i<cnt;i++) 
-    {
-    if (!Shadow_Test_Flag)
-      ((BICUBIC_PATCH *)Object)->Intersection_Count++;
-    IPoint = ((BICUBIC_PATCH *)Object)->IPoint[tcnt + i];
-    if (Point_In_Clip(&IPoint,Object->Clip))
-      {
-      push_entry(Depths[i], IPoint, Object, Depth_Stack);
-      Found = TRUE;
-      }
-    }
-  return (Found);
+  if (cnt > 0) {
+     Ray_Bicubic_Tests_Succeeded++;
+     Found = TRUE;
+     }
+
+  return Found;
   }
 
 /* A patch is not a solid, so an inside test doesn't make sense. */
@@ -1009,26 +955,7 @@ void Bicubic_Patch_Normal (Result, Object, IPoint)
 OBJECT *Object;
 VECTOR *Result, *IPoint;
   {
-  BICUBIC_PATCH *Patch = (BICUBIC_PATCH *)Object;
-  int i;
-
-  /* If all is going well, the normal was computed at the time the intersection
-      was computed.  Look on the list of associated intersection points and normals */
-  for (i=0;i<Patch->Intersection_Count;i++)
-    if (IPoint->x == Patch->IPoint[i].x &&
-      IPoint->y == Patch->IPoint[i].y &&
-      IPoint->z == Patch->IPoint[i].z) 
-      {
-      Result->x = Patch->Normal_Vector[i].x;
-      Result->y = Patch->Normal_Vector[i].y;
-      Result->z = Patch->Normal_Vector[i].z;
-      return;
-      }
-  if (Options & DEBUGGING) 
-    {
-    printf("Bicubic patch normal for unknown intersection point\n");
-    fflush(stdout);
-    }
+  /* Should never get here! */
   Result->x = 1.0;
   Result->y = 0.0;
   Result->z = 0.0;
@@ -1084,10 +1011,9 @@ BICUBIC_PATCH *Create_Bicubic_Patch()
 
   INIT_OBJECT_FIELDS(New,BICUBIC_PATCH_OBJECT,&Bicubic_Patch_Methods)
 
-    New->Patch_Type = -1;
+  New->Patch_Type = -1;
   New->U_Steps = 0;
   New->V_Steps = 0;
-  New->Intersection_Count = 0;
   New->Flatness_Value = 0.0;
   New->Node_Tree = NULL;
 
@@ -1117,7 +1043,6 @@ OBJECT *Object;
     = ((BICUBIC_PATCH *)Object)->Control_Points[i][j];
 
   New->Flatness_Value     = ((BICUBIC_PATCH *)Object)->Flatness_Value;
-  New->Intersection_Count = ((BICUBIC_PATCH *)Object)->Intersection_Count;
 
   Precompute_Patch_Values(New);
 

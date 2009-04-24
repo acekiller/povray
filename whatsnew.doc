@@ -1,3 +1,26 @@
+    What's New in POV-Ray 2.1
+    --------------------------
+
+    This bug-fix release adds no new features but fixes the following
+    bugs from version 2.0.
+
+  - Fixed problem in OBJECTS.C that caused problem on some Unix compilers
+  - Fixed problem with declared material_maps or declared objects with
+    material_maps
+  - Fixed IBM.C problems for Zortech compiler
+  - Created temporary fix for problems with normals, smooth triangles
+    beziers and height fields which created unsightly black spots
+  - Allows scale <-1,1,1> to work with boxes
+  - Cleared up inconsistency with -sr, -sc, -er, -ec numbering.  Upper
+    left pixel is 1,1.  Fixed -ec bug.
+  - Fixed three bezier patch bugs which caused lock-ups, missing reflection,
+    and triangle dropouts.
+  - Eliminated some restrictions on multiple clipped_by and bounded_by
+  - Fixed compiler problems on VMS/VAX
+  - Fixed scaling bug on degenerate triangles
+  - Fixed problem with water_level when using +MV1.0
+  - Fixed problem with color maped TGA height fields
+
     What's New in POV-Ray 2.0
     -------------------------
     The following is not intended to be an all-inclusive list of every
@@ -66,7 +89,7 @@
     Gives VESA support in most 8/15/24 bit modes.
     Should support: 1024 x 768 x 256 color palette
                      800 x 600 x  15 bit high color
-                     640x4 480 x  24 bit true color
+                     640 x 480 x  24 bit true color
   - Diamond 24X 15 and 24 bit mode support added.
   - Preview reduced to fit selected video screen size if necessary.
 

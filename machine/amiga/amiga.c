@@ -19,6 +19,11 @@
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
+* Modifications by Dave Park.
+*
+* Note: The AGA HAM8 code does not work.  Consider what is here to be HAM8
+* 'hooks'.
+* 
 *****************************************************************************/
 
 
@@ -44,17 +49,18 @@ void Amiga_close(void);
 void open_requestor(void);
 void close_requestor(void);
 void write_byte(int x, int y, unsigned char n);
-void write_hame_pixel(int x, int y, char Red, char Green, char Blue);
 
 void write_cookie(unsigned char *brand, int line);
 void make_hame_palette(struct ViewPort *vp);
 void SetRGB8 (short reg, unsigned char rr, unsigned char gg,
               unsigned char bb, short base);
 
-int  OpenHam8 (void);
-void	write_ham8_pixel(int x, int y, char r, char g, char b);
-int  OpenFirecracker (void);
-void	write_firecracker_pixel(UWORD x, UWORD y, UBYTE r, UBYTE g, UBYTE b);
+int open_ham(int input_width, int inpupt_height);
+void  write_ham_pixel(UWORD x, UWORD y, UBYTE r, UBYTE g, UBYTE b);
+int open_hame(void);
+void  write_hame_pixel(int x, int y, char Red, char Green, char Blue);
+int open_firecracker(void);
+void  write_firecracker_pixel(UWORD x, UWORD y, UBYTE r, UBYTE g, UBYTE b);
 
 extern unsigned int Options;
 extern char DisplayFormat;
@@ -86,10 +92,10 @@ struct Rectangle Rect1 =
    0, 0, 0, 0
    };
 
-struct TagItem Tag1 =
+struct TagItem Ham_Screen_Tags[] =
    {
-   SA_DClip,
-   &Rect1
+       { SA_DClip, &Rect1 },
+       { TAG_END, 0 }
    };
 
 struct ExtNewScreen Ham_Screen =
@@ -104,7 +110,7 @@ struct ExtNewScreen Ham_Screen =
    (UBYTE *) "POV-Ray",
    NULL,
    NULL,
-   &Tag1
+   Ham_Screen_Tags
    };
 
 
@@ -224,8 +230,7 @@ void Amiga_open()
    if (GfxBase == NULL)
      exit(FALSE);
 
-   IsAGA = GfxBase->ChipRevBits0;
-//   printf ("IsAGA:%x\n", IsAGA);
+   IsAGA = (GfxBase->ChipRevBits0) ? TRUE : FALSE;
 
    Requestor_Running = FALSE;
    }
@@ -273,12 +278,291 @@ void display_finished ()
       }
    }
 
-int	OpenHam8()
+int open_ham (input_width, input_height)
+int input_width;
+int input_height;
 {
+	int screen_width, screen_height;
+	int viewmodes;
+
+
+	viewmodes = HAM;
+
+	if (input_width < 1 || input_height < 1)
+	{
+		display_close ();
+		printf ("? Size must be no smaller than 1 x 1\n");
+		return TRUE;
+	}
+
+	if (input_width > 736 || input_height > 482)
+	{
+		display_close ();
+		printf ("? Size must be no larger than 736 x 482\n");
+		return TRUE;
+	}
+
+	screen_width = 320;
+	if (input_width > 368 && input_width <= 736)
+	{
+		screen_width = 640;
+		viewmodes |= HIRES;
+	}
+	else if (input_width > 736)	/* Add higher resolutions */
+	{
+		screen_width = 640;
+		viewmodes |= HIRES;
+	}
+
+	width = (input_width>screen_width) ? input_width : screen_width;
+
+	leftedge = 0;
+	rightedge = width;
+	if (input_width < screen_width)
+	{
+		leftedge  = (screen_width - input_width) / 2;
+		rightedge = leftedge + input_width;
+	}
+
+	screen_height = 200;
+	if (input_height > 241 && input_height <= 482)
+	{
+		screen_height = 400;
+		viewmodes |= LACE;
+	}
+	else if (input_height > 482)	/* Add higher resolutions */
+	{
+		screen_height = 400;
+		viewmodes |= LACE;
+	}
+
+	height = (input_height>screen_height) ? input_height : screen_height;
+
+	topedge = 0;
+	bottomedge = height;
+	if (input_height < screen_height)
+	{
+		topedge    = (screen_height - input_height) / 2;
+		bottomedge = topedge + input_height;
+	}
+
+	depth = (IsAGA) ? 8 : 6;
+
+	Rect1.MaxX = width-1;
+	Rect1.MaxY = height-1;
+	Ham_Screen.Width = width;
+	Ham_Screen.Height = height;
+	Ham_Screen.Depth = depth;
+	Ham_Screen.ViewModes |= viewmodes;
+
+	if ((s = (struct Screen *) OpenScreen (&Ham_Screen)) == NULL)
+	{
+	   display_close ();
+	   printf ("? Can't open screen.\n");
+	   return TRUE;
+	}
+
+	/* What did we actually get? */
+	width = s->Width;
+	height = s->Height;
+	depth = s->BitMap.Depth;
+	bytesperrow = s->BitMap.BytesPerRow;
+
+	ShowTitle (s, FALSE);
+
+	LoadRGB4 (&(s->ViewPort), ColorTbl, 16L);
+	SetAPen (&(s->RastPort), 0L);
+	RectFill (&(s -> RastPort), 0L, 0L, width-1, height-1);
+
 	return FALSE;
 }
 
-int	OpenFirecracker() {
+#define absdif(x,y) ((x > y) ? (x - y) : (y - x))
+#define max3(x,y,z) ((x>y)?((x>z)?1:3):((y>z)?2:3))
+
+#define HAM6_RED	0x20
+#define HAM6_GREEN	0x30
+#define HAM6_BLUE	0x10
+#define HAM8_MASK	0xFFFC
+#define HAM8_RED	0x02
+#define HAM8_GREEN	0x03
+#define HAM8_BLUE	0x01
+
+void write_ham_pixel (x, y, Red, Green, Blue)
+UWORD x, y;
+UBYTE Red, Green, Blue;
+{
+   register short colour, index, mask, i, colour_mask;
+   register char *addr;
+   UBYTE delta_red, delta_green, delta_blue;
+
+
+   y += topedge;
+   x += leftedge;
+
+   if (y < last_y)
+      return;
+
+   if (last_y != y) {
+      last_y = y;
+      last_red = last_green = last_blue = 0;
+      }
+   else
+      if (x <= last_x)
+         return;
+
+   last_x = x;
+
+   if (IsAGA) {
+      Red   = Red   & HAM8_MASK;
+      Green = Green & HAM8_MASK;
+      Blue  = Blue  & HAM8_MASK;
+   }
+   else {
+      Red   = (Red   >> 4) & 0x0F;
+      Green = (Green >> 4) & 0x0F;
+      Blue  = (Blue  >> 4) & 0x0F;
+   }
+
+   delta_red   = absdif (Red, last_red);
+   delta_green = absdif (Green, last_green);
+   delta_blue  = absdif (Blue, last_blue);
+
+   if (IsAGA) {
+      switch (max3(delta_red, delta_green, delta_blue)) {
+      case 1:
+         last_red = Red;
+         colour = Red | HAM8_RED;
+         break;
+      case 2:
+         last_green = Green;
+         colour = Green | HAM8_GREEN;
+         break;
+      case 3:
+         last_blue = Blue;
+         colour = Blue | HAM8_BLUE;
+         break;
+      }
+   }
+   else {
+      switch (max3(delta_red, delta_green, delta_blue)) {
+      case 1:
+         last_red = Red;
+         colour = HAM6_RED + Red;
+         break;
+      case 2:
+         last_green = Green;
+         colour = HAM6_GREEN + Green;
+         break;
+      case 3:
+         last_blue = Blue;
+         colour = HAM6_BLUE + Blue;
+         break;
+      }
+   }
+
+   index = (bytesperrow * y) + (x >> 3);
+   mask = 0x80 >> (x & 7);
+
+   colour_mask = 1;
+
+   for (i = 0 ; i < 6 ; i++) {
+      addr = &s->BitMap.Planes[i][index];
+      *addr &= ~mask;
+      *addr |= (colour&colour_mask) ? mask : 0x00;
+      colour_mask <<= 1;
+      }
+   }
+
+int open_hame ()
+{
+	int screen_width, screen_height;
+
+
+	screen_width = GfxBase->NormalDisplayColumns>>1;
+	Ham_E_Screen.Width = screen_width<<1;
+	screen_height = GfxBase->NormalDisplayRows<<1;
+	Ham_E_Screen.Height = screen_height+2;
+
+	if ((s = (struct Screen *) OpenScreen (&Ham_E_Screen)) == NULL)
+	{
+		display_close ();
+		return (TRUE);
+	}
+
+	ShowTitle (s, FALSE);
+
+	lacer = 1;
+
+	fp0 = s->BitMap.Planes[0];
+	fp1 = s->BitMap.Planes[1];
+	fp2 = s->BitMap.Planes[2];
+	fp3 = s->BitMap.Planes[3];
+
+	make_hame_palette(&s->ViewPort);
+
+	SetAPen (&(s->RastPort), 0L);
+	RectFill (&(s -> RastPort), 0L, 0L, Ham_E_Screen.Width-1, 1);
+	SetAPen (&(s->RastPort), 1L);
+	RectFill (&(s -> RastPort), 0L, 2L, Ham_E_Screen.Width-1,
+	                                    Ham_E_Screen.Height-1);
+	write_cookie(ham_cookie, 0);
+	SetRGB8 (0x11, 0x80, 0x80, 0x80, 0);
+
+	return FALSE;
+}
+
+void write_hame_pixel (x, y, Red, Green, Blue)
+   int x, y;
+   char Red, Green, Blue;
+   {
+   register unsigned char colour;
+   short delta_red, delta_green, delta_blue;
+
+   if (y < last_y)
+      return;
+
+   if ((x >= width) || (y >= height))
+      return;
+
+   if (last_y != y) {
+      last_y = y;
+      last_red = last_green = last_blue = 0;
+      }
+   else
+      if (x <= last_x)
+         return;
+
+   last_x = x;
+
+   Red = (Red >> 2) & 0x3F;
+   Green = (Green >> 2) & 0x3F;
+   Blue = (Blue >> 2) & 0x3F;
+
+   delta_red = absdif (Red, last_red);
+   delta_green = absdif (Green, last_green);
+   delta_blue = absdif (Blue, last_blue);
+
+   switch (max3(delta_red, delta_green, delta_blue)) {
+      case 1:
+         last_red = Red;
+         colour = 0x80 + Red;
+         break;
+      case 2:
+         last_green = Green;
+         colour = 0xc0 + Green;
+         break;
+      case 3:
+         last_blue = Blue;
+         colour = 0x40 + Blue;
+         break;
+      }
+
+   write_byte (x, y+2, colour);
+   }
+
+int open_firecracker()
+{
 	struct ConfigDev	*dev;
 	ULONG			i;
 
@@ -330,7 +614,7 @@ int	OpenFirecracker() {
 }
 
 
-void	write_firecracker_pixel(x,y, r,g,b)
+void write_firecracker_pixel(x,y, r,g,b)
 UWORD	x,y;
 UBYTE	r,g,b;
 {
@@ -615,145 +899,37 @@ void SetRGB8(reg,rr,gg,bb,base)
   }
 
 void display_init (input_width, input_height)
-   int input_width, input_height;
-   {
-   int screen_width, screen_height;
+int input_width, input_height;
+{
+	Amiga_open();
+	open_requestor();
 
+	Delay (10);
 
-   Amiga_open();
-   open_requestor();
-
-   Delay (10);
-
-   if (DisplayFormat == 'E') {
-      screen_width = GfxBase->NormalDisplayColumns>>1;
-      Ham_E_Screen.Width = screen_width<<1;
-      screen_height = GfxBase->NormalDisplayRows<<1;
-      Ham_E_Screen.Height = screen_height+2;
-
-      if ((s = (struct Screen *) OpenScreen (&Ham_E_Screen)) == NULL)
-      {
-         display_close ();
-         exit (FALSE);
-      }
-
-      ShowTitle (s, FALSE);
-      lacer = 1;
-      fp0 = s->BitMap.Planes[0];
-      fp1 = s->BitMap.Planes[1];
-      fp2 = s->BitMap.Planes[2];
-      fp3 = s->BitMap.Planes[3];
-      make_hame_palette(&s->ViewPort);
-      SetAPen (&(s->RastPort), 0L);
-      RectFill (&(s -> RastPort), 0L, 0L, Ham_E_Screen.Width-1, 1);
-      SetAPen (&(s->RastPort), 1L);
-      RectFill (&(s -> RastPort), 0L, 2L, Ham_E_Screen.Width-1,
-                                          Ham_E_Screen.Height-1);
-      write_cookie(ham_cookie, 0);
-      SetRGB8 (0x11, 0x80, 0x80, 0x80, 0);
-      }
-   else if (DisplayFormat == 'F') {
-	if (OpenFirecracker() == TRUE)
-        {
-           display_close ();
-           exit (999);
-        }
-      }
-   else if (DisplayFormat == '8') {
-	if (OpenHam8() == TRUE)
-        {
-           display_close ();
-           exit (FALSE);
-        }
-      }
-   else {
-	int viewmodes;
-
-
-	viewmodes = 0;
-
-	if (input_width < 1 || input_height < 1)
-	{
+	if (DisplayFormat == 'E') {
+	    if (open_hame () == TRUE) {
 		display_close ();
-		printf ("? Size must be no smaller than 1 x 1\n");
 		exit (FALSE);
+	    }
 	}
-
-	if (input_width > 736 || input_height > 482)
-	{
+	else if (DisplayFormat == 'F') {
+	    if (open_firecracker () == TRUE) {
 		display_close ();
-		printf ("? Size must be no larger than 736 x 482\n");
+		exit (999);
+	    }
+	}
+	else {
+	    if (DisplayFormat != '2')	/*  If not +d2, then force */
+		IsAGA = FALSE;		/*    AGA off              */
+
+	    IsAGA = FALSE;		/*  For now, AGA is off.   */
+
+	    if (open_ham (input_width, input_height) == TRUE) {
+		display_close ();
 		exit (FALSE);
+	    }
 	}
-
-	screen_width = 320;
-	if (input_width > 368 && input_width <= 736)
-	{
-		screen_width = 640;
-		viewmodes |= HIRES;
-	}
-	else if (input_width > 736)	/* Add higher resolutions */
-	{
-		screen_width = 640;
-		viewmodes |= HIRES;
-	}
-
-	width = (input_width>screen_width) ? input_width : screen_width;
-
-	leftedge = 0;
-	rightedge = width;
-	if (input_width < screen_width)
-	{
-	 	leftedge  = (screen_width - input_width) / 2;
-		rightedge = leftedge + input_width;
-	}
-
-	screen_height = 200;
-	if (input_height > 241 && input_height <= 482)
-	{
-		screen_height = 400;
-		viewmodes |= INTERLACE;
-	}
-	else if (input_height > 482)	/* Add higher resolutions */
-	{
-		screen_height = 400;
-		viewmodes |= INTERLACE;
-	}
-
-	height = (input_height>screen_height) ? input_height : screen_height;
-
-	topedge = 0;
-	bottomedge = height;
-	if (input_height < screen_height)
-	{
-		topedge    = (screen_height - input_height) / 2;
-		bottomedge = topedge + input_height;
-	}
-
-	Ham_Screen.Width = Rect1.MaxX = width;
-	Ham_Screen.Height = Rect1.MaxY = height;
-	Ham_Screen.ViewModes |= viewmodes;
-
-        if ((s = (struct Screen *) OpenScreen (&Ham_Screen)) == NULL)
-        {
-           display_close ();
-           printf ("? Can't open screen.\n");
-           exit (FALSE);
-        }
-
-	/* What did we actually get? */
-	width = s->Width;
-	height = s->Height;
-	depth = s->BitMap.Depth;
-	bytesperrow = s->BitMap.BytesPerRow;
-
-        ShowTitle (s, FALSE);
-
-        LoadRGB4 (&(s->ViewPort), ColorTbl, 16L);
-        SetAPen (&(s->RastPort), 7L);
-        RectFill (&(s -> RastPort), 0L, 0L, width-1, height-1);
-      }
-   }
+}
 
 void display_close ()
    {
@@ -767,139 +943,24 @@ void display_close ()
 
    Requestor_Window = NULL;
 
-   if (DisplayFormat != 'F')
-      if (s != NULL)
-      {
-         CloseScreen (s);
-         s = NULL;
+   if (s != NULL) {
+      CloseScreen (s);
+      s = NULL;
       }
-   }
-
-#define absdif(x,y) ((x > y) ? (x - y) : (y - x))
-#define max3(x,y,z) ((x>y)?((x>z)?1:3):((y>z)?2:3))
-
-void write_ham8_pixel (x, y, Red, Green, Blue)
-   int x, y;
-   char Red, Green, Blue;
-   {
-
-   }
-
-void write_hame_pixel (x, y, Red, Green, Blue)
-   int x, y;
-   char Red, Green, Blue;
-   {
-   register unsigned char colour;
-   short delta_red, delta_green, delta_blue;
-
-   if (y < last_y)
-      return;
-
-   if ((x >= width) || (y >= height))
-      return;
-
-   if (last_y != y) {
-      last_y = y;
-      last_red = last_green = last_blue = 0;
-      }
-   else
-      if (x <= last_x)
-         return;
-
-   last_x = x;
-
-   Red = (Red >> 2) & 0x3F;
-   Green = (Green >> 2) & 0x3F;
-   Blue = (Blue >> 2) & 0x3F;
-
-   delta_red = absdif (Red, last_red);
-   delta_green = absdif (Green, last_green);
-   delta_blue = absdif (Blue, last_blue);
-
-   switch (max3(delta_red, delta_green, delta_blue)) {
-      case 1:
-         last_red = Red;
-         colour = 0x80 + Red;
-         break;
-      case 2:
-         last_green = Green;
-         colour = 0xc0 + Green;
-         break;
-      case 3:
-         last_blue = Blue;
-         colour = 0x40 + Blue;
-         break;
-      }
-
-   write_byte (x, y+2, colour);
    }
 
 void display_plot (x, y, Red, Green, Blue)
    int x, y;
    char Red, Green, Blue;
    {
-   register short colour, index, mask, i, colour_mask;
-   register char *addr;
-   short delta_red, delta_green, delta_blue;
-
    if (DisplayFormat == 'E')
-   	return (write_hame_pixel(x, y, Red, Green, Blue));
+	return (write_hame_pixel (x, y, Red, Green, Blue));
    else if (DisplayFormat == 'F')
 	return (write_firecracker_pixel((UWORD) x, (UWORD) y,
 	    (UBYTE) Red, (UBYTE) Green, (UBYTE) Blue));
-   else if (DisplayFormat == '8')
-	return (write_ham8_pixel(x, y, Red, Green, Blue));
-
-   y += topedge;
-   x += leftedge;
-
-   if (y < last_y)
-      return;
-
-   if (last_y != y) {
-      last_y = y;
-      last_red = last_green = last_blue = 0;
-      }
    else
-      if (x <= last_x)
-         return;
-
-   last_x = x;
-
-   Red = (Red >> 4) & 0x0F;
-   Green = (Green >> 4) & 0x0F;
-   Blue = (Blue >> 4) & 0x0F;
-
-   delta_red = absdif (Red, last_red);
-   delta_green = absdif (Green, last_green);
-   delta_blue = absdif (Blue, last_blue);
-
-   switch (max3(delta_red, delta_green, delta_blue)) {
-      case 1:
-         last_red = Red;
-         colour = 0x20 + Red;
-         break;
-      case 2:
-         last_green = Green;
-         colour = 0x30 + Green;
-         break;
-      case 3:
-         last_blue = Blue;
-         colour = 0x10 + Blue;
-         break;
-      }
-
-   index = (bytesperrow * y) + (x >> 3);
-   mask = 0x80 >> (x & 7);
-
-   colour_mask = 1;
-
-   for (i = 0 ; i < 6 ; i++) {
-      addr = &s->BitMap.Planes[i][index];
-      *addr &= ~mask;
-      *addr |= (colour&colour_mask) ? mask : 0x00;
-      colour_mask <<= 1;
-      }
+	return (write_ham_pixel ((UWORD) x, (UWORD) y,
+	    (UBYTE) Red, (UBYTE) Green, (UBYTE) Blue));
    }
 
 int amiga_close_all ()

@@ -1,0 +1,42 @@
+
+                  Persistence of Vision Raytracer
+                           Version 2.1
+                        Known Bug Information
+                  -------------------------------
+
+The only verified bug that we have found but not fixed in POV-Ray 2.1
+is a problem with height fields which causes holes, missing sections
+or cracks.  The POV-Ray Team is working on the problem but decided to
+not delay this release further.  See WHATSNEW.DOC for the bugs we did
+fix.
+
+If you have problems with height fields and are able to re-compile
+the source code, the following changes work around the problem but
+it defeats much of the height field optimization and slows things
+appreciably.
+
+In HFIELD.C at lines 254-259 and 407-412 you should comment-out the
+lines....
+
+
+  if(min_value(start->y,end->y) > (DBL)Block->max_y)
+    return(FALSE);
+
+  if(max_value(start->y,end->y) < (DBL)Block->min_y)
+    return(FALSE);
+
+Of course if you remove these lines, the height fields render more slowly.
+It appears that the min/max values for the "blocks" are being calculated
+incorrectly at times. 
+
+When a better fix is available we will release it.
+
+   If you have any questions about POV-Ray, please contact
+
+     Chris Young
+     [POV-Team Coordinator]
+
+     CIS: 76702,1655
+     Internet: 76702.1655@compuserve.com
+
+

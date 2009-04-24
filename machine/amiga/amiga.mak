@@ -14,14 +14,14 @@
 #CFLAGS = -cusrft -fi -m0 -b0 -O -v
 
 # Uncomment for Amiga Lattice C with 68881
-CFLAGS = -cusrft -f8 -m2 -b0 -O -v -dM68881
+CFLAGS = -cusrft -f8 -m2 -b0 -O -v -DM68881
 
 # Flags for debugging
 #CFLAGS = -cusrft -q5w5e -d5 -DAMIGA
 
 
-LIBSIEEE = lib:lcmieee.lib lib:lcnb.lib lib:amiga.lib
 LIBS881  = lib:lcm881.lib lib:lcnb.lib lib:amiga.lib
+LIBSIEEE = lib:lcmieee.lib lib:lcnb.lib lib:amiga.lib
 
 OBJ         = o
 MACHINE_OBJ = amiga.$(OBJ)

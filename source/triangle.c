@@ -374,6 +374,8 @@ VECTOR *Vector;
   TRIANGLE *Triangle = (TRIANGLE *) Object;
   VECTOR Translation;
 
+  if(Triangle->Degenerate_Flag) return;
+
   VEvaluate (Translation, Triangle->Normal_Vector, *Vector);
   Triangle->Distance -= Translation.x + Translation.y + Translation.z;
   VAddEq (Triangle->P1, *Vector)
@@ -390,6 +392,8 @@ VECTOR *Vector;
   {
   TRANSFORM Trans;
 
+  if(((TRIANGLE *)Object)->Degenerate_Flag) return;
+
   Compute_Rotation_Transform (&Trans, Vector);
   Transform_Triangle (Object, &Trans);
   }
@@ -400,6 +404,8 @@ VECTOR *Vector;
   {
   TRIANGLE *Triangle = (TRIANGLE *) Object;
   DBL Length,T1,T2,T3;
+
+  if(Triangle->Degenerate_Flag) return;
 
   Triangle->Normal_Vector.x = Triangle->Normal_Vector.x / Vector->x;
   Triangle->Normal_Vector.y = Triangle->Normal_Vector.y / Vector->y;
@@ -437,6 +443,8 @@ OBJECT *Object;
 TRANSFORM *Trans;
   {
   TRIANGLE *Triangle = (TRIANGLE *) Object;
+
+  if(Triangle->Degenerate_Flag) return;
 
   MTransPoint (&Triangle->Normal_Vector,
     &Triangle->Normal_Vector, Trans);
@@ -581,6 +589,8 @@ VECTOR *Vector;
   SMOOTH_TRIANGLE *Triangle = (SMOOTH_TRIANGLE *) Object;
   VECTOR Translation;
 
+  if(Triangle->Degenerate_Flag) return;
+
   VEvaluate (Translation, Triangle->Normal_Vector, *Vector);
   Triangle->Distance -= Translation.x + Translation.y + Translation.z;
   VAddEq (Triangle->P1, *Vector)
@@ -595,6 +605,8 @@ VECTOR *Vector;
   {
   TRANSFORM Trans;
 
+  if(((SMOOTH_TRIANGLE *)Object)->Degenerate_Flag) return;
+
   Compute_Rotation_Transform (&Trans, Vector);
   Transform_Smooth_Triangle (Object, &Trans);
   }
@@ -605,6 +617,8 @@ VECTOR *Vector;
   {
   SMOOTH_TRIANGLE *Triangle = (SMOOTH_TRIANGLE *) Object;
   DBL Length;
+
+  if(Triangle->Degenerate_Flag) return;
 
   Triangle->Normal_Vector.x = Triangle->Normal_Vector.x / Vector->x;
   Triangle->Normal_Vector.y = Triangle->Normal_Vector.y / Vector->y;
@@ -625,6 +639,8 @@ OBJECT *Object;
 TRANSFORM *Trans;
   {
   SMOOTH_TRIANGLE *Triangle = (SMOOTH_TRIANGLE *) Object;
+
+  if(Triangle->Degenerate_Flag) return;
 
   MTransPoint (&Triangle->Normal_Vector,
     &Triangle->Normal_Vector, Trans);

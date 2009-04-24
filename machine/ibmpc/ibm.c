@@ -144,7 +144,7 @@
 #define DITHERED        /* Defined to test Doug Muir's dithering code */
 
 /*#define DEBUG_VIDEO*/		/* Uncomment to display Video initialization info during program startup. */
-/*#define SVBOX*/			/* Uncomment to use setvbuf in GCCDOS anyway. */
+/*#define SVBOK*/			/* Uncomment to use setvbuf in GCCDOS anyway. */
 
 #ifdef DEBUG_VIDEO
 int diaged;				/* excessive diagnostic message clamp */
@@ -217,7 +217,9 @@ int diaged;				/* excessive diagnostic message clamp */
   #endif
 
   #define CLD
+  #ifndef min
   #define min(x,y) ((x) < (y)? (x): (y))
+  #endif
 
   #ifdef DOS386
     extern unsigned short _x386_zero_base_selector;
@@ -1374,7 +1376,7 @@ exit_point:                             /* we get here if there is no palette to
     /* Draw a box around the viewport, if defined */
     if(First_Column > 1 || Last_Column < width ||
      First_Line > 1 || Last_Line < height)
-        box (First_Column, First_Line, Last_Column, Last_Line-1);
+        box (First_Column, First_Line, Last_Column-1, Last_Line-1);
 
 #if defined(DOS16RM)
     for (u=0; u < 257; u++)
@@ -1788,7 +1790,7 @@ struct SREGS *s;                        /* segment registers */
 #if defined( DOS386 )
 void setmany(palbuf, start, count)
 unsigned char palbuf[256][3];
-int start, int count;
+int start, count;
 {
    unsigned char _far *fp;
    union REGS regs;
@@ -1950,7 +1952,7 @@ void display_close()            /* setup to Text 80x25 (mode 3) */
 				printf("DIAG: command = %p, TGARegs = %p, IORegsOff = %04X, IORegsSeg = %04X\n", command, TGARegs, command->IORegsOff, command->IORegsSeg);
 #endif
 #ifdef DOS386
-                int86x_real(0x21, &inr, &inr, &segs);
+                int86x_real(0x21, &regs, &regs, &segs);
 #else
                 int86x(0x21, &regs, &regs, &segs);              /* call DOS - status of operation is !regs.x.cflag */
 #endif
@@ -1967,7 +1969,7 @@ void display_close()            /* setup to Text 80x25 (mode 3) */
 
 
   /* plot a single RGB pixel */
-void display_plot (x, y, Red, Green, Blue)   /* plot a single RGB pixel */
+void display_plot (x, y, Red, Green, Blue)
    int x, y;
    unsigned char Red, Green, Blue;
    {
@@ -2654,7 +2656,9 @@ int x1, y1, x2, y2;
 }
 
 #if !__STDC__
-#ifndef __BORLANDC__  /* BCC has srand but doesn't set __STDC__ */
+#if !defined(__BORLANDC__) && !defined (__ZTC__)  
+ /* BCC has srand but doesn't set __STDC__ same as Zortech */
+  
 
 /* ANSI Standard psuedo-random number generator */
 

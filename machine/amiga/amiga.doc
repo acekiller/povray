@@ -1,98 +1,115 @@
 This file contains the documentation specific to the Amiga version of
-POV-Ray.
+POVRay2.0.
 
 Differences From Original Distribution:
-   The original distribution of POV-Ray is in ZIP format.  For the
-   Amiga, this has been converted to LZH format.  In addition, the Amiga
-   distribution of POV-Ray has CR-LF pairs converted to only LF's for
-   text files.  Otherwise, the Amiga distribution is identical to the
-   ZIP distribution.
 
-Note: PLEASE SEE POVLEGAL.DOC.  The Amiga version in LZH format is an
-   officially supported format and can be distributed as is.  You MAY
-   NOT re-package the archive file or distribute any changes to it.  If
-   you do post it on a BBS or network, you must provide at least the
-   scene files and documentation files with the executables.  See
-   POVLEGAL.DOC for complete details.
+   The original distribution of POVRay2.0 is in ZIP format and contains
+   files in MS-DOS format.  The filenames are restricted to 8.3 characters
+   and the text files contain CRLF line terminators.  A script and a
+   utility to strip CRs, restore the long Amiga filenames, and create
+   icons is provided in the POVRAY/MACHINE/AMIGA directory.  Note that
+   none of the POVRay2.0 data files need be stripped of CRs as POVRay2.0
+   accepts data files both with and without CRs.
+
+   There are custom Amiga executable, documentation, and scene archives
+   that have been converted to LZH format and have been stripped of all CR
+   characters and include long Amiga filenames and Amiga icons.  The Amiga
+   executable archive contains two executable versions of POVRay2.0, a
+   68881 and an IEEE version, and two executable programs that perform
+   image postprocessing, one to HAM6 and one to IFF24.  Otherwise, the
+   Amiga distribution is identical to the ZIP distribution.
+
+SEE POVLEGAL.DOC FOR USE AND DISTRIBUTION TERMS.
+
+   The Amiga archive in LZH format is an officially supported and
+   distributed format.
 
 Executables:
+
    Two executables are provided:
       povray881  - The version for systems with 68881 math coprocessors.
       povrayieee - The version for systems without a coprocessor.
 
-Running POV-Ray:
-   When running POV-Ray, be sure that you have a large stack set.  If
-   the stack is too small, POV-Ray could crash without warning.  Mine is
-   set to 50,000 bytes.
+Running POVRay2.0:
+
+   When running POVRay2.0, be sure that you have a large stack set.  If
+   the stack is too small, POVRay2.0 could crash without warning.  Mine
+   is set to 80,000 bytes.
 
 Memory Requirements:
-   POV-Ray can run on simple files with 1 Meg of memory.  I would highly
-   recommend having more memory to render more complicated scenes.
-   There's a known bug in this version which prevents POV-Ray from
-   cleaning up gracefully if it runs out of memory in some instances. 
-   If this occurs, the cancel requestor will not be closed.  If you
+
+   POVRay2.0 can run on simple files with 1 Meg of memory.  I would
+   highly recommend having more memory to render more complicated
+   scenes.  There is a known bug in this version which prevents POVRay2.0
+   from cleaning up gracefully if it runs out of memory in some instan-
+   ces.  If this occurs, the cancel requestor will not be closed.  If you
    click on it, the system will probably hang or reboot.  This should be
    fixed in the next release.
 
 Display Formats:
+
    The Amiga version of the raytracer supports three types of display
    formats:
-      +d0     - HAM  (default)
+      +d, +d0 - default
+      +d1     - HAM6
       +dE     - HAME
       +dF     - Firecracker
 
-   By default (or the +d0 switch), a display will be generated in HAM6
-   according to the image size.  If the image is not wider than 368
-   pixels, the display's horizontal mode is lo-res.  If the image is
-   wider than 368 pixels, the display's horizontal mode is hi-res.  If
-   the image is not taller than 241 pixels, the display's vertical mode
-   is non-interlaced.  If the image is taller than 241 pixels, the
-   display's vertical mode is interlaced.  Images that are smaller than
-   the nominal screen size are centered in the screen.  Images that are
-   larger than the nominal screen size are displayed in overscan.  Note
-   that not all machines can display a hi-res HAM6 screen.  If your
-   machine cannot display a particular screen, the screen-open call will
-   fail and an error will be displayed.
+   By default, a display will be generated in HAM6 according to the image
+   size.  If the image is wider than 368 pixels, the display's horizontal
+   mode is hi-res, otherwise it is lo-res.  If the image is taller than
+   241 pixels, the display's vertical mode is interlaced, otherwise it is
+   non-interlaced.  Images that are smaller than the nominal screen size
+   are centered in the display screen.  Images that are larger than the
+   nominal screen size are displayed in overscan.  Note that not all
+   machines can display a hi-res HAM6 screen.  If your machine cannot
+   display a particular screen, the screen-open call will fail and an
+   error will be displayed.
 
    The HAME mode is always 320 x 200 pixels.
 
    The firecracker mode adjusts the resolution according to the -w
    (width) parameter of the raytracer.
+
       320  <= w < 0     use 320  x 482
       640  <= w < 320   use 640  x 482
       768  <= w < 640   use 768  x 482
       1024 <= w < 768   use 1024 x 482
 
 File Formats:
+
    The default file format for the Amiga is "dump" format (+fd).  Targa
-   or raw may be specified on the command line or in the povray.def
-   file.
+   or raw may be specified on the command line or in the povray.def file.
 
 Building The Source:
-   POV-Ray was compiled using Lattice (now SAS) version 5.10b.  I'm sure
-   that later versions will work.  If you're compiling with another
-   compiler, you'll have to edit the makefile to set the proper compiler
-   options.  As far as that goes, you're on your own.
 
-   To compile POV-Ray from the original source, follow these
-   instructions:
-      1) copy the files in the "source" directory into a "build"
-         directory.
-      2) copy the files in the "machine/amiga" directory to the "build"
-         directory.
-      3) rename file "amigacon.h" to "config.h".
-      4) rename file "amiga.mak" to "makefile".
-      5) if you're building an IEEE executable, you must edit the
-         makefile, comment out the line for "CFLAGS = ..." for the '881
-         and uncomment the line "CFLAGS = ..." for the IEEE emulator.
-         Type "lmk povrayieee".
-      6) To compile a 68881 version of POV-Ray, leave the original
+   POVRay2.0 was compiled using SAS C version 5.10b.  I'm sure that later
+   versions will work.  If you're compiling with another compiler, you'll
+   have to edit the makefile to set the proper compiler options.  As far
+   as that goes, you're on your own.
+
+   To compile POVRay2.0 from the original source, follow these instruc-
+   tions:
+      1) From a shell, CD to the POVRAY/MACHINE/AMIGA directory and
+         "execute dos2ami",  which is a script that will strip CRs from
+         the text files, restore long filenames, and install some icons.
+      2) Copy the files in the POVRAY/SOURCE directory into a POVRAY/
+         BUILD directory.
+      3) Copy from the POVRAY/MACHINE/AMIGA directory files 'amiga.c',
+         'config.h', and 'makefile' to the POVRAY/BUILD directory.
+      4) If you're building an IEEE executable, you must edit the
+         makefile and comment out the line for "CFLAGS = ..." for the
+         '881, uncomment the line "CFLAGS = ..." for the IEEE emulator,
+         and type "lmk povrayieee".
+      5) To compile a 68881 version of POVRay2.0, leave the original
          makefile unaltered and type "lmk".
 
 Post-Processing Images:
-   A utility called dump2iff has been included in the executable archive
-   to convert the POV-Ray format output to IFF HAM format.  To run this
-   utility, you must provide the names of the input and output files.
+
+   Two utilities called dump2iff and dump2i24 have been included in the
+   executable archive to convert the POVRay2.0 format output to HAM6 and
+   IFF24 format.  To run these utilities, you must provide the names of
+   the input and output files.
    eg.
       dump2iff picture.dis picture.ham
 
@@ -112,14 +129,22 @@ Post-Processing Images:
    By default, dump2iff will perform dithering to help smooth out the
    color changes.  To disable dithering, use -d on the command line.
 
+   The dump2i24 program does not generate a palette.  The 24-bit pixel
+   data is stored directly into 24 bit-planes.  You must provide the
+   names of the input and output files.
+   eg.
+      dump2i24 picture.dis picture.i24
+
    "The Art Department Professional" by ASDG does a fine job of post-
    processing images.  ADPro can accept QRT format images (which is the
-   format output by POV-Ray with the +fd command-line parameter).  Al-
+   format output by POVRay2.0 with the +fd command-line parameter).  Al-
    ternatively, you can output Targa (+ft) or raw (+fr).  To read the raw
    format into ADPro, use the Scuplt reader.  You'll have to type in the
    resolution you used to generate the image.
 
+   This document is based on text originally by David K. Buck.
+
 Comments and suggestions about the Amiga version can be directed to me:
    Dave Park
-   Internet:   70004.1764@CompuServe.com
+   Internet:   70004.1764@compuserve.com
    CompuServe: [70004,1764]

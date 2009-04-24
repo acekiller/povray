@@ -694,6 +694,7 @@ TEXTURE *Textures;
       New = (TEXTURE *) Create_Material_Texture ();
       ((MATERIAL *)New)->Materials = Copy_Materials (((MATERIAL *)Layer)->Materials);
       ((MATERIAL *)New)->Trans = Copy_Transform (((MATERIAL *)Layer)->Trans);
+      ((MATERIAL *)New)->Image = Copy_Image (((MATERIAL *)Layer)->Image);
       ((MATERIAL *)New)->Num_Of_Mats = (((MATERIAL *)Layer)->Num_Of_Mats);
       break;
     }

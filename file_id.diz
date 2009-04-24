@@ -1,12 +1,13 @@
 This is the source code in highly 
 portible C for the Persistence of 
-Vision Ray Tracer POV-Ray version 2.0.
-It also include machine specific 
-source for all platforms except 
-Macintosh. (Mac users see POVSRC.SEA)  
-Create your own \POVRAY2 directory and 
-un-zip this file using the -d option 
-to insure that the proper sub-
-directories are created. Other files 
-are needed.  See POVINF.DOC from this 
-library for more information.
+Vision Ray Tracer POV-Ray version 
+2.1. It also include machine 
+specific source for all platforms 
+except Macintosh. (Mac users see 
+POVSRC.SEA)  Create your own \POVRAY2
+directory and un-zip this file using 
+the -d option to insure that the 
+proper sub-directories are created. 
+Other files are needed.  See 
+POVINF.DOC from this library for more 
+information.

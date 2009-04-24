@@ -25,7 +25,6 @@
 #include "vector.h"
 #include "povproto.h"
 
-extern RAY *VP_Ray;
 extern long Bounding_Region_Tests, Bounding_Region_Tests_Succeeded;
 extern long Clipping_Region_Tests, Clipping_Region_Tests_Succeeded;
 extern unsigned int Options;
@@ -141,6 +140,11 @@ OBJECT *Old;
     return (NULL);
 
   New = Copy (Old);
+
+  /* The following copying of OBJECT_FIELDS is redundant if Copy 
+   did *New = *Old but we cannot assume it did.
+   It is safe for Copy to do *New = *Old but it should not otherwise
+   touch OBJECT_FIELDS. */
 
   New->Methods = Old->Methods;
   New->Type    = Old->Type;

@@ -104,15 +104,15 @@ struct Constant_Struct Constants[MAX_CONSTANTS];
 
 #ifdef NOCMDLINE	/* a main() by any other name... */
 #ifdef ALTMAIN
-void alt_main()
+  MAIN_RETURN_TYPE alt_main()
 #else
-  void main()
+  MAIN_RETURN_TYPE main()
 #endif
 #else
 #ifdef ALTMAIN
-  void alt_main(argc, argv)
+  MAIN_RETURN_TYPE alt_main(argc, argv)
 #else
-  void main(argc, argv)
+  MAIN_RETURN_TYPE main(argc, argv)
 #endif
     int argc;
 char **argv;
@@ -156,7 +156,7 @@ char **argv;
     Last_Line = Frame.Screen_Height;
 
   if (Last_Column == -1)
-    Last_Column = Frame.Screen_Width-1;
+    Last_Column = Frame.Screen_Width;
 
   if (Options & DISKWRITE) 
     {
@@ -373,9 +373,9 @@ void init_vars()
   First_Column = 0;
   Last_Column = -1;
 
-  First_Line_Temp = (DBL) First_Line;
+  First_Line_Temp = (DBL) First_Line+1;
   Last_Line_Temp = (DBL) Last_Line;
-  First_Column_Temp = (DBL) First_Column ;
+  First_Column_Temp = (DBL) First_Column+1;
   Last_Column_Temp = (DBL) Last_Column;
 
   Color_Bits = 8;
@@ -705,12 +705,12 @@ char *Option_String;
     if(First_Column_Temp > 0.0 && First_Column_Temp < 1.0)
       First_Column = (int) (Frame.Screen_Width * First_Column_Temp);
     else
-      First_Column = (int) First_Column_Temp;
+      First_Column = (int) First_Column_Temp-1;
 
     if(First_Line_Temp > 0.0 && First_Line_Temp < 1.0)
       First_Line = (int) (Frame.Screen_Height * First_Line_Temp);
     else
-      First_Line = (int) First_Line_Temp;
+      First_Line = (int) First_Line_Temp-1;
 
     if (First_Column < 0)
       First_Column = 0;
@@ -749,8 +749,8 @@ char *Option_String;
     else
       Last_Line = (int) Last_Line_Temp;
 
-    if (Last_Column < 0 || Last_Column >= Frame.Screen_Width)
-      Last_Column = Frame.Screen_Width - 1;
+    if (Last_Column < 0 || Last_Column > Frame.Screen_Width)
+      Last_Column = Frame.Screen_Width;
 
     if (Last_Line > Frame.Screen_Height)
       Last_Line = Frame.Screen_Height;
@@ -771,7 +771,7 @@ char *Option_String;
       break;
     case 'b': /* Min Bounded */
     case 'B':
-      if (sscanf (&Option_String[2], "%d", &bounds_thresh) != EOF)
+      if (sscanf (&Option_String[2], "%ld", &bounds_thresh) != EOF)
         Bounds_Threshold=bounds_thresh;
       Use_Slabs = Add_Option;
       break;
@@ -864,7 +864,7 @@ char *Option_String;
     /* quality flags rewrite in progress by CEY */
 
     fprintf (stdout,"-q%d -w%d -h%d -s%d -e%d\n",Quality,
-      Frame.Screen_Width, Frame.Screen_Height, First_Line, Last_Line);
+      Frame.Screen_Width, Frame.Screen_Height, First_Line+1, Last_Line);
 
     fprintf (stdout, "-k%.3f -mv%.1f -i%s ", Clock_Value, Language_Version, 
       Input_File_Name);

@@ -52,8 +52,6 @@ METHODS CSG_Intersection_Methods =
   Scale_CSG, Transform_CSG, Invert_CSG_Intersection, Destroy_CSG
 };
 
-extern RAY *VP_Ray;
-
 int All_CSG_Union_Intersections (Object, Ray, Depth_Stack)
 OBJECT *Object;
 RAY *Ray;
@@ -391,4 +389,3 @@ OBJECT *Object;
   Object->Bounds.Lower_Left = mins;
   VSub(Object->Bounds.Lengths, maxs, mins);
   }
-

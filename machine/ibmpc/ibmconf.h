@@ -185,6 +185,7 @@
 #endif
 
 #ifdef __ZTC__
+ #define QSORT_FUNCT_PARM const void *
  #ifndef __386__
   #define COMPILER_VER ".ibmztc"
  #endif
@@ -241,6 +242,8 @@ void main(int, char **);
 #ifdef __BORLANDC__
  #define COMPILER_VER ".ibmbc"
  #define IFF_SWITCH_CAST (long)
+ #define QSORT_FUNCT_PARM const void _FAR *
+ #define QSORT_FUNCT_RET  int _Cdecl
 #endif
 
 #ifdef __TURBOC__

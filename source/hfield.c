@@ -1296,7 +1296,7 @@ IMAGE *Image;
               temp_y = (HF_val)(256*temp1 + temp2);
               break;
             case TGA_FILE:
-              if (Image->data.rgb_lines != NULL) 
+              if (Image->Colour_Map == NULL) 
                 {
                 temp1 = Image->data.rgb_lines[max_z - z - 1].red[x];
                 temp2 = Image->data.rgb_lines[max_z - z - 1].green[x];
@@ -1339,7 +1339,7 @@ IMAGE *Image;
         case POT_FILE: 
           free(Image->data.map_lines[max_z - z - 1]); break;
         case TGA_FILE:
-          if (Image->data.rgb_lines != NULL) 
+          if (Image->Colour_Map == NULL) 
             {
             free(Image->data.rgb_lines[max_z - z - 1].blue);
             free(Image->data.rgb_lines[max_z - z - 1].green);

@@ -52,27 +52,18 @@ Building the source:
 
      4) rename vaxconf.h to config.h
 
-     5) edit the file 'POVRAY.C'.
-        change the definition of 'main' and 'alt_main' to return 'int'
-        instead of 'void'. you may also like to add a return statement.
+     5) execute "@vaxbuild" for a NON XWindows executable.
 
-     6) edit the file 'tokenize.c'.
-        remove the reference to 'extern Library_Paths []'.
-
-     7) edit the files 'csg.c' and 'objects.c'.
-        remove the reference to 'extern RAY VP_Ray'.
-
-     8) execute "@vaxbuild" for a NON XWindows executable.
-
-     9) execute "@xvaxbld" for an XWindows executable.
+     6) execute "@xvaxbld" for an XWindows executable.
 
    Note that if you switch between X and non-X versions you MUST recompile
    ALL FILES.
 
 Post-processing Images:
    POV-Ray images can be post-processed using the PBMPLUS utilities.
-   The program TGA2GIF (source available on Compuserve in GRAPHDEV) will run on
-   a VAX and does a nice job of converting Targa output files into GIF files.
+   The program TGA2GIF (source available on Compuserve in GRAPHDEV section 8
+   as TGAGI2.ZIP) will run on a VAX and does a nice job of converting Targa
+   output files into GIF files.
 
 Displaying Images:
    There are various programs around that can display GIF files under X

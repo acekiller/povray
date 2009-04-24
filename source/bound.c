@@ -69,6 +69,8 @@ static void CheckAndEnqueue PARAMS((Qelem *Queue, unsigned *Qsize,
 OBJECT *obj, RAYINFO *rayinfo));
 static void PriorityQueueDelete PARAMS((Qelem *Queue, unsigned *Qsize,
 DBL *key, OBJECT **obj));
+/* QSORT_FUNCT_RET compslabs PARAMS((QSORT_FUNCT_PARAM in_a,
+QSORT_FUNCT_PARAM in_b)); */
 
 /* Should move these out of here... */
 unsigned long totalQueues = 0;
@@ -76,7 +78,7 @@ unsigned long totalQueueResets = 0;
 unsigned long nChecked = 0;
 unsigned long nEnqueued = 0;
 
-unsigned MAXQUEUE = 256;
+unsigned MAXQUEUE = 512;
 
 METHODS Composite_Methods =
   { 
@@ -162,9 +164,9 @@ TRANSFORM *trans;
   VSub(bbox->Lengths, maxs, mins);
   }
 
-int CDECL compslabs(in_a, in_b)
-void *in_a;
-void *in_b;
+QSORT_FUNCT_RET compslabs(in_a, in_b)
+QSORT_FUNCT_PARAM in_a;
+QSORT_FUNCT_PARAM in_b;
   {
 
   OBJECT **a, **b;

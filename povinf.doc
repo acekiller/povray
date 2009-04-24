@@ -48,7 +48,7 @@ files' section below for more info.
         Files required:
         POVDOC.ZIP - The documentation and essential data files for POV-Ray
         POVSCN.ZIP - The example scene files for POV-Ray
-        POVIBM.ZIP - Executable and docs for IBM-PC and compatibles
+        POVIBM.EXE - Executable and docs for IBM-PC and compatibles
 
         You will also need a program like PICLAB or Image Alchemy to convert
         the TGA files output by POV-Ray to GIF files and a GIF viewer
@@ -163,7 +163,7 @@ easily ported to many different computers.
      [POV-Team Coordinator]
 
      CIS: 76702,1655
-     Internet: 76702,1655 @compuserve.com
+     Internet: 76702.1655@compuserve.com
 
 
 ---------------------------------------------------------------------------

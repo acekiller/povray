@@ -1,11 +1,20 @@
-This directory contains machine specific files for compiling POV-Ray on 
+This directory contains machine specific files for compiling POVRay2.0 on 
 the Amiga.  It contains:
 
 \POVSRC\MACHINE\AMIGA
-   amiga.doc      - system-specific documentation for Amiga.
-   amiga.doc.info - an icon for amiga.doc.
-   amigacon.h     - Amiga configuration header -- rename to "config.h".
    amiga.c        - system-specific code for Amiga.
-   amiga.mak      - makefile for Amiga (SAS C) -- rename to "makefile".
    amiga.cat      - this list of files in \POVSRC\MACHINE\AMIGA.
-   amiga.cat.info - an icon for amiga.cat.
+   amiga.doc      - system-specific documentation for Amiga.
+   amiga.mak      - makefile for Amiga's SAS C (makefile).
+   amigacon.h     - Amiga configuration header (config.h).
+   ceol           - strips CRs from text files.
+   dos2ami        - a script to convert the files.
+   read.me        - a brief description of the Amiga archive.
+   amigainf.cat   - an icon for amiga.cat (amiga.cat.info).
+   amigainf.doc   - an icon for amiga.doc (amiga.doc.info).
+   machninf.cat   - an icon for /machine.cat (machine.cat.info).
+   povininf.doc   - an icon for //povinf.doc (povinf.doc.info).
+   povlginf.doc   - an icon for //povlegal.doc (povlegal.doc.info).
+   povsrinf.cat   - an icon for //povsrc.cat (povsrc.cat.info).
+   whnewinf.doc   - an icon for //whatsnew.doc (whatsnew.doc.info).
+   sourcinf.cat   - an icon for //source/source.cat (source.cat.info).

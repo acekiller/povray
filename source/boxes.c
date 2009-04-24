@@ -337,15 +337,31 @@ void Scale_Box (Object, Vector)
 OBJECT *Object;
 VECTOR *Vector;
   {
+  BOX *Box = (BOX *)Object;
   TRANSFORM Trans;
+  DBL temp;
 
   if (((BOX *)Object)->Trans == NULL)
     {
-    VEvaluateEq(((BOX *)Object)->bounds[0], *Vector);
-    VEvaluateEq(((BOX *)Object)->bounds[1], *Vector);
-    Object->Bounds.Lower_Left = ((BOX *)Object)->bounds[0];
-    VSub(Object->Bounds.Lengths, ((BOX *)Object)->bounds[1],
-      ((BOX *)Object)->bounds[0]);
+    VEvaluateEq(Box->bounds[0], *Vector);
+    VEvaluateEq(Box->bounds[1], *Vector);
+    if (Box->bounds[0].x > Box->bounds[1].x) {
+       temp = Box->bounds[0].x;
+       Box->bounds[0].x = Box->bounds[1].x;
+       Box->bounds[1].x = temp;
+       }
+    if (Box->bounds[0].y > Box->bounds[1].y) {
+       temp = Box->bounds[0].y;
+       Box->bounds[0].y = Box->bounds[1].y;
+       Box->bounds[1].y = temp;
+       }
+    if (Box->bounds[0].z > Box->bounds[1].z) {
+       temp = Box->bounds[0].z;
+       Box->bounds[0].z = Box->bounds[1].z;
+       Box->bounds[1].z = temp;
+       }
+    Box->Bounds.Lower_Left = Box->bounds[0];
+    VSub(Object->Bounds.Lengths, Box->bounds[1], Box->bounds[0]);
     }
   else
     {

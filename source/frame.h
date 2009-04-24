@@ -33,13 +33,12 @@
 
 /* These are used by POVRAY.C and the machine specific modules */
 
-#define POV_RAY_VERSION "2.0"
+#define POV_RAY_VERSION "2.1"
 
 /* This message is for the personal distribution release. */
 #define DISTRIBUTION_MESSAGE_1 "This is an unofficial version compiled by:"
 #define DISTRIBUTION_MESSAGE_2 "FILL IN NAME HERE........................."
 #define DISTRIBUTION_MESSAGE_3 "The POV-Ray Team is not responsible for supporting this version."
-
 
 #ifndef READ_ENV_VAR_BEFORE 
 #define READ_ENV_VAR_BEFORE 
@@ -233,6 +232,22 @@
 /* If compiler version is undefined, then make it 'u' for unknown */
 #ifndef COMPILER_VER
 #define COMPILER_VER ".u"
+#endif
+
+#ifndef QSORT_FUNCT_RET
+#define QSORT_FUNCT_RET int CDECL
+#endif
+
+#ifndef QSORT_FUNCT_PARAM
+#define QSORT_FUNCT_PARAM void *
+#endif
+
+#ifndef MAIN_RETURN_TYPE
+#define MAIN_RETURN_TYPE void
+#endif
+
+#ifndef MAIN_RETURN_STATEMENT
+#define MAIN_RETURN_STATEMENT
 #endif
 
 /* These values determine the minumum and maximum distances
@@ -514,6 +529,8 @@ struct Material_Texture_Struct
 #define BOUNDING_OBJECT        64   /* This is a holder for bounded object */
 #define SMOOTH_OK_OBJECT      128   /* SMOOTH legal */
 #define IS_CHILD_OBJECT       256   /* Object is inside a COMPOUND */
+#define DOUBLE_ILLUMINATE     512   /* Illuminate both sides of surface to
+                                       avoid normal purturb bug */
 
 #define COMPOSITE_OBJECT       (BOUNDING_OBJECT)
 #define SPHERE_OBJECT          (BASIC_OBJECT)
@@ -524,8 +541,8 @@ struct Material_Texture_Struct
 #define DISC_OBJECT            (BASIC_OBJECT)
 #define HEIGHT_FIELD_OBJECT    (BASIC_OBJECT+WATER_LEVEL_OK_OBJECT+SMOOTH_OK_OBJECT)
 #define TRIANGLE_OBJECT        (PATCH_OBJECT)
-#define SMOOTH_TRIANGLE_OBJECT (PATCH_OBJECT)
-#define BICUBIC_PATCH_OBJECT   (PATCH_OBJECT)
+#define SMOOTH_TRIANGLE_OBJECT (PATCH_OBJECT+DOUBLE_ILLUMINATE)
+#define BICUBIC_PATCH_OBJECT   (PATCH_OBJECT+DOUBLE_ILLUMINATE)
 #define UNION_OBJECT           (COMPOUND_OBJECT)
 #define MERGE_OBJECT           (COMPOUND_OBJECT)
 #define INTERSECTION_OBJECT    (COMPOUND_OBJECT)
@@ -604,7 +621,7 @@ struct Bounding_Box_Struct {
  OBJECT *Children;
 
 #define INIT_OBJECT_FIELDS(o,t,m)\
- o->Type=t;o->Methods=m;o->Sibling=NULL;o->Texture=NULL;\
+ o->Type=t;o->Methods= m;o->Sibling=NULL;o->Texture=NULL;\
  o->Bound=NULL;o->Clip=NULL;o->No_Shadow_Flag=FALSE;\
  Make_Vector(&o->Bounds.Lower_Left, -BOUND_HUGE/2, -BOUND_HUGE/2, -BOUND_HUGE/2)\
  Make_Vector(&o->Bounds.Lengths, BOUND_HUGE, BOUND_HUGE, BOUND_HUGE)
@@ -781,7 +798,6 @@ struct Bezier_Node_Struct
 
 #define BEZIER_INTERIOR_NODE 0
 #define BEZIER_LEAF_NODE 1
-#define MAX_BICUBIC_INTERSECTIONS 32
 
 #define MAX_PATCH_TYPE 4
 
@@ -793,11 +809,6 @@ struct Bicubic_Patch_Struct
    VECTOR Bounding_Sphere_Center;
    DBL Bounding_Sphere_Radius;
    DBL Flatness_Value;
-   int Intersection_Count;
-   VECTOR Normal_Vector[MAX_BICUBIC_INTERSECTIONS];
-   VECTOR IPoint[MAX_BICUBIC_INTERSECTIONS];
-   VECTOR **Interpolated_Grid, **Interpolated_Normals, **Smooth_Normals;
-   DBL **Interpolated_D;
    BEZIER_NODE *Node_Tree;
   };
    
@@ -919,6 +930,8 @@ struct istk_entry
   {
    DBL Depth;
    VECTOR IPoint;
+   VECTOR INormal;
+   int NFlag;
    OBJECT *Object;
   };
 
@@ -931,8 +944,10 @@ struct istack_struct
 
 #define itop(i) i->istack[i->top_entry]
 #define push_entry(d,v,o,i) itop(i).Depth=d; itop(i).IPoint=v; \
- itop(i).Object=o; incstack(i);
-#define push_copy(i,e) itop(i)=*e; incstack(i);
+ itop(i).NFlag=0; itop(i).Object=o; incstack(i);
+#define push_normal_entry(d,v,n,o,i) itop(i).Depth=d; itop(i).IPoint=v; \
+ itop(i).INormal=n; itop(i).NFlag=1; itop(i).Object=o; incstack(i);
+#define push_copy(i,e) itop(i)= *e; incstack(i);
 #define pop_entry(i) (i->top_entry > 0)?&(i->istack[--i->top_entry]):NULL
 
 #define MAX_STRING_INDEX 41 

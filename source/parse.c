@@ -1011,18 +1011,23 @@ TEXTURE *Parse_Texture ()
        Parse_End ();
        EXIT
      END_CASE
+     
+     CASE (TEXTURE_ID_TOKEN)
+       Texture = Copy_Textures((TEXTURE *) Token.Constant_Data);
+       EXIT
+     END_CASE
 
-     OTHERWISE  /* Look for [pnf_texture] */
+     OTHERWISE
        UNGET
-
        Texture = Copy_Textures (Default_Texture);
-
-       EXPECT   /* Look for [tpnf_ids] */
-         CASE (TEXTURE_ID_TOKEN)
-           Destroy_Textures(Texture);
-           Texture = Copy_Textures((TEXTURE *) Token.Constant_Data);
-         END_CASE
-
+       EXIT
+     END_CASE
+   END_EXPECT
+   
+   /* Look for [pnf_texture] */
+   if (Texture->Type == PNF_TEXTURE)
+     {
+       EXPECT   /* Look for [pnf_ids] */
          CASE (PIGMENT_ID_TOKEN)
            Destroy_Pigment(Texture->Pigment);
            Texture->Pigment = Copy_Pigment ((PIGMENT *) Token.Constant_Data);
@@ -1407,10 +1412,7 @@ FINISH STUFF OUTSIDE FINISH{}
            !(Language_Version < 1.5))
          Parse_Error(PIGMENT_ID_TOKEN);
 
-       EXIT
-     END_CASE        /* End of pnf texture */
-
-   END_EXPECT       /* End of texture_body */
+     }
 
    EXPECT            /* Look for texture_mods */
      CASE (TRANSLATE_TOKEN)
@@ -1509,7 +1511,10 @@ static void Parse_Object_Mods (Object)
   {
    VECTOR Local_Vector;
    TEXTURE *Local_Texture;
+   OBJECT *Temp1_Object;
+   OBJECT *Temp2_Object;
    COLOUR Local_Colour;
+   DBL Temp_Water_Level;
 
    EXPECT
      CASE (COLOUR_TOKEN)
@@ -1547,17 +1552,24 @@ static void Parse_Object_Mods (Object)
      CASE (BOUNDED_BY_TOKEN)
        Parse_Begin ();
        if (Object->Bound != NULL)
-         Error ("Cannot have more than one BOUNDED_BY {} per object");
+         if (Object->Clip == Object->Bound)
+           Error ("Cannot add bounds after linking bounds and clips");
 
        EXPECT
          CASE (CLIPPED_BY_TOKEN)
+           if (Object->Bound != NULL)
+             Error ("Cannot link clips with previous bounds");
            Object->Bound = Object->Clip;
            EXIT
          END_CASE
 
          OTHERWISE
            UNGET
-           Object->Bound = Parse_Bound_Clip ();
+           Temp1_Object = Temp2_Object = Parse_Bound_Clip ();
+           while (Temp2_Object->Sibling != NULL)
+             Temp2_Object = Temp2_Object->Sibling;
+           Temp2_Object->Sibling = Object->Bound;
+           Object->Bound = Temp1_Object;
            EXIT
          END_CASE
        END_EXPECT
@@ -1568,17 +1580,24 @@ static void Parse_Object_Mods (Object)
      CASE (CLIPPED_BY_TOKEN)
        Parse_Begin ();
        if (Object->Clip != NULL)
-         Error ("Cannot have more than one CLIPPED_BY {} per object");
+         if (Object->Clip == Object->Bound)
+           Error ("Cannot add clips after linking bounds and clips");
 
        EXPECT
          CASE (BOUNDED_BY_TOKEN)
+           if (Object->Clip != NULL)
+             Error ("Cannot link bounds with previous clips");
            Object->Clip = Object->Bound;
            EXIT
          END_CASE
 
          OTHERWISE
            UNGET
-           Object->Clip = Parse_Bound_Clip ();
+           Temp1_Object = Temp2_Object = Parse_Bound_Clip ();
+           while (Temp2_Object->Sibling != NULL)
+             Temp2_Object = Temp2_Object->Sibling;
+           Temp2_Object->Sibling = Object->Clip;
+           Object->Clip = Temp1_Object;
            EXIT
          END_CASE
        END_EXPECT
@@ -1635,13 +1654,17 @@ static void Parse_Object_Mods (Object)
      CASE (WATER_LEVEL_TOKEN)
        if (!(Object->Type & WATER_LEVEL_OK_OBJECT))
          Error ("Cannot use WATER_LEVEL here");
-       ((HEIGHT_FIELD *) Object)->bounding_box->bounds[0].y = 65536.0 * Parse_Float();
+       Temp_Water_Level = Parse_Float();
+       if (Language_Version < 2.0)
+         Temp_Water_Level /=256.0;
+       ((HEIGHT_FIELD *) Object)->bounding_box->bounds[0].y = 65536.0 * Temp_Water_Level;
      END_CASE
 
      CASE (SMOOTH_TOKEN)
        if (!(Object->Type & SMOOTH_OK_OBJECT))
          Error ("Cannot use SMOOTH here");
        ((HEIGHT_FIELD *) Object)->Smoothed = TRUE;
+       Object->Type |= DOUBLE_ILLUMINATE;
      END_CASE
 
      CASE (NO_SHADOW_TOKEN)
@@ -1872,6 +1895,7 @@ static
 OBJECT *Parse_Box ()
   {
    BOX *Object;
+   DBL temp;
 
    Parse_Begin ();
 
@@ -1882,14 +1906,32 @@ OBJECT *Parse_Box ()
 
    Parse_Vector(&(Object->bounds[0]));     Parse_Comma();
    Parse_Vector(&(Object->bounds[1]));
-   
-   Object->Bounds.Lower_Left=Object->bounds[0];
+
+    if (Object->bounds[0].x > Object->bounds[1].x) {
+       temp = Object->bounds[0].x;
+       Object->bounds[0].x = Object->bounds[1].x;
+       Object->bounds[1].x = temp;
+       }
+    if (Object->bounds[0].y > Object->bounds[1].y) {
+       temp = Object->bounds[0].y;
+       Object->bounds[0].y = Object->bounds[1].y;
+       Object->bounds[1].y = temp;
+       }
+    if (Object->bounds[0].z > Object->bounds[1].z) {
+       temp = Object->bounds[0].z;
+       Object->bounds[0].z = Object->bounds[1].z;
+       Object->bounds[1].z = temp;
+       }
+
+   Object->Bounds.Lower_Left = Object->bounds[0];
    VSub(Object->Bounds.Lengths, Object->bounds[1],Object->bounds[0]);
 
    Parse_Object_Mods ((OBJECT *)Object);
 
    return ((OBJECT *) Object);
   }
+
+ 
 
 static
 OBJECT *Parse_Disc ()
@@ -3163,8 +3205,13 @@ static void Post_Process (Object,Parent)
         Post_Process(Sib, Object);
      }
    else
-     if (Object->Texture == NULL)
-       Object->Texture = Copy_Textures(Default_Texture);
+     {
+      if (Object->Texture == NULL)
+        Object->Texture = Copy_Textures(Default_Texture);
+      if (Object->Texture->Type == PNF_TEXTURE) 
+        if (Object->Texture->Tnormal != NULL)
+          Object->Type |= DOUBLE_ILLUMINATE;
+     }
    Post_Textures (Object->Texture);
    if ((Object->Type & WATER_LEVEL_OK_OBJECT) &&
        (Object->Type & IS_CHILD_OBJECT))

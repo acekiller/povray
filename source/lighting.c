@@ -297,7 +297,7 @@ int u1, v1, u2, v2, Level;
       do_light (Light_Source, &Light_Source_Depth, &Light_Source_Ray,
         IPoint, &Dummy_Colour);
 
-      Sample_Colour[i]=*Light_Colour;
+      Sample_Colour[i]= *Light_Colour;
 
       Block_Point_Light (Light_Source, Light_Source_Depth,
         &Light_Source_Ray, &Sample_Colour[i]);
@@ -351,7 +351,7 @@ int u1, v1, u2, v2, Level;
       do_light (Light_Source, &Light_Source_Depth, &Light_Source_Ray,
         IPoint, &Dummy_Colour);
 
-      Sample_Colour[i]=*Light_Colour;
+      Sample_Colour[i]= *Light_Colour;
 
       Block_Area_Light (Light_Source, Light_Source_Depth,
         &Light_Source_Ray, IPoint,
@@ -760,13 +760,14 @@ TNORMAL *Tnormal;
   return;
   }
 
-void Diffuse (Finish, IPoint, Eye, Layer_Normal, Layer_Pigment_Colour, Colour, Attenuation)
+void Diffuse (Finish, IPoint, Eye, Layer_Normal, Layer_Pigment_Colour, Colour, Attenuation, Object)
 FINISH *Finish;
 VECTOR *IPoint, *Layer_Normal;
 COLOUR *Layer_Pigment_Colour;
 COLOUR *Colour;
 RAY    *Eye;
 DBL    Attenuation;
+OBJECT *Object;
   {
   DBL Light_Source_Depth, Cos_Shadow_Angle;
   RAY Light_Source_Ray;
@@ -801,10 +802,13 @@ DBL    Attenuation;
       continue;
 
     /* See if light on far side of surface from camera. */
-    VDot(Cos_Shadow_Angle,*Layer_Normal,Light_Source_Ray.Direction);
 
-    if (Cos_Shadow_Angle < 0.0)
-      continue;
+    if (!(Object->Type & DOUBLE_ILLUMINATE))
+      {
+       VDot(Cos_Shadow_Angle,*Layer_Normal,Light_Source_Ray.Direction);
+       if (Cos_Shadow_Angle < 0.0)
+         continue;
+      }
 
     /* If light source was not blocked by any intervening object, then
       calculate it's contribution to the object's overall illumination */
@@ -1053,8 +1057,9 @@ VECTOR *Layer_Normal;
     Emitted_Colour.Blue += Layer_Pigment_Colour->Blue * Ambient;
     }
 
-  Diffuse (Finish, &Ray_Intersection ->IPoint, Ray,
-    Layer_Normal, Layer_Pigment_Colour, &Emitted_Colour, Attenuation);
+  Diffuse (Finish, &Ray_Intersection->IPoint, Ray,
+    Layer_Normal, Layer_Pigment_Colour, &Emitted_Colour, Attenuation, 
+    Ray_Intersection->Object);
 
   Colour->Red   += Emitted_Colour.Red;
   Colour->Green += Emitted_Colour.Green;
@@ -1082,7 +1087,12 @@ RAY *Ray;
 
 #define QColour Texture->Pigment->Quick_Colour
 
-  Normal (&Raw_Normal, Ray_Intersection->Object, &Ray_Intersection->IPoint);
+  /* Get the normal to the surface */
+  if (Ray_Intersection->NFlag)
+     Raw_Normal = Ray_Intersection->INormal;
+  else
+     Normal (&Raw_Normal, Ray_Intersection->Object, &Ray_Intersection->IPoint);
+
   /* Now, we perform the lighting calculations. */
 
   /* We assume here that Post_Process has propagated all parent
@@ -1245,4 +1255,3 @@ COLOUR *Colour;
   return;
 
   }
-
