@@ -10,7 +10,7 @@
 *  the token.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996,1998 Persistence of Vision Team
+*  Copyright 1996,1999 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
@@ -18,8 +18,8 @@
 *  which you are permitted to use this file.  The rules are in the file
 *  named POVLEGAL.DOC which should be distributed with this file.
 *  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
-*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
+*  Team Coordinator by email to team-coord@povray.org or visit us on the web at
+*  http://www.povray.org. The latest version of POV-Ray may be found at this site.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -125,7 +125,7 @@ struct Cond_Stack_Entry
 {
   COND_TYPE Cond_Type;
   DBL Switch_Value;
-  FILE *While_File;
+  char *While_File_Name;
   char *Macro_Return_Name;
   int Macro_Same_Flag;
   POV_MACRO *PMac;
@@ -603,6 +603,7 @@ static void Parse_Fopen(void);
 static void Parse_Fclose(void);
 static void Parse_Read(void);
 static void Parse_Write(void);
+static int Parse_Comma_RParen(void);
 static int Parse_Read_Value(DATA_FILE *User_File,int Previous,int *NumberPtr,void **DataPtr);
 static void Check_Macro_Vers(void);
 static DBL Parse_Cond_Param(void);
@@ -2194,7 +2195,7 @@ void Parse_Directive(int After_Hash)
       }
       else
       {
-        Cond_Stack[CS_Index].While_File = Data_File->File;
+        Cond_Stack[CS_Index].While_File_Name = POV_STRDUP(Data_File->Filename);
         Cond_Stack[CS_Index].Pos        = ftell(Data_File->File);
         Cond_Stack[CS_Index].Line_No    = Data_File->Line_Number;
 
@@ -2379,7 +2380,7 @@ void Parse_Directive(int After_Hash)
            break;
          
          case WHILE_COND:
-           if (Cond_Stack[CS_Index].While_File != Data_File->File)
+           if (strcmp(Cond_Stack[CS_Index].While_File_Name,Data_File->Filename))
            { 
               Error("#while loop didn't end in file where it started.");
            }
@@ -2396,6 +2397,8 @@ void Parse_Directive(int After_Hash)
       
            if (fabs(Value)<EPSILON)
            {
+             POV_FREE(Cond_Stack[CS_Index].While_File_Name);
+             Cond_Stack[CS_Index].While_File_Name=NULL;
              Cond_Stack[CS_Index].Cond_Type = SKIP_TIL_END_COND;
              Skip_Tokens(SKIP_TIL_END_COND);
            }
@@ -3539,7 +3542,10 @@ static void Parse_Read()
        {
           Temp_Entry = Add_Symbol (1,Token.Token_String,IDENTIFIER_TOKEN);
           End_File=Parse_Read_Value (User_File,Token.Token_Id, &(Temp_Entry->Token_Number), &(Temp_Entry->Data));
-          Parse_Comma(); /* Scene file comma between 2 idents */
+          if (Parse_Comma_RParen())  /* Scene file comma between 2 idents */
+          {
+            EXIT
+          }
        }            
      END_CASE
 
@@ -3547,7 +3553,10 @@ static void Parse_Read()
        if (!End_File)
        {            
           End_File=Parse_Read_Value (User_File,Token.Token_Id,Token.NumberPtr,Token.DataPtr);
-          Parse_Comma(); /* Scene file comma between 2 idents */
+          if (Parse_Comma_RParen()) /* Scene file comma between 2 idents */
+          {
+            EXIT
+          }
        }            
      END_CASE
 
@@ -3559,7 +3568,10 @@ static void Parse_Read()
            if (!End_File)
            {
               End_File=Parse_Read_Value (User_File,Token.Function_Id,Token.NumberPtr,Token.DataPtr);
-              Parse_Comma(); /* Scene file comma between 2 idents */
+              if (Parse_Comma_RParen()) /* Scene file comma between 2 idents */
+              {
+                EXIT
+              }
            }            
            break;
 
@@ -3710,6 +3722,33 @@ static int Parse_Read_Value(DATA_FILE *User_File,int Previous,int *NumberPtr,voi
    return(End_File);
 }
 
+static int Parse_Comma_RParen(void)
+{
+  int Stop=FALSE;
+  int Old_Ok=Ok_To_Declare;
+  
+  Ok_To_Declare=FALSE;
+
+  EXPECT
+    CASE(COMMA_TOKEN)
+      EXIT
+    END_CASE
+    
+    CASE(RIGHT_PAREN_TOKEN)
+      Stop=TRUE;
+      EXIT
+    END_CASE
+    
+    OTHERWISE
+      Parse_Error_Str("comma or right paren");
+    END_CASE
+  END_EXPECT
+
+  Ok_To_Declare=Old_Ok;
+  
+  return(Stop);  
+}
+
 static void Parse_Write(void)
 {
    char *temp;
@@ -3731,6 +3770,10 @@ static void Parse_Write(void)
        temp=Parse_Formatted_String();
        fprintf(User_File->File,temp);
        POV_FREE(temp);
+       if (Parse_Comma_RParen())
+       {
+         EXIT
+       }
      END_CASE
      
      CASE_VECTOR
@@ -3760,17 +3803,14 @@ static void Parse_Write(void)
          default:
            Parse_Error_Str("expression");
        }
-     END_CASE
-
-     CASE (RIGHT_PAREN_TOKEN)
+       if (Parse_Comma_RParen())
+       {
        EXIT
-     END_CASE
-     
-     CASE (COMMA_TOKEN)
+       }
      END_CASE
      
      OTHERWISE
-       Parse_Error_Str("string");
+       Parse_Error_Str("string or expression");
      END_CASE
    END_EXPECT
 }

@@ -2,7 +2,7 @@
 ;;
 ;;                 PERSISTENCE OF VISION(tm) RAY TRACER
 ;;
-;;                       POV-Ray version 3.1e
+;;                       POV-Ray version 3.1f
 ;;
 ;;
 ;; This file contains the system default options for POV-Ray.  To replace
@@ -91,6 +91,11 @@ Output_File_Type=N		;; (+/-Ftype)
 ;; Define the Gamma output responce of the monitor.
 ;; This is about correct for most Unix an PC monitors.
 Display_Gamma=2.2		;; (Not available as command line switch)
+
+
+
+
+
 
 
 

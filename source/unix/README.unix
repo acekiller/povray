@@ -1,5 +1,5 @@
                  Persistence of Vision Ray Tracer
-                           Version 3.1e
+                           Version 3.1g
                     Unix Specific Documentation
 
 New in version 3.1:
@@ -40,9 +40,13 @@ Files:
    has been made to make it compile on as many systems as we have access
    to.  If you have problems compiling, try checking with a local Unix
    guru first.  If you still have problems and have internet access,
-   check out the comp.graphics.rendering.raytracing newsgroup.  Make sure
-   you read the FAQ first (if you don't see it, ask for it.)  Please do
-   not contact the POV-Team about problems with compiling POV-Ray.
+   check out the comp.graphics.rendering.raytracing newsgroup.  Make 
+   sure you read the FAQ first (if you don't see it, ask for it.)  The 
+   POV-Team also has newsgroups at news.povray.org that are not 
+   distributed on the Internet.  The povray.unix group on this server
+   is a useful resource for those who may be having difficulty
+   compiling POV-Ray on various Unix systems.  Please do not contact 
+   the POV-Team about problems with compiling POV-Ray.
 
    If you are trying to compile POV-Ray on an unsupported platform,
    this version is the best one to use as a base.  The platform
@@ -57,14 +61,12 @@ Files:
    the Linux archive (povlinux.tgz).
 
 Executables:
-   Official executables are provided for only Linux on x86 systems 
-   because there are so many possible Unix executable formats.  Since
-   the POV-Ray team does not have ready access to other platforms for
-   testing and debugging, we are unable to support other Unix platforms.
-   In general, however, Unix systems come bundled with a C compiler, so 
-   recompiling the source for your target system shouldn't cause a 
-   problem. If you want to distribute an executable created by yourself 
-   you must comply with POVLEGAL.DOC.
+   Official executables are provided for only Linux on x86 and SPARC
+   SunOS systems because there are so many possible Unix executable
+   formats.  In general, however, Unix systems come bundled with a C
+   compiler, so recompiling the source for your target system shouldn't
+   cause a problem. If you want to distribute an executable created by
+   yourself you must comply with POVLEGAL.DOC.
 
    An official Linux (a free Unix variant) version is available as 
    povlinux.tgz.  If you can't find it at the same place you got this 
@@ -75,23 +77,30 @@ Executables:
      - There are many sites around the world that mirror the povray.org
        site.  These are listed in README.MIRRORS at ftp.povray.org, and
        you should try to use the closest site for the best speed.
-     - Compuserve's GRAPHDEV forum. (GO GRAPHDEV).
      - We also have a web site with a link to the binary. Point your
        browser at http://www.povray.org/.
 
 File locations:
+
+   The Unix versions of POV-Ray now come with an install script that 
+   should put most of the necessary files in the appropriate locations.
+   Details of what it does and does not install and where it installs
+   them are below.  The install script does not compile the code, though a 
+   'make install' target is now available for installing binaries.
+
    The preferred location for installing POV-Ray for Unix is under
    /usr/local/lib/povray31 for all of the INI, scene, and include files,
-   and /usr/local/bin for povray, x-povray, and/or s-povray.  Each user
-   will also need to have an INI file, actually called .povrayrc on
-   Unix systems, to tell POV-Ray where to look for these files.
+   and /usr/local/bin for povray, x-povray, and/or s-povray.  This is
+   handled by the install script.  Each user will also need to have an 
+   INI file, actually called .povrayrc on Unix systems, to tell POV-Ray 
+   where to look for these files.  Currently, this must be done manually.
 
-   The POV-Ray man page, povray.1, should be placed in a similarly
-   accessible location, such as /usr/local/man/man1.  If it is expected
-   that many people will be using one version of POV-Ray, it would be a
-   good idea to edit povray.1, under the section 'FILES' to specify
-   where all of the documentation, scenes, and include files are
-   actually stored, if they aren't installed as suggested above.
+   The POV-Ray man page, povray.1, should be placed in a similarly accessible
+   location, such as /usr/local/man/man1.  The install script, if used, will
+   place it there.  If POV-Ray is not installed as suggested above and it is 
+   expected that many people will be using one version of POV-Ray, it would 
+   be a good idea to edit povray.1, under the section 'FILES' to specify where
+   all of the documentation, scenes, and include files are actually stored.
 
 INI files:
    POV-Ray allows the use of files to store common configuration
@@ -162,7 +171,8 @@ X Windows Display:
    and re-start X Windows.  Re-starting fvwm will not be enough.  If you
    don't restart, or choose not to do this this, POV-Ray will use a
    similar built-in monochrome icon.  Using this icon with another window
-   manager may use a different procedure.
+   manager may use a different procedure.  This icon is not installed
+   by the install script.
 
    The X-windows version also supports these standard command-line options
    in addition to those given in the generic POV-Ray documentation.  See
@@ -187,6 +197,11 @@ SVGAlib display:
 
        chown root.root s-povray
        chmod 4755 s-povray
+
+   NOTE: various bugs in POV-Ray might allow malicious users to gain
+   root access if POV-Ray is setuid root.  While this may be convenient,
+   it might not be a good idea, and it's certainly not worth doing if
+   the X Windows version works for you.
 
    If it still doesn't work then make sure svgalib is installed on your
    machine and works properly (sdoom is a good way of doing this :-).
@@ -235,7 +250,7 @@ Post-processing Images:
    to read and write PNG format images, although you will have to
    re-compile XV in order to use it.  The PNG patch for XV, as well as lots
    of other PNG information is available at the PNG home page
-   http://quest.jpl.nasa.gov/PNG/.
+   http://www.cdrom.com/pub/png/.
 
    POV-Ray can also pipe its output directly into a post-processor.  For
    example, 'povray -iscene.pov -fp -o- | cjpeg > scene.jpg' will create
@@ -250,8 +265,4 @@ POV-Ray in a publicly accessible location, you must read and comply with
 the 'Online or Remote Execution' conditions in POVLEGAL.DOC.
 
 Mark Gordon
-Internet:   mtgordon@mailbag.com
-
-
-
-
+Internet:   mtgordon@povray.org

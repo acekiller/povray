@@ -29,3 +29,7 @@ should be set in your povray.ini file with the statement:
 Display_Gamma = 2.2
 
 or whatever your actual gamma value is.
+
+
+
+

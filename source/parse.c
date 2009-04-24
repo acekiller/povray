@@ -4,7 +4,7 @@
 *  This module implements a parser for the scene description files.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996,1998 Persistence of Vision Team
+*  Copyright 1996,1999 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
@@ -12,8 +12,8 @@
 *  which you are permitted to use this file.  The rules are in the file
 *  named POVLEGAL.DOC which should be distributed with this file.
 *  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
-*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
+*  Team Coordinator by email to team-coord@povray.org or visit us on the web at
+*  http://www.povray.org. The latest version of POV-Ray may be found at this site.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -6175,7 +6175,7 @@ static void *Copy_Identifier (void *Data, int Type)
        break;
      case VECTOR_4D_ID_TOKEN:
        v4p = Create_Vector_4D();
-       Assign_Vector((*v4p),(*((VECTOR_4D *)Data)));
+       Assign_Vector_4D((*v4p),(*((VECTOR_4D *)Data)));
        New=v4p;
        break;
      case FLOAT_ID_TOKEN:

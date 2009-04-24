@@ -1,6 +1,6 @@
 #***************************************************************
 #*
-#*  UNIX Makefile for Persistence of Vision Raytracer v3.1e
+#*  UNIX Makefile for Persistence of Vision Raytracer v3.1g
 #*
 #*  Aug-95 : Created by Chris Cason.
 #*  Nov-95 : Modified by Andreas Dilger to combine X and non-X.
@@ -10,24 +10,80 @@
 #*  Feb-99 : Modified by Mike Fleetwood to add a more flexible default 
 #*           INI file search method 
 #*  Mar-99 : More cleanup by Mark Gordon, including suggestions by Axel Hecht
-#*  Mar-99 : Modified by Mark Gordon to add -ffast-math to Linux compiler flags 
+#*  Mar-99 : Modified by Mark Gordon to add -ffast-math to Linux compiler 
+#*           flags 
+#*  May-99 : Modified by Mark Gordon to add IRIX 6.5 compiler flags
+#*           as provided by Johan Eriksson.  Also minor cleanup.
+#*  Jun-99 : Modified by Mark Gordon to add make install, Linux
+#*           optimization flags, -c flag to touch, platform-specific code 
+#*           all moved to the top.
+#*  Nov-99 : More cleanup by Mark Gordon to fix install, SGI flags
+#*  
 #*
 #***************************************************************
 
-# set ODIR to the location where you want the object files placed.
-ODIR=.
+# The portions of the makefile that may vary between platforms have been moved
+# to the top for the convenience of those who wish to modify them for various
+# platforms.
 
-# set SRCDIR to the location where the main POV-Ray source is located.
-SRCDIR=..
+# The exact compiler options may depend on your compiler.  Feel free to
+#   modify these as required.
+#
+# Most compilers are usually satisfied with the -ansi option, if they have
+#   a choice between ANSI and non-ANSI compiling.  Use the ANSI mode if
+#   possible.  If you can't get -ansi to work or something similar, you may
+#   want to add -D__STDC__ to force ANSI prototypes instead of K&R prototypes.
+#
+# The option -DMEM_TRACE enables memory debugging, but shouldn't be needed
+#   for compiles unless you are debugging new code, as it slows things down.
+# The option -DPOV_COMMENTS enables informational comments in PNG and PPM
+#   format output files (see png_pov.c and ppm.c for more info).
+#
+# The POVLIBDIR section was added by Mike Fleetwood.
+# The -ffast-math flag was added to the Linux flags by Mark Gordon
+#
+#
+# CFLAGS      = -O2 -ansi -c -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC) $(XLIBINC)
+LFLAGS      = $(LIBPNGLIB) $(ZLIBLIB) -lm
 
-# UTARGET is the name of the text-only UNIX version
-UTARGET=povray
+# Linux compiler flags, generic
+#CFLAGS      = -O6 -finline-functions -ffast-math -c -ansi -DCOMPILER_VER=\".`uname`.$(CC)\" -DPOV_LIB_DIR=\"$(POVLIBDIR)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
 
-# XTARGET is the name of the X-Windows executable.
-XTARGET=x-povray
+# Linux compiler flags, Pentium optimized
+#CFLAGS      = -O6 -finline-functions -ffast-math -c -ansi -m386 -DCPU=586 -DCOMPILER_VER=\".`uname`.$(CC)\" -DPOV_LIB_DIR=\"$(POVLIBDIR)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
 
-# STARGET is the name of the SVGA executable.
-STARGET=s-povray
+# Linux compiler flags, Pentium II optimized
+CFLAGS      = -O6 -finline-functions -ffast-math -c -ansi -m386 -DCPU=686 -DCOMPILER_VER=\".`uname`.$(CC)\" -DPOV_LIB_DIR=\"$(POVLIBDIR)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
+
+# HPUX compiler flags
+#CFLAGS      = +O2 -finline-functions -c -Aa -D_HPUX_SOURCE -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
+
+# IRIX 6.5 compiler flags, courtesy Johan Eriksson
+#CFLAGS	     = -O2 -n32 -mips4 -r10000 -ansi -c -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC) $(XLIBINC)	
+
+# Your compiler
+CC          = gcc
+
+# The X11 variable should point to the top-level directory where the X11
+#   libraries and include files are located.  It should really be set in
+#   your system startup script (ie .cshrc or .profile) so that it can be
+#   different for each platform without having to change the makefile.
+# If you already have it set, comment all of these lines out.  Otherwise,
+#   uncomment one of the following lines, or edit one to suit your system.
+#X11 = /usr/local/X11R6
+
+# for some SunOS systems:
+#X11 = /usr/openwin
+
+# for some AIX systems:
+#X11 = /usr/lpp/X11
+
+X11 = /usr/X11R6
+
+# You probably won't need to change these if you have the X11 variable
+#   above set properly...
+XLIBINC = -I$(X11)/include
+XLIBLIB = -L$(X11)/lib -lX11
 
 # libpng and zlib include and library directories.
 #
@@ -59,69 +115,11 @@ ZLIBLIB = -L$(ZLIBDIR) -lz
 # ZLIBINC = -I$(LIBPNGINCDIR)
 # ZLIBLIB = -L$(PREFIX)/lib -lpng
 
-# Define the default POV-Ray library location
-POVLIBDIR = /usr/local/lib/povray31
-
-# This is the suffix for object files.
-OBJ     = .o
-
-# This is the command used to delete a file
-RM    = /bin/rm -f
-
-# The X11 variable should point to the top-level directory where the X11
-#   libraries and include files are located.  It should really be set in
-#   your system startup script (ie .cshrc or .profile) so that it can be
-#   different for each platform without having to change the makefile.
-# If you already have it set, comment all of these lines out.  Otherwise,
-#   uncomment one of the following lines, or edit one to suit your system.
-#X11 = /usr/local/X11R6
-
-# for some SunOS systems:
-#X11 = /usr/openwin        
-
-# for some AIX systems:
-#X11 = /usr/lpp/X11        
-
-X11 = /usr/X11R6
-
-# You probably won't need to change these if you have the X11 variable
-#   above set properly...
-XLIBINC = -I$(X11)/include
-XLIBLIB = -L$(X11)/lib -lX11
-
-# Libraries for the SVGA Linux version
-SLIBLIB = -lvga -lvgagl
-
-SRCINC  = -I. -I$(SRCDIR)
-
-# The exact compiler options may depend on your compiler.  Feel free to
-#   modify these as required.
-#
-# Most compilers are usually satisfied with the -ansi option, if they have
-#   a choice between ANSI and non-ANSI compiling.  Use the ANSI mode if
-#   possible.  If you can't get -ansi to work or something similar, you may
-#   want to add -D__STDC__ to force ANSI prototypes instead of K&R prototypes.
-#
-# The option -DMEM_TRACE enables memory debugging, but shouldn't be needed
-#   for compiles unless you are debugging new code, as it slows things down.
-# The option -DPOV_COMMENTS enables informational comments in PNG and PPM
-#   format output files (see png_pov.c and ppm.c for more info).
-#
-# The POVLIBDIR section was added by Mike Fleetwood.
-# The -ffast-math flag was added to the Linux flags by Mark Gordon
-#
-#
-# CFLAGS      = -O2 -ansi -c -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC) $(XLIBINC)
-LFLAGS      = $(LIBPNGLIB) $(ZLIBLIB) -lm
-
-# Linux compiler flags
-CFLAGS      = -O6 -finline-functions -ffast-math -c -ansi -DCOMPILER_VER=\".`uname`.$(CC)\" -DPOV_LIB_DIR=\"$(POVLIBDIR)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
-
-# HPUX compiler flags
-#CFLAGS      = +O2 -finline-functions -c -Aa -D_HPUX_SOURCE -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
-
-# Your compiler
-CC          = gcc
+#--------------------------------------------------------------------------
+# This concludes the options that may be necessary for POV-Ray to compile.
+# You may still wish to modify the next few items, but it should at least
+# compile if you have the lines above configured correctly for your system.
+#--------------------------------------------------------------------------
 
 # This decides which version of the executable you will get, either the
 # Unix text-only version, the X-Windows version, or the SVGAlib version.
@@ -129,6 +127,45 @@ CC          = gcc
 #default: unix
 default: xwin
 #default: svga
+
+# Define the default POV-Ray library location
+POVLIBDIR = /usr/local/lib/povray31
+
+# Define the path under which you want POV-Ray files to be installed,
+# typically /usr/local/bin, though Linux distributions may wish to 
+# alter this to /usr/bin
+POVPATH = /usr/local
+
+#----------------------------------------------------------------------
+# There should be no compelling reason to customize the makefile beyond
+# this point.  Happy compiling!
+#----------------------------------------------------------------------
+
+# set ODIR to the location where you want the object files placed.
+ODIR=.
+
+# set SRCDIR to the location where the main POV-Ray source is located.
+SRCDIR=..
+
+# UTARGET is the name of the text-only UNIX version
+UTARGET=povray
+
+# XTARGET is the name of the X-Windows executable.
+XTARGET=x-povray
+
+# STARGET is the name of the SVGA executable.
+STARGET=s-povray
+
+# This is the suffix for object files.
+OBJ     = .o
+
+# This is the command used to delete a file
+RM    = /bin/rm -f
+
+# Libraries for the SVGA Linux version
+SLIBLIB = -lvga -lvgagl
+
+SRCINC  = -I. -I$(SRCDIR)
 
 #
 # End of user specific options
@@ -255,6 +292,7 @@ bcylDEP                 = $(SRCDIR)/bcyl.c     \
                           $(SRCDIR)/vector.h   \
                           config.h             \
                           $(SRCDIR)/povproto.h \
+                          $(SRCDIR)/warps.h
 
 bezierDEP               = $(SRCDIR)/bezier.c   \
                           $(SRCDIR)/atmosph.h  \
@@ -994,22 +1032,6 @@ png_povDEP              = $(SRCDIR)/png_pov.c  \
                           $(SRCDIR)/vlbuffer.h \
                           $(SRCDIR)/warps.h
 
-#png_povDEP              = $(SRCDIR)/png_pov.c  \
-#                          $(SRCDIR)/atmosph.h  \
-#                          $(SRCDIR)/bbox.h     \
-#                          $(SRCDIR)/camera.h   \
-#                          config.h             \
-#                          $(SRCDIR)/frame.h    \
-#                          $(SRCDIR)/optout.h   \
-#                          $(LIBPNGINCDIR)/png.h\
-#                          $(SRCDIR)/png_pov.h  \
-#                          $(SRCDIR)/point.h    \
-#                          $(SRCDIR)/povproto.h \
-#                          $(SRCDIR)/povray.h   \
-#                          $(SRCDIR)/render.h   \
-#                          $(SRCDIR)/vlbuffer.h \
-#                          $(SRCDIR)/warps.h
-
 pointDEP                = $(SRCDIR)/point.c    \
                           $(SRCDIR)/atmosph.h  \
                           $(SRCDIR)/bbox.h     \
@@ -1549,238 +1571,255 @@ DISPOBJS = $(ODIR)/povray$(OBJ) $(ODIR)/render$(OBJ) \
 newunix:
 	-@$(RM) $(DISPOBJS)
 	-@cp unixconf.h config.h
-	-@touch $(ODIR)/*$(OBJ)
+	-@touch -c $(ODIR)/*$(OBJ)
 	-@$(MAKE) unix
 
 newsvga:
 	-@$(RM) $(DISPOBJS)
 	-@cp svgaconf.h config.h
-	-@touch $(ODIR)/*$(OBJ)
+	-@touch -c $(ODIR)/*$(OBJ)
 	-@$(MAKE) svga
 
 newxwin:
 	-@$(RM) $(DISPOBJS)
 	-@cp xwinconf.h config.h
-	-@touch $(ODIR)/*$(OBJ)
+	-@touch -c $(ODIR)/*$(OBJ)
 	-@$(MAKE) xwin
 
 clean:
 	-@$(RM) $(POVOBJS) $(ODIR)/unix$(OBJ) $(ODIR)/xwindows$(OBJ)
 	-@$(RM) $(ODIR)/svga$(OBJ) $(UTARGET) $(XTARGET) $(STARGET)
 
+install:
+	-@cp povray.1 $(POVPATH)/man/man1
+	-@if \
+	[ -x $(UTARGET) ]; \
+	then \
+	cp $(UTARGET) $(POVPATH)/bin; \
+	fi
+	-@if \
+	[ -x $(XTARGET) ]; \
+	then \
+	cp $(XTARGET) $(POVPATH)/bin; \
+	fi
+	-@if \
+	[ -x $(STARGET) ]; \
+	then \
+	cp $(STARGET) $(POVPATH)/bin; \
+	fi
+
 $(ODIR)/atmosph$(OBJ)  : $(atmosphDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/atmosph.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/atmosph.c
 
 $(ODIR)/bbox$(OBJ)     : $(bboxDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/bbox.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/bbox.c
 
 $(ODIR)/bcyl$(OBJ)     : $(bcylDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/bcyl.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/bcyl.c
 
 $(ODIR)/bezier$(OBJ)   : $(bezierDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/bezier.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/bezier.c
 
 $(ODIR)/blob$(OBJ)     : $(blobDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/blob.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/blob.c
 
 $(ODIR)/boxes$(OBJ)    : $(boxesDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/boxes.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/boxes.c
 
 $(ODIR)/bsphere$(OBJ)  : $(bsphereDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/bsphere.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/bsphere.c
 
 $(ODIR)/camera$(OBJ)   : $(cameraDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/camera.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/camera.c
 
 $(ODIR)/chi2$(OBJ)     : $(chi2DEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/chi2.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/chi2.c
 
 $(ODIR)/colour$(OBJ)   : $(colourDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/colour.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/colour.c
 
 $(ODIR)/cones$(OBJ)    : $(conesDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/cones.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/cones.c
 
 $(ODIR)/csg$(OBJ)      : $(csgDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/csg.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/csg.c
 
 $(ODIR)/discs$(OBJ)    : $(discsDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/discs.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/discs.c
 
 $(ODIR)/express$(OBJ)  : $(expressDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/express.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/express.c
 
 $(ODIR)/fractal$(OBJ)  : $(fractalDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/fractal.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/fractal.c
 
 $(ODIR)/gif$(OBJ)      : $(gifDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/gif.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/gif.c
 
 $(ODIR)/gifdecod$(OBJ) : $(gifdecodDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/gifdecod.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/gifdecod.c
 
 $(ODIR)/hcmplx$(OBJ)   : $(hcmplxDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/hcmplx.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/hcmplx.c
 
 $(ODIR)/hfield$(OBJ)   : $(hfieldDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/hfield.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/hfield.c
 
 $(ODIR)/iff$(OBJ)      : $(iffDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/iff.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/iff.c
 
 $(ODIR)/image$(OBJ)    : $(imageDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/image.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/image.c
 
 $(ODIR)/interior$(OBJ) : $(interiorDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/interior.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/interior.c
 
 $(ODIR)/lathe$(OBJ)    : $(latheDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/lathe.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/lathe.c
 
 $(ODIR)/lbuffer$(OBJ)  : $(lbufferDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/lbuffer.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/lbuffer.c
 
 $(ODIR)/lighting$(OBJ) : $(lightingDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/lighting.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/lighting.c
 
 $(ODIR)/matrices$(OBJ) : $(matricesDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/matrices.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/matrices.c
 
 $(ODIR)/media$(OBJ)    : $(mediaDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/media.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/media.c
 
 $(ODIR)/mem$(OBJ)      : $(memDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/mem.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/mem.c
 
 $(ODIR)/mesh$(OBJ)     : $(meshDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/mesh.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/mesh.c
 
 $(ODIR)/normal$(OBJ)   : $(normalDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/normal.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/normal.c
 
 $(ODIR)/objects$(OBJ)  : $(objectsDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/objects.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/objects.c
 
 $(ODIR)/octree$(OBJ)   : $(octreeDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/octree.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/octree.c
 
 $(ODIR)/optin$(OBJ)    : $(optinDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/optin.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/optin.c
 
 $(ODIR)/optout$(OBJ)   : $(optoutDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/optout.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/optout.c
 
 $(ODIR)/parse$(OBJ)    : $(parseDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/parse.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/parse.c
 
 $(ODIR)/parstxtr$(OBJ) : $(parstxtrDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/parstxtr.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/parstxtr.c
 
 $(ODIR)/pattern$(OBJ)  : $(patternDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/pattern.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/pattern.c
 
 $(ODIR)/pgm$(OBJ)      : $(pgmDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/pgm.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/pgm.c
 
 $(ODIR)/pigment$(OBJ)  : $(pigmentDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/pigment.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/pigment.c
 
 $(ODIR)/planes$(OBJ)   : $(planesDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/planes.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/planes.c
 
 $(ODIR)/point$(OBJ)    : $(pointDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/point.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/point.c
 
 $(ODIR)/poly$(OBJ)     : $(polyDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/poly.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/poly.c
 
 $(ODIR)/polygon$(OBJ)  : $(polygonDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/polygon.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/polygon.c
 
 $(ODIR)/polysolv$(OBJ) : $(polysolvDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/polysolv.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/polysolv.c
 
 $(ODIR)/povray$(OBJ)   : $(povrayDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/povray.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/povray.c
 
 $(ODIR)/png_pov$(OBJ)  : $(png_povDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/png_pov.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/png_pov.c
 
 $(ODIR)/ppm$(OBJ)      : $(ppmDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/ppm.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/ppm.c
 
 $(ODIR)/prism$(OBJ)    : $(prismDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/prism.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/prism.c
 
 $(ODIR)/quadrics$(OBJ) : $(quadricsDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/quadrics.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/quadrics.c
 
 $(ODIR)/quatern$(OBJ)  : $(quaternDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/quatern.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/quatern.c
 
 $(ODIR)/rad_data$(OBJ) : $(rad_dataDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/rad_data.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/rad_data.c
 
 $(ODIR)/radiosit$(OBJ) : $(radiositDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/radiosit.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/radiosit.c
 
 $(ODIR)/ray$(OBJ)      : $(rayDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/ray.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/ray.c
 
 $(ODIR)/render$(OBJ)   : $(renderDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/render.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/render.c
 
 $(ODIR)/sor$(OBJ)      : $(sorDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/sor.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/sor.c
 
 $(ODIR)/spheres$(OBJ)  : $(spheresDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/spheres.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/spheres.c
 
 $(ODIR)/super$(OBJ)    : $(superDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/super.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/super.c
 
 $(ODIR)/svga$(OBJ) : $(svgaDEP)
-	$(CC) $(CFLAGS) svga.c -o $@
+	$(CC) $(CFLAGS) svga.c
 
 $(ODIR)/targa$(OBJ)    : $(targaDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/targa.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/targa.c
 
 $(ODIR)/texture$(OBJ)  : $(textureDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/texture.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/texture.c
 
 $(ODIR)/tokenize$(OBJ) : $(tokenizeDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/tokenize.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/tokenize.c
 
 $(ODIR)/torus$(OBJ)    : $(torusDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/torus.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/torus.c
 
 $(ODIR)/triangle$(OBJ) : $(triangleDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/triangle.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/triangle.c
 
 $(ODIR)/truetype$(OBJ) : $(truetypeDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/truetype.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/truetype.c
 
 $(ODIR)/txttest$(OBJ)  : $(txttestDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/txttest.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/txttest.c
 
 $(ODIR)/unix$(OBJ)     : $(unixDEP)
-	$(CC) $(CFLAGS) unix.c -o $@
+	$(CC) $(CFLAGS) unix.c
 
 $(ODIR)/userio$(OBJ)   : $(userioDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/userio.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/userio.c
 
 $(ODIR)/vbuffer$(OBJ)  : $(vbufferDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/vbuffer.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/vbuffer.c
 
 $(ODIR)/vlbuffer$(OBJ) : $(vlbufferDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/vlbuffer.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/vlbuffer.c
 
 $(ODIR)/warps$(OBJ)    : $(warpsDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/warps.c -o $@
+	$(CC) $(CFLAGS) $(SRCDIR)/warps.c
 
 $(ODIR)/xwindows$(OBJ) : $(xwindowsDEP)
-	$(CC) $(CFLAGS) $(XLIBINC) xwindows.c -o $@
-
+	$(CC) $(CFLAGS) $(XLIBINC) xwindows.c
 
 
 

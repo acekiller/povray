@@ -1,20 +1,28 @@
-.TH POV\-Ray 1 "4 March 1999" "POV\-Team" "Version 3.1e" \" -*- nroff -*-
+.TH POV\-Ray 1 "21 November 1999" "POV\-Team" "Version 3.1g" \" -*- nroff -*-
 .\" man page written by Andreas Dilger, updated by Mark Gordon
 .\"
 
 .SH NAME
-povray \- POV\-Ray \- Persistence of Vision Ray Tracer v3.1e
+povray, x\-povray, s\-povray \- POV\-Ray: The Persistence of Vision Ray Tracer 
+
 .SH SYNOPSIS
-\fBpovray\fP [\fB+i\fP \fIinput_file\fP] [\fB+o\fP \fIoutput_file\fP]
-[\fB+/\-option\fP ...] [\fIINI_file\fP ...]
+\fBpovray\fP [\fB+i\fP\fIinput_file\fP] [\fB+o\fP\fIoutput_file\fP]
+[\fB+/\-option\fP...] [\fIINI_file\fP ...]
+.LP
+\fBx\-povray\fP [\fB+i\fP\fIinput_file\fP] [\fB+o\fP\fIoutput_file\fP]
+[\fB+/\-option\fP...] [\fIINI_file\fP ...]
+.LP
+\fBs\-povray\fP [\fB+i\fP\fIinput_file\fP] [\fB+o\fP\fIoutput_file\fP]
+[\fB+/\-option\fP...] [\fIINI_file\fP ...]
+
 
 .SH DESCRIPTION
 \fBPOV\-Ray\fP is a free, full\-featured ray tracer, written and maintained
-by a team of volunteers on the CompuServe GO GRAPHDEV Forum and on the
-Internet.  On the Unix platform \fBPOV\-Ray\fP can be either a text\-mode 
-only program, or can optionally have preview capabilities using the 
-\fIX Window System\fP.  Under Linux, \fBPOV\-Ray\fP can optionally use the 
-SVGA library to preview renderings.
+by a team of volunteers on the Internet.  On the Unix platform \fBPOV\-Ray\fP 
+can be either a text\-mode only program (\fBpovray\fP), or can optionally 
+have preview capabilities using the \fIX Window System\fP (\fBx\-povray\fP).  
+Under Linux, \fBPOV\-Ray\fP can optionally use the SVGA library 
+(\fBs\-povray\fP) to preview renderings.
 .LP
 This manual page only lists the basic \fBPOV\-Ray\fP and Unix specific
 features and command\-line options for this version of \fBPOV\-Ray\fP.
@@ -57,11 +65,12 @@ will render in the same way on all computers and operating systems
 .SH OPTIONS
 Options can be specified with either a leading '+' or a leading '\-'.
 Many options are switches, meaning a '+' turns the option on, and a '\-'
-turns the option off.  For other options, it doesn't matter if
-a '+' or a '\-' is used.  Most options cannot have spaces in them
-so you should specify \fB+FN\fP rather than \fB+F N\fP, and combining
-options is not allowed, so \fB+SC\fB is very different from \fB+S +C\fP.
-Options are not case sensitive.
+turns the option off.  Generally, the INI file option for such switches
+is \fIbool\fP.  For other options, it doesn't matter if a '+' or a '\-' 
+is used.  Most options cannot have spaces in them so you should specify 
+\fB+FN\fP rather than \fB+F N\fP, and combining options is not allowed, 
+so \fB+SC\fB is very different from \fB+S +C\fP. Options are not case 
+sensitive.
 .LP
 The command\-line options are shown below with their corresponding INI
 file options.  If the same option is specified multiple times, whether
@@ -121,10 +130,10 @@ Start the rendering at column \fInn\fP from the left of the screen.
 \fBSC\fP0.\fInn\fP or \fBStart_Column\fP=\fIfloat\fP
 Start the rendering at \fInn\fP percent from the left of the screen.
 .TP
-\fBEC\fP\fInn\fP or \fBStart_Column\fP=\fIinteger\fP
+\fBEC\fP\fInn\fP or \fBEnd_Column\fP=\fIinteger\fP
 End the rendering at column \fInn\fP from the left of the screen.
 .TP
-\fBEC\fP0.\fInn\fP or \fBStart_Column\fP=\fIfloat\fP
+\fBEC\fP0.\fInn\fP or \fBEnd_Column\fP=\fIfloat\fP
 End the rendering at \fInn\fP percent from the left of the screen.
 .TP
 \fBC\fP or \fBContinue_Trace\fP=\fIbool\fP
@@ -154,6 +163,9 @@ for 15\-bit high\-color display, in addition to the default 256\-color
 palette.  To specify the palette, you must first specify the display
 type (the second character, shown here as '0') for compatibility reasons,
 even though it is ignored in Unix versions.
+.TP
+\fBDisplay_Gamma\fP=\fIfloat\fP
+Set the display gamma to the specified value.
 .TP
 \fBSP\fP\fInn\fP or \fBPreview_Start_Size\fP=\fIinteger\fP
 Start mosaic preview with blocks \fInn\fP pixels square.
@@ -201,6 +213,9 @@ Render at quality \fIn\fP.  Qualities range from \fI0\fP for rough images
 and \fI9\fP for complete ray\-tracing and textures, and \fI10\fP and \fI11\fP
 add radiosity.
 .TP
+\fBQR\fP or \fBRadiosity\fP=\fIbool\fP
+Turn on radiosity.
+.TP
 \fBA\fP0.\fIn\fP or \fBAntialias\fP=\fIbool\fP \fBAntialias_Threshold\fP=\fIinteger\fP
 Do antialiasing on the pixels until the difference between adjacent pixels
 is less that 0.\fIn\fP, or the maximum recursion depth is reached.
@@ -225,14 +240,17 @@ Use vista buffer to speed up rendering.
 .SS Animation options:
 .TP
 \fBK\fP\fIn.n\fP or \fBClock\fP=\fIfloat\fP
-Render a single frame of an animation with the clock value \fIn.n\fP.
+Render a single frame of an animation with the clock value \fIn.n\fP,
+typically used in external animation loops.
 .TP
 \fBKFI\fP\fInn\fP or \fBInitial_Frame\fP=\fIinteger\fP
-Specify the initial frame number for an animation.
+Specify the initial frame number for an animation, using an internal 
+animation loop.  The default is 1.
 .TP
 \fBKFF\fP\fInn\fP or \fBFinal_Frame\fP=\fIinteger\fP
 Specify the final frame number for an animation.  This must be set at a
-value other that 1 in order to render multiple frames at once.
+value other that 1 in order to render multiple frames at once (i.e. an
+internal animation loop).
 .TP
 \fBKI\fP\fIn.n\fP or \fBInitial_Clock\fP=\fIfloat\fP
 Specify the clock value for the initial frame of an animation.
@@ -263,16 +281,116 @@ Render alternate frames using odd/even fields, suitable for interlaced output.
 \fBUO\fP or \fBOdd_Field\fP=\fIbool\fP
 Start a field rendered animation on the odd field, rather than the even field.
 
+.SS Shell Out:
+.TP
+\fBPre_Scene_Command\fP=\fIcommand line\fP
+Execute the specified command line before the scene is rendered. This
+option may only be used from INI files.
+.TP
+\fBPre_Frame_Command\fP=\fIcommand line\fP
+Execute the specified command line before the frame is rendered. This
+option may only be used from INI files.
+.TP
+\fBPost_Scene_Command\fP=\fIcommand line\fP
+Execute the specified command line after the scene is rendered. This
+option may only be used from INI files.
+.TP
+\fBPost_Frame_Command\fP=\fIcommand line\fP
+Execute the specified command line after the frame is rendered. This
+option may only be used from INI files.
+.TP
+\fBUser_Abort_Command\fP=\fIcommand line\fP
+Execute the specified command line when the user aborts POV\-Ray. This
+option may only be used from INI files.
+.TP
+\fBFatal_Error_Command\fP=\fIcommand line\fP
+Execute the specified command line when POV\-Ray has a fatal error. This
+option may only be used from INI files.
+
+.SS
+\fBCommand-line Substitutions\fP
+The following substitutions are available for use within command lines:
+.TP
+\fB%h\fP
+Height of image in pixels
+.TP
+\fB%k\fP
+Clock value of this frame
+.TP
+\fB%n\fP
+Frame number of this frame
+.TP
+\fB%o\fP
+Output file name with extension and embedded frame number if any
+.TP
+\fB%s\fP
+Scene name derived by stripping path and extension from input name
+.TP
+\fB%w\fP
+Width of image in pixels
+.TP
+\fB%%\fP
+A single % sign.
+
+.SS
+\fBShell Command Return Actions\fP
+These options can be used within INI files to specify actions to take
+based on return codes from shell commands.
+.TP
+\fBPre_Scene_Return\fP=\fIreturn action\fP
+Set pre\-scene return actions
+.TP
+\fBPre_Frame_Return\fP=\fIreturn action\fP
+Set pre\-frame return actions
+.TP
+\fBPost_Scene_Return\fP=\fIreturn action\fP
+Set post\-scene return actions
+.TP
+\fBPost_Frame_Return\fP=\fIreturn action\fP
+Set post\-frame return actions
+.TP
+\fBUser_Abort_Return\fP=\fIreturn action\fP
+Set user abort return actions
+.TP
+\fBFatal_Error_Return\fP=\fIreturn action\fP
+Set fatal error return actions
+
+.SS Return Actions:
+Return actions are specified by a single letter.  The possible actions are:
+.TP
+\fBI\fP
+Ignore the code
+.TP
+\fBS\fP
+Skip one step
+.TP
+\fBA\fP
+All steps skipped
+.TP
+\fBQ\fP
+Quit POV\-Ray immediately
+.TP
+\fBU\fP
+Generate a user abort in POV\-Ray
+.TP
+\fBF\fP
+Generate a fatal error in POV\-Ray
+
 .SS Redirecting options:
 .TP
 \fBGI<name>\fP or \fBCreate_Ini\fP=\fIbool\fP or \fBCreate_Ini\fP=\fIfile\fP
-Write all INI parameters to a file named after the input scene file, or one
-with the specified name.
+Write all INI parameters to a file named after the input scene file, or 
+one with the specified name.
+.TP
+\fBG\fP[\fIADFRSW\fP] or \fB<Stream>_Console\fP=\fIbool\fP
+Write the specified stream to the console.  The streams are \fIA\fPll (except 
+status), \fID\fPebug, \fIF\fPatal, \fIR\fPender, \fIS\fPtatistics, and 
+\fIW\fParning.
 .TP
 \fBG\fP[\fIADFRSW\fP]<name> or \fB<Stream>_File\fP=\fIbool\fP or \fB<Stream>_File\fP=\fIfile\fP
-Write the stream to the console and/or the specified file.  The streams are
-\fIA\fPll_File (except status), \fID\fPebug_File, \fIF\fPatal_File,
-\fIR\fPender_File, \fIS\fPtatistics_File, and the \fIW\fParning_File.
+Write the specified stream to the console and/or the specified file.  The 
+streams are \fIA\fPll (except status), \fID\fPebug, \fIF\fPatal, \fIR\fPender, 
+\fIS\fPtatistics, and \fIW\fParning.
 
 .SS X Windows options
 In addition to the standard command\-line options, the X Windows version
@@ -282,7 +400,7 @@ complete description of these options.
 \fB\-display\fP <\fIdisplay_name\fP>
 Display preview on \fIdisplay_name\fP rather than the default display.
 This is meant to be used to change the display to a remote host.  The
-normal dispay option /fB+d/fP is still valid.
+normal dispay option \fB+d\fP is still valid.
 .TP
 \fB\-geometry\fP  [\fIWIDTH\fPx\fIHEIGHT\fP][+\fIXOFF\fP+\fIYOFF\fP]
 Render the image with \fIWIDTH\fP and \fIHEIGHT\fP as the dimensions,
@@ -312,7 +430,7 @@ Windows options.
 
 .SH FILES
 .LP
-\fBPOV\-Ray\fP version 3.1e includes a modification which causes the 
+\fBPOV\-Ray\fP version 3.1 includes a modification which causes the 
 \fIpovray.ini\fP in the current directory to override the individual 
 setting in \fI.povrayrc\fP, \fBPOV\-Ray\fP now looks for initial 
 configuration information, like the Library_Path settings, which gives 
@@ -366,8 +484,8 @@ on USENET, rather than from the authors.
 .LP
 If you have a repeatable bug in the most recent version, try to isolate
 the bug in the smallest scene file possible.  The POV\-Ray Team
-Co\-ordinator is Chris Young, and can be reached at 
-76702.1655@compuserve.com. Do not send large binary or uuencoded 
+Co\-ordinator is Chris Young and can be reached at 
+team-coord@povray.org. Do not send large binary or uuencoded 
 files to Chris without first asking permission to do so.  
 
 .SH AUTHORS
@@ -390,7 +508,6 @@ Other authors are listed in the documentation.
 .SH ACKNOWLEDGEMENT
 \fBPOV\-Ray\fP is based on DKBTrace 2.12 by David K. Buck and
 Aaron A. Collins.
-
 
 
 

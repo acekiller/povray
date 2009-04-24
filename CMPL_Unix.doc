@@ -1,5 +1,5 @@
                  Persistence of Vision Ray Tracer
-                           Version 3.1e
+                           Version 3.1g
                    Unix Compilation Instructions
 
 Files:
@@ -20,8 +20,12 @@ Files:
    has been made to make it compile on as many systems as we have access
    to.  If you have problems compiling, try checking with a local Unix
    guru first.  If you still have problems and have internet access,
-   check out the comp.graphics.rendering.raytracing newsgroup.  Please
-   do not contact the POV-Team about problems with compiling POV-Ray.
+   check out the comp.graphics.rendering.raytracing newsgroup.  The 
+   POV-Team also has newsgroups at news.povray.org that are not
+   distributed on the Internet.  The povray.unix group on this server
+   is a useful resource for those who may be having difficult
+   compiling POV-Ray on various Unix systems.  Please do not contact the 
+   POV-Team about problems with compiling POV-Ray.
 
    If you are trying to compile POV-Ray on an unsupported platform,
    this version is the best one to use as a base.  The platform
@@ -58,6 +62,16 @@ Building the source:
           the X Windows version: type 'make newsvga'.  You, of course, will
           need to have libvga installed on your system.
 
+      3)  To install the new executable (whichever one it is) into
+          /usr/local/bin (the preferred location), type 'make install'.
+	  This also copies the man page (povray.1) into /usr/local/man/man1.
+          If you wish to install the POV-Ray binary into a different
+          directory, change the POVPATH macro in the makefile before running
+          'make install'.
+
+      4)  If you want to clean up the directory after compiling successfully,
+          type 'make clean'.
+
    Your executable will be called povray, x-povray, or s-povray, depending
    on which executable you build, but this can be changed in the makefile.
 
@@ -90,7 +104,7 @@ POV-Ray in a publicly accessible location, you must read and comply with
 the 'Online or Remote Execution' conditions in POVLEGAL.DOC.
 
 Mark Gordon
-Internet:   mtgordon@mailbag.com
+Internet:   mtgordon@povray.org
 
 
 
