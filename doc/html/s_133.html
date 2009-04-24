@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.6.4 consts.inc</title>
+<title>3.7.2 chars.inc</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_132.html">3.6.3 colors.inc</a> 
+    <a href="s_132.html">3.7.1 arrays.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.6.4 
-   consts.inc</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.7.2 
+   chars.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_134.html">3.6.5 debug.inc</a> 
+    <a href="s_134.html">3.7.3 colors.inc</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,159 +58,40 @@
   
 </table>
  
-<h3><a name="s03_06_04">3.6.4 </a>consts.inc</h3>
+<h3><a name="s03_07_02">3.7.2 </a>chars.inc</h3>
 
 <p>
-  This file defines a number of constants, including things such as mapping types and ior definitions. 
+  This file includes 26 upper-case letter and other characters defined as objects. The size of all characters is 4 * 
+ 5 * 1. The center of the bottom side of a character face is set to the origin, so you may need to translate a 
+ character appropriately before rotating it about the x or z axes. 
 </p>
 
-<h4><a name="s03_06_04_01">3.6.4.1 </a>Vector constants</h4>
+<p>
+  Letters:<br> <code> char_A, char_B, char_C,<br> char_D, char_E, char_F,<br> char_G, char_H, char_I,<br> char_J, 
+ char_K, char_L,<br> char_M, char_N, char_O,<br> char_P, char_Q, char_R,<br> char_S, char_T, char_U,<br> char_V, 
+ char_W, char_X,<br> char_Y, char_Z<br> </code> 
+</p>
 
-<dl>
- 
- <dt>
-   <code>o</code> = &lt; 0, 0, 0&gt; (origin) 
- <dt>
-   <code>xy</code> = &lt; 1, 1, 0&gt; 
- <dt>
-   <code>yz</code> = &lt; 0, 1, 1&gt; 
- <dt>
-   <code>xz</code> = &lt; 1, 0, 1&gt; 
-</dl>
+<p>
+  Numerals:<br> <code> char_0, char_1,<br> char_2, char_3,<br> char_4, char_5,<br> char_6, char_7,<br> char_8, char_9<br> 
+ </code> 
+</p>
 
-<h4><a name="s03_06_04_02">3.6.4.2 </a>Map type constants</h4>
+<p>
+  Symbols:<br> <code> char_Dash, char_Plus, char_ExclPt,<br> char_Amps, char_Num, char_Dol,<br> char_Perc, char_Astr, 
+ char_Hat, <br> char_LPar, char_RPar, char_AtSign,<br> char_LSqu, char_RSqu<br> </code> 
+</p>
 
-<dl>
- 
- <dt>
-   <code>Plane_Map</code> = 0 
- <dt>
-   <code>Sphere_Map</code> = 1 
- <dt>
-   <code>Cylinder_Map</code> = 2 
- <dt>
-   <code>Torus_Map</code> = 5 
-</dl>
+<p>
+  Usage: 
+</p>
 
-<h4><a name="s03_06_04_03">3.6.4.3 </a>Interpolation type constants</h4>
-
-<dl>
- 
- <dt>
-   <code>Bi</code> = 2 
- <dt>
-   <code>Norm</code> = 4 
-</dl>
-
-<h4><a name="s03_06_04_04">3.6.4.4 </a>Fog type constants</h4>
-
-<dl>
- 
- <dt>
-   <code>Uniform_Fog</code> = 1 
- <dt>
-   <code>Ground_Fog</code> = 2 
-</dl>
-
-<h4><a name="s03_06_04_05">3.6.4.5 </a>Focal blur hexgrid constants</h4>
-
-<dl>
- 
- <dt>
-   <code>Hex_Blur1</code> = 7 
- <dt>
-   <code>Hex_Blur2</code> = 19 
- <dt>
-   <code>Hex_Blur3</code> = 37 
-</dl>
-
-<h4><a name="s03_06_04_06">3.6.4.6 </a>IORs</h4>
-
-<dl>
- 
- <dt>
-   <code>Air_Ior</code> = 1.000292 
- <dt>
-   <code>Amethyst_Ior</code> = 1.550 
- <dt>
-   <code>Apatite_Ior</code> = 1.635 
- <dt>
-   <code>Aquamarine_Ior</code> = 1.575 
- <dt>
-   <code>Beryl_Ior</code> = 1.575 
- <dt>
-   <code>Citrine_Ior</code> = 1.550 
- <dt>
-   <code>Crown_Glass_Ior</code> = 1.51 
- <dt>
-   <code>Corundum_Ior</code> = 1.765 
- <dt>
-   <code>Diamond_Ior</code> = 2.47 
- <dt>
-   <code>Emerald_Ior</code> = 1.575 
- <dt>
-   <code>Flint_Glass_Ior</code> = 1.71 
- <dt>
-   <code>Flint_Glass_Heavy_Ior</code> = 1.8 
- <dt>
-   <code>Flint_Glass_Medium_Ior</code> = 1.63 
- <dt>
-   <code>Flint_Glass_Light_Ior</code> = 1.6 
- <dt>
-   <code>Fluorite_Ior</code> = 1.434 
- <dt>
-   <code>Gypsum_Ior</code> = 1.525 
- <dt>
-   <code>Ice_Ior</code> = 1.31 
- <dt>
-   <code>Plexiglas_Ior</code> = 1.5 
- <dt>
-   <code>Quartz_Ior</code> = 1.550 
- <dt>
-   <code>Quartz_Glass_Ior </code>= 1.458 
- <dt>
-   <code>Ruby_Ior</code> = 1.765 
- <dt>
-   <code>Salt_Ior</code> = 1.544 
- <dt>
-   <code>Sapphire_Ior</code> = 1.765 
- <dt>
-   <code>Topaz_Ior</code> = 1.620 
- <dt>
-   <code>Tourmaline_Ior</code> = 1.650 
- <dt>
-   <code>Water_Ior</code> = 1.33 
-</dl>
-
-<h4><a name="s03_06_04_07">3.6.4.7 </a>Dispersion amounts</h4>
-
-<dl>
- 
- <dt>
-   <code>Quartz_Glass_Dispersion</code> = 1.012 
- <dt>
-   <code>Water_Dispersion</code> = 1.007 
- <dt>
-   <code>Diamond_Dispersion</code> = 1.035 
- <dt>
-   <code>Sapphire_Dispersion</code> = 1.015 
-</dl>
-
-<h4><a name="s03_06_04_08">3.6.4.8 </a>Scattering media type constants</h4>
-
-<dl>
- 
- <dt>
-   <code>ISOTROPIC_SCATTERING</code> = 1; 
- <dt>
-   <code>MIE_HAZY_SCATTERING</code> = 2; 
- <dt>
-   <code>MIE_MURKY_SCATTERING</code> = 3; 
- <dt>
-   <code>RAYLEIGH_SCATTERING</code> = 4; 
- <dt>
-   <code>HENYEY_GREENSTEIN_SCATTERING</code> = 5; 
-</dl>
+<pre>
+ #include &quot;chars.inc&quot;
+ .
+ .
+ object {char_A ...}
+</pre>
  <br> 
 <table class="NavBar" width="100%">
   
@@ -222,15 +103,15 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_132.html">3.6.3 colors.inc</a> 
+    <a href="s_132.html">3.7.1 arrays.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.6.4 consts.inc</strong> 
+    <strong>3.7.2 chars.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_134.html">3.6.5 debug.inc</a> 
+    <a href="s_134.html">3.7.3 colors.inc</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

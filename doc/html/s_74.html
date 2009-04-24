@@ -105,7 +105,7 @@
 </p>
 
 <p>
-  The while-loop does not do anything else. You can think about it as a kind of &quot;dumb&quot; loop, which doesn't 
+  The while-loop does not do anything else. You can think about it as a kind of &quot;dumb&quot; loop, which does not 
  do anything automatically (and this is not necessarily a bad thing). 
 </p>
 
@@ -155,9 +155,10 @@
 </ul>
 
 <p>
-  Note that nowhere there's any mention about any index variable or anything else that could be used to automatically 
- end the loop or whatever. As said, it's just a &quot;dumb&quot; loop that continues forever if necessary, only testing 
- the statement between the parentheses (but it's not interested in what it is, only in its evaluated value). 
+  Note that nowhere there is any mention about any index variable or anything else that could be used to 
+ automatically end the loop or whatever. As said, it is just a &quot;dumb&quot; loop that continues forever if 
+ necessary, only testing the statement between the parentheses (but it is not interested in what it is, only in its 
+ evaluated value). 
 </p>
 
 <p>
@@ -214,7 +215,7 @@
 </pre>
 
 <p>
-  The incrementation before the <code>#end</code> is important. If we don't do it, 'Index' would always have the 
+  The incrementation before the <code>#end</code> is important. If we do not do it, 'Index' would always have the 
  value 1 and the loop would go forever since 1 is always less or equal to 10. 
 </p>
 
@@ -259,7 +260,7 @@
  </li>
 
  <li>
-   Now, when POV-Ray evaluates the condition it sees that it's false (because 11 is not less or equal to 10). This 
+   Now, when POV-Ray evaluates the condition it sees that it is false (because 11 is not less or equal to 10). This 
   causes POV-Ray to jump to the command after the <code>#end</code> statement. 
  </li>
 
@@ -271,9 +272,9 @@
 </ol>
 
 <p>
-  If you read carefully the above description you'll notice that the looping is done in a quite &quot;dumb&quot; way, 
- that is, there's no higher logic hidden inside the loop structure. In fact, POV-Ray doesn't have the slightest idea 
- how many times the loop is executed and what variable is used to count the loops. It just follows orders. 
+  If you read carefully the above description you will notice that the looping is done in a quite &quot;dumb&quot; 
+ way, that is, there is no higher logic hidden inside the loop structure. In fact, POV-Ray does not have the slightest 
+ idea how many times the loop is executed and what variable is used to count the loops. It just follows orders. 
 </p>
 
 <p>
@@ -290,7 +291,7 @@
 
 <p>
   A condition is mainly a comparison between two values (although there are also some other ways of making a 
- condition, but that's not important now). For example: 
+ condition, but that is not important now). For example: 
 </p>
 
 <pre>
@@ -333,14 +334,14 @@ a&lt;10 &amp; b&gt;=20
 </pre>
 
 <p>
-  For more information about these comparison operators, see the <a href="s_94.html#s03_01_01_03_03">'Float operators'</a> 
+  For more information about these comparison operators, see the <a href="s_97.html#s03_02_01_03_03">'Float operators'</a> 
  section of the POV-Ray documentation. 
 </p>
 
 <h4><a name="s02_03_09_05">2.3.9.5 </a>What about loop types other than simple for-loops?</h4>
 
 <p>
-  As POV-Ray doesn't care what the condition is and what we are using to make that condition, we can use the 
+  As POV-Ray does not care what the condition is and what we are using to make that condition, we can use the 
  while-loop in many other ways. 
 </p>
 
@@ -357,12 +358,12 @@ a&lt;10 &amp; b&gt;=20
 </pre>
 
 <p>
-  What we are doing here is this: Take a random point between &lt;-1, -1, -1&gt; and &lt;1, 1, 1&gt; and if it's not 
+  What we are doing here is this: Take a random point between &lt;-1, -1, -1&gt; and &lt;1, 1, 1&gt; and if it is not 
  inside the unit sphere take another random point in that range. Do this until we get a point inside the unit sphere. 
 </p>
 
 <p>
-  This is not an unrealistic example since it's very handy. 
+  This is not an unrealistic example since it is very handy. 
 </p>
 
 <p>
@@ -372,11 +373,11 @@ a&lt;10 &amp; b&gt;=20
 <ul>
  
  <li>
-   It doesn't have any &quot;index&quot; value which gets consecutive values during the loop. 
+   It does not have any &quot;index&quot; value which gets consecutive values during the loop. 
  </li>
 
  <li>
-   We don't know how many times it will loop. In this case it loops a random number of times. 
+   We do not know how many times it will loop. In this case it loops a random number of times. 
  </li>
 
  <li>
@@ -393,14 +394,14 @@ a&lt;10 &amp; b&gt;=20
 </p>
 
 <p>
-  By the way, there's a variant of this kind of loop where the task is: &quot;Calculate a value until the result is 
- inside a specified range, but make only a certain number of tries. If the value doesn't get inside that range after 
- that number of tries, stop trying&quot;. This is used when there's a possibility for the loop for going on forever. 
+  By the way, there is a variant of this kind of loop where the task is: &quot;Calculate a value until the result is 
+ inside a specified range, but make only a certain number of tries. If the value does not get inside that range after 
+ that number of tries, stop trying&quot;. This is used when there is a possibility for the loop for going on forever. 
 </p>
 
 <p>
-  In the above example about the point inside the unit sphere we don't need this because the random point will surely 
- hit the inside of the sphere at some time. In some other situations, however, we can't be so sure. 
+  In the above example about the point inside the unit sphere we do not need this because the random point will 
+ surely hit the inside of the sphere at some time. In some other situations, however, we cannot be so sure. 
 </p>
 
 <p>
@@ -410,7 +411,7 @@ a&lt;10 &amp; b&gt;=20
 
 <p>
   Suppose that we wanted to modify our point searching program to be completely safe and to try only up to 10 times. 
- If the point doesn't hit the inside of the sphere after 10 tries, we just give up and take the point &lt;0,0,0&gt;. 
+ If the point does not hit the inside of the sphere after 10 tries, we just give up and take the point &lt;0,0,0&gt;. 
 </p>
 
 <pre>
@@ -434,8 +435,8 @@ a&lt;10 &amp; b&gt;=20
 <ul>
  
  <li>
-   We added an 'Index' value which counts the amount of loops gone so far. It's quite similar to the index loop of a 
-  simple for-loop. 
+   We added an 'Index' value which counts the amount of loops gone so far. It is quite similar to the index loop of 
+  a simple for-loop. 
  </li>
 
  <li>
@@ -452,8 +453,8 @@ a&lt;10 &amp; b&gt;=20
 </ul>
 
 <p>
-  Btw, sometimes it's not convenient to make the test again in the <code>#if</code> statement. There's another way of 
- determining whether the loop bailed out without successful termination or not: Since the loop ends when the 'Index' 
+  Btw, sometimes it is not convenient to make the test again in the <code>#if</code> statement. There is another way 
+ of determining whether the loop bailed out without successful termination or not: Since the loop ends when the 'Index' 
  gets the value 11, we can use this to test the successfulness of the loop: 
 </p>
 
@@ -475,7 +476,7 @@ a&lt;10 &amp; b&gt;=20
 </p>
 
 <p>
-  There's nothing special about nested loops. You only have to pay attention to where you initialize and update your 
+  There is nothing special about nested loops. You only have to pay attention to where you initialize and update your 
  index variables. 
 </p>
 
@@ -494,12 +495,12 @@ a&lt;10 &amp; b&gt;=20
 </pre>
 
 <p>
-  The [Something here] part can be anything. If it's another while-loop, then we have nested loops. The inner loop 
+  The [Something here] part can be anything. If it is another while-loop, then we have nested loops. The inner loop 
  should have the same structure as the outer one. 
 </p>
 
 <p>
-  Note that proper indentation helps us distinguishing between the loops. It's always a good idea to use a good 
+  Note that proper indentation helps us distinguishing between the loops. It is always a good idea to use a good 
  indentation scheme: 
 </p>
 
@@ -520,10 +521,10 @@ a&lt;10 &amp; b&gt;=20
 </pre>
 
 <p>
-  It's a common mistake for beginners to break this structure. For example it's common to declare the 'Index2' before 
- the first <code>#while</code>. This breaks the for-loop structure and thus doesn't work. If you follow step by step 
- what POV-Ray does, as explained earlier, you will see why it doesn't work. Don't mix the structures of the inner and 
- the outer loops together or your code will simply not work as expected. 
+  It is a common mistake for beginners to break this structure. For example it is common to declare the 'Index2' 
+ before the first <code>#while</code>. This breaks the for-loop structure and thus does not work. If you follow step by 
+ step what POV-Ray does, as explained earlier, you will see why it does not work. Do not mix the structures of the 
+ inner and the outer loops together or your code will simply not work as expected. 
 </p>
 
 <p>
@@ -572,9 +573,9 @@ a&lt;10 &amp; b&gt;=20
 </p>
 
 <p>
-  There's no reason why we should limit ourselves to just two nested loops. There's virtually no limit how many loops 
- you can nest. For example, if we wanted to create a box-shape filled by spheres rows, colums and depth, we just make 
- three nested loops, one for the x-axis, another for the y-axis and the third for the z-axis. 
+  There is no reason why we should limit ourselves to just two nested loops. There is virtually no limit how many 
+ loops you can nest. For example, if we wanted to create a box-shape filled by spheres rows, colums and depth, we just 
+ make three nested loops, one for the x-axis, another for the y-axis and the third for the z-axis. 
 </p>
 
 <h4><a name="s02_03_09_07">2.3.9.7 </a>Mixed-type nested loops</h4>
@@ -622,7 +623,7 @@ a&lt;10 &amp; b&gt;=20
  </li>
 
  <li>
-   The seed value 'S' is declared outside all the loops although it's used only in the inner loop. Can you guess 
+   The seed value 'S' is declared outside all the loops although it is used only in the inner loop. Can you guess 
   why? (Putting it inside the outer loop would have caused an undesired result: Which one?) 
  </li>
 
@@ -631,13 +632,13 @@ a&lt;10 &amp; b&gt;=20
 <h4><a name="s02_03_09_08">2.3.9.8 </a>Other things to note</h4>
 
 <p>
-  There's no reason why the index value in your simple for-loop should step one unit at a time. Since the while-loop 
- doesn't care how the index changes, you can change it in whichever way you want. Eg: 
+  There is no reason why the index value in your simple for-loop should step one unit at a time. Since the while-loop 
+ does not care how the index changes, you can change it in whichever way you want. Eg: 
 </p>
 
 <pre>
-#declare Index = Index - 1;  Decrements the index (be careful with the while
-                             loop condition)
+#declare Index = Index - 1;  Decrements the index (be careful with the
+                             while loop condition)
 
 #declare Index = Index + 0.2;  Increases by steps of 0.2
 
@@ -666,11 +667,11 @@ etc.
 </pre>
 
 <p>
-  You'll probably see immediately the problem. 
+  You will probably see immediately the problem. 
 </p>
 
 <p>
-  This code creates 10 blobs with one component each. It doesn't seem to make much sense. Most probably the user 
+  This code creates 10 blobs with one component each. It does not seem to make much sense. Most probably the user 
  wanted to make one blob with 10 components. 
 </p>
 
@@ -699,7 +700,7 @@ blob
 </pre>
 
 <p>
-  The essential difference here is that it's only the sphere code which is run 10 times instead of the whole blob 
+  The essential difference here is that it is only the sphere code which is run 10 times instead of the whole blob 
  code. The net result is the same as if we had written the sphere code 10 times with proper values of 'Index'. 
 </p>
 
@@ -729,18 +730,18 @@ blob
 </pre>
 
 <p>
-  It's tedious to have to write the same things over and over just changing the index value and the values in the 
+  It is tedious to have to write the same things over and over just changing the index value and the values in the 
  vector (even if you use copy-paste to copy the lines). 
 </p>
 
 <p>
-  There's also one very big problem here: If you ever want to add a new color to the color map or remove a color, you 
- would have to renumber all the indices again, which can be extremely tedious and frustrating. 
+  There is also one very big problem here: If you ever want to add a new color to the color map or remove a color, 
+ you would have to renumber all the indices again, which can be extremely tedious and frustrating. 
 </p>
 
 <p>
-  Wouldn't it be nice to automatize the creation of the color map so that you only have to write the vectors and 
- that's it? 
+  Would not it be nice to automatize the creation of the color map so that you only have to write the vectors and 
+ that is it? 
 </p>
 
 <p>
@@ -768,7 +769,7 @@ blob
 </pre>
 
 <p>
-  Now it's easy to add, remove or modify colors in your color map. Just edit the vector array (remembering to change 
+  Now it is easy to add, remove or modify colors in your color map. Just edit the vector array (remembering to change 
  its size number accordingly) and the while-loop will automatically calculate the right values and create the color map 
  for you. 
 </p>

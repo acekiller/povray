@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.7.9 Object Modifiers</title>
+<title>3.8.7 Lights</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_158.html">3.7.8 Objects</a> 
+    <a href="s_158.html">3.8.6 Camera</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.7.9 
-   Object Modifiers</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.8.7 
+   Lights</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_160.html">3.7.10 Texture</a> 
+    <a href="s_160.html">3.8.8 Objects</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,150 +58,103 @@
   
 </table>
  
-<h3><a name="s03_07_09">3.7.9 </a>Object Modifiers</h3>
-<a name="s03_07_09_i1"><a name="quickref, object modifiers"></a><a name="s03_07_09_i2"><a name="s03_07_09_i3">
+<h3><a name="s03_08_07">3.8.7 </a>Lights</h3>
+<a name="s03_08_07_i1"><a name="quickref, lights"></a><a name="s03_08_07_i2">
 <dl class="Syntax">
  
  <dt class="SubDesc">
-   Manipulate the appearance of an object 
+   Specify light sources for the scene or for specific objects 
  <dt>
-   OBJECT_MODIFIERS: 
+   LIGHT: 
  <dd>
-   <code>[OBJECT_PHOTONS] &amp; [CLIPPED_BY] &amp; [BOUNDED_BY] &amp; [MATERIAL] &amp; [INTERIOR] &amp; 
-  [INTERIOR_TEXTURE] &amp; [TEXTURE] &amp; [PIGMENT] &amp; [NORMAL] &amp; [FINISH] &amp; [TRANSFORMATION...] &amp; [<strong>no_shadow</strong>] 
-  &amp; [<strong>no_image</strong>[BOOL]] &amp; [<strong>no_reflection</strong>{BOOL]] &amp; [<strong>inverse</strong>] 
-  &amp; [<strong>double_illuminate</strong>[BOOL]] &amp; [<strong>hollow</strong>&nbsp;[BOOL]]</code> 
+   <code>LIGHT_SOURCE | LIGHT_GROUP</code> 
 </dl>
 
 <dl class="Syntax">
  
  <dt class="SubDesc">
-   Specify how an object should interact with photons: 
+   Describe the position, type and properties of a light source for the scene: 
  <dt>
-   OBJECT_PHOTONS: 
+   LIGHT_SOURCE: 
  <dd class="Jump">
-   <a href="s_128.html#s03_05_03_02_02">Jump to SDL</a> 
+   <a href="s_111.html#s03_04_07">Jump to SDL</a> 
  <dd>
-   <code><strong>photons {</strong> OBJECT_PHOTON_ITEMS <strong>}</strong></code> 
+   <code><strong>light_source {</strong> V_LOCATION, COLOR [LIGHT_SOURCE_ITEMS] <strong>}</strong></code> 
  <dt>
-   OBJECT_PHOTON_ITEMS: 
+   LIGHT_SOURCE_ITEMS: 
  <dd>
-   <code>[<strong>target</strong> [F_SPACING_MULT]] &amp; [<strong>refraction</strong>&nbsp;BOOL] &amp; [<strong>reflection</strong>&nbsp;BOOL] 
-  &amp; [<strong>collect</strong>&nbsp;BOOL] &amp; [<strong>pass_through</strong>&nbsp;[BOOL]]</code> 
+   <code>[LIGHT_TYPE] &amp; [AREA_LIGHT_ITEMS] &amp; [LIGHT_MODIFIERS]</code> 
+ <dt>
+   LIGHT_TYPE: 
+ <dd>
+   <code><strong>spotlight</strong>&nbsp;[SPOTLIGHT_ITEMS] | <strong>cylinder</strong>&nbsp;[SPOTLIGHT_ITEMS]</code> 
+ <dt>
+   SPOTLIGHT_ITEMS: 
+ <dd>
+   <code>[<strong>radius</strong>&nbsp;FLOAT] &amp; [<strong>falloff</strong>&nbsp;FLOAT] &amp; [<strong>tightness</strong>&nbsp;FLOAT] 
+  &amp; [<strong>point_at</strong>&nbsp;VECTOR]</code> 
+ <dt>
+   AREA_LIGHT_ITEMS: 
+ <dd>
+   <code><strong>area_light</strong> V_AXIS1, V_AXIS2, I_SIZE1, I_SIZE2 [AREA_LIGHT_MODIFIERS]</code> 
+ <dt>
+   AREA_LIGHT_MODIFIERS: 
+ <dd>
+   <code>[<strong>adaptive</strong>&nbsp;INT] &amp; [<strong>jitter</strong>] &amp; [<strong>circular</strong>] 
+  &amp; [<strong>orient</strong>]</code> 
+ <dt>
+   LIGHT_MODIFIERS: 
+ <dd>
+   <code>[LIGHT_PHOTONS] &amp; [<strong>looks_like&nbsp;{</strong>&nbsp;OBJECT&nbsp;<strong>}</strong>] &amp; 
+  [TRANSFORMATION...] &amp; [<strong>fade_distance</strong>&nbsp;FLOAT] &amp; [<strong>fade_power</strong>&nbsp;FLOAT] 
+  &amp; [<strong>media_attenuation</strong>&nbsp;[BOOL]] &amp; [<strong>media_interaction</strong>&nbsp;[BOOL]] &amp; [<strong>shadowless</strong>] 
+  &amp; [<strong>projected_through&nbsp;{</strong>&nbsp;OBJECT_IDENTIFIER&nbsp;<strong>}</strong>] &amp; [<strong>parallel</strong>&nbsp;[<strong>point_at</strong>&nbsp;VECTOR]]</code> 
+  
 </dl>
 
 <dl class="Syntax">
  
  <dt class="SubDesc">
-   Slice a portion of a shape: 
+   Specify how a light source should interact with photons: 
  <dt>
-   CLIPPED_BY: 
+   LIGHT_PHOTONS: 
  <dd>
-   <code><strong>clipped_by {</strong> UNTEXTURED_SOLID_OBJECT... <strong>}</strong> |<br> <strong>clipped_by { 
-  bounded_by }</strong></code> 
+   <code><strong>photons {</strong> LIGHT_PHOTON_ITEMS <strong>}</strong></code> 
  <dt>
-   UNTEXTURED_SOLID_OBJECT: 
+   LIGHT_PHOTON_ITEMS: 
  <dd>
-   <code>FINITE_SOLID_OBJECT | INFINITE_SOLID_OBJECT</code> 
- <dd class="ItemNote">
-   Note, neither with a texture applied. 
-</dl>
-
-<dl class="Syntax">
- 
- <dt class="SubDesc">
-   Specify a bounding shape for an object: 
- <dt>
-   BOUNDED_BY: 
- <dd>
-   <code><strong>bounded_by {</strong> UNTEXTURED_SOLID_OBJECT... <strong>}</strong> |<br> <strong>bounded_by { 
-  clipped_by }</strong></code> 
-</dl>
-
-<p>
-  <a href="s_151.html#s03_07_01">Quick Reference Contents</a> 
-</p>
-
-<h4><a name="s03_07_09_01">3.7.9.1 </a>UV Mapping</h4>
-<a name="s03_07_09_01_i1"><a name="quickref, uv_mapping"></a><a name="s03_07_09_01_i2">
-<dl class="Syntax">
- 
- <dt class="SubDesc">
-   Map a texture to an object using surface coordinates: 
- <dt>
-   UV_MAPPING: 
- <dd class="Jump">
-   <a href="s_119.html#s03_04_07">Jump to SDL</a> 
- <dd>
-   <code><strong>uv_mapping</strong> PIGMENT | <strong>pigment&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="s_160.html#s03_07_10_04">PIGMENT_BODY</a>&nbsp;<strong>}</strong> 
-  |<br> <strong>uv_mapping</strong> NORMAL | <strong>normal&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="s_160.html#s03_07_10_05">NORMAL_BODY</a>&nbsp;<strong>}</strong> 
-  |<br> <strong>uv_mapping</strong> TEXTURE | <strong>texture&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="s_160.html#s03_07_10_03">TEXTURE_BODY</a>&nbsp;<strong>}</strong></code> 
+   <code>[<strong>refraction</strong>&nbsp;BOOL] &amp; [<strong>reflection</strong>&nbsp;BOOL] &amp; [<strong>area_light</strong>]</code> 
   
 </dl>
 
 <p>
-  <a href="s_151.html#s03_07_01">Quick Reference Contents</a> 
+  <a href="s_153.html#s03_08_01">Quick Reference Contents</a> 
 </p>
 
-<h4><a name="s03_07_09_02">3.7.9.2 </a>Material</h4>
-<a name="s03_07_09_02_i1"><a name="quickref, material"></a><a name="s03_07_09_02_i2">
+<h4><a name="s03_08_07_01">3.8.7.1 </a>Lightgroup</h4>
+<a name="s03_08_07_01_i1"><a name="quickref, lightgroup"></a><a name="s03_08_07_01_i2">
 <dl class="Syntax">
  
  <dt class="SubDesc">
-   Group together surface textures and interior properties: 
+   Assign objects to specific light sources: 
  <dt>
-   MATERIAL: 
- <dd>
-   <code><strong>material {</strong> [MATERIAL_IDENTIFIER] [MATERIAL_ITEM ...] <strong>}</strong></code> 
- <dt>
-   MATERIAL_ITEMS: 
- <dd>
-   <code>TEXTURE | INTERIOR_TEXTURE | INTERIOR | TRANSFORMATION</code> 
-</dl>
-
-<p>
-  <a href="s_151.html#s03_07_01">Quick Reference Contents</a> 
-</p>
-
-<h4><a name="s03_07_09_03">3.7.9.3 </a>Interior</h4>
-<a name="s03_07_09_03_i1"><a name="quickref, interior"></a><a name="s03_07_09_03_i2">
-<dl class="Syntax">
- 
- <dt class="SubDesc">
-   Describe the interior of an object: 
- <dt>
-   INTERIOR: 
+   LIGHT_GROUP: 
  <dd class="Jump">
-   <a href="s_126.html#s03_05_01">Jump to SDL</a> 
+   <a href="s_112.html#s03_04_08">Jump to SDL</a> 
  <dd>
-   <code><strong>interior {</strong> [INTERIOR_IDENTIFIER] [INTERIOR_ITEMS] <strong>}</strong></code> 
+   <code><strong>light_group {</strong> LIGHT_GROUP_ITEM... [LIGHT_GROUP_MODIFIERS] <strong>}</strong></code> 
  <dt>
-   INTERIOR_ITEMS: 
+   LIGHT_GROUP_ITEM: 
  <dd>
-   <code>[<strong>ior</strong> FLOAT] &amp; [<strong>dispersion</strong>&nbsp;FLOAT] &amp; [<strong>dispersion_samples</strong>&nbsp;INT] 
-  &amp; [<strong>caustics</strong>&nbsp;FLOAT] &amp; [<strong>fade_distance</strong>&nbsp;FLOAT] &amp; [<strong>fade_power</strong>&nbsp;FLOAT] 
-  &amp; [<strong>fade_color</strong>&nbsp;COLOR] &amp; [MEDIA...]</code> 
+   <code>LIGHT_SOURCE | OBJECT | LIGHT_GROUP</code> 
+ <dt>
+   LIGHT_GROUP_MODIFIERS: 
+ <dd>
+   <code>[<strong>global_lights</strong> BOOL] &amp; [TRANSFORMATION...]</code> 
 </dl>
 
 <p>
-  <a href="s_151.html#s03_07_01">Quick Reference Contents</a> 
-</p>
-
-<h4><a name="s03_07_09_04">3.7.9.4 </a>Interior Texture</h4>
-<a name="s03_07_09_04_i1"><a name="quickref, interior texture"></a><a name="s03_07_09_04_i2">
-<dl class="Syntax">
- 
- <dt class="SubDesc">
-   Describe the interior surface of an object: 
- <dt>
-   INTERIOR_TEXTURE: 
- <dd>
-   <code><strong>interior_texture {</strong> <a href="s_160.html#s03_07_10_03">TEXTURE_BODY</a> <strong>}</strong></code> 
-  
-</dl>
-
-<p>
-  <a href="s_151.html#s03_07_01">Quick Reference Contents</a> 
+  <a href="s_153.html#s03_08_01">Quick Reference Contents</a> 
 </p>
  <br> 
 <table class="NavBar" width="100%">
@@ -214,15 +167,15 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_158.html">3.7.8 Objects</a> 
+    <a href="s_158.html">3.8.6 Camera</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.7.9 Object Modifiers</strong> 
+    <strong>3.8.7 Lights</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_160.html">3.7.10 Texture</a> 
+    <a href="s_160.html">3.8.8 Objects</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

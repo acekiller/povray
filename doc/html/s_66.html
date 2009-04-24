@@ -67,7 +67,7 @@
 
 <p>
   We should be aware that the shapes described in this and the following two chapters are not trivial to understand. 
- We needn't be worried though if we do not know how to use them or how they work. We just try the examples and play 
+ We need not be worried though if we do not know how to use them or how they work. We just try the examples and play 
  with the features described in the reference chapter. There is nothing better than learning by doing. 
 </p>
 
@@ -79,7 +79,7 @@
 <h4><a name="s02_03_01_01">2.3.1.1 </a>Lathe Object</h4>
 <a name="s02_03_01_01_i1">
 <p>
-  In the real world, <code><a href="s_103.html#s03_03_01_07">lathe</a></code> refers to a process of making patterned 
+  In the real world, <code><a href="s_105.html#s03_04_01_07">lathe</a></code> refers to a process of making patterned 
  rounded shapes by spinning the source material in place and carving pieces out as it turns. The results can be 
  elaborate, smoothly rounded, elegant looking artefacts such as table legs, pottery, etc. In POV-Ray, a lathe object is 
  used for creating much the same kind of items, although we are referring to the object itself rather than the means of 
@@ -150,7 +150,7 @@
 </p>
 
 <p>
-  The simpler mathematics used by a SOR doesn't allow the curve to double back over the same y-coordinates, thus, if 
+  The simpler mathematics used by a SOR does not allow the curve to double back over the same y-coordinates, thus, if 
  using a SOR, any sudden twist which cuts back down over the same heights that the curve previously covered will 
  trigger an error. For example, suppose we wanted a lathe to arc up from &lt;0,0&gt; to &lt;2,2&gt;, then to dip back 
  down to &lt;4,0&gt;. Rotated around the y-axis, this would produce something like a gelatin mold - a rounded semi 
@@ -160,7 +160,7 @@
 
 <p>
   Still, the SOR has one powerful strong point: because it uses simpler order mathematics, it generally tends to 
- render faster than an equivalent lathe. So in the end, it's a matter of: we use a SOR if its limitations will allow, 
+ render faster than an equivalent lathe. So in the end, it is a matter of: we use a SOR if its limitations will allow, 
  but when we need a more flexible shape, we go with the lathe instead. 
 </p>
 
@@ -232,7 +232,7 @@
 </p>
 
 <p>
-  First, we are using the orthographic camera. If we haven't read up on that yet, a quick summary is: it renders the 
+  First, we are using the orthographic camera. If we have not read up on that yet, a quick summary is: it renders the 
  scene <em>flat</em>, eliminating perspective distortion so that in a side view, the objects look like they were drawn 
  on a piece of graph paper (like in the side view of a modeler or CAD package). There are several uses for this 
  practical new type of camera, but here it is allowing us to see our lathe and cylinders<em> edge on</em>, so that what 
@@ -244,7 +244,7 @@
 
 <p>
   Next, we declared a set of points. We note that we used 3D vectors for these points rather than the 2D vectors we 
- expect in a lathe. That's the exception we mentioned earlier. When we declare a 3D point, then use it in a lathe, the 
+ expect in a lathe. That is the exception we mentioned earlier. When we declare a 3D point, then use it in a lathe, the 
  lathe only uses the first two components of the vector, and whatever is in the third component is simply ignored. This 
  is handy here, since it makes this example possible. 
 </p>
@@ -256,15 +256,15 @@
 </p>
 
 <p>
-  Since trying to declare a 2D vector can have some odd results, and isn't really what our cylinder declarations need 
- anyway, we can take advantage of the lathe's tendency to ignore the third component by just setting the z-coordinate 
- in these 3D vectors to zero. 
+  Since trying to declare a 2D vector can have some odd results, and is not really what our cylinder declarations 
+ need anyway, we can take advantage of the lathe's tendency to ignore the third component by just setting the 
+ z-coordinate in these 3D vectors to zero. 
 </p>
 
 <p>
   The end result is: when we render this code, we see a white lathe against a black background showing us how the 
- curve we've declared looks, and the circular ends of the cylinders show us where along the x-y-plane our control 
- points are. In this case, it's very simple. The linear spline has been used so our curve is just straight lines 
+ curve we have declared looks, and the circular ends of the cylinders show us where along the x-y-plane our control 
+ points are. In this case, it is very simple. The linear spline has been used so our curve is just straight lines 
  zig-zagging between the points. We change the declarations of <code>Red_Point</code> and <code>Blue_Point</code> to 
  read as follows. 
 </p>
@@ -301,7 +301,7 @@
 
 <p>
   We then go down to the lathe declaration and change <code>linear_spline</code> to <code>quadratic_spline</code>. We 
- re-render and what do we have? Well, there's a couple of things worthy of note this time. First, we will see that 
+ re-render and what do we have? Well, there is a couple of things worthy of note this time. First, we will see that 
  instead of straight lines we have smooth arcs connecting the points. These arcs are made from quadratic curves, so our 
  lathe looks much more interesting this time. Also, <code>Red_Point</code> is no longer connected to the curve. What 
  happened? 
@@ -317,9 +317,9 @@
 </p>
 
 <p>
-  There's just one more thing about this lathe example. Even though our curve is now put together with smooth curving 
- lines, the transitions between those lines is... well, kind of choppy, no? This curve looks like the lines between 
- each individual point have been terribly mismatched. Depending on what we are trying to make, this could be 
+  There is just one more thing about this lathe example. Even though our curve is now put together with smooth 
+ curving lines, the transitions between those lines is... well, kind of choppy, no? This curve looks like the lines 
+ between each individual point have been terribly mismatched. Depending on what we are trying to make, this could be 
  acceptable, or, we might long for a more smoothly curving shape. Fortunately, if the latter is true, we have another 
  option. 
 </p>
@@ -483,7 +483,7 @@
 <p>
   We will use the point configuration shown in the figure above. There are eight points describing the curve that 
  will be rotated about the y-axis to get our cup. The curve was calculated using the method described in the reference 
- section (see &quot;<a href="s_103.html#s03_03_01_12">Surface of Revolution</a>&quot;). 
+ section (see &quot;<a href="s_105.html#s03_04_01_12">Surface of Revolution</a>&quot;). 
 </p>
 
 <p>
@@ -576,9 +576,9 @@
   This produces a hexagonal polygon, which is then swept from y=0 through y=1. In other words, we now have an 
  extruded hexagon. One point to note is that although this is a six sided figure, we have used a total of seven points. 
  That is because the polygon is supposed to be a closed shape, which we do here by making the final point the same as 
- the first. Technically, with linear polygons, if we didn't do this, POV-Ray would automatically join the two ends with 
- a line to force it to close, although a warning would be issued. However, this only works with linear splines, so we 
- mustn't get too casual about those warning messages! 
+ the first. Technically, with linear polygons, if we did not do this, POV-Ray would automatically join the two ends 
+ with a line to force it to close, although a warning would be issued. However, this only works with linear splines, so 
+ we must not get too casual about those warning messages! 
 </p>
 
 <h5><a name="s02_03_01_03_01">2.3.1.3.1 </a>Teaching An Old Spline New Tricks</h5>
@@ -601,15 +601,15 @@
 <p>
   First of all, we remember that quadratic splines determine the equation of the curve which connects any two points 
  based on those two points and the previous point, so the first point in any quadratic spline is just <em> control point</em> 
- and won't actually be part of the curve. What this means is: when we make our shape out of a quadratic spline, we must 
- match the second point to the last, since the first point is not on the curve - it's just a control point needed for 
- computational purposes. 
+ and will not actually be part of the curve. What this means is: when we make our shape out of a quadratic spline, we 
+ must match the second point to the last, since the first point is not on the curve - it is just a control point needed 
+ for computational purposes. 
 </p>
 
 <p>
   Likewise, cubic splines need both the first and last points to be control points, therefore, to close a shape made 
- with a cubic spline, we must match the second point to the second from last point. If we don't match the correct 
- points on a quadratic or cubic shape, that's when we will get the &quot;too few points in prism&quot; error. POV-Ray 
+ with a cubic spline, we must match the second point to the second from last point. If we do not match the correct 
+ points on a quadratic or cubic shape, that is when we will get the &quot;too few points in prism&quot; error. POV-Ray 
  is still waiting for us to close the shape, and when it runs out of points without seeing the closure, an error is 
  issued. 
 </p>
@@ -642,15 +642,15 @@
 <p>
   This simple prism produces what looks like an extruded triangle with its corners sanded smoothly off. Points two, 
  three and four are the corners of the triangle and point five closes the shape by returning to the location of point 
- two. As for points one and six, they are our control points, and aren't part of the shape - they're just there to help 
- compute what curves to use between the other points. 
+ two. As for points one and six, they are our control points, and are not part of the shape - they are just there to 
+ help compute what curves to use between the other points. 
 </p>
 
 <h5><a name="s02_03_01_03_02">2.3.1.3.2 </a>Smooth Transitions</h5>
 
 <p>
   Now a handy thing to note is that we have made point one equal point four, and also point six equals point three. 
- Yes, this is important. Although this prism would still be legally closed if the control points were not what we've 
+ Yes, this is important. Although this prism would still be legally closed if the control points were not what we have 
  made them, the curve transitions between points would not be as smooth. We change points one and six to &lt;4,6&gt; 
  and &lt;0,7&gt; respectively and re-render to see how the back edge of the shape is altered (see file <code>prismdm3.pov</code>). 
  
@@ -695,8 +695,9 @@
 <p>
   For readability purposes, we have started a new line every time we moved on to a new sub-shape, but the ray-tracer 
  of course tells where each shape ends based on whether the shape has been closed (as described earlier). We render 
- this new prism, and look what we've got. It's the same familiar shape, but it now looks like a smaller version of the 
- shape has been carved out of the center, then the carved piece was sanded down even smaller and set back in the hole. 
+ this new prism, and look what we have got. It is the same familiar shape, but it now looks like a smaller version of 
+ the shape has been carved out of the center, then the carved piece was sanded down even smaller and set back in the 
+ hole. 
 </p>
 
 <p>
@@ -743,21 +744,21 @@
 </p>
 
 <p>
-  Notice all the transformations in the object declaration. That's going to take a little explanation. The rotate and 
- translate are easy. Normally, a conic sweep starts full sized at the top, and tapers to a point at y=0, but of course 
- that would be upside down if we're making a pyramid. So we flip the shape around the x-axis to put it right side up, 
- then since we actually orbited around the point, we translate back up to put it in the same position it was in when we 
- started. 
+  Notice all the transformations in the object declaration. That is going to take a little explanation. The rotate 
+ and translate are easy. Normally, a conic sweep starts full sized at the top, and tapers to a point at y=0, but of 
+ course that would be upside down if we are making a pyramid. So we flip the shape around the x-axis to put it right 
+ side up, then since we actually orbited around the point, we translate back up to put it in the same position it was 
+ in when we started. 
 </p>
 
 <p>
   The scale is to put the proportions right for this example. The base is eight units by eight units, but the height 
- (from y=1 to y=0) is only one unit, so we've stretched it out a little. At this point, we're probably thinking, 
+ (from y=1 to y=0) is only one unit, so we have stretched it out a little. At this point, we are probably thinking, 
  &quot;why not just sweep up from y=0 to y=4 and avoid this whole scaling thing?&quot; 
 </p>
 
 <p>
-  That is a very important gotcha! with conic sweeps. To see what's wrong with that, let's try and put it into 
+  That is a very important gotcha! with conic sweeps. To see what is wrong with that, let's try and put it into 
  practice (see file <code> prismdm5.pov</code>). We must make sure to remove the scale statement, and then replace the 
  line which reads 
 </p>
@@ -796,7 +797,7 @@
 </p>
 
 <p>
-  That leads to one more interesting thing about conic sweeps. What if we for some reason don't want them to taper 
+  That leads to one more interesting thing about conic sweeps. What if we for some reason do not want them to taper 
  all the way to a point? What if instead of a complete pyramid, we want more of a ziggurat step? Easily done. After 
  putting the second height back to one, and replacing our scale statement, we change the line which reads 
 </p>
@@ -902,8 +903,8 @@
 </p>
 
 <p>
-  When using a b_spline, the resulting object is somewhat similar to the cubic sweep, but doesn't actually go through 
- the control points. It lies somewhere between them. 
+  When using a b_spline, the resulting object is somewhat similar to the cubic sweep, but does not actually go 
+ through the control points. It lies somewhere between them. 
 </p>
 
 <h4><a name="s02_03_01_05">2.3.1.5 </a>Bicubic Patch Object</h4>
@@ -913,14 +914,14 @@
  few control points. The control points serve to determine the shape of the patch. Instead of defining the vertices of 
  triangles, we simply give the coordinates of the control points. A single patch has 16 control points, one at each 
  corner, and the rest positioned to divide the patch into smaller sections. POV-Ray does not ray trace the patches 
- directly, they are approximated using triangles as described in the <a href="s_104.html#s03_03_02_01">Scene 
+ directly, they are approximated using triangles as described in the <a href="s_106.html#s03_04_02_01">Scene 
  Description Language</a> section. 
 </p>
 
 <p>
   Bicubic patches are almost always created by using a third party modeler, but for this tutorial we will manipulate 
- them by hand. Modelers that support Bicubic patches and export to POV-Ray can be found in the Link section at <a href="http://povray.org/links/" target="new">povray.org 
- (http://povray.org/links/)</a><br> Let's set up a basic scene and start exploring the Bicubic patch. 
+ them by hand. Modelers that support Bicubic patches and export to POV-Ray can be found in the <a href="http://www.povray.org/links/" target="new">links 
+ collection on our server</a><br> Let's set up a basic scene and start exploring the Bicubic patch. 
 </p>
 
 <pre>
@@ -968,9 +969,9 @@ bicubic_patch {
 <p>
   The points B11, B14, B41, B44 are the corner points of the patch. All other points are control points. The names of 
  the declared points are as follows: B for the colour of the patch, the first digit gives the row number, the second 
- digit the column number. If you render the above scene, you'll get a blue &amp; white checkered square, not very 
- exciting. First we will add some spheres to make the control points visible. As we don't want to type the code for 16 
- spheres, we'll use an array and a while loop to construct the spheres. 
+ digit the column number. If you render the above scene, you will get a blue &amp; white checkered square, not very 
+ exciting. First we will add some spheres to make the control points visible. As we do not want to type the code for 16 
+ spheres, we will use an array and a while loop to construct the spheres. 
 </p>
 
 <pre>
@@ -998,7 +999,7 @@ bicubic_patch {
 </pre>
 
 <p>
-  Rendering this scene will show the patch with its corner points in red and its control points in cyan. Now it's 
+  Rendering this scene will show the patch with its corner points in red and its control points in cyan. Now it is 
  time to start exploring. <br> Change B41 to <code>&lt;-1,0,0&gt;</code> and render.<br> Change B41 to <code>&lt;-1,1,0&gt;</code> 
  and render.<br> Change B41 to <code>&lt; 1,2,1&gt;</code> and render.<br> 
 </p>
@@ -1036,19 +1037,19 @@ bicubic_patch {
 </p>
 
 <p>
-  So far we've only been looking at one single patch, but one of the strengths of the Bicubic patch lays in the fact 
- that they can be connected smoothly, to form bigger shapes. The process of connecting is relatively simple as there 
- are actually only two rules to follow. It can be done by using a well set up set of macros or by using a modeler. To 
- give an idea what is needed we'll do a simple example by hand. 
+  So far we have only been looking at one single patch, but one of the strengths of the Bicubic patch lays in the 
+ fact that they can be connected smoothly, to form bigger shapes. The process of connecting is relatively simple as 
+ there are actually only two rules to follow. It can be done by using a well set up set of macros or by using a 
+ modeler. To give an idea what is needed we will do a simple example by hand. 
 </p>
 
 <p>
-  First put the patch in our scene back to its flat position. Then change<code> #declare B14=&lt;3,0,3&gt;; #declare 
- B24=&lt;3,2,2&gt;; #declare B34=&lt;3.5,1,1&gt; ; #declare B44=&lt;3,-1,0&gt;; #declare B41=&lt;0,-1,0&gt;;</code> 
- Move the camera a bit back <code>camera {location &lt;3.1,7,-8&gt; look_at &lt;3,-2,1.5&gt; angle 40}</code> and 
- delete all the code for the spheres. We will now try and stitch a patch to the right side of the current one. Off 
- course the points on the left side (column 1) of the new patch have to be in the same position as the points on the 
- right side (column 4) of the blue one.<br> Render the scene, including our new patch: 
+  First put the patch in our scene back to its flat position. Then change<code> #declare B14 = &lt;3,0,3&gt;; 
+ #declare B24 = &lt;3,2,2&gt;; #declare B34 = &lt;3.5,1,1&gt; ; #declare B44 = &lt;3,-1,0&gt;; #declare B41 = 
+ &lt;0,-1,0&gt;;</code> Move the camera a bit back <code>camera { location &lt;3.1,7,-8&gt; look_at &lt;3,-2,1.5&gt; 
+ angle 40 }</code> and delete all the code for the spheres. We will now try and stitch a patch to the right side of the 
+ current one. Off course the points on the left side (column 1) of the new patch have to be in the same position as the 
+ points on the right side (column 4) of the blue one.<br> Render the scene, including our new patch: 
 </p>
 
 <pre>
@@ -1089,7 +1090,7 @@ bicubic_patch {
 
 <p>
   This is a rather disappointing result. The patches are connected, but not exactly smooth. In connecting patches the 
- same principles apply as for connecting two 2D-bezier splines as we see in the <a href="s_66.html#s02_03_01_01_01">spline 
+ same principles apply as for connecting two 2D bezier splines as we see in the <a href="s_66.html#s02_03_01_01_01">spline 
  workshop</a>. Control point, connection point and the next control point should be on one line to give a smooth 
  result. Also it is preferred, not required, that the distances from both control points to the connection point are 
  the same. For the Bicubic patch we have to do the same, for all connection points involved in the joint. So, in our 
@@ -1206,7 +1207,7 @@ union {
 </pre>
 
 <p>
-  The hard part in using the Bicubic patch isn't in connecting several patches. The difficulty is keeping control 
+  The hard part in using the Bicubic patch is not in connecting several patches. The difficulty is keeping control 
  over the shape you want to build. As patches are added, in order to keep the result smooth, control over the position 
  of many points gets restrained. 
 </p>
@@ -1278,7 +1279,7 @@ union {
 </pre>
 
 <p>
-  That's better. Now let's play around with some of the parameters of the text object. First, let's raise the 
+  That is better. Now let's play around with some of the parameters of the text object. First, let's raise the 
  thickness float to something outlandish... say 25! 
 </p>
 
@@ -1291,7 +1292,7 @@ union {
 </pre>
 
 <p>
-  Actually, that's kind of cool. Now let's return the thickness value to 1 and try a different offset value. Change 
+  Actually, that is kind of cool. Now let's return the thickness value to 1 and try a different offset value. Change 
  the offset float from 0 to 0.1 and render it again. 
 </p>
 

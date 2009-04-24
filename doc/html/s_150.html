@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.7 Quick Reference</title>
+<title>3.7.19 woodmaps.inc, woods.inc</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_149.html">3.6.20 Other files</a> 
+    <a href="s_149.html">3.7.18 transforms.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.7 
-   Quick Reference</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.7.19 
+   woodmaps.inc, woods.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_151.html">3.7.1 Quick Reference Contents</a> 
+    <a href="s_151.html">3.7.20 Other files</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,238 +58,164 @@
   
 </table>
  
-<h2><a name="s03_07">3.7 </a>Quick Reference</h2>
+<h3><a name="s03_07_19">3.7.19 </a>woodmaps.inc, woods.inc</h3>
 
 <p>
-  This is a consolidation of the entire syntax for the POV-Ray's Scene Description Language. Note that the syntax 
- conventions used here are slightly different than those used in the user documentation.<a name="s03_07_i1"><a name="quickref"></a> 
- 
+  The file woodmaps.inc contains color_maps designed for use in wood textures. The M_WoodXA maps are intended to be 
+ used in the first layer of a multilayer texture, but can be used in single-layer textures. The M_WoodXB maps contain 
+ transparent areas, and are intended to be used in upper texture layers. 
 </p>
 
 <p>
-  The following syntax conventions are used: 
+  The file woods.inc contains predefined wood textures and pigments. 
 </p>
 
-<dl class="Explain">
+<p>
+  The pigments are prefixed with P_, and do not have color_maps, allowing you to specify a color map from 
+ woodmaps.inc or create your own. There are two groups, &quot;A&quot; and &quot;B&quot;: the A series is designed to 
+ work better on the bottom texture layer, and the B series is designed for the upper layers, with semitransparent color 
+ maps. The pigments with the same number were designed to work well together, but you do not necessarily have to use 
+ them that way. 
+</p>
+
+<p>
+  The textures are prefixed with T_, and are ready to use. They are designed with the major axis of the woodgrain 
+ &quot;cylinder&quot; aligned along the Z axis. With the exception of the few of the textures which have a small amount 
+ of rotation built-in, the textures will exhibit a very straight grain pattern unless you apply a small amount of 
+ x-axis rotation to them (generally 2 to 4 degrees seems to work well). 
+</p>
+
+<h4><a name="s03_07_19_01">3.7.19.1 </a>woodmaps.inc</h4>
+
+<p>
+  Color maps: 
+</p>
+
+<dl>
  
  <dt>
-   <code>ITEM</code> 
- <dd>
-   An item not in brackets indicates that it is a required item. 
+   <code>M_Wood1A, ..., M_Wood19A</code> 
  <dt>
-   <code>[ITEM]</code> 
- <dd>
-   Brackets surround an optional item. If brackets are part of the item, that is noted where applicable. 
+   <code>M_Wood1B, ..., M_Wood19B</code> 
+</dl>
+
+<h4><a name="s03_07_19_02">3.7.19.2 </a>woods.inc</h4>
+
+<p>
+  Pigments: 
+</p>
+
+<dl>
+ 
  <dt>
-   <code>ITEM...</code> 
- <dd>
-   An ellipsis indicates an item that may be used one or more times. 
+   <code>P_WoodGrain1A, ..., P_WoodGrainA</code> 
  <dt>
-   <code>[ITEM...]</code> 
- <dd>
-   An ellipsis within brackets indicates an item that may be used zero or more times. 
- <dt>
-   <code>ITEM&nbsp;ITEM</code> 
- <dd>
-   Two or more juxtaposed items indicates that they should be used in the given order. 
- <dt>
-   <code>ITEM&nbsp;|&nbsp;ITEM</code> 
- <dd>
-   A pipe separates two or more alternatives from which only one item should be used. 
- <dt>
-   <code>ITEM&nbsp;&amp;&nbsp;ITEM&nbsp;&nbsp;</code> 
- <dd>
-   An ampersand separates two or more items that may be used in any order. 
+   <code>P_WoodGrain1B, ..., P_WoodGrainB</code> 
 </dl>
 
 <p>
-  Juxtaposition has precedence over the pipe or ampersand. In the following example, you would select one of the 
- keyword and vector pairs. For that last pair, the keyword itself is optional. 
+  Textures: 
 </p>
 
-<p class="Explain">
-  <strong><code>rgb</code></strong>&nbsp;3D_VECTOR | <strong><code>rgbf</code></strong>&nbsp;4D_VECTOR 
- | <strong><code>rgbt</code></strong>&nbsp;4D_VECTOR | [<strong><code>rgbft</code></strong>]&nbsp;5D_VECTOR 
-</p>
-
-<p>
-  Some item names are simply descriptive in nature. An indication of the item's type is given by a prefix on the item 
- name, as follows: 
-</p>
-
-<dl class="Explain" compact="">
+<dl>
  
  <dt>
-   <code>F_</code> 
+   <code>T_Wood1</code> 
  <dd>
-   A FLOAT item 
+   Natural oak (light) 
  <dt>
-   <code>I_</code> 
+   <code>T_Wood2</code> 
  <dd>
-   An INT item 
+   Dark brown 
  <dt>
-   <code>V_</code> 
+   <code>T_Wood3</code> 
  <dd>
-   A VECTOR item 
+   Bleached oak (white) 
  <dt>
-   <code>V4_&nbsp;</code> 
+   <code>T_Wood4</code> 
  <dd>
-   A 4-D VECTOR item 
+   Mahogany (purplish-red) 
+ <dt>
+   <code>T_Wood5</code> 
+ <dd>
+   Dark yellow with reddish overgrain 
+ <dt>
+   <code>T_Wood6</code> 
+ <dd>
+   Cocabola (red) 
+ <dt>
+   <code>T_Wood7</code> 
+ <dd>
+   Yellow pine (ragged grain) 
+ <dt>
+   <code>T_Wood8</code> 
+ <dd>
+   Dark brown. Walnut? 
+ <dt>
+   <code>T_Wood9</code> 
+ <dd>
+   Yellowish-brown burl (heavily turbulated) 
+ <dt>
+   <code>T_Wood10</code> 
+ <dd>
+   Soft pine (light yellow, smooth grain) 
+ <dt>
+   <code>T_Wood11</code> 
+ <dd>
+   Spruce (yellowish, very straight, fine grain) 
+ <dt>
+   <code>T_Wood12</code> 
+ <dd>
+   Another very dark brown. Walnut-stained pine, perhaps? 
+ <dt>
+   <code>T_Wood13</code> 
+ <dd>
+   Very straight grained, whitish 
+ <dt>
+   <code>T_Wood14</code> 
+ <dd>
+   Red, rough grain 
+ <dt>
+   <code>T_Wood15</code> 
+ <dd>
+   Medium brown 
+ <dt>
+   <code>T_Wood16</code> 
+ <dd>
+   Medium brown 
+ <dt>
+   <code>T_Wood17</code> 
+ <dd>
+   Medium brown 
+ <dt>
+   <code>T_Wood18</code> 
+ <dd>
+   Orange 
+ <dt>
+   <code>T_Wood19, ..., T_Wood30</code> 
+ <dd>
+   Golden Oak. 
+ <dt>
+   <code>T_Wood31</code> 
+ <dd>
+   A light tan wood - heavily grained (variable coloration) 
+ <dt>
+   <code>T_Wood32</code> 
+ <dd>
+   A rich dark reddish wood, like rosewood, with smooth-flowing grain 
+ <dt>
+   <code>T_Wood33</code> 
+ <dd>
+   Similar to T_WoodB, but brighter 
+ <dt>
+   <code>T_Wood34</code> 
+ <dd>
+   Reddish-orange, large, smooth grain. 
+ <dt>
+   <code>T_Wood35</code> 
+ <dd>
+   Orangish, with a grain more like a veneer than a plank 
 </dl>
-
-<p class="Note">
-  <em>NOTE:</em> this document provides only the syntax of the Scene Description Language (SDL). The 
- intent is to provide a single reference for all statements and keywords. It does not provide definitions for the 
- numerous keywords nor explain their usage. 
-</p>
-
-<p><strong>
- Section Contents
-</strong>
-
-<ul>
- 
- <li>
-  <a href="s_151.html#s03_07_01">3.7.1 Quick Reference Contents</a>
- <li>
-  <a href="s_152.html#s03_07_02">3.7.2 The Scene</a>
- <li>
-  <a href="s_153.html#s03_07_03">3.7.3 Language Basics</a>
-  <ul>
-   
-   <li>
-    <a href="s_153.html#s03_07_03_01">3.7.3.1 Floats</a>
-   <li>
-    <a href="s_153.html#s03_07_03_02">3.7.3.2 Vectors</a>
-   <li>
-    <a href="s_153.html#s03_07_03_03">3.7.3.3 Colors</a>
-   <li>
-    <a href="s_153.html#s03_07_03_04">3.7.3.4 User defined Functions</a>
-   <li>
-    <a href="s_153.html#s03_07_03_05">3.7.3.5 Strings</a>
-   <li>
-    <a href="s_153.html#s03_07_03_06">3.7.3.6 Arrays</a>
-   <li>
-    <a href="s_153.html#s03_07_03_07">3.7.3.7 Splines</a>
-  </ul>
-
- <li>
-  <a href="s_154.html#s03_07_04">3.7.4 Language Directives</a>
-  <ul>
-   
-   <li>
-    <a href="s_154.html#s03_07_04_01">3.7.4.1 File Inclusion</a>
-   <li>
-    <a href="s_154.html#s03_07_04_02">3.7.4.2 Identifier Declaration</a>
-   <li>
-    <a href="s_154.html#s03_07_04_03">3.7.4.3 File Input/Output</a>
-   <li>
-    <a href="s_154.html#s03_07_04_04">3.7.4.4 Default Texture</a>
-   <li>
-    <a href="s_154.html#s03_07_04_05">3.7.4.5 Version Identfier</a>
-   <li>
-    <a href="s_154.html#s03_07_04_06">3.7.4.6 Control Flow Directives</a>
-   <li>
-    <a href="s_154.html#s03_07_04_07">3.7.4.7 Message Streams</a>
-   <li>
-    <a href="s_154.html#s03_07_04_08">3.7.4.8 Macro</a>
-   <li>
-    <a href="s_154.html#s03_07_04_09">3.7.4.9 Embedded Directives</a>
-  </ul>
-
- <li>
-  <a href="s_155.html#s03_07_05">3.7.5 Transformations</a>
- <li>
-  <a href="s_156.html#s03_07_06">3.7.6 Camera</a>
- <li>
-  <a href="s_157.html#s03_07_07">3.7.7 Lights</a>
-  <ul>
-   
-   <li>
-    <a href="s_157.html#s03_07_07_01">3.7.7.1 Lightgroup</a>
-  </ul>
-
- <li>
-  <a href="s_158.html#s03_07_08">3.7.8 Objects</a>
-  <ul>
-   
-   <li>
-    <a href="s_158.html#s03_07_08_01">3.7.8.1 Finite Solid Objects</a>
-   <li>
-    <a href="s_158.html#s03_07_08_02">3.7.8.2 Finite Patch Objects</a>
-   <li>
-    <a href="s_158.html#s03_07_08_03">3.7.8.3 Infinite Solid Objects</a>
-   <li>
-    <a href="s_158.html#s03_07_08_04">3.7.8.4 Isosurface</a>
-   <li>
-    <a href="s_158.html#s03_07_08_05">3.7.8.5 Parametric</a>
-   <li>
-    <a href="s_158.html#s03_07_08_06">3.7.8.6 CSG</a>
-  </ul>
-
- <li>
-  <a href="s_159.html#s03_07_09">3.7.9 Object Modifiers</a>
-  <ul>
-   
-   <li>
-    <a href="s_159.html#s03_07_09_01">3.7.9.1 UV Mapping</a>
-   <li>
-    <a href="s_159.html#s03_07_09_02">3.7.9.2 Material</a>
-   <li>
-    <a href="s_159.html#s03_07_09_03">3.7.9.3 Interior</a>
-   <li>
-    <a href="s_159.html#s03_07_09_04">3.7.9.4 Interior Texture</a>
-  </ul>
-
- <li>
-  <a href="s_160.html#s03_07_10">3.7.10 Texture</a>
-  <ul>
-   
-   <li>
-    <a href="s_160.html#s03_07_10_01">3.7.10.1 Plain Texture</a>
-   <li>
-    <a href="s_160.html#s03_07_10_02">3.7.10.2 Layered Texture</a>
-   <li>
-    <a href="s_160.html#s03_07_10_03">3.7.10.3 Patterned Texture</a>
-   <li>
-    <a href="s_160.html#s03_07_10_04">3.7.10.4 Pigment</a>
-   <li>
-    <a href="s_160.html#s03_07_10_05">3.7.10.5 Normal</a>
-   <li>
-    <a href="s_160.html#s03_07_10_06">3.7.10.6 Finish</a>
-   <li>
-    <a href="s_160.html#s03_07_10_07">3.7.10.7 Pattern</a>
-   <li>
-    <a href="s_160.html#s03_07_10_08">3.7.10.8 Pattern Modifiers</a>
-  </ul>
-
- <li>
-  <a href="s_161.html#s03_07_11">3.7.11 Media</a>
- <li>
-  <a href="s_162.html#s03_07_12">3.7.12 Atmospheric Effects</a>
-  <ul>
-   
-   <li>
-    <a href="s_162.html#s03_07_12_01">3.7.12.1 Background</a>
-   <li>
-    <a href="s_162.html#s03_07_12_02">3.7.12.2 Fog</a>
-   <li>
-    <a href="s_162.html#s03_07_12_03">3.7.12.3 Sky Sphere</a>
-   <li>
-    <a href="s_162.html#s03_07_12_04">3.7.12.4 Rainbow</a>
-  </ul>
-
- <li>
-  <a href="s_163.html#s03_07_13">3.7.13 Global Settings</a>
-  <ul>
-   
-   <li>
-    <a href="s_163.html#s03_07_13_01">3.7.13.1 Radiosity</a>
-   <li>
-    <a href="s_163.html#s03_07_13_02">3.7.13.2 Photons</a>
-  </ul>
-
-</ul>
  <br> 
 <table class="NavBar" width="100%">
   
@@ -301,15 +227,15 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_149.html">3.6.20 Other files</a> 
+    <a href="s_149.html">3.7.18 transforms.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.7 Quick Reference</strong> 
+    <strong>3.7.19 woodmaps.inc, woods.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_151.html">3.7.1 Quick Reference Contents</a> 
+    <a href="s_151.html">3.7.20 Other files</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.4.3 Finish</title>
+<title>3.5.1 Pigment</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_114.html">3.4.2 Normal</a> 
+    <a href="s_114.html">3.5 Textures</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.4.3 
-   Finish</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.5.1 
+   Pigment</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_116.html">3.4.4 Halo</a> 
+    <a href="s_116.html">3.5.2 Normal</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,62 +58,66 @@
   
 </table>
  
-<h3><a name="s03_04_03">3.4.3 </a>Finish</h3>
-<a name="s03_04_03_i1"><a name="finish"></a><a name="s03_04_03_i2"><a name="finish, keyword"></a><a name="s03_04_03_i3"><a name="s03_04_03_i4"><a name="ambient, finish"></a><a name="s03_04_03_i5"><a name="s03_04_03_i6"><a name="diffuse, finish"></a><a name="s03_04_03_i7"><a name="s03_04_03_i8"><a name="brilliance, finish"></a><a name="s03_04_03_i9"><a name="s03_04_03_i10"><a name="phong, finish"></a><a name="s03_04_03_i11"><a name="s03_04_03_i12"><a name="phong_size, finish"></a><a name="s03_04_03_i13"><a name="s03_04_03_i14"><a name="specular, finish"></a><a name="s03_04_03_i15"><a name="s03_04_03_i16"><a name="roughness, finish"></a><a name="s03_04_03_i17"><a name="s03_04_03_i18"><a name="metallic, finish"></a><a name="s03_04_03_i19"><a name="s03_04_03_i20"><a name="crand, finish"></a><a name="s03_04_03_i21"><a name="s03_04_03_i22"><a name="conserve_energy, finish"></a><a name="s03_04_03_i23"><a name="s03_04_03_i24"><a name="irid, finish"></a><a name="s03_04_03_i25"><a name="s03_04_03_i26"><a name="fresnel, finish"></a><a name="s03_04_03_i27"><a name="s03_04_03_i28"><a name="falloff, finish"></a><a name="s03_04_03_i29"><a name="s03_04_03_i30"><a name="exponent, finish"></a><a name="s03_04_03_i31"><a name="s03_04_03_i32"><a name="thickness, finish"></a><a name="s03_04_03_i33"><a name="s03_04_03_i34"><a name="turbulence, finish"></a><a name="s03_04_03_i35">
+<h3><a name="s03_05_01">3.5.1 </a>Pigment</h3>
+<a name="s03_05_01_i1"><a name="pigment"></a><a name="s03_05_01_i2"><a name="pigment, keyword"></a><a name="s03_05_01_i3"><a name="s03_05_01_i4"><a name="image_map, pigment"></a><a name="s03_05_01_i5"><a name="s03_05_01_i6"><a name="color_map, pigment"></a><a name="s03_05_01_i7"><a name="s03_05_01_i8"><a name="colour_map, pigment"></a><a name="s03_05_01_i9"><a name="s03_05_01_i10"><a name="pigment_map, pigment"></a><a name="s03_05_01_i11"><a name="s03_05_01_i12"><a name="quick_color, pigment"></a><a name="s03_05_01_i13"><a name="s03_05_01_i14"><a name="quick_colour, pigment"></a><a name="s03_05_01_i15">
 <p>
-  The finish properties of a surface can greatly affect its appearance. How does light reflect? What happens in 
- shadows? What kind of highlights are visible. To answer these questions you need a <code>finish</code>. 
+  The color or pattern of colors for an object is defined by a <code> pigment</code> statement. All plain textures 
+ must have a pigment. If you do not specify one the default pigment is used. The color you define is the way you want 
+ the object to look if fully illuminated. You pick the basic color inherent in the object and POV-Ray brightens or 
+ darkens it depending on the lighting in the scene. The parameter is called <code>pigment</code> because we are 
+ defining the basic color the object actually is rather than how it looks. 
 </p>
 
 <p>
-  The syntax for <code>finish</code> is as follows:<a name="s03_04_03_i36"><a name="ambient"></a> 
+  The syntax for pigment is: 
 </p>
 
 <pre>
-FINISH:
-    finish { [FINISH_IDENTIFIER] [FINISH_ITEMS...] }
-FINISH_ITEMS:
-    ambient COLOR | diffuse Amount | brilliance Amount |
-    phong Amount | phong_size Amount | specular Amount |
-    roughness Amount | metallic [Amount] | reflection COLOR |
-    crand Amount | conserve_energy BOOL_ON_OF |
-    reflection { Color_Reflecting_Min [REFLECTION_ITEMS...] }|
-    irid { Irid_Amount [IRID_ITEMS...] }
-REFLECTION_ITEMS:
-    COLOR_REFLECTION_MAX | fresnel BOOL_ON_OFF |
-    falloff FLOAT_FALLOFF | exponent FLOAT_EXPONENT |
-    metallic FLOAT_METALLIC
-IRID_ITEMS:
-    thickness Amount | turbulence Amount
+PIGMENT:
+    pigment {
+        [PIGMENT_IDENTIFIER]
+        [PIGMENT_TYPE]
+        [PIGMENT_MODIFIER...]
+    }
+PIGMENT_TYPE:
+    PATTERN_TYPE | COLOR |
+    image_map { 
+        BITMAP_TYPE &quot;bitmap.ext&quot; [IMAGE_MAP_MODS...]
+    }
+PIGMENT_MODIFIER:
+    PATTERN_MODIFIER | COLOR_LIST | PIGMENT_LIST | 
+    color_map { COLOR_MAP_BODY } | colour_map { COLOR_MAP_BODY } | 
+    pigment_map { PIGMENT_MAP_BODY } | quick_color COLOR |
+    quick_colour COLOR
 </pre>
 
 <p>
-  The <em>FINISH_IDENTIFIER</em> is optional but should proceed all other items. Any items after the <em>FINISH_IDENTIFIER</em> 
- modify or override settings given in the <em>FINISH_IDENTIFIER</em>. If no identifier is specified then the items 
- modify the finish values in the current default texture. 
-</p>
-
-<p class="Note">
-  <strong>Note:</strong> transformations are not allowed inside a finish because finish items cover the 
- entire surface uniformly. Each of the <em> FINISH_ITEMS</em> listed above is described in sub-sections below. 
-</p>
-
-<p>
-  In earlier versions of POV-Ray, the <code>refraction</code>, <code> ior</code>, and <code>caustics</code> keywords 
- were part of the <code> finish</code> statement but they are now part of the <code>interior</code> statement. They are 
- still supported under <code>finish</code> for backward compatibility but the results may not be 100% identical to 
- previous versions. See &quot;<a href="s_126.html#s03_05_01_01">Why are Interior and Media Necessary?</a>&quot; for 
- details. 
+  Each of the items in a pigment are optional but if they are present, they must be in the order shown. Any items 
+ after the <em> PIGMENT_IDENTIFIER</em> modify or override settings given in the identifier. If no identifier is 
+ specified then the items modify the pigment values in the current default texture. The <em>PIGMENT_TYPE</em> fall into 
+ roughly four categories. Each category is discussed the sub-sections which follow. The four categories are solid color 
+ and image map patterns which are specific to <code>pigment</code> statements or color list patterns, color mapped 
+ patterns which use POV-Ray's wide selection of general patterns. See &quot;<a href="s_125.html#s03_05_11">Patterns</a>&quot; 
+ for details about specific patterns. 
 </p>
 
 <p>
-  A <code>finish</code> statement is part of a <code>texture</code> specification. However it can be tedious to use a <code>texture</code> 
- statement just to add a highlights or other lighting properties to an object. Therefore you may attach a finish 
- directly to an object without explicitly specifying that it as part of a texture. For example instead of this: 
+  The pattern type is optionally followed by one or more pigment modifiers. In addition to general pattern modifiers 
+ such as transformations, turbulence, and warp modifiers, pigments may also have a <em>COLOR_LIST</em>, <em> 
+ PIGMENT_LIST</em>, <code>color_map</code>, <code>pigment_map</code>, and <code>quick_color</code> which are specific 
+ to pigments. See &quot;<a href="#l142">Pattern Modifiers</a>&quot; for information on general modifiers. The 
+ pigment-specific modifiers are described in sub-sections which follow. Pigment modifiers of any kind apply only to the 
+ pigment and not to other parts of the texture. Modifiers must be specified last. 
+</p>
+
+<p>
+  A pigment statement is part of a <code>texture</code> specification. However it can be tedious to use a <code>texture</code> 
+ statement just to add a color to an object. Therefore you may attach a pigment directly to an object without 
+ explicitly specifying that it as part of a texture. For example instead of this: 
 </p>
 
 <pre>
-  object { My_Object texture { finish { phong 0.5 } } }
+  object { My_Object texture {pigment { color Red } } }
 </pre>
 
 <p>
@@ -121,491 +125,557 @@ IRID_ITEMS:
 </p>
 
 <pre>
-  object { My_Object finish { phong 0.5 } }
+  object { My_Object pigment {color Red } }
 </pre>
 
 <p>
-  Doing so creates an entire <code>texture</code> structure with default <code>pigment</code> and <code>normal</code> 
+  Doing so creates an entire <code>texture</code> structure with default <code>normal</code> and <code>finish</code> 
  statements just as if you had explicitly typed the full <code> texture {...}</code> around it. 
 </p>
 
 <p>
-  Finish identifiers may be declared to make scene files more readable and to parameterize scenes so that changing a 
+  Pigment identifiers may be declared to make scene files more readable and to parameterize scenes so that changing a 
  single declaration changes many values. An identifier is declared as follows. 
 </p>
 
 <pre>
-FINISH_DECLARATION:
-    #declare IDENTIFIER = FINISH |
-    #local IDENTIFIER = FINISH
+PIGMENT_DECLARATION:
+    #declare IDENTIFIER = PIGMENT |
+    #local IDENTIFIER = PIGMENT
 </pre>
 
 <p>
-  Where <em>IDENTIFIER</em> is the name of the identifier up to 40 characters long and <em>FINISH</em> is any valid <code>finish</code> 
- statement. See &quot;<a href="s_95.html#s03_01_02_02_02">#declare vs. #local</a>&quot; for information on identifier 
+  Where <em>IDENTIFIER</em> is the name of the identifier up to 40 characters long and <em>PIGMENT</em> is any valid <code>pigment</code> 
+ statement. See &quot;<a href="s_98.html#s03_02_02_02_02">#declare vs. #local</a>&quot; for information on identifier 
  scope. 
 </p>
 
-<h4><a name="s03_04_03_01">3.4.3.1 </a>Ambient</h4>
+<h4><a name="s03_05_01_01">3.5.1.1 </a>Solid Color Pigments</h4>
+<a name="s03_05_01_01_i1">
+<p>
+  The simplest type of pigment is a solid color. To specify a solid color you simply put a color specification inside 
+ a <code>pigment</code> statement. For example: 
+</p>
+
+<pre>
+  pigment { color Orange }
+</pre>
 
 <p>
-  The light you see in dark shadowed areas comes from diffuse reflection off of other objects. This light cannot be 
- directly modeled using ray-tracing. However we can use a trick called <em>ambient lighting</em> to simulate the light 
- inside a shadowed area. 
+  A color specification consists of the optional keyword <code> color</code> followed by a color identifier or by a 
+ specification of the amount of red, green, blue, filtered and unfiltered transparency in the surface. See section 
+ &quot;<a href="s_97.html#s03_02_01_05">Specifying Colors</a>&quot; for more details about colors. Any pattern 
+ modifiers used with a solid color are ignored because there is no pattern to modify. 
+</p>
+
+<h4><a name="s03_05_01_02">3.5.1.2 </a>Color List Pigments</h4>
+<a name="s03_05_01_02_i1">
+<p>
+  There are four color list patterns: <code>checker</code>, <code> hexagon</code>, <code>brick</code> and <code>object</code>. 
+ The result is a pattern of solid colors with distinct edges rather than a blending of colors as with color mapped 
+ patterns. Each of these patterns is covered in more detail in a later section. The syntax is: 
+</p>
+
+<pre>
+COLOR_LIST_PIGMENT:
+  pigment {brick [COLOR_1, [COLOR_2]] [PIGMENT_MODIFIERS...] }|
+  pigment {checker [COLOR_1, [COLOR_2]] [PIGMENT_MODIFIERS...]}|
+  pigment { 
+     hexagon [COLOR_1, [COLOR_2, [COLOR_3]]] [PIGMENT_MODIFIERS...] 
+  }|
+  pigment {object OBJECT_IDENTIFIER | OBJECT {} [COLOR_1, COLOR_2]}
+</pre>
+
+<p>
+  Each <em>COLOR_n</em> is any valid color specification. There should be a comma between each color or the <code>color</code> 
+ keyword should be used as a separator so that POV-Ray can determine where each color specification starts and ends. 
+ The <code>brick</code> and <code>checker</code> pattern expects two colors and <code>hexagon</code> expects three. If 
+ an insufficient number of colors is specified then default colors are used. 
+</p>
+
+<h4><a name="s03_05_01_03">3.5.1.3 </a>Color Maps</h4>
+<a name="s03_05_01_03_i1"><a name="s03_05_01_03_i2"><a name="color_map"></a><a name="s03_05_01_03_i3"><a name="colour_map"></a>
+<p>
+  Most of the color patterns do not use abrupt color changes of just two or three colors like those in the brick, 
+ checker or hexagon patterns. They instead use smooth transitions of many colors that gradually change from one point 
+ to the next. The colors are defined in a pigment modifier called a <code>color_map</code> that describes how the 
+ pattern blends from one color to the next. 
 </p>
 
 <p>
-  Ambient light is light that is scattered everywhere in the room. It bounces all over the place and manages to light 
- objects up a bit even where no light is directly shining. Computing real ambient light would take far too much time, 
- so we simulate ambient light by adding a small amount of white light to each texture whether or not a light is 
- actually shining on that texture. 
+  Each of the various pattern types available is in fact a mathematical function that takes any x, y, z location and 
+ turns it into a number between 0.0 and 1.0 inclusive. That number is used to specify what mix of colors to use from 
+ the color map. 
 </p>
 
 <p>
-  This means that the portions of a shape that are completely in shadow will still have a little bit of their surface 
- color. It's almost as if the texture glows, though the ambient light in a texture only affects the shape it is used 
- on. 
+  The syntax for <code> color_map</code> is as follows: 
 </p>
 
-<p>
-  The <code>ambient</code> keyword controls the amount of ambient light. Usually a single float value is specified 
- even though the syntax calls for a color. For example a float value of <code>0.3</code> gets promoted to the full 
- color vector <code> &lt;0.3,0.3,0.3,0.3,0.3&gt;</code> which is acceptable because only the red, green and blue parts 
- are used. 
-</p>
+<pre>
+COLOR_MAP:
+    color_map { COLOR_MAP_BODY } | colour_map { COLOR_MAP_BODY }
+COLOR_MAP_BODY:
+    COLOR_MAP_IDENTIFIER | COLOR_MAP_ENTRY...
+COLOR_MAP_ENTRY:
+    [ Value COLOR ] | 
+    [ Value_1, Value_2 color COLOR_1 color COLOR_2 ]
+</pre>
 
 <p>
-  The default value is 0.1 which gives very little ambient light. The value can range from 0.0 to 1.0. Ambient light 
- affects both shadowed and non-shadowed areas so if you turn up the <code> ambient</code> value you may want to turn 
- down the <code>diffuse</code> and <code>reflection</code> values. 
+  Where each <em><code>Value_n</code></em> is a float values between 0.0 and 1.0 inclusive and each <em>COLOR_n</em>, 
+ is color specifications. 
 </p>
 
 <p class="Note">
-  <strong>Note:</strong> that this method doesn't account for the color of surrounding objects. If you 
- walk into a room that has red walls, floor and ceiling then your white clothing will look pink from the reflected 
- light. POV-Ray's ambient shortcut doesn't account for this. There is also no way to model specular reflected indirect 
- illumination such as the flashlight shining in a mirror. 
+  <strong>Note:</strong> the <code>[]</code> brackets are part of the actual <em> COLOR_MAP_ENTRY</em>. 
+ They are not notational symbols denoting optional parts. The brackets surround each entry in the color map. 
 </p>
 
 <p>
-  You may color the ambient light using one of two methods. You may specify a color rather than a float after the 
- ambient keyword in each finish statement. For example 
+  There may be from 2 to 256 entries in the map. The alternate spelling <code>colour_map</code> may be used. 
+</p>
+
+<p>
+  Here is an example: 
 </p>
 
 <pre>
-   finish { ambient rgb &lt;0.3,0.1,0.1&gt; } //a pink ambient
-</pre>
-
-<p>
-  You may also specify the overall ambient light source used when calculating the ambient lighting of an object using 
- the global <code> ambient_light</code> setting. The formula is given by <em> Ambient = Finish_Ambient * 
- Global_Ambient_Light_Source</em> See section &quot;<a href="s_100.html#s03_02_04_02">Ambient Light</a>&quot; for 
- details. 
-</p>
-
-<h4><a name="s03_04_03_02">3.4.3.2 </a>Diffuse Reflection Items</h4>
-
-<p>
-  When light reflects off of a surface the laws of physics say that it should leave the surface at the exact same 
- angle it came in. This is similar to the way a billiard ball bounces off a bumper of a pool table. This perfect 
- reflection is called <em>specular reflection</em>. However only very smooth polished surfaces reflect light in this 
- way. Most of the time, light reflects and is scattered in all directions by the roughness of the surface. This 
- scattering is called <em>diffuse reflection</em> because the light diffuses or spreads in a variety of directions. It 
- accounts for the majority of the reflected light we see. 
-</p>
-
-<h5><a name="s03_04_03_02_01">3.4.3.2.1 </a>Diffuse</h5>
-
-<p>
-  The keyword <code>diffuse</code> is used in a <code>finish</code> statement to control how much of the light coming 
- directly from any light sources is reflected via diffuse reflection. For example 
-</p>
-
-<pre>
-  finish { diffuse 0.7 }
-</pre>
-
-<p>
-  means that 70% of the light seen comes from direct illumination from light sources. The default value is <code>diffuse 
- 0.6</code>. 
-</p>
-
-<h5><a name="s03_04_03_02_02">3.4.3.2.2 </a>Brilliance</h5>
-<a name="s03_04_03_02_02_i1"><a name="brilliance"></a>
-<p>
-  The amount of direct light that diffuses from an object depends upon the angle at which it hits the surface. When 
- light hits at a shallow angle it illuminates less. When it is directly above a surface it illuminates more. The <code>brilliance</code> 
- keyword can be used in a <code>finish</code> statement to vary the way light falls off depending upon the angle of 
- incidence. This controls the tightness of the basic diffuse illumination on objects and slightly adjusts the 
- appearance of surface shininess. Objects may appear more metallic by increasing their brilliance. The default value is 
- 1.0. Higher values from 5.0 to about 10.0 cause the light to fall off less at medium to low angles. There are no 
- limits to the brilliance value. Experiment to see what works best for a particular situation. This is best used in 
- concert with highlighting. 
-</p>
-
-<h5><a name="s03_04_03_02_03">3.4.3.2.3 </a>Crand Graininess</h5>
-<a name="s03_04_03_02_03_i1"><a name="crand"></a>
-<p>
-  Very rough surfaces, such as concrete or sand, exhibit a dark graininess in their apparent color. This is caused by 
- the shadows of the pits or holes in the surface. The <code>crand</code> keyword can be added to a <code> finish</code> 
- to cause a minor random darkening in the diffuse reflection of direct illumination. Typical values range from <code>crand 
- 0.01</code> to <code>crand 0.5</code> or higher. The default value is 0. For example: 
-</p>
-
-<pre>
-  finish { crand 0.05 }
-</pre>
-
-<p>
-  This feature is carried over from the earliest versions of POV-Ray and is considered obsolete. This is because the 
- grain or noise introduced by this feature is applied on a pixel-by-pixel basis. This means that it will look the same 
- on far away objects as on close objects. The effect also looks different depending upon the resolution you are using 
- for the rendering. 
-</p>
-
-<p class="Note">
-  <strong>Note:</strong> this should not be used when rendering animations. This is the one of a few 
- truly random features in POV-Ray and will produce an annoying flicker of flying pixels on any textures animated with a <code>crand</code> 
- value. For these reasons it is not a very accurate way to model the rough surface effect. 
-</p>
-
-<h4><a name="s03_04_03_03">3.4.3.3 </a>Highlights</h4>
-
-<p>
-  Highlights are the bright spots that appear when a light source reflects off of a smooth object. They are a blend 
- of specular reflection and diffuse reflection. They are specular-like because they depend upon viewing angle and 
- illumination angle. However they are diffuse-like because some scattering occurs. In order to exactly model a 
- highlight you would have to calculate specular reflection off of thousands of microscopic bumps called micro facets. 
- The more that micro facets are facing the viewer the shinier the object appears and the tighter the highlights become. 
- POV-Ray uses two different models to simulate highlights without calculating micro facets. They are the <em>specular</em> 
- and <em>Phong</em> models. 
-</p>
-
-<p class="Note">
-  <strong>Note:</strong> specular and Phong highlights are <em>not</em> mutually exclusive. It is 
- possible to specify both and they will both take effect. Normally, however, you will only specify one or the other. 
-</p>
-
-<h5><a name="s03_04_03_03_01">3.4.3.3.1 </a>Phong Highlights</h5>
-<a name="s03_04_03_03_01_i1"><a name="phong"></a><a name="s03_04_03_03_01_i2"><a name="phong_size"></a>
-<p>
-  The <code>phong</code> keyword in the <code>finish</code> statement controls the amount of Phong highlighting on 
- the object. It causes bright shiny spots on the object that are the color of the light source being reflected. 
-</p>
-
-<p>
-  The Phong method measures the average of the facets facing in the mirror direction from the light sources to the 
- viewer. 
-</p>
-
-<p>
-  Phong's value is typically from 0.0 to 1.0, where 1.0 causes complete saturation to the light source's color at the 
- brightest area (center) of the highlight. The default <code>phong 0.0</code> gives no highlight. 
-</p>
-
-<p>
-  The size of the highlight spot is defined by the <code>phong_size</code> value. The larger the phong size the 
- tighter, or smaller, the highlight and the shinier the appearance. The smaller the phong size the looser, or larger, 
- the highlight and the less glossy the appearance. 
-</p>
-
-<p>
-  Typical values range from 1.0 (very dull) to 250 (highly polished) though any values may be used. Default phong 
- size is 40 (plastic) if <code> phong_size</code> is not specified. For example: 
-</p>
-
-<pre>
-  finish { phong 0.9 phong_size 60 }
-</pre>
-
-<p>
-  If <code>phong</code> is not specified <code>phong_size</code> has no effect. 
-</p>
-
-<h5><a name="s03_04_03_03_02">3.4.3.3.2 </a>Specular Highlight</h5>
-<a name="s03_04_03_03_02_i1"><a name="specular"></a>
-<p>
-  The <code>specular</code> keyword in a <code>finish</code> statement produces a highlight which is very similar to 
- Phong highlighting but it uses slightly different model. The specular model more closely resembles real specular 
- reflection and provides a more credible spreading of the highlights occurring near the object horizons. 
-</p>
-
-<p>
-  The specular value is typically from 0.0 to 1.0, where 1.0 causes complete saturation to the light source's color 
- at the brightest area (center) of the highlight. The default <code>specular 0.0</code> gives no highlight. 
-</p>
-
-<p>
-  <a name="s03_04_03_03_02_i2"><a name="roughness"></a> The size of the spot is defined by the value given the <code> 
- roughness</code> keyword. Typical values range from 1.0 (very rough - large highlight) to 0.0005 (very smooth - small 
- highlight). The default value, if roughness is not specified, is 0.05 (plastic). 
-</p>
-
-<p>
-  It is possible to specify wrong values for roughness that will generate an error when you try to render the file. 
- Don't use 0 and if you get errors check to see if you are using a very, very small roughness value that may be causing 
- the error. For example: 
-</p>
-
-<pre>
-  finish { specular 0.9 roughness 0.02 }
-</pre>
-
-<p>
-  If <code>specular</code> is not specified <code>roughness</code> has no effect. 
-</p>
-
-<p class="Note">
-  <strong>Note:</strong> that when light is reflected by a surface such as a mirror, it is called <em>specular 
- reflection</em> however such reflection is not controlled by the <code>specular</code> keyword. The <code> reflection</code> 
- keyword controls mirror-like specular reflection. 
-</p>
-
-<h5><a name="s03_04_03_03_03">3.4.3.3.3 </a>Metallic Highlight Modifier</h5>
-<a name="s03_04_03_03_03_i1"><a name="metallic"></a><a name="s03_04_03_03_03_i2"><a name="metallic, highlight"></a>
-<p>
-  The keyword <code>metallic</code> may be used with <code>phong</code> or <code>specular</code> highlights. This 
- keyword indicates that the color of the highlights will be calculated by an empirical function that models the 
- reflectivity of metallic surfaces. 
-</p>
-
-<p>
-  Normally highlights are the color of the light source. Adding this keyword filters the highlight so that white 
- light reflected from a metallic surface takes the color specified by the pigment 
-</p>
-
-<p>
-  The <code>metallic</code> keyword may optionally be follow by a numeric value to specify the influence the amount 
- of the effect. If no keyword is specified, the default value is zero. If the keyword is specified without a value, the 
- default value is one. For example: 
-</p>
-
-<pre>
-  finish {
-    phong 0.9
-    phong_size 60
-    metallic
-  }
-</pre>
-
-<p>
-  If <code>phong</code> or <code>specular</code> keywords are not specified then <code>metallic</code> has no effect. 
-</p>
-
-<h4><a name="s03_04_03_04">3.4.3.4 </a>Specular Reflection</h4>
-<a name="s03_04_03_04_i1"><a name="reflection"></a>
-<p>
-  When light does not diffuse and it <em>does</em> reflect at the same angle as it hits an object, it is called <em>specular 
- reflection</em>. Such mirror-like reflection is controlled by the <code>reflection {...}</code> block in a <code>finish</code> 
- statement. 
-</p>
-
-<p>
-  Syntax: 
-</p>
-
-<pre>  
-finish {
-    reflection {
-      [COLOR_REFLECTION_MIN,] COLOR_REFLECTION_MAX
-      [fresnel BOOL_ON_OFF]
-      [falloff FLOAT_FALLOFF]
-      [exponent FLOAT_EXPONENT]
-      [metallic FLOAT_METALLIC]
+  sphere {
+    &lt;0,1,2&gt;, 2
+    pigment {
+      gradient x       //this is the PATTERN_TYPE
+      color_map {
+        [0.1  color Red]
+        [0.3  color Yellow]
+        [0.6  color Blue]
+        [0.6  color Green]
+        [0.8  color Cyan]
+      }
     }
   }
-[interior { ior IOR }]
-
 </pre>
 
 <p>
-  The simplest use would be a perfect mirror: 
+  The pattern function <code>gradient x</code> is evaluated and the result is a value from 0.0 to 1.0. If the value 
+ is less than the first entry (in this case 0.1) then the first color (red) is used. Values from 0.1 to 0.3 use a blend 
+ of red and yellow using linear interpolation of the two colors. Similarly values from 0.3 to 0.6 blend from yellow to 
+ blue. 
+</p>
+
+<p>
+  The 3rd and 4th entries both have values of 0.6. This causes an immediate abrupt shift of color from blue to green. 
+ Specifically a value that is less than 0.6 will be blue but exactly equal to 0.6 will be green. Moving along, values 
+ from 0.6 to 0.8 will be a blend of green and cyan. Finally any value greater than or equal to 0.8 will be cyan. 
+</p>
+
+<p>
+  If you want areas of unchanging color you simply specify the same color for two adjacent entries. For example: 
 </p>
 
 <pre>
-  finish { reflection {1.0} ambient 0 diffuse 0 }
+  color_map {
+    [0.1  color Red]
+    [0.3  color Yellow]
+    [0.6  color Yellow]
+    [0.8  color Green]
+  }
 </pre>
 
 <p>
-  This gives the object a mirrored finish. It will reflect all other elements in the scene. Usually a single float 
- value is specified after the keyword even though the syntax calls for a color. For example a float value of 0.3 gets 
- promoted to the full color vector &lt;0.3,0.3,0.3,0.3,0.3&gt; which is acceptable because only the red, green and blue 
- parts are used. 
+  In this case any value from 0.3 to 0.6 will be pure yellow. 
 </p>
 
 <p>
-  The value can range from 0.0 to 1.0. By default there is no reflection. 
+  The first syntax version of <em>COLOR_MAP_ENTRY</em> with one float and one color is the current standard. The 
+ other double entry version is obsolete and should be avoided. The previous example would look as follows using the old 
+ syntax. 
+</p>
+
+<pre>
+  color_map {
+    [0.0 0.1  color Red color Red]
+    [0.1 0.3  color Red color Yellow]
+    [0.3 0.6  color Yellow color Yellow]
+    [0.6.0.8  color Yellow color Green]
+    [0.8 1.0  color Green color Green]
+  }
+</pre>
+
+<p>
+  You may use <code>color_map</code> with any patterns except <code> brick</code>, <code>checker</code>, <code>hexagon</code>, 
+ <code>object</code> and <code> image_map</code>. You may declare and use <code>color_map</code> identifiers. For 
+ example: 
+</p>
+
+<pre>
+  #declare Rainbow_Colors=
+    color_map {
+      [0.0   color Magenta]
+      [0.33  color Yellow]
+      [0.67  color Cyan]
+      [1.0   color Magenta]
+    }
+  object {
+    My_Object
+    pigment {
+      gradient x
+      color_map { Rainbow_Colors }
+    }
+  }
+</pre>
+
+<h4><a name="s03_05_01_04">3.5.1.4 </a>Pigment Maps and Pigment Lists</h4>
+<a name="s03_05_01_04_i1"><a name="s03_05_01_04_i2"><a name="pigment_map"></a>
+<p>
+  In addition to specifying blended colors with a color map you may create a blend of pigments using a <code>pigment_map</code>. 
+ The syntax for a pigment map is identical to a color map except you specify a pigment in each map entry (and not a 
+ color). 
+</p>
+
+<p>
+  The syntax for <code>pigment_map</code> is as follows: 
+</p>
+
+<pre>
+PIGMENT_MAP:
+    pigment_map { PIGMENT_MAP_BODY }
+PIGMENT_MAP_BODY:
+    PIGMENT_MAP_IDENTIFIER | PIGMENT_MAP_ENTRY...
+PIGMENT_MAP_ENTRY:
+    [ Value PIGMENT_BODY ]
+</pre>
+
+<p>
+  Where <em><code>Value</code></em> is a float value between 0.0 and 1.0 inclusive and each <em>PIGMENT_BODY</em> is 
+ anything which can be inside a <code>pigment{...}</code> statement. The <code>pigment</code> keyword and <code>{}</code> 
+ braces need not be specified. 
 </p>
 
 <p class="Note">
-  <strong>Note:</strong> 
-</p>
-
-<ul>
- 
- <li>
-   Adding reflection to a texture makes it take longer to render because an additional ray must be traced. 
- </li>
-
- <li>
-   The reflected light may be tinted by specifying a color rather than a float.<br> For example: <br> <code> finish 
-  { reflection rgb &lt;1,0,0&gt; }</code> <br> gives a red mirror that only reflects red light. 
- </li>
-
- <li>
-   Although such reflection is called specular it is not controlled by the <code>specular</code> keyword. That 
-  keyword controls a specular highlight. 
- </li>
-
- <li>
-   The old syntax for simple reflection: &quot;<code>reflection COLOR</code>&quot; and &quot;reflection_exponent 
-  Float&quot; without braces is still supported for backward compatibility. 
- </li>
-
-</ul>
-
-<p>
-  <a name="s03_04_03_04_i2"><a name="falloff, reflection"></a> <a name="s03_04_03_04_i3"><a name="reflection, falloff"></a> 
- <code>falloff</code> sets a falloff exponent in the variable reflection. This is the exponent telling how fast the 
- reflectivity will fall off, i.e. linear, squared, cubed, etc. 
+  <strong>Note:</strong> that the <code>[]</code> brackets are part of the actual <em> PIGMENT_MAP_ENTRY</em>. 
+ They are not notational symbols denoting optional parts. The brackets surround each entry in the pigment map. 
 </p>
 
 <p>
-  <a name="s03_04_03_04_i4"><a name="metallic, reflection"></a> <a name="s03_04_03_04_i5"><a name="refelection, metallic"></a> 
- The <code> metallic</code> keyword is similar in function to the &quot;metallic&quot; keyword used for highlights in 
- finishes: it simulates the reflective properties of metallic surfaces, where reflected light takes on the colour of 
- the surface. When <code>metallic</code> is used, the &quot;reflection&quot; color is multiplied by the pigment color 
- at each point. You can specify an optional float value, which is the amount of influence the <code>metallic</code> 
- keyword has on the reflected color.<code> metallic</code> uses the Fresnel equation so that the color of the light is 
- reflected at glancing angles, and the color of the metal is reflected for angles close to the surface's normal.<a name="s03_04_03_04_i6"><a name="exponent, reflection"></a><a name="s03_04_03_04_i7"><a name="exponent"></a><a name="s03_04_03_04_i8"><a name="reflection_exponent"></a><a name="s03_04_03_04_i9"> 
- 
+  There may be from 2 to 256 entries in the map. 
 </p>
 
 <p>
-  <strong>exponent</strong><br> POV-Ray uses a limited light model that cannot distinguish between objects which are 
- simply brightly colored and objects which are extremely bright. A white piece of paper, a light bulb, the sun, and a 
- supernova, all would be modeled as <code>rgb&lt;1,1,1&gt;</code> and slightly off-white objects would be only slightly 
- darker. It is especially difficult to model partially reflective surfaces in a realistic way. Middle and lower 
- brightness objects typically look too bright when reflected. If you reduce the <code>reflection</code> value, it tends 
- to darken the bright objects too much. Therefore the optional <code>exponent</code> keyword has been added. It 
- produces non-linear reflection intensities. The default value of 1.0 produces a linear curve. Lower values darken 
- middle and low intensities and keeps high intensity reflections bright. This is a somewhat experimental feature 
- designed for artistic use. It does not directly correspond to any real world reflective properties. 
-</p>
-
-<p>
-  <strong>Variable reflection</strong><br> <a name="s03_04_03_04_i10"><a name="variable reflection"></a> Many 
- materials, such as water, ceramic glaze, and linoleum are more reflective when viewed at shallow angles. This can be 
- simulated by also specifying a minimum reflection in the <code>reflection {...}</code> statement. <br>For example: 
+  For example 
 </p>
 
 <pre>
-    finish { reflection { 0.03, 1 }}
+  sphere {
+    &lt;0,1,2&gt;, 2
+    pigment {
+      gradient x       //this is the PATTERN_TYPE
+      pigment_map {
+        [0.3 wood scale 0.2]
+        [0.3 Jade]    //this is a pigment identifier
+        [0.6 Jade]
+        [0.9 marble turbulence 1]
+      }
+    }
+  }
 </pre>
 
 <p>
-  uses the same function as the standard reflection, but the first parameter sets the minimum reflectivity. It could 
- be a color vector or a float (which is automatically promoted to a gray vector). This minimum value is how reflective 
- the surface will be when viewed from a direction parallel to its normal. <br> The second parameter sets the maximum 
- reflectivity, which could also be a color vector or a float (which is automatically promoted to a gray vector). This 
- maximum parameter is how reflective the surface will be when viewed at a 90-degree angle to its normal. 
+  When the <code>gradient x</code> function returns values from 0.0 to 0.3 the scaled wood pigment is used. From 0.3 
+ to 0.6 the pigment identifier Jade is used. From 0.6 up to 0.9 a blend of Jade and a turbulent marble is used. From 
+ 0.9 on up only the turbulent marble is used. 
+</p>
+
+<p>
+  Pigment maps may be nested to any level of complexity you desire. The pigments in a map may have color maps or 
+ pigment maps or any type of pigment you want. Any entry of a pigment map may be a solid color however if all entries 
+ are solid colors you should use a <code>color_map</code> which will render slightly faster. 
+</p>
+
+<p>
+  Entire pigments may also be used with the block patterns such as <code> checker</code>, <code>hexagon</code> and <code>brick</code>. 
+ For example... 
+</p>
+
+<pre>
+  pigment {
+    checker
+    pigment { Jade scale .8 }
+    pigment { White_Marble scale .5 }
+  }
+</pre>
+
+<p class="Note">
+  <strong>Note:</strong> that in the case of block patterns the <code>pigment</code> wrapping is 
+ required around the pigment information. 
+</p>
+
+<p>
+  A pigment map is also used with the <code>average</code> pigment type. See &quot;<a href="s_125.html#s03_05_11_02">Average</a>&quot; 
+ for details. 
+</p>
+
+<p>
+  You may not use <code>pigment_map</code> or individual pigments with an <code>image_map</code>. See section &quot;<a href="s_119.html#s03_05_05_01">Texture 
+ Maps</a>&quot; for an alternative way to do this. 
+</p>
+
+<p>
+  You may declare and use pigment map identifiers but the only way to declare a pigment block pattern list is to 
+ declare a pigment identifier for the entire pigment. 
+</p>
+
+<h4><a name="s03_05_01_05">3.5.1.5 </a>Image Maps</h4>
+<a name="s03_05_01_05_i1"><a name="image_map"></a>
+<p>
+  When all else fails and none of the above pigment pattern types meets your needs you can use an <code>image_map</code> 
+ to wrap a 2-D bit-mapped image around your 3-D objects. 
+</p>
+
+<h5><a name="s03_05_01_05_01">3.5.1.5.1 </a>Specifying an Image Map</h5>
+
+<p>
+  The syntax for an <code>image_map</code> is: 
+</p>
+
+<pre>
+IMAGE_MAP:
+    pigment
+    {
+        image_map
+        {
+            [BITMAP_TYPE] &quot;bitmap[.ext]&quot;
+            [IMAGE_MAP_MODS...]
+        }
+        [PIGMENT_MODFIERS...]
+    }
+BITMAP_TYPE:
+    gif | tga | iff | ppm | pgm | png | jpeg | tiff | sys
+IMAGE_MAP_MOD:
+    map_type Type | once | interpolate Type | 
+    filter Palette, Amount | filter all Amount |
+    transmit Palette, Amount | transmit all Amount
+</pre>
+<a name="s03_05_01_05_01_i1"><a name="gif"></a><a name="s03_05_01_05_01_i2"><a name="tga"></a><a name="s03_05_01_05_01_i3"><a name="iff"></a><a name="s03_05_01_05_01_i4"><a name="ppm"></a><a name="s03_05_01_05_01_i5"><a name="pgm"></a><a name="s03_05_01_05_01_i6"><a name="png"></a><a name="s03_05_01_05_01_i7"><a name="jpeg"></a><a name="s03_05_01_05_01_i8"><a name="tiff"></a><a name="s03_05_01_05_01_i9"><a name="sys, image_map"></a>
+<p>
+  After the optional <em>BITMAP_TYPE</em> keyword is a string expression containing the name of a bitmapped image 
+ file of the specified type. If the <em>BITMAP_TYPE</em> is not given, the same type is expected as the type set for 
+ output.<br> Example: 
+</p>
+
+<pre>
+  plane {
+    -z,0 
+    pigment {
+      image_map {png &quot;Eggs.png&quot;}
+    }
+  }
+
+  plane {
+    -z,0 
+    pigment {
+      image_map {&quot;Eggs&quot;}
+    }
+  }
+</pre>
+
+<p>
+  The second method will look for, and use &quot;Eggs.png&quot; if the output file type is set to be <code>png</code> 
+ (Output_File_Type=N in INI-file or +FN on command line). It is particularly useful when the image used in the <code>image_map</code> 
+ is also rendered with POV-Ray. 
+</p>
+
+<p>
+  Several optional modifiers may follow the file specification. The modifiers are described below. 
 </p>
 
 <p class="Note">
-  <strong>Note:</strong> You can make maximum reflection less than minimum reflection if you want, 
- although the result is something that doesn't occur in nature. <a name="s03_04_03_04_i11"><a name="fresnel"></a> 
+  <strong>Note:</strong> earlier versions of POV-Ray allowed some modifiers before the <em>BITMAP_TYPE</em> 
+ but that syntax is being phased out in favor of the syntax described here. 
+</p>
+
+<p class="Note">
+  <strong>Note:</strong> <code>sys</code> format is a system-specific format such as BMP for Windows or 
+ Pict for Macintosh. 
 </p>
 
 <p>
-  When adding the <code>fresnel</code> keyword, the Fresnel reflectivity function is used instead of standard 
- reflection. It calculates reflectivity using the finish's IOR. So with a fresnel reflection_type an <code>interior { 
- ior IOR }</code> statement is required, even with opaque pigments. Remember that in real life many opaque objects have 
- a thin layer of transparent glaze on their surface, and it is the glaze (which -does- have an IOR) that is reflective. 
-</p>
-
-<h4><a name="s03_04_03_05">3.4.3.5 </a>Conserve Energy for Reflection</h4>
-<a name="s03_04_03_05_i1"><a name="conserve_energy"></a>
-<p>
-  One of the features in POV-Ray is variable reflection, including realistic Fresnel reflection (see section &quot;<a href="s_115.html#s03_04_03_04">Variable 
- Reflection</a> &quot;). Unfortunately, when this is coupled with constant transmittance, the texture can look 
- unrealistic. This unrealism is caused by the scene breaking the law of conservation of energy. As the amount of light 
- reflected changes, the amount of light transmitted should also change (in a give-and-take relationship). 
+  Filenames specified in the <code>image_map</code> statements will be searched for in the home (current) directory 
+ first and, if not found, will then be searched for in directories specified by any <code>+L</code> or <code> 
+ Library_Path</code> options active. This would facilitate keeping all your image maps files in a separate subdirectory 
+ and giving a <code> Library_Path</code> option to specify where your library of image maps are. See &quot;<a href="s_95.html#s03_01_02_05_04">Library 
+ Paths</a>&quot; for details. 
 </p>
 
 <p>
-  This can be achieved by adding the <code>conserve_energy</code> keyword to the object's <code>finish {}</code>. <br>When 
- conserve_energy is enabled, POV-Ray will multiply the amount filtered and transmitted by what is left over from 
- reflection (for example, if reflection is 80%, filter/transmit will be multiplied by 20%). 
-</p>
-
-<h4><a name="s03_04_03_06">3.4.3.6 </a>Iridescence</h4>
-<a name="s03_04_03_06_i1"><a name="irid"></a>
-<p>
-  <em>Iridescence</em>, or Newton's thin film interference, simulates the effect of light on surfaces with a 
- microscopic transparent film overlay. The effect is like an oil slick on a puddle of water or the rainbow hues of a 
- soap bubble. This effect is controlled by the <code> irid</code> statement specified inside a <code>finish</code> 
- statement. 
+  By default, the image is mapped onto the x-y-plane. The image is <em> projected</em> onto the object as though 
+ there were a slide projector somewhere in the -z-direction. The image exactly fills the square area from (x,y) 
+ coordinates (0,0) to (1,1) regardless of the image's original size in pixels. If you would like to change this default 
+ you may translate, rotate or scale the pigment or texture to map it onto the object's surface as desired. 
 </p>
 
 <p>
-  This parameter modifies the surface color as a function of the angle between the light source and the surface. 
- Since the effect works in conjunction with the position and angle of the light sources to the surface it does not 
- behave in the same ways as a procedural pigment pattern. 
+  In the section &quot;<a href="s_125.html#s03_05_11_08">Checker</a>&quot;, the <code>checker</code> pigment pattern 
+ is explained. The checks are described as solid cubes of colored clay from which objects are carved. With image maps 
+ you should imagine that each pixel is a long, thin, square, colored rod that extends parallel to the z-axis. The image 
+ is made from rows and columns of these rods bundled together and the object is then carved from the bundle. 
 </p>
 
 <p>
-  The syntax is: 
+  If you would like to change this default orientation you may translate, rotate or scale the pigment or texture to 
+ map it onto the object's surface as desired. 
+</p>
+
+<p>
+  The file name is optionally followed by one or more <em> BITMAP_MODIFIERS</em>. The <code> filter</code>, <code>filter 
+ all</code>, <code>transmit</code>, and <code> transmit all</code> modifiers are specific to image maps and are 
+ discussed in the following sections. An <code> image_map</code> may also use generic bitmap modifiers <code>map_type</code>, 
+ <code>once</code> and <code> interpolate</code> described in &quot;Bitmap Modifiers&quot; 
+</p>
+
+<h5><a name="s03_05_01_05_02">3.5.1.5.2 </a>The Filter and Transmit Bitmap Modifiers</h5>
+<a name="s03_05_01_05_02_i1"><a name="filter, bitmap modfier"></a><a name="s03_05_01_05_02_i2"><a name="transmit, bitmap modifier"></a><a name="s03_05_01_05_02_i3"><a name="all"></a>
+<p>
+  To make all or part of an image map transparent you can specify <code> filter</code> and/or <code>transmit</code> 
+ values for the color palette/registers of PNG, GIF or IFF pictures (at least for the modes that use palettes). You can 
+ do this by adding the keyword <code>filter</code> or <code>transmit</code> following the filename. The keyword is 
+ followed by two numbers. The first number is the palette number value and the second is the amount of transparency. 
+ The values should be separated by a comma. For example: 
 </p>
 
 <pre>
-IRID:
-    irid { Irid_Amount [IRID_ITEMS...] }
-IRID_ITEMS:
-    thickness Amount | turbulence Amount
+  image_map {
+    gif &quot;mypic.gif&quot;
+    filter   0, 0.5 // Make color 0 50% filtered transparent
+    filter   5, 1.0 // Make color 5 100% filtered transparent
+    transmit 8, 0.3 // Make color 8 30% non-filtered transparent
+  }
 </pre>
 
 <p>
-  The required <em><code>Irid_Amount</code></em> parameter is the contribution of the iridescence effect to the 
- overall surface color. As a rule of thumb keep to around 0.25 (25% contribution) or less, but experiment. If the 
- surface is coming out too white, try lowering the <code> diffuse</code> and possibly the <code>ambient</code> values 
- of the surface. 
+  You can give the entire image a <code>filter</code> or <code> transmit</code> value using <code>filter all</code> <em><code> 
+ Amount</code></em> or <code>transmit all</code> <em><code> Amount</code></em>. For example: 
+</p>
+
+<pre>
+  image_map {
+    gif &quot;stnglass.gif&quot;
+    filter all 0.9
+  }
+</pre>
+<a name="s03_05_01_05_02_i4"><a name="alpha"></a>
+<p class="Note">
+  <strong>Note:</strong> early versions of POV-Ray used the keyword <code>alpha</code> to specify 
+ filtered transparency however that word is often used to describe non-filtered transparency. For this reason <code>alpha</code> 
+ is no longer used. 
 </p>
 
 <p>
-  <a name="s03_04_03_06_i2"><a name="thickness"></a> The <code> thickness</code> keyword represents the film's 
- thickness. This is an awkward parameter to set, since the thickness value has no relationship to the object's scale. 
- Changing it affects the scale or <em> busy-ness</em> of the effect. A very thin film will have a high frequency of 
- color changes while a thick film will have large areas of color. The default value is zero. 
+  See section &quot;<a href="s_97.html#s03_02_01_05">Specifying Colors</a>&quot; for details on the differences 
+ between filtered and non-filtered transparency. 
+</p>
+
+<h5><a name="s03_05_01_05_03">3.5.1.5.3 </a>Using the Alpha Channel</h5>
+
+<p>
+  Another way to specify non-filtered transmit transparency in an image map is by using the<em> alpha channel</em>. 
+ POV-Ray will automatically use the alpha channel for transmittance when one is stored in the image. PNG file format 
+ allows you to store a different transparency for each color index in the PNG file, if desired. If your paint programs 
+ support this feature of PNG you can do the transparency editing within your paint program rather than specifying 
+ transmit values for each color in the POV file. Since PNG and TGA image formats can also store full alpha channel 
+ (transparency) information you can generate image maps that have transparency which is not dependent on the color of a 
+ pixel but rather its location in the image. 
 </p>
 
 <p>
-  <a name="s03_04_03_06_i3"><a name="turbulence, irid"></a> The thickness of the film can be varied with the <code> 
- turbulence</code> keyword. You can only specify the amount of turbulence with iridescence. The octaves, lambda, and 
- omega values are internally set and are not adjustable by the user at this time. This parameter varies only a single 
- value: the thickness. Therefore the value must be a single float value. It cannot be a vector as in other uses of the <code>turbulence</code> 
- keyword. 
+  Although POV uses <code>transmit 0.0</code> to specify no transparency and <code> 1.0</code> to specify full 
+ transparency, the alpha data ranges from 0 to 255 in the opposite direction. Alpha data 0 means the same as <code> 
+ transmit 1.0</code> and alpha data 255 produces <code>transmit 0.0</code>. 
+</p>
+
+<h4><a name="s03_05_01_06">3.5.1.6 </a>Quick Color</h4>
+<a name="s03_05_01_06_i1"><a name="quick_color"></a><a name="s03_05_01_06_i2"><a name="quick_colour"></a>
+<p>
+  When developing POV-Ray scenes it is often useful to do low quality test runs that render faster. The <code>+Q</code> 
+ command line switch or <code> Quality</code> INI option can be used to turn off some time consuming color pattern and 
+ lighting calculations to speed things up. See &quot;<a href="s_95.html#s03_01_02_08_01">Quality Settings</a>&quot; for 
+ details. However all settings of <code>+Q5</code> or <code>Quality=5</code> or lower turns off pigment calculations 
+ and creates gray objects. 
 </p>
 
 <p>
-  In addition, perturbing the object's surface normal through the use of bump patterns will affect iridescence. 
+  By adding a <code>quick_color</code> to a pigment you tell POV-Ray what solid color to use for quick renders 
+ instead of a patterned pigment. For example: 
+</p>
+
+<pre>
+  pigment {
+    gradient x
+    color_map{
+      [0.0 color Yellow]
+      [0.3 color Cyan]
+      [0.6 color Magenta]
+      [1.0 color Cyan]
+    }
+    turbulence 0.5
+    lambda 1.5
+    omega 0.75
+    octaves 8
+    quick_color Neon_Pink
+  }
+</pre>
+
+<p>
+  This tells POV-Ray to use solid <code>Neon_Pink</code> for test runs at quality <code>+Q5</code> or lower but to 
+ use the turbulent gradient pattern for rendering at <code>+Q6</code> and higher. Solid color pigments such as 
+</p>
+
+<pre>
+  pigment {color Magenta}
+</pre>
+
+<p>
+  automatically set the <code>quick_color</code> to that value. You may override this if you want. Suppose you have 
+ 10 spheres on the screen and all are yellow. If you want to identify them individually you could give each a different <code>quick_color</code> 
+ like this: 
+</p>
+
+<pre>
+  sphere {
+    &lt;1,2,3&gt;,4
+    pigment { color Yellow  quick_color Red }
+  }
+  sphere {
+    &lt;-1,-2,-3&gt;,4
+    pigment { color Yellow  quick_color Blue }
+  }
+</pre>
+
+<p>
+  and so on. At <code>+Q6</code> or higher they will all be yellow but at <code>+Q5</code> or lower each would be 
+ different colors so you could identify them. 
 </p>
 
 <p>
-  For the curious, thin film interference occurs because, when the ray hits the surface of the film, part of the 
- light is reflected from that surface, while a portion is transmitted into the film. This <em>subsurface</em> ray 
- travels through the film and eventually reflects off the opaque substrate. The light emerges from the film slightly 
- out of phase with the ray that was reflected from the surface. 
+  The alternate spelling <code>quick_colour</code> is also supported. 
 </p>
 
 <p>
-  This phase shift creates interference, which varies with the wavelength of the component colors, resulting in some 
- wavelengths being reinforced, while others are cancelled out. When these components are recombined, the result is 
- iridescence. See also the global setting &quot;<a href="s_100.html#s03_02_04_05">Irid_Wavelength</a>&quot;. 
-</p>
+ <a name="l142">
+<small><strong>More about &quot;Pattern Modifiers&quot;</strong></small>
+</a>
+ <ul>
+  
+  <li><small>
+   <a href="s_126.html#s03_05_12">3.5.12 Pattern Modifiers</a> in 3.5 Textures
+  </small>
 
-<p>
-  The concept used for this feature came from the book <em>Fundamentals of Three-Dimensional Computer Graphics</em> 
- by Alan Watt (Addison-Wesley). 
+  <li><small>
+   <a href="s_162.html#s03_08_10_08">3.8.10.8 Pattern Modifiers</a> in 3.8.10 Texture
+  </small>
+
+ </ul>
+
 </p>
  <br> 
 <table class="NavBar" width="100%">
@@ -618,15 +688,15 @@ IRID_ITEMS:
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_114.html">3.4.2 Normal</a> 
+    <a href="s_114.html">3.5 Textures</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.4.3 Finish</strong> 
+    <strong>3.5.1 Pigment</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_116.html">3.4.4 Halo</a> 
+    <a href="s_116.html">3.5.2 Normal</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

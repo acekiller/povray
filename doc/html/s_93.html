@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.1 Scene Description Language</title>
+<title>3.1 Introduction</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -42,11 +42,11 @@
    
   <td align="center" valign="middle">
     <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.1 
-   Scene Description Language</strong> 
+   Introduction</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_94.html">3.1.1 Language Basics</a> 
+    <a href="s_94.html">3.1.1 Notation and Basic Assumptions</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,48 +58,68 @@
   
 </table>
  
-<h2><a name="s03_01">3.1 </a>Scene Description Language</h2>
-<a name="s03_01_i1"><a name="s03_01_i2">
+<h2><a name="s03_01">3.1 </a>Introduction</h2>
+
 <p>
-  The reference section describes the POV-Ray <em>scene description language</em>. It is supposed to be used as a 
- reference for looking up things. It does not contain detailed explanations on how scenes are written or how POV-Ray is 
- used. It just explains all features, their syntax, applications, limits, drawbacks, etc. 
+  This book provides a reference for the Persistence of Vision Ray-Tracer (POV-Ray). The documentation applies to all 
+ platforms to which this version of POV-Ray is ported. The platform-specific documentation is available for each 
+ platform separately. 
 </p>
 
 <p>
-  The scene description language allows you to describe the world in a readable and convenient way. Files are created 
- in plain ASCII text using an editor of your choice. The input file name is specified using the <code> Input_File_Name</code>=<em>file</em> 
- option or <code>+I</code><em>file</em> switch. By default the files have the extension <code>.pov</code>. POV-Ray 
- reads the file, processes it by creating an internal model of the scene and then renders the scene. 
+  This book is divided into these main parts: 
+</p>
+
+<ol>
+ 
+ <li>
+   This introduction together with a complete reference on &quot;<a href="s_64.html#s02_02_08">POV-Ray Options</a>&quot; 
+  which explains options (set either by command line switches or by INI file keywords) that tell POV-Ray how to render 
+  the scenes. 
+ </li>
+
+ <li>
+   A complete reference on &quot;<a href="s_96.html#s03_02">Scene Description Language</a>&quot; in which you 
+  describe the scene. 
+ </li>
+
+ <li>
+   A complete reference on the &quot;<a href="s_131.html#s03_07">Standard Include Files</a>&quot; that come with the 
+  POV-Ray package, to be used in your scenes. 
+ </li>
+
+ <li>
+   Finally, a consolidation of the POV-Ray Scene Description Language in the &quot;<a href="s_152.html#s03_08">Quick 
+  Reference</a>&quot;. 
+ </li>
+
+</ol>
+
+<p>
+  This book covers only the generic parts of the program which are common to each version. <strong>Each version has 
+ platform-specific documentation not included here.</strong> We recommend you finish reading the tuorial book then read 
+ the platform-specific information before using this reference. 
 </p>
 
 <p>
-  The overall syntax of a scene is shown below. See &quot;<a href="s_55.html#s02_01_07">Notation and Basic Assumptions</a>&quot; 
- for more information on syntax notation. 
-</p>
-
-<pre>
-SCENE:
-    SCENE_ITEM...
-SCENE_ITEM:
-    LANGUAGE_DIRECTIVES        |
-    camera { CAMERA_ITEMS... } |
-    OBJECTS                    |
-    ATMOSPHERIC_EFFECTS        |
-    global_settings { GLOBAL_ITEMS }
-</pre>
-
-<p>
-  In plain English, this means that a scene contains one or more scene items and that a scene item may be any of the 
- five items listed below it. The items may appear in any order. None is a required item. In addition to the syntax 
- depicted above, a <em>LANGUAGE_DIRECTIVE</em> may also appear anywhere embedded in other statements between any two 
- tokens. There are some restrictions on nesting directives also. 
+  The platform-specific docs will show you how to render a sample scene and will give you detailed description of the 
+ platform-specific features. 
 </p>
 
 <p>
-  For details on those five items see section &quot;<a href="#l51">Language Directives</a>&quot;, section &quot;<a href="#l52">Object</a>s&quot;, 
- section &quot;<a href="#l53">Camera</a>&quot;, section &quot;<a href="#l54">Atmospheric Effects</a>&quot; and section 
- &quot;<a href="#l55">Global Settings</a>&quot; for details. 
+  The Windows version documentation is available on the POV-Ray program's Help menu or by pressing the F1 key while 
+ in the program. 
+</p>
+
+<p>
+  The Mac platform documentation is available via the &quot;Help&quot; menu as well as for viewing using a regular 
+ web browser. Details may be found in the &quot;<code>POV-Ray MacOS Read Me</code>&quot; which contains information 
+ specific to the Mac version of POV-Ray. It is best to read this document first. 
+</p>
+
+<p>
+  The Unix / Linux version documentation can be found at the same place as the platform independent part. Usually 
+ that is <code>/usr/local/share/povray-3.?/html</code> 
 </p>
 
 <p><strong>
@@ -109,294 +129,136 @@ SCENE_ITEM:
 <ul>
  
  <li>
-  <a href="s_94.html#s03_01_01">3.1.1 Language Basics</a>
-  <ul>
-   
-   <li>
-    <a href="s_94.html#s03_01_01_01">3.1.1.1 Identifiers and Keywords</a>
-   <li>
-    <a href="s_94.html#s03_01_01_02">3.1.1.2 Comments</a>
-   <li>
-    <a href="s_94.html#s03_01_01_03">3.1.1.3 Float Expressions</a>
-    <ul>
-     
-     <li>
-      <a href="s_94.html#s03_01_01_03_01">3.1.1.3.1 Literals</a>
-     <li>
-      <a href="s_94.html#s03_01_01_03_02">3.1.1.3.2 Identifiers</a>
-     <li>
-      <a href="s_94.html#s03_01_01_03_03">3.1.1.3.3 Operators</a>
-     <li>
-      <a href="s_94.html#s03_01_01_03_04">3.1.1.3.4 Functions</a>
-     <li>
-      <a href="s_94.html#s03_01_01_03_05">3.1.1.3.5 Built-in Constants</a>
-     <li>
-      <a href="s_94.html#s03_01_01_03_06">3.1.1.3.6 Built-in Variables</a>
-    </ul>
-
-   <li>
-    <a href="s_94.html#s03_01_01_04">3.1.1.4 Vector Expressions</a>
-    <ul>
-     
-     <li>
-      <a href="s_94.html#s03_01_01_04_01">3.1.1.4.1 Literals</a>
-     <li>
-      <a href="s_94.html#s03_01_01_04_02">3.1.1.4.2 Identifiers</a>
-     <li>
-      <a href="s_94.html#s03_01_01_04_03">3.1.1.4.3 Operators</a>
-     <li>
-      <a href="s_94.html#s03_01_01_04_04">3.1.1.4.4 Operator Promotion</a>
-     <li>
-      <a href="s_94.html#s03_01_01_04_05">3.1.1.4.5 Functions</a>
-     <li>
-      <a href="s_94.html#s03_01_01_04_06">3.1.1.4.6 Built-in Constants</a>
-    </ul>
-
-   <li>
-    <a href="s_94.html#s03_01_01_05">3.1.1.5 Specifying Colors</a>
-    <ul>
-     
-     <li>
-      <a href="s_94.html#s03_01_01_05_01">3.1.1.5.1 Color Vectors</a>
-     <li>
-      <a href="s_94.html#s03_01_01_05_02">3.1.1.5.2 Color Keywords</a>
-     <li>
-      <a href="s_94.html#s03_01_01_05_03">3.1.1.5.3 Color Identifiers</a>
-     <li>
-      <a href="s_94.html#s03_01_01_05_04">3.1.1.5.4 Color Operators</a>
-     <li>
-      <a href="s_94.html#s03_01_01_05_05">3.1.1.5.5 Common Color Pitfalls</a>
-    </ul>
-
-   <li>
-    <a href="s_94.html#s03_01_01_06">3.1.1.6 User-Defined Functions</a>
-    <ul>
-     
-     <li>
-      <a href="s_94.html#s03_01_01_06_01">3.1.1.6.1 Sum and Product functions</a>
-     <li>
-      <a href="s_94.html#s03_01_01_06_02">3.1.1.6.2 Functions and Macros</a>
-     <li>
-      <a href="s_94.html#s03_01_01_06_03">3.1.1.6.3 Declaring User-Defined Float Functions</a>
-     <li>
-      <a href="s_94.html#s03_01_01_06_04">3.1.1.6.4 Declaring User-Defined Vector Functions</a>
-     <li>
-      <a href="s_94.html#s03_01_01_06_05">3.1.1.6.5 Declaring User-Defined Color Functions</a>
-     <li>
-      <a href="s_94.html#s03_01_01_06_06">3.1.1.6.6 Internal Pre-Defined Functions</a>
-    </ul>
-
-   <li>
-    <a href="s_94.html#s03_01_01_07">3.1.1.7 Strings</a>
-    <ul>
-     
-     <li>
-      <a href="s_94.html#s03_01_01_07_01">3.1.1.7.1 String Literals</a>
-     <li>
-      <a href="s_94.html#s03_01_01_07_02">3.1.1.7.2 String Identifiers</a>
-     <li>
-      <a href="s_94.html#s03_01_01_07_03">3.1.1.7.3 String Functions</a>
-    </ul>
-
-   <li>
-    <a href="s_94.html#s03_01_01_08">3.1.1.8 Array Identifiers</a>
-    <ul>
-     
-     <li>
-      <a href="s_94.html#s03_01_01_08_01">3.1.1.8.1 Declaring Arrays</a>
-     <li>
-      <a href="s_94.html#s03_01_01_08_02">3.1.1.8.2 Array Initializers</a>
-    </ul>
-
-   <li>
-    <a href="s_94.html#s03_01_01_09">3.1.1.9 Spline Identifiers</a>
-    <ul>
-     
-     <li>
-      <a href="s_94.html#s03_01_01_09_01">3.1.1.9.1 Splines and Macros</a>
-    </ul>
-
-  </ul>
-
+  <a href="s_94.html#s03_01_01">3.1.1 Notation and Basic Assumptions</a>
  <li>
-  <a href="s_95.html#s03_01_02">3.1.2 Language Directives</a>
+  <a href="s_95.html#s03_01_02">3.1.2 Command-line Options</a>
   <ul>
    
    <li>
-    <a href="s_95.html#s03_01_02_01">3.1.2.1 Include Files and the #include Directive</a>
-   <li>
-    <a href="s_95.html#s03_01_02_02">3.1.2.2 The #declare and #local Directives</a>
+    <a href="s_95.html#s03_01_02_01">3.1.2.1 Animation Options</a>
     <ul>
      
      <li>
-      <a href="s_95.html#s03_01_02_02_01">3.1.2.2.1 Declaring identifiers</a>
+      <a href="s_95.html#s03_01_02_01_01">3.1.2.1.1 External Animation Loop</a>
      <li>
-      <a href="s_95.html#s03_01_02_02_02">3.1.2.2.2 #declare vs. #local</a>
+      <a href="s_95.html#s03_01_02_01_02">3.1.2.1.2 Internal Animation Loop</a>
      <li>
-      <a href="s_95.html#s03_01_02_02_03">3.1.2.2.3 Identifier Name Collisions</a>
+      <a href="s_95.html#s03_01_02_01_03">3.1.2.1.3 Subsets of Animation Frames</a>
      <li>
-      <a href="s_95.html#s03_01_02_02_04">3.1.2.2.4 Destroying Identifiers with #undef</a>
+      <a href="s_95.html#s03_01_02_01_04">3.1.2.1.4 Cyclic Animation</a>
+     <li>
+      <a href="s_95.html#s03_01_02_01_05">3.1.2.1.5 Field Rendering</a>
     </ul>
 
    <li>
-    <a href="s_95.html#s03_01_02_03">3.1.2.3 File I/O Directives</a>
+    <a href="s_95.html#s03_01_02_02">3.1.2.2 General Output Options</a>
     <ul>
      
      <li>
-      <a href="s_95.html#s03_01_02_03_01">3.1.2.3.1 The #fopen Directive</a>
+      <a href="s_95.html#s03_01_02_02_01">3.1.2.2.1 Height and Width of Output</a>
      <li>
-      <a href="s_95.html#s03_01_02_03_02">3.1.2.3.2 The #fclose Directive</a>
+      <a href="s_95.html#s03_01_02_02_02">3.1.2.2.2 Partial Output Options</a>
      <li>
-      <a href="s_95.html#s03_01_02_03_03">3.1.2.3.3 The #read Directive</a>
+      <a href="s_95.html#s03_01_02_02_03">3.1.2.2.3 Interrupting Options</a>
      <li>
-      <a href="s_95.html#s03_01_02_03_04">3.1.2.3.4 The #write Directive</a>
+      <a href="s_95.html#s03_01_02_02_04">3.1.2.2.4 Resuming Options</a>
     </ul>
 
    <li>
-    <a href="s_95.html#s03_01_02_04">3.1.2.4 The #default Directive</a>
-   <li>
-    <a href="s_95.html#s03_01_02_05">3.1.2.5 The #version Directive</a>
-   <li>
-    <a href="s_95.html#s03_01_02_06">3.1.2.6 Conditional Directives</a>
+    <a href="s_95.html#s03_01_02_03">3.1.2.3 Display Output Options</a>
     <ul>
      
      <li>
-      <a href="s_95.html#s03_01_02_06_01">3.1.2.6.1 The #if...#else...#end Directives</a>
+      <a href="s_95.html#s03_01_02_03_01">3.1.2.3.1 Display Hardware Settings</a>
      <li>
-      <a href="s_95.html#s03_01_02_06_02">3.1.2.6.2 The #ifdef and #ifndef Directives</a>
+      <a href="s_95.html#s03_01_02_03_02">3.1.2.3.2 Setting your Display Gamma</a>
      <li>
-      <a href="s_95.html#s03_01_02_06_03">3.1.2.6.3 The #switch, #case, #range and #break Directives</a>
+      <a href="s_95.html#s03_01_02_03_03">3.1.2.3.3 Display Related Settings</a>
      <li>
-      <a href="s_95.html#s03_01_02_06_04">3.1.2.6.4 The #while...#end Directive</a>
+      <a href="s_95.html#s03_01_02_03_04">3.1.2.3.4 Mosaic Preview</a>
     </ul>
 
    <li>
-    <a href="s_95.html#s03_01_02_07">3.1.2.7 User Message Directives</a>
+    <a href="s_95.html#s03_01_02_04">3.1.2.4 File Output Options</a>
     <ul>
      
      <li>
-      <a href="s_95.html#s03_01_02_07_01">3.1.2.7.1 Text Message Streams</a>
+      <a href="s_95.html#s03_01_02_04_01">3.1.2.4.1 Output File Type</a>
      <li>
-      <a href="s_95.html#s03_01_02_07_02">3.1.2.7.2 Text Formatting</a>
+      <a href="s_95.html#s03_01_02_04_02">3.1.2.4.2 Output File Name</a>
+     <li>
+      <a href="s_95.html#s03_01_02_04_03">3.1.2.4.3 Output File Buffer</a>
+     <li>
+      <a href="s_95.html#s03_01_02_04_04">3.1.2.4.4 CPU Utilization Histogram</a>
+     <li>
+      <a href="s_95.html#s03_01_02_04_05">3.1.2.4.5 File Type</a>
+     <li>
+      <a href="s_95.html#s03_01_02_04_06">3.1.2.4.6 File Name</a>
+     <li>
+      <a href="s_95.html#s03_01_02_04_07">3.1.2.4.7 Grid Size</a>
     </ul>
 
    <li>
-    <a href="s_95.html#s03_01_02_08">3.1.2.8 User Defined Macros</a>
+    <a href="s_95.html#s03_01_02_05">3.1.2.5 Scene Parsing Options</a>
     <ul>
      
      <li>
-      <a href="s_95.html#s03_01_02_08_01">3.1.2.8.1 The #macro Directive</a>
+      <a href="s_95.html#s03_01_02_05_01">3.1.2.5.1 Constant</a>
      <li>
-      <a href="s_95.html#s03_01_02_08_02">3.1.2.8.2 Invoking Macros</a>
+      <a href="s_95.html#s03_01_02_05_02">3.1.2.5.2 Input File Name</a>
      <li>
-      <a href="s_95.html#s03_01_02_08_03">3.1.2.8.3 Are POV-Ray Macros a Function or a Macro?</a>
+      <a href="s_95.html#s03_01_02_05_03">3.1.2.5.3 Include File Name</a>
      <li>
-      <a href="s_95.html#s03_01_02_08_04">3.1.2.8.4 Returning a Value Like a Function</a>
+      <a href="s_95.html#s03_01_02_05_04">3.1.2.5.4 Library Paths</a>
      <li>
-      <a href="s_95.html#s03_01_02_08_05">3.1.2.8.5 Returning Values Via Parameters</a>
+      <a href="s_95.html#s03_01_02_05_05">3.1.2.5.5 Language Version</a>
+    </ul>
+
+   <li>
+    <a href="s_95.html#s03_01_02_06">3.1.2.6 Shell-out to Operating System</a>
+    <ul>
+     
+     <li>
+      <a href="s_95.html#s03_01_02_06_01">3.1.2.6.1 String Substitution in Shell Commands</a>
+     <li>
+      <a href="s_95.html#s03_01_02_06_02">3.1.2.6.2 Shell Command Sequencing</a>
+     <li>
+      <a href="s_95.html#s03_01_02_06_03">3.1.2.6.3 Shell Command Return Actions</a>
+    </ul>
+
+   <li>
+    <a href="s_95.html#s03_01_02_07">3.1.2.7 Text Output</a>
+    <ul>
+     
+     <li>
+      <a href="s_95.html#s03_01_02_07_01">3.1.2.7.1 Text Streams</a>
+     <li>
+      <a href="s_95.html#s03_01_02_07_02">3.1.2.7.2 Console Text Output</a>
+     <li>
+      <a href="s_95.html#s03_01_02_07_03">3.1.2.7.3 Directing Text Streams to Files</a>
+     <li>
+      <a href="s_95.html#s03_01_02_07_04">3.1.2.7.4 Warning Level</a>
+     <li>
+      <a href="s_95.html#s03_01_02_07_05">3.1.2.7.5 Help Screen Switches</a>
+    </ul>
+
+   <li>
+    <a href="s_95.html#s03_01_02_08">3.1.2.8 Tracing Options</a>
+    <ul>
+     
+     <li>
+      <a href="s_95.html#s03_01_02_08_01">3.1.2.8.1 Quality Settings</a>
+     <li>
+      <a href="s_95.html#s03_01_02_08_02">3.1.2.8.2 Automatic Bounding Control</a>
+     <li>
+      <a href="s_95.html#s03_01_02_08_03">3.1.2.8.3 Removing User Bounding</a>
+     <li>
+      <a href="s_95.html#s03_01_02_08_04">3.1.2.8.4 Anti-Aliasing Options</a>
     </ul>
 
   </ul>
 
 </ul>
-
-<p>
- <a name="l51">
-<small><strong>More about &quot;Language Directives&quot;</strong></small>
-</a>
- <ul>
-  
-  <li><small>
-   <a href="s_154.html#s03_07_04">3.7.4 Language Directives</a> in 3.7 Quick Reference
-  </small>
-
-  <li><small>
-   <a href="s_95.html#s03_01_02">3.1.2 Language Directives</a> in 3.1 Scene Description Language
-  </small>
-
- </ul>
-
-</p>
-
-<p>
- <a name="l52">
-<small><strong>More about &quot;Object&quot;</strong></small>
-</a>
- <ul>
-  
-  <li><small>
-   <a href="s_102.html#s03_03">3.3 Objects</a> in 3 POV-Ray Reference
-  </small>
-
-  <li><small>
-   <a href="s_123.html#s03_04_11_23">3.4.11.23 Object Pattern</a> in 3.4.11 Patterns
-  </small>
-
-  <li><small>
-   <a href="s_158.html#s03_07_08">3.7.8 Objects</a> in 3.7 Quick Reference
-  </small>
-
- </ul>
-
-</p>
-
-<p>
- <a name="l53">
-<small><strong>More about &quot;Camera&quot;</strong></small>
-</a>
- <ul>
-  
-  <li><small>
-   <a href="s_156.html#s03_07_06">3.7.6 Camera</a> in 3.7 Quick Reference
-  </small>
-
-  <li><small>
-   <a href="s_98.html#s03_02_02">3.2.2 Camera</a> in 3.2 Scene Settings
-  </small>
-
- </ul>
-
-</p>
-
-<p>
- <a name="l54">
-<small><strong>More about &quot;Atmospheric Effects&quot;</strong></small>
-</a>
- <ul>
-  
-  <li><small>
-   <a href="s_162.html#s03_07_12">3.7.12 Atmospheric Effects</a> in 3.7 Quick Reference
-  </small>
-
-  <li><small>
-   <a href="s_99.html#s03_02_03">3.2.3 Atmospheric Effects</a> in 3.2 Scene Settings
-  </small>
-
- </ul>
-
-</p>
-
-<p>
- <a name="l55">
-<small><strong>More about &quot;Global Settings&quot;</strong></small>
-</a>
- <ul>
-  
-  <li><small>
-   <a href="s_100.html#s03_02_04">3.2.4 Global Settings</a> in 3.2 Scene Settings
-  </small>
-
-  <li><small>
-   <a href="s_163.html#s03_07_13">3.7.13 Global Settings</a> in 3.7 Quick Reference
-  </small>
-
-  <li><small>
-   <a href="s_75.html#s02_03_10_04">2.3.10.4 Global settings</a> in 2.3.10 SDL tutorial: A raytracer
-  </small>
-
- </ul>
-
-</p>
  <br> 
 <table class="NavBar" width="100%">
   
@@ -412,11 +274,11 @@ SCENE_ITEM:
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.1 Scene Description Language</strong> 
+    <strong>3.1 Introduction</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_94.html">3.1.1 Language Basics</a> 
+    <a href="s_94.html">3.1.1 Notation and Basic Assumptions</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

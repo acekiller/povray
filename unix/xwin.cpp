@@ -22,10 +22,10 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/unix/xwin.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
@@ -155,7 +155,6 @@
 
 #include "parse.h"       /* For MAError */
 #include "pov_util.h"    /* For pov_stricmp */
-#include "povproto.h"    /* For Error */
 #include "povray.h"
 #include "defaultrenderfrontend.h"
 #include "xwin.h"
@@ -411,8 +410,8 @@ void XWIN_init_povray(int *argc, char **argv[])
 
   nargv[nargc] = NULL;
 
-  while ((index = CheckArgs(nargc, nargv, "-help")) ||
-         (index = CheckArgs(nargc, nargv, "--help")))
+  while ((index = CheckArgs(nargc, nargv, "-help"))
+  ||     (index = CheckArgs(nargc, nargv, "--help")))
   {
     if(globalDefaultRenderFrontendPointer != NULL)
     {
@@ -433,8 +432,8 @@ void XWIN_init_povray(int *argc, char **argv[])
    * or for window managers that allow windows with no borders to "hide"
    * in the bakground.
    */
-  while ((index = CheckArgs(nargc, nargv, "-bw")) ||
-         (index = CheckArgs(nargc, nargv, "-borderwidth")))
+  while ((index = CheckArgs(nargc, nargv, "-bw"))
+  ||     (index = CheckArgs(nargc, nargv, "-borderwidth")))
   {
     if (index < nargc - 1)  // [NC] added if-else test
     {
@@ -453,8 +452,8 @@ void XWIN_init_povray(int *argc, char **argv[])
    * This allows us to override the DISPLAY variable to display on
    * another comupter than the one rendering it.
    */
-  while ((index = CheckArgs(nargc, nargv, "-disp")) ||
-         (index = CheckArgs(nargc, nargv, "-display")))
+  while ((index = CheckArgs(nargc, nargv, "-disp"))
+  ||     (index = CheckArgs(nargc, nargv, "-display")))
   {
     if (theDisplayName != NULL)
       POV_FREE(theDisplayName);
@@ -510,8 +509,8 @@ void XWIN_init_povray(int *argc, char **argv[])
    * size.  We don't do anything clever (yet) for cases where the window
    * is actually larger than the display resolution.
    */
-  while ((index = CheckArgs(nargc, nargv, "-geom")) ||
-         (index = CheckArgs(nargc, nargv, "-geometry")))
+  while ((index = CheckArgs(nargc, nargv, "-geom"))
+  ||     (index = CheckArgs(nargc, nargv, "-geometry")))
   {
     int flag;
     unsigned int theWidth, theHeight;
@@ -562,8 +561,8 @@ void XWIN_init_povray(int *argc, char **argv[])
   /*
    * Start up as an icon, rather than a window.
    */
-  while ((index = CheckArgs(nargc, nargv, "-icon")) ||
-         (index = CheckArgs(nargc, nargv, "-iconic")))
+  while ((index = CheckArgs(nargc, nargv, "-icon"))
+  ||     (index = CheckArgs(nargc, nargv, "-iconic")))
   {
     theParameters |= theICONSTATE;
     RemoveArgs(&nargc, nargv, index);
@@ -1188,7 +1187,7 @@ int XWIN_display_init(int width, int height)
     Stage = STAGE_FILE_INIT;  // will give a more meaningful error
     for (i=0; files[i].ext; i++)
     {
-      char *tmp = UNIX_stradd(home, "/." PACKAGE "/" VERSION "/background.");
+      char *tmp = UNIX_stradd(home, "/." PACKAGE "/" VERSION_BASE "/background.");
       bg_filename = UNIX_stradd(tmp, files[i].ext);
       POV_FREE(tmp);
 
@@ -2217,8 +2216,8 @@ static bool HandleXEvents(bool finished)  // [WW] removed theEvent param */
         Debug_Info("KeyPress\n");
 #endif
         theKeySym = XKeycodeToKeysym(theDisplay, theEvent.xkey.keycode, 0);
-        if ((opts.Options & EXITENABLE || finished) &&
-            (theKeySym == XK_Q || theKeySym == XK_q))
+        if ((opts.Options & EXITENABLE || finished)
+        &&  (theKeySym == XK_Q || theKeySym == XK_q))
         {
           abortRender = true;
         }
@@ -2277,10 +2276,11 @@ static bool HandleXEvents(bool finished)  // [WW] removed theEvent param */
           theEvent.xclient.data.l[0], WM_DELETE_WINDOW
         );
 #endif
-        if (theEvent.xclient.message_type == WM_PROTOCOLS &&
-            theEvent.xclient.data.l[0] == WM_DELETE_WINDOW)
+        if (theEvent.xclient.message_type == WM_PROTOCOLS
+        &&  theEvent.xclient.data.l[0] == WM_DELETE_WINDOW)
         {
-          // [NC] abortRender = true;
+          if(opts.Options & EXITENABLE)  // [WW] abort rendering if +x set
+            abortRender = true;
           refresh = false;
 
           // [NC] Close display window but don't abort rendering.

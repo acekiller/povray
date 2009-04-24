@@ -26,10 +26,10 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/source/render.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #4 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
@@ -38,7 +38,6 @@
 
 #include "frame.h"
 #include "vector.h"
-#include "povproto.h"
 #include "bbox.h"
 #include "chi2.h"
 #include "colour.h"
@@ -1446,7 +1445,7 @@ void Start_Adaptive_Tracing()
   int x, y, xx, xxx, yy, skip_odd_lines;
   int sub_pixel_size, antialias_line = true;
   long size;
-  COLOUR clippedColour, unclippedColour;
+  COLOUR unclippedColour;
   PIXEL *First_Row, *Last_Row, *TempRow;
   PIXEL **Block;
   PIXEL TempPixel;
@@ -1591,9 +1590,7 @@ void Start_Adaptive_Tracing()
 
       POV_PRE_PIXEL (x, Current_Line_Number, unclippedColour)
       trace_sub_pixel(1, Block, x, Current_Line_Number, 0, 0, sub_pixel_size, sub_pixel_size, sub_pixel_size, unclippedColour, antialias_line);
-      Clip_Colour(clippedColour, unclippedColour);
-      gamma_correct(clippedColour);
-      POV_POST_PIXEL (x, Current_Line_Number, clippedColour)
+      POV_POST_PIXEL (x, Current_Line_Number, unclippedColour)
 
       /* Do histogram stuff. */
 
@@ -1604,12 +1601,12 @@ void Start_Adaptive_Tracing()
 
       /* Store colour in current line */
 
-      Assign_Colour(Current_Line[x], clippedColour);
+      Assign_Colour(Current_Line[x], unclippedColour);
       
       /* Display pixel */
       POV_ASSIGN_PIXEL_UNCLIPPED (x, Current_Line_Number, unclippedColour)
-      plot_pixel(x, Current_Line_Number, clippedColour);
-      POV_ASSIGN_PIXEL (x, Current_Line_Number, clippedColour)
+      plot_pixel(x, Current_Line_Number, unclippedColour);
+      POV_ASSIGN_PIXEL (x, Current_Line_Number, unclippedColour)
 
       /* Store current block in rows */
 
@@ -2114,8 +2111,6 @@ static void supersample(COLOUR result, int x, int  y)
   /* Average pixel's color. */
   Scale_Colour(result,result,(1.0/samples));
 
-  Clip_Colour(result, result);
-  gamma_correct(result);
 }
 
 
@@ -2451,7 +2446,8 @@ static void focal_blur(RAY *Ray, COLOUR Colour, DBL x, DBL  y)
 
         Trace(Ray, C, 1.0);
 
-        Clip_Colour(C, C);
+        /* Commented out Jul 2004 C.H. */
+        /*Clip_Colour(C, C);*/
 
         Add_Colour(Colour, Colour, C);
       }
@@ -2589,7 +2585,6 @@ static void jitter_camera_ray(RAY *ray, int ray_number)
 * DESCRIPTION
 *
 *   Trace a primary ray regarding focal blur and vista buffer.
-*   The color of the pixel is clipped and the number of pixels is increased.
 *
 * CHANGES
 *
@@ -2645,9 +2640,6 @@ void trace_pixel(int x, int y, COLOUR ColourClipped, COLOUR ColourUnclipped)
   }
 
   Assign_Colour(ColourClipped, ColourUnclipped);
-
-  Clip_Colour(ColourClipped, ColourUnclipped);
-  gamma_correct(ColourClipped);
 
   /* Do histogram stuff. */
   if (opts.histogram_on)

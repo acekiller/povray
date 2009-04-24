@@ -91,7 +91,7 @@
 
 <p>
   As you notice, there are two clear artifacts in the image. The sphere has a straight shadow line which seems 
- unnatural and the mesh has a non-straight shadow line when it's supposed to have a straight one. 
+ unnatural and the mesh has a non-straight shadow line when it is supposed to have a straight one. 
 </p>
 
 <p>
@@ -103,14 +103,14 @@
 </p>
 
 <p>
-  What one could expect would be something like this image (don't mind about the bright part under the triangle mesh; 
- this is explained later). <br> 
+  What one could expect would be something like this image (do not mind about the bright part under the triangle 
+ mesh; this is explained later). <br> 
 </p>
 
 <h4><a name="s02_04_08_02">2.4.8.2 </a>What causes the problem?</h4>
 
 <p>
-  Let's start with the sphere with the perturbed normal, since it's easier to explain. 
+  Let's start with the sphere with the perturbed normal, since it is easier to explain. 
 </p>
 
 <p>
@@ -122,8 +122,8 @@
 </p>
 
 <p>
-  The problem happens in the &quot;dark side&quot; of the object, that is, the side which doesn't &quot;see&quot; the 
- light source. 
+  The problem happens in the &quot;dark side&quot; of the object, that is, the side which does not &quot;see&quot; 
+ the light source. 
 </p>
 
 <p>
@@ -157,8 +157,8 @@
 </p>
 
 <p>
-  Although there's no explicit normal perturbation, the fact that the surface is a mesh of smooth triangles means 
- that there's an implicit normal perturbation. 
+  Although there is no explicit normal perturbation, the fact that the surface is a mesh of smooth triangles means 
+ that there is an implicit normal perturbation. 
 </p>
 
 <p>
@@ -169,7 +169,7 @@
 <p>
   Here the problem happens when the shadow line should pass across a triangle and the unperturbed normal vector of 
  that triangle points away from the light source. As seen in the figure, a triangle that is closer to the light source 
- will shadow the point in the current triangle (it's not necessarily the adjacent triangle, but if the mesh is closed, 
+ will shadow the point in the current triangle (it is not necessarily the adjacent triangle, but if the mesh is closed, 
  some triangle will surely shadow the point in question). 
 </p>
 
@@ -204,10 +204,10 @@
 </p>
 
 <p>
-  Firstly, don't think that it is a bug in POV-Ray. It isn't a bug, but a real problem caused be the lighting model 
- used in the renderer engine that is quite difficult to surpass. It's not a problem in POV-Ray in particular, but a 
+  Firstly, do not think that it is a bug in POV-Ray. It is not a bug, but a real problem caused be the lighting model 
+ used in the renderer engine that is quite difficult to surpass. It is not a problem in POV-Ray in particular, but a 
  problem in raytracing in general. Every raytracer will have this same problem when using perturbed surface normals 
- (unless there's some fix coded into it). 
+ (unless there is some fix coded into it). 
 </p>
 
 <p>
@@ -218,19 +218,18 @@
 
 <p>
   In triangle meshes the normal interpolation is used to simulate curvature of the surface (a curvature which 
- actually isn't there). 
+ actually is not there). 
 </p>
 
 <p>
-  However, since the normal vector perturbation doesn't affect the surface itself in any way, this kind of artifact 
+  However, since the normal vector perturbation does not affect the surface itself in any way, this kind of artifact 
  will be the price to pay (another one is that although the surface looks bumpy or smooth, its silhouette will still 
  look straight or polygonized, but this usually is not such a big problem). 
 </p>
 
 <p>
   This is a real problem that happens even to the best. For example, check this <a href="http://oz.irtc.org/ftp/pub/stills/1998-10-31/running.jpg" target="new">IRTC 
- winner image (http://oz.irtc.org/ftp/pub/stills/1998-10-31/running.jpg)</a>. Notice the straight shadow lines on the 
- rocks (specially in the closest rock)? 
+ winner image</a>. Notice the straight shadow lines on the rocks (specially in the closest rock)? 
 </p>
 
 <p>
@@ -248,14 +247,14 @@
 </p>
 
 <p>
-  This, of course, has severe problems. Since the object doesn't cast shadows anymore, it probably can't be used in 
+  This, of course, has severe problems. Since the object does not cast shadows anymore, it probably cannot be used in 
  any real scene (although making the rocks shadowless in the IRTC winning image mentioned above would have perhaps 
  helped the image a lot without making it too unrealistic). 
 </p>
 
 <p>
   With smooth triangle meshes it also introduces another artifact, which can be seen in the second image at the 
- beginning of the page. I don't know the exact mechanism of this artifact but it's a direct consequence of the mesh 
+ beginning of the page. I do not know the exact mechanism of this artifact but it is a direct consequence of the mesh 
  being shadowless (it may have something to do with the fact that smooth triangles are double-illuminated in POV-Ray). 
 </p>
 
@@ -329,22 +328,22 @@
 
  <li>
    It has several problems which can happen with non-convex objects (thanks to Ron Parker to pointing this out). The 
-  object can shadow itself with more than one surface. If it shadows itself from the outside (eg. a coffee cup), 
-  there's no problem, but if it &quot;shadows itself&quot; from the inside (eg. a coffee cup upside down) this shadow 
-  will be seen in an unrealistic way in the outermost surface of the object. There might not be any easy way to detect, 
+  object can shadow itself with more than one surface. If it shadows itself from the outside (eg. a coffee cup), there 
+  is no problem, but if it &quot;shadows itself&quot; from the inside (eg. a coffee cup upside down) this shadow will 
+  be seen in an unrealistic way in the outermost surface of the object. There might not be any easy way to detect, 
   which one is the case. 
  </li>
 
  <li>
-   Another problem similar to the above is that if there's another object inside this object we are calculating, 
+   Another problem similar to the above is that if there is another object inside this object we are calculating, 
   that another object will itself also &quot;cast a shadow&quot; on the surface (this might be possible to fix by 
-  ignoring all the objects inside the current object; this is possible to do in a rather simple way; however, it's 
-  doesn't work in all cases). 
+  ignoring all the objects inside the current object; this is possible to do in a rather simple way; however, it is 
+  does not work in all cases). 
  </li>
 
  <li>
    We still get the same artifact in triangle meshes as is shown in the second image at the beginning of the page. 
-  However, I'm sure that this problem could be fixed as well (although I may be wrong, of course). 
+  However, I am sure that this problem could be fixed as well (although I may be wrong, of course). 
  </li>
 
 </ol>

@@ -64,8 +64,8 @@
 <h4><a name="s02_04_02_01">2.4.2.1 </a>Using several transparent objects makes them black?</h4>
 
 <p>
-  <i>&quot;When I put several transparent objects one in front of another or inside another, POV-Ray calculates a few 
- of them, but the rest are completely black, no matter what transparency values I give.&quot;</i> 
+  <em>&quot;When I put several transparent objects one in front of another or inside another, POV-Ray calculates a 
+ few of them, but the rest are completely black, no matter what transparency values I give.&quot;</em> 
 </p>
 
 <p>
@@ -96,7 +96,7 @@
 
 <p>
   This number can be set with the <code>max_trace_level</code> option in the <code>global_settings</code> block. The 
- default value is 5, which is enough for most scenes. Sometimes it isn't enough (specially when there are lots of 
+ default value is 5, which is enough for most scenes. Sometimes it is not enough (specially when there are lots of 
  semitransparent objects one over another) so you have to increase it. 
 </p>
 
@@ -114,8 +114,8 @@ global_settings
 <h4><a name="s02_04_02_02">2.4.2.2 </a>I'm getting color banding in the image</h4>
 
 <p>
-  <i>&quot;When I make an image with POV-Ray, it seems to use just a few colors since I get color banding or 
- concentric circles of colors or whatever where it shouldn't. How can I make POV-Ray to use more colors?&quot;</i> 
+  <em>&quot;When I make an image with POV-Ray, it seems to use just a few colors since I get color banding or 
+ concentric circles of colors or whatever where it should not. How can I make POV-Ray to use more colors?&quot;</em> 
 </p>
 
 <p>
@@ -130,7 +130,7 @@ global_settings
 
 <p>
   This problem usually happens when you are using windows with 16-bit colors (ie. only 65536 colors, the so-called 
- hicolor mode) and open the image created by POV-Ray with a program which doesn't dither the image. The image is still 
+ hicolor mode) and open the image created by POV-Ray with a program which does not dither the image. The image is still 
  true color, but the program is unable to show all the colors, but shows only 65536 of them (dithering is a method that 
  &quot;fakes&quot; more colors by mixing pixels of two adjacent colors to simulate the in-between colors). 
 </p>
@@ -143,7 +143,7 @@ global_settings
 <h4><a name="s02_04_02_03">2.4.2.3 </a>Rotation behaves very strangely</h4>
 
 <p>
-  <i>&quot;When I rotate an object, it dissapears from the image or moves very strangely. Why?&quot;</i> 
+  <em>&quot;When I rotate an object, it dissapears from the image or moves very strangely. Why?&quot;</em> 
 </p>
 
 <p>
@@ -151,17 +151,17 @@ global_settings
 </p>
 
 <p>
-  Objects are <u>always</u> rotated around the axes. When you rotate, for example, <code>&lt;20,0,0&gt;</code>, that 
- means that you are rotating around the X-axis 20 degrees (counter-clockwise). This is independent of the location of 
- the object: It always rotates around the axis (what's the center of the object anyways? how do you locate it?). This 
- means that if the object is not centered in the axis, it will orbit this axis like the Moon orbits the Earth (showing 
- always the same side to the Earth). 
+  Objects are <strong>always</strong> rotated around the axes. When you rotate, for example, <code>&lt;20,0,0&gt;</code>, 
+ that means that you are rotating around the X-axis 20 degrees (counter-clockwise). This is independent of the location 
+ of the object: It always rotates around the axis (what is the center of the object anyways? how do you locate it?). 
+ This means that if the object is not centered in the axis, it will orbit this axis like the Moon orbits the Earth 
+ (showing always the same side to the Earth). 
 </p>
 
 <p>
-  It's a very good practice to define all objects centered at the origin (ie. its 'center' is located at <code>&lt;0,0,0&gt;</code>). 
- Then you can rotate it arbitrarily. After this you can translate it to its proper location in the scene. It's a good 
- idea to do this to every object even if you don't rotate it (because you can't never say if you will rotate it some 
+  It is a very good practice to define all objects centered at the origin (ie. its 'center' is located at <code>&lt;0,0,0&gt;</code>). 
+ Then you can rotate it arbitrarily. After this you can translate it to its proper location in the scene. It is a good 
+ idea to do this to every object even if you do not rotate it (because you cannot never say if you will rotate it some 
  day nevertheless). 
 </p>
 
@@ -180,8 +180,8 @@ translate &lt;10,20,-30&gt;
 <h4><a name="s02_04_02_04">2.4.2.4 </a>The image gets distorted when rendering a square image</h4>
 
 <p>
-  <i>&quot;If I tell POV-Ray to render a square image or otherwise change the aspect ratio, the output image is 
- distorted. What am I doing wrong?&quot;</i> 
+  <em>&quot;If I tell POV-Ray to render a square image or otherwise change the aspect ratio, the output image is 
+ distorted. What am I doing wrong?&quot;</em> 
 </p>
 
 <p>
@@ -202,17 +202,17 @@ camera
 </pre>
 
 <p>
-  This keyword can also be used to change the handedness of POV-Ray (see the question about <a href="s_98.html#s03_02_02_01_07">Moray 
+  This keyword can also be used to change the handedness of POV-Ray (see the question about <a href="s_100.html#s03_03_01_01_07">Moray 
  and POV-Ray handedness</a> for more details). 
 </p>
 
 <p>
-  Note: One could think &quot;why doesn't POV-Ray always set automatically the aspect ratio of the camera according 
+  Note: One could think &quot;why does not POV-Ray always set automatically the aspect ratio of the camera according 
  to the resolution of the image?&quot;. 
 </p>
 
 <p>
-  There's one thing wrong in this thought: It assumes that pixels are always square (ie. the aspect ratio of the 
+  There is one thing wrong in this thought: It assumes that pixels are always square (ie. the aspect ratio of the 
  pixels is 1/1). The logic of this behaviour comes clear with an example: 
 </p>
 
@@ -257,7 +257,7 @@ union
 
 <p>
   The top surface of the first box is coincident with the top surface of the second box. When a ray hits this area, 
- POV-Ray has to decide which surface is closest. It can't, since they are exactly in the same place. Which one it 
+ POV-Ray has to decide which surface is closest. It cannot, since they are exactly in the same place. Which one it 
  actually chooses depends on the float number calculations, rounding error, initial parameters, position of the camera, 
  etc, and varies from pixel to pixel, causing those seemingly &quot;random&quot; pixels. 
 </p>
@@ -276,15 +276,15 @@ union
 </pre>
 
 <p>
-  Note that a similar problem appears when a light source is exactly on a surface: POV-Ray can't calculate accurately 
- if it's actually inside or outside the surface, so dark (shadowed) pixels appear on every surface that is illuminated 
- by this light. 
+  Note that a similar problem appears when a light source is exactly on a surface: POV-Ray cannot calculate 
+ accurately if it is actually inside or outside the surface, so dark (shadowed) pixels appear on every surface that is 
+ illuminated by this light. 
 </p>
 
 <h4><a name="s02_04_02_06">2.4.2.6 </a>Why won't the textures in stars.inc work with my sky_sphere?</h4>
 
 <p>
-  The only thing that works with a <code>sky_sphere</code> is pigments. Textures and finishes are not allowed. Don't 
+  The only thing that works with a <code>sky_sphere</code> is pigments. Textures and finishes are not allowed. Do not 
  be discouraged though because you can still use the textures in stars.inc with the following method: 
 </p>
 
@@ -294,8 +294,9 @@ union
 
 <pre>
 texture
-{ pigment { color_map { [0 rgb ...][.5 rgb ...][1.0 rgb ...] } scale ... }
-  finish { ... }
+{
+  pigment { color_map { [0 rgb ..][.5 rgb ..][1.0 rgb ..] } scale .. }
+  finish { .. }
 }
 </pre>
 
@@ -304,15 +305,15 @@ texture
 </p>
 
 <pre>
-pigment { color_map { [0 rgb ...][.5 rgb ...][1.0 rgb ...] } scale ... }
+pigment { color_map { [0 rgb ..][.5 rgb ..][1.0 rgb ..] } scale .. }
 </pre>
 
 <p>
-  The reason for this is that <code>sky_sphere</code> doesn't have a surface, it isn't an actual object. It is really 
- just a fancy version of the background feature which extracts a color from a pigment instead of being a flat color. 
- Because of this, normal and finish features, which depend on the characteristics of the surface of an object for their 
- calculations, can't be used. The textures in <code>stars.inc</code> were intended to be mapped onto a real sphere, and 
- can be used something like this: 
+  The reason for this is that <code>sky_sphere</code> does not have a surface, it is not an actual object. It is 
+ really just a fancy version of the background feature which extracts a color from a pigment instead of being a flat 
+ color. Because of this, normal and finish features, which depend on the characteristics of the surface of an object 
+ for their calculations, cannot be used. The textures in <code>stars.inc</code> were intended to be mapped onto a real 
+ sphere, and can be used something like this: 
 </p>
 
 <pre>
@@ -341,8 +342,8 @@ sphere
 <h4><a name="s02_04_02_08">2.4.2.8 </a>Isosurface not rendering properly?</h4>
 
 <p>
-  <i>&quot;My isosurface is not rendering properly: there are holes or random noise or big parts or even the whole 
- isosurface just disappears.&quot;</i> 
+  <em>&quot;My isosurface is not rendering properly: there are holes or random noise or big parts or even the whole 
+ isosurface just disappears.&quot;</em> 
 </p>
 
 <p>
@@ -354,7 +355,7 @@ sphere
 
 <p>
   Sometimes a too high <code>accuracy</code> value can also cause problems even when the <code>max_gradient</code> is 
- ok. If playing with the latter doesn't seem to help, try also lowering the <code>accuracy</code>. 
+ ok. If playing with the latter does not seem to help, try also lowering the <code>accuracy</code>. 
 </p>
 
 <p>

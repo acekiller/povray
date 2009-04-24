@@ -28,17 +28,16 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/source/tokenize.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
 #include <ctype.h>
 #include "frame.h"
 #include "povray.h"
-#include "povproto.h"
 #include "parse.h"
 #include "parsestr.h"
 #include "povray.h"
@@ -923,28 +922,33 @@ void Terminate_Tokenizer()
      Destroy_Table(Table_Index--);
   }
 
-  if (Input_File->In_File != NULL)
+  if(Input_File->In_File != NULL)
   {
     delete Input_File->In_File;
     Input_File->In_File = NULL;
-    Got_EOF=false;
+    Got_EOF = false;
   }
 
-  while (Include_File_Index >= 0)
+  while(Include_File_Index >= 0)
   {
     Input_File = &Include_Files[Include_File_Index--];
 
-    if (Input_File->In_File != NULL)
+    if(Input_File->In_File != NULL)
     {
       delete Input_File->In_File;
       Input_File->In_File = NULL;
-      Got_EOF=false;
+      Got_EOF = false;
     }
   }
 
-  if (Cond_Stack!=NULL)
+  if(Cond_Stack != NULL)
   {
-    POV_FREE (Cond_Stack);
+    for(int i = 0; i <= CS_Index; i++)
+    {
+      if((Cond_Stack[i].Cond_Type == INVOKING_MACRO_COND) && (Cond_Stack[i].Macro_Same_Flag == false))
+        delete Cond_Stack[i].Macro_File;
+    }
+    POV_FREE(Cond_Stack);
 
     Cond_Stack = NULL;
   }

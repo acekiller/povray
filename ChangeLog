@@ -3,11 +3,46 @@ POV-Ray 3.6 for UNIX/Linux - ChangeLog
 ===============================================================================
 
 This file lists the platform-specific changes of POV-Ray for UNIX
-from version 3.5 to 3.6.
+from version 3.50c.
 
 A list of changes for the platform independent part of the program
 can be found in doc/revision.txt .
 
+
+2 August 2004 - 3.6.1 release
+-----------------------------
+
+Change 3030 on 2004/08/02 17:16:18 by calimet@lavender
+
+	[unix] COPYING, install.txt (INSTALL): minor update
+
+Change 3029 on 2004/08/02 17:14:35 by calimet@lavender
+
+	[unix] misc updates
+	  configure.ac: bump version to 3.6.1, add defs for VERSION_BASE (3.6)
+	    and support for pentium-m arch
+	  prebuild.sh: replace all @VERSION@ by @VERSION_BASE@
+	  unix.cpp: replace all VERSION by VERSION_BASE
+	  xwin.cpp: ditto, abort render when closing the display window
+	    and using +x or Test_Abort=true (W. Wieser)
+
+Change 3016 on 2004/07/29 07:11:25 by calimet@lavender
+
+	[unix] acinclude.m4, configure.ac: workaround the build failure when
+	  C|CPLUS_INCLUDE_PATH incorrectly contains the "." path
+
+Change 3013 on 2004/07/27 21:09:01 by calimet@lavender
+
+	[unix] remove "povproto.h" (*.cpp) and add "benchmark.h" (unix.cpp)
+
+Change 3009 on 2004/07/27 12:47:30 by calimet@lavender
+
+	[unix] prebuild.sh: 'make check' does not recurse in libraries (fix
+	  included in 3.6.0 source release)
+
+
+18 July 2004 - 3.6.0 source release
+-----------------------------------
 
 Change 2991 on 2004/07/16 04:51:53 by calimet@lavender
 
@@ -152,6 +187,10 @@ Change 2895 on 2004/06/17 08:54:25 by calimet@lavender
 
 	[unix] install.txt: near-final version of the source INSTALL file;
 	  comments and corrections wanted  :-)
+
+
+9 June 2004 - 3.6.0 binary release
+----------------------------------
 
 Change 2871 on 2004/06/09 16:40:24 by chormann@chho
 

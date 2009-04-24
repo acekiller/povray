@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.7.11 Media</title>
+<title>3.8.9 Object Modifiers</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_160.html">3.7.10 Texture</a> 
+    <a href="s_160.html">3.8.8 Objects</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.7.11 
-   Media</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.8.9 
+   Object Modifiers</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_162.html">3.7.12 Atmospheric Effects</a> 
+    <a href="s_162.html">3.8.10 Texture</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,79 +58,150 @@
   
 </table>
  
-<h3><a name="s03_07_11">3.7.11 </a>Media</h3>
-<a name="s03_07_11_i1"><a name="quickref, media"></a><a name="s03_07_11_i2">
+<h3><a name="s03_08_09">3.8.9 </a>Object Modifiers</h3>
+<a name="s03_08_09_i1"><a name="quickref, object modifiers"></a><a name="s03_08_09_i2"><a name="s03_08_09_i3">
 <dl class="Syntax">
  
  <dt class="SubDesc">
-   Describe particulate matter 
+   Manipulate the appearance of an object 
  <dt>
-   MEDIA: 
+   OBJECT_MODIFIERS: 
+ <dd>
+   <code>[OBJECT_PHOTONS] &amp; [CLIPPED_BY] &amp; [BOUNDED_BY] &amp; [MATERIAL] &amp; [INTERIOR] &amp; 
+  [INTERIOR_TEXTURE] &amp; [TEXTURE] &amp; [PIGMENT] &amp; [NORMAL] &amp; [FINISH] &amp; [TRANSFORMATION...] &amp; [<strong>no_shadow</strong>] 
+  &amp; [<strong>no_image</strong>[BOOL]] &amp; [<strong>no_reflection</strong>{BOOL]] &amp; [<strong>inverse</strong>] 
+  &amp; [<strong>double_illuminate</strong>[BOOL]] &amp; [<strong>hollow</strong>&nbsp;[BOOL]]</code> 
+</dl>
+
+<dl class="Syntax">
+ 
+ <dt class="SubDesc">
+   Specify how an object should interact with photons: 
+ <dt>
+   OBJECT_PHOTONS: 
  <dd class="Jump">
-   <a href="s_127.html#s03_05_02">Jump to SDL</a> 
+   <a href="s_130.html#s03_06_03_02_02">Jump to SDL</a> 
  <dd>
-   <code><strong>media {</strong> [MEDIA_IDENTIFIER] [MEDIA_ITEMS] <strong>}</strong></code> 
+   <code><strong>photons {</strong> OBJECT_PHOTON_ITEMS <strong>}</strong></code> 
  <dt>
-   MEDIA_ITEMS: 
+   OBJECT_PHOTON_ITEMS: 
  <dd>
-   <code>[<strong>method</strong> METHOD_TYPE] &amp; [<strong>intervals</strong>&nbsp;INT] &amp; [<strong>samples</strong>&nbsp;I_MIN,&nbsp;I_MAX] 
-  &amp; [<strong>confidence</strong>&nbsp;FLOAT] &amp; [<strong>variance</strong>&nbsp;FLOAT] &amp; [<strong>ratio</strong>&nbsp;FLOAT] 
-  &amp; [<strong>absorption</strong>&nbsp;COLOR] &amp; [<strong>emission</strong>&nbsp;COLOR] &amp; [<strong>aa_threshold</strong>&nbsp;FLOAT] 
-  &amp; [<strong>aa_level</strong>&nbsp;INT] &amp; [SCATTERING] &amp; [DENSITY...] &amp; [TRANSFORMATION...] &amp; [<strong>collect</strong>&nbsp;BOOL]</code> 
-  
+   <code>[<strong>target</strong> [F_SPACING_MULT]] &amp; [<strong>refraction</strong>&nbsp;BOOL] &amp; [<strong>reflection</strong>&nbsp;BOOL] 
+  &amp; [<strong>collect</strong>&nbsp;BOOL] &amp; [<strong>pass_through</strong>&nbsp;[BOOL]]</code> 
+</dl>
+
+<dl class="Syntax">
+ 
+ <dt class="SubDesc">
+   Slice a portion of a shape: 
  <dt>
-   METHOD_TYPE: 
+   CLIPPED_BY: 
  <dd>
-   <code><strong>1</strong> | <strong>2</strong> | <strong>3</strong></code> 
+   <code><strong>clipped_by {</strong> UNTEXTURED_SOLID_OBJECT... <strong>}</strong> |<br> <strong>clipped_by { 
+  bounded_by }</strong></code> 
  <dt>
-   SCATTERING: 
+   UNTEXTURED_SOLID_OBJECT: 
  <dd>
-   <code><strong>scattering {</strong> SCATTERING_TYPE, COLOR [<strong>eccentricity</strong>&nbsp;FLOAT] [<strong>extinction</strong>&nbsp;FLOAT] 
-  <strong>}</strong></code> 
- <dt>
-   SCATTERING_TYPE: 
- <dd>
-   <code><strong>1</strong> | <strong>2</strong> | <strong>3</strong> | <strong>4</strong> | <strong>5</strong></code> 
-  
- <dt>
-   DENSITY: 
- <dd>
-   <code><strong>density {</strong> DENSITY_BODY <strong>}</strong></code> 
- <dt>
-   DENSITY_BODY: 
- <dd>
-   <code>[DENSITY_IDENTIFIER] [DENSITY_TYPE] [PATTERN_MODIFIERS]</code> 
- <dt>
-   DENSITY_TYPE: 
- <dd>
-   <code>COLOR | <a href="s_160.html#s03_07_10_04">COLOR_LIST_PATTERN</a> | DENSITY_LIST_PATTERN | MAP_PATTERN&nbsp;<a href="s_160.html#s03_07_10_04">[COLOR_MAP]</a> 
-  | MAP_PATTERN&nbsp;DENSITY_MAP</code> 
- <dt>
-   DENSITY_LIST_PATTERN: 
- <dd>
-   <code><strong>brick</strong> DENSITY, DENSITY <a href="s_160.html#s03_07_10_03">[BRICK_ITEMS]</a> |<br> <strong>checker</strong> 
-  DENSITY, DENSITY |<br> <strong>hexagon</strong> DENSITY, DENSITY, DENSITY |<br> <strong>object {</strong> LIST_OBJECT 
-  DENSITY, DENSITY <strong>}</strong></code> 
- <dt>
-   DENSITY_MAP: 
- <dd>
-   <code><strong>density_map {</strong> DENSITY_MAP_BODY <strong>}</strong> [BLEND_MAP_MODIFIERS]</code> 
- <dt>
-   DENSITY_MAP_BODY: 
- <dd>
-   <code>DENSITY_MAP_IDENTIFIER | DENSITY_MAP_ENTRY...</code> 
+   <code>FINITE_SOLID_OBJECT | INFINITE_SOLID_OBJECT</code> 
  <dd class="ItemNote">
-   There may be from 2 to 256 map entries. 
+   Note, neither with a texture applied. 
+</dl>
+
+<dl class="Syntax">
+ 
+ <dt class="SubDesc">
+   Specify a bounding shape for an object: 
  <dt>
-   DENSITY_MAP_ENTRY: 
+   BOUNDED_BY: 
  <dd>
-   <code><strong>[</strong> FLOAT DENSITY_BODY <strong>]</strong></code> 
- <dd class="ItemNote">
-   The brackets here are part of the map entry. 
+   <code><strong>bounded_by {</strong> UNTEXTURED_SOLID_OBJECT... <strong>}</strong> |<br> <strong>bounded_by { 
+  clipped_by }</strong></code> 
 </dl>
 
 <p>
-  <a href="s_151.html#s03_07_01">Quick Reference Contents</a> 
+  <a href="s_153.html#s03_08_01">Quick Reference Contents</a> 
+</p>
+
+<h4><a name="s03_08_09_01">3.8.9.1 </a>UV Mapping</h4>
+<a name="s03_08_09_01_i1"><a name="quickref, uv_mapping"></a><a name="s03_08_09_01_i2">
+<dl class="Syntax">
+ 
+ <dt class="SubDesc">
+   Map a texture to an object using surface coordinates: 
+ <dt>
+   UV_MAPPING: 
+ <dd class="Jump">
+   <a href="s_121.html#s03_05_07">Jump to SDL</a> 
+ <dd>
+   <code><strong>uv_mapping</strong> PIGMENT | <strong>pigment&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="s_162.html#s03_08_10_04">PIGMENT_BODY</a>&nbsp;<strong>}</strong> 
+  |<br> <strong>uv_mapping</strong> NORMAL | <strong>normal&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="s_162.html#s03_08_10_05">NORMAL_BODY</a>&nbsp;<strong>}</strong> 
+  |<br> <strong>uv_mapping</strong> TEXTURE | <strong>texture&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="s_162.html#s03_08_10_03">TEXTURE_BODY</a>&nbsp;<strong>}</strong></code> 
+  
+</dl>
+
+<p>
+  <a href="s_153.html#s03_08_01">Quick Reference Contents</a> 
+</p>
+
+<h4><a name="s03_08_09_02">3.8.9.2 </a>Material</h4>
+<a name="s03_08_09_02_i1"><a name="quickref, material"></a><a name="s03_08_09_02_i2">
+<dl class="Syntax">
+ 
+ <dt class="SubDesc">
+   Group together surface textures and interior properties: 
+ <dt>
+   MATERIAL: 
+ <dd>
+   <code><strong>material {</strong> [MATERIAL_IDENTIFIER] [MATERIAL_ITEM ...] <strong>}</strong></code> 
+ <dt>
+   MATERIAL_ITEMS: 
+ <dd>
+   <code>TEXTURE | INTERIOR_TEXTURE | INTERIOR | TRANSFORMATION</code> 
+</dl>
+
+<p>
+  <a href="s_153.html#s03_08_01">Quick Reference Contents</a> 
+</p>
+
+<h4><a name="s03_08_09_03">3.8.9.3 </a>Interior</h4>
+<a name="s03_08_09_03_i1"><a name="quickref, interior"></a><a name="s03_08_09_03_i2">
+<dl class="Syntax">
+ 
+ <dt class="SubDesc">
+   Describe the interior of an object: 
+ <dt>
+   INTERIOR: 
+ <dd class="Jump">
+   <a href="s_128.html#s03_06_01">Jump to SDL</a> 
+ <dd>
+   <code><strong>interior {</strong> [INTERIOR_IDENTIFIER] [INTERIOR_ITEMS] <strong>}</strong></code> 
+ <dt>
+   INTERIOR_ITEMS: 
+ <dd>
+   <code>[<strong>ior</strong> FLOAT] &amp; [<strong>dispersion</strong>&nbsp;FLOAT] &amp; [<strong>dispersion_samples</strong>&nbsp;INT] 
+  &amp; [<strong>caustics</strong>&nbsp;FLOAT] &amp; [<strong>fade_distance</strong>&nbsp;FLOAT] &amp; [<strong>fade_power</strong>&nbsp;FLOAT] 
+  &amp; [<strong>fade_color</strong>&nbsp;COLOR] &amp; [MEDIA...]</code> 
+</dl>
+
+<p>
+  <a href="s_153.html#s03_08_01">Quick Reference Contents</a> 
+</p>
+
+<h4><a name="s03_08_09_04">3.8.9.4 </a>Interior Texture</h4>
+<a name="s03_08_09_04_i1"><a name="quickref, interior texture"></a><a name="s03_08_09_04_i2">
+<dl class="Syntax">
+ 
+ <dt class="SubDesc">
+   Describe the interior surface of an object: 
+ <dt>
+   INTERIOR_TEXTURE: 
+ <dd>
+   <code><strong>interior_texture {</strong> <a href="s_162.html#s03_08_10_03">TEXTURE_BODY</a> <strong>}</strong></code> 
+  
+</dl>
+
+<p>
+  <a href="s_153.html#s03_08_01">Quick Reference Contents</a> 
 </p>
  <br> 
 <table class="NavBar" width="100%">
@@ -143,15 +214,15 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_160.html">3.7.10 Texture</a> 
+    <a href="s_160.html">3.8.8 Objects</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.7.11 Media</strong> 
+    <strong>3.8.9 Object Modifiers</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_162.html">3.7.12 Atmospheric Effects</a> 
+    <a href="s_162.html">3.8.10 Texture</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

@@ -63,9 +63,8 @@
 <dl class="famousquote">
  
  <dt>
-   <em>You know you have been raytracing too long when ...</em> 
- <dt>
-   <em>... You want to cheat and look at nature's source code.</em> 
+   <em>You know you have been raytracing too long when ...<br> ... You want to cheat and look at nature's source 
+  code.</em> 
  <dd>
    <em>-- Mark Stock</em> 
 </dl>
@@ -97,7 +96,7 @@
 <h4><a name="s02_03_05_01">2.3.5.1 </a>The Background</h4>
 <a name="s02_03_05_01_i1">
 <p>
-  The <code><a href="#l37">background</a></code> feature is used to assign a color to all rays that don't hit any 
+  The <code><a href="#l37">background</a></code> feature is used to assign a color to all rays that do not hit any 
  object. This is done in the following way. 
 </p>
 
@@ -126,7 +125,7 @@
 </p>
 
 <p>
-  In the following examples we'll start with a very simple sky sphere that will get more and more complex as we add 
+  In the following examples we will start with a very simple sky sphere that will get more and more complex as we add 
  new features to it. 
 </p>
 
@@ -139,7 +138,7 @@
 </p>
 
 <p>
-  We want to model this effect using the sky sphere as shown in the scene below (<code>skysph1.pov</code>). 
+  We want to model this effect using the sky sphere as shown in the scene <code>skysph1.pov</code> below. 
 </p>
 
 <pre>
@@ -178,7 +177,7 @@
   The scale and translate transformation are used to map the points derived from the direction vector to the right 
  range. Without those transformations the pattern would be repeated twice on the sky sphere. The <code><a href="#l39">scale</a></code> 
  statement is used to avoid the repetition and the <code><a href="#l40">translate</a> -1</code> statement moves the 
- color at index zero to the bottom of the sky sphere (that's the point of the sky sphere you'll see if you look 
+ color at index zero to the bottom of the sky sphere (that is the point of the sky sphere you will see if you look 
  straight down). 
 </p>
 
@@ -196,14 +195,14 @@
 </p>
 
 <p>
-  If you want to start one of the colors at a specific angle you'll first have to convert the angle to a color map 
+  If you want to start one of the colors at a specific angle you will first have to convert the angle to a color map 
  index. This is done by using the formula <code>color_map_index = (1 - cos(angle)) / 2</code> where the angle is 
  measured against the negated earth's surface normal. This is the surface normal pointing towards the center of the 
  earth. An angle of 0 degrees describes the point below us while an angle of 180 degrees represents the zenith. 
 </p>
 
 <p>
-  In POV-Ray you first have to convert the degree value to <code><a href="s_94.html#s03_01_01_03_04">radians</a></code> 
+  In POV-Ray you first have to convert the degree value to <code><a href="s_97.html#s03_02_01_03_04">radians</a></code> 
  as it is shown in the following example. 
 </p>
 
@@ -230,7 +229,7 @@
 
 <p>
   In the following example we will create a sky with a red sun surrounded by a red color halo that blends into the 
- dark blue night sky. We'll do this using only the sky sphere feature. 
+ dark blue night sky. We will do this using only the sky sphere feature. 
 </p>
 
 <p>
@@ -267,8 +266,8 @@
 <p>
   The color map consists of three colors. A bright, slightly yellowish red that is used for the sun, a darker red for 
  the halo and a dark blue for the night sky. The sun's color covers only a very small portion of the sky sphere because 
- we don't want the sun to become too big. The color is used at the color map values 0.000 and 0.002 to get a sharp 
- contrast at value 0.002 (we don't want the sun to blend into the sky). The darker red color used for the halo blends 
+ we do not want the sun to become too big. The color is used at the color map values 0.000 and 0.002 to get a sharp 
+ contrast at value 0.002 (we do not want the sun to blend into the sky). The darker red color used for the halo blends 
  into the dark blue sky color from value 0.002 to 0.200. All values above 0.200 will reveal the dark blue sky. 
 </p>
 
@@ -282,7 +281,7 @@
 </p>
 
 <p>
-  Looking at the resulting image you'll see what impressive effects you can achieve with the sky sphere. 
+  Looking at the resulting image you will see what impressive effects you can achieve with the sky sphere. 
 </p>
 
 <h5><a name="s02_03_05_02_03">2.3.5.2.3 </a>Adding Some Clouds</h5>
@@ -332,8 +331,8 @@
 
 <p>
   The sky sphere has one drawback as you might notice when looking at the final image (<code>skysph3.pov</code>). The 
- sun doesn't emit any light and the clouds will not cast any shadows. If you want to have clouds that cast shadows 
- you'll have to use a real, large sphere with an appropriate texture and a light source somewhere outside the sphere. 
+ sun does not emit any light and the clouds will not cast any shadows. If you want to have clouds that cast shadows you 
+ will have to use a real, large sphere with an appropriate texture and a light source somewhere outside the sphere. 
 </p>
 
 <h4><a name="s02_03_05_03">2.3.5.3 </a>The Fog</h4>
@@ -442,7 +441,7 @@
 <h5><a name="s02_03_05_03_03">2.3.5.3.3 </a>Creating a Filtering Fog</h5>
 <a name="s02_03_05_03_03_i1">
 <p>
-  The greenish fog we have used so far doesn't filter the light passing through it. All it does is to diminish the 
+  The greenish fog we have used so far does not filter the light passing through it. All it does is to diminish the 
  light's intensity. We can change this by using a non-zero filter channel in the fog's color (<code>fog3.pov</code>). 
 </p>
 
@@ -464,7 +463,7 @@
 </p>
 
 <p>
-  You'll notice that the intensity of the objects in the fog is not only diminished due to the fog's color but that 
+  You will notice that the intensity of the objects in the fog is not only diminished due to the fog's color but that 
  the colors are actually influenced by the fog. The red and especially the blue sphere got a green hue. 
 </p>
 
@@ -505,8 +504,8 @@
 <h5><a name="s02_03_05_03_05">2.3.5.3.5 </a>Using Ground Fog</h5>
 <a name="s02_03_05_03_05_i1"><a name="s02_03_05_03_05_i2">
 <p>
-  The much more interesting and flexible fog type is the ground fog, which is selected with the <code><a href="s_99.html#s03_02_03_03">fog_type</a></code> 
- statement. It's appearance is described with the <code><a href="s_99.html#s03_02_03_03">fog_offset</a></code> and <code><a href="s_99.html#s03_02_03_03">fog_alt</a></code> 
+  The much more interesting and flexible fog type is the ground fog, which is selected with the <code><a href="s_101.html#s03_03_02_03">fog_type</a></code> 
+ statement. Its appearance is described with the <code><a href="s_101.html#s03_03_02_03">fog_offset</a></code> and <code><a href="s_101.html#s03_03_02_03">fog_alt</a></code> 
  keywords. The <code>fog_offset</code> specifies the height, i. e. y value, below which the fog has a constant density 
  of one. The <code>fog_alt</code> keyword determines how fast the density of the fog will approach zero as one moves 
  along the y axis. At a height of fog_offset+fog_alt the fog will have a density of 25%. 
@@ -583,13 +582,13 @@
 <h5><a name="s02_03_05_03_07">2.3.5.3.7 </a>Fog and Hollow Objects</h5>
 <a name="s02_03_05_03_07_i1"><a name="s02_03_05_03_07_i2">
 <p>
-  Whenever you use the fog feature and the camera is inside a non-hollow object you won't get any fog effects. For a 
- detailed explanation why this happens see &quot;<a href="s_126.html#s03_05_01_02">Empty and Solid Objects</a>&quot;. 
+  Whenever you use the fog feature and the camera is inside a non-hollow object you will not get any fog effects. For 
+ a detailed explanation why this happens see &quot;<a href="s_128.html#s03_06_01_02">Empty and Solid Objects</a>&quot;. 
 </p>
 
 <p>
   In order to avoid this problem you have to make all those objects hollow by either making sure the camera is 
- outside these objects (using the <code><a href="s_111.html#s03_03_09_04">inverse</a></code> keyword) or by adding the <code><a href="s_111.html#s03_03_09_05">hollow</a></code> 
+ outside these objects (using the <code><a href="s_113.html#s03_04_09_04">inverse</a></code> keyword) or by adding the <code><a href="s_113.html#s03_04_09_05">hollow</a></code> 
  to them (which is much easier). 
 </p>
 
@@ -609,14 +608,14 @@
 </p>
 
 <p>
-  The size and shape of the rainbow are determined by the <code><a href="#l45">angle</a></code> and <code><a href="s_99.html#s03_02_03_05">width</a></code> 
- keywords. The <code><a href="s_98.html#s03_02_02_01_04">direction</a></code> keyword is used to set the direction of 
+  The size and shape of the rainbow are determined by the <code><a href="#l45">angle</a></code> and <code><a href="s_101.html#s03_03_02_05">width</a></code> 
+ keywords. The <code><a href="s_100.html#s03_03_01_01_04">direction</a></code> keyword is used to set the direction of 
  the incoming light, thus setting the rainbow's position. The rainbow is visible when the angle between the direction 
  vector and the incident light direction is larger than angle-width/2 and smaller than angle+width/2. 
 </p>
 
 <p>
-  The incoming light is the virtual light source that is responsible for the rainbow. There needn't be a real light 
+  The incoming light is the virtual light source that is responsible for the rainbow. There need not be a real light 
  source to create the rainbow effect. 
 </p>
 
@@ -686,7 +685,7 @@
 </pre>
 
 <p>
-  Some irregularity is added to the color bands using the <code><a href="s_109.html#s03_03_07_05">jitter</a></code> 
+  Some irregularity is added to the color bands using the <code><a href="s_111.html#s03_04_07_05">jitter</a></code> 
  keyword. 
 </p>
 
@@ -695,14 +694,14 @@
 </p>
 
 <p>
-  The rainbow in our sample is much too bright. You'll never see a rainbow like this in reality. You can decrease the 
- rainbow's colors by decreasing the RGB values in the color map. 
+  The rainbow in our sample is much too bright. You will never see a rainbow like this in reality. You can decrease 
+ the rainbow's colors by decreasing the RGB values in the color map. 
 </p>
 
 <h5><a name="s02_03_05_04_02">2.3.5.4.2 </a>Increasing the Rainbow's Translucency</h5>
 <a name="s02_03_05_04_02_i1">
 <p>
-  The result we have so far looks much too bright. Just reducing the rainbow's color helps but it's much better to 
+  The result we have so far looks much too bright. Just reducing the rainbow's color helps but it is much better to 
  increase the translucency of the rainbow because it is more realistic if the background is visible through the 
  rainbow. 
 </p>
@@ -750,13 +749,13 @@
 <a name="s02_03_05_04_03_i1">
 <p>
   Currently our rainbow has a circular shape, even though most of it is hidden below the ground plane. You can easily 
- create a rainbow arc by using the <code><a href="s_99.html#s03_02_03_05">arc_angle</a></code> keyword with an angle 
+ create a rainbow arc by using the <code><a href="s_101.html#s03_03_02_05">arc_angle</a></code> keyword with an angle 
  below 360 degrees. 
 </p>
 
 <p>
-  If you use <code>arc_angle 120</code> for example you'll get a rainbow arc that abruptly vanishes at the arc's 
- ends. This does not look good. To avoid this the <code><a href="s_99.html#s03_02_03_05">falloff_angle</a></code> 
+  If you use <code>arc_angle 120</code> for example you will get a rainbow arc that abruptly vanishes at the arc's 
+ ends. This does not look good. To avoid this the <code><a href="s_101.html#s03_03_02_05">falloff_angle</a></code> 
  keyword can be used to specify a region where the arc smoothly blends into the background. 
 </p>
 
@@ -815,11 +814,11 @@
  <ul>
   
   <li><small>
-   <a href="s_162.html#s03_07_12_01">3.7.12.1 Background</a> in 3.7.12 Atmospheric Effects
+   <a href="s_101.html#s03_03_02_02">3.3.2.2 Background</a> in 3.3.2 Atmospheric Effects
   </small>
 
   <li><small>
-   <a href="s_99.html#s03_02_03_02">3.2.3.2 Background</a> in 3.2.3 Atmospheric Effects
+   <a href="s_164.html#s03_08_12_01">3.8.12.1 Background</a> in 3.8.12 Atmospheric Effects
   </small>
 
  </ul>
@@ -833,11 +832,11 @@
  <ul>
   
   <li><small>
-   <a href="s_162.html#s03_07_12_03">3.7.12.3 Sky Sphere</a> in 3.7.12 Atmospheric Effects
+   <a href="s_101.html#s03_03_02_04">3.3.2.4 Sky Sphere</a> in 3.3.2 Atmospheric Effects
   </small>
 
   <li><small>
-   <a href="s_99.html#s03_02_03_04">3.2.3.4 Sky Sphere</a> in 3.2.3 Atmospheric Effects
+   <a href="s_164.html#s03_08_12_03">3.8.12.3 Sky Sphere</a> in 3.8.12 Atmospheric Effects
   </small>
 
  </ul>
@@ -851,7 +850,7 @@
  <ul>
   
   <li><small>
-   <a href="s_155.html#s03_07_05">3.7.5 Transformations</a> in 3.7 Quick Reference
+   <a href="s_157.html#s03_08_05">3.8.5 Transformations</a> in 3.8 Quick Reference
   </small>
 
   <li><small>
@@ -869,7 +868,7 @@
  <ul>
   
   <li><small>
-   <a href="s_155.html#s03_07_05">3.7.5 Transformations</a> in 3.7 Quick Reference
+   <a href="s_157.html#s03_08_05">3.8.5 Transformations</a> in 3.8 Quick Reference
   </small>
 
   <li><small>
@@ -887,11 +886,11 @@
  <ul>
   
   <li><small>
-   <a href="s_162.html#s03_07_12_02">3.7.12.2 Fog</a> in 3.7.12 Atmospheric Effects
+   <a href="s_101.html#s03_03_02_03">3.3.2.3 Fog</a> in 3.3.2 Atmospheric Effects
   </small>
 
   <li><small>
-   <a href="s_99.html#s03_02_03_03">3.2.3.3 Fog</a> in 3.2.3 Atmospheric Effects
+   <a href="s_164.html#s03_08_12_02">3.8.12.2 Fog</a> in 3.8.12 Atmospheric Effects
   </small>
 
  </ul>
@@ -905,11 +904,11 @@
  <ul>
   
   <li><small>
-   <a href="s_153.html#s03_07_03_03">3.7.3.3 Colors</a> in 3.7.3 Language Basics
+   <a href="s_155.html#s03_08_03_03">3.8.3.3 Colors</a> in 3.8.3 Language Basics
   </small>
 
   <li><small>
-   <a href="s_94.html#s03_01_01_05">3.1.1.5 Specifying Colors</a> in 3.1.1 Language Basics
+   <a href="s_97.html#s03_02_01_05">3.2.1.5 Specifying Colors</a> in 3.2.1 Language Basics
   </small>
 
  </ul>
@@ -923,11 +922,11 @@
  <ul>
   
   <li><small>
-   <a href="s_162.html#s03_07_12_02">3.7.12.2 Fog</a> in 3.7.12 Atmospheric Effects
+   <a href="s_101.html#s03_03_02_03">3.3.2.3 Fog</a> in 3.3.2 Atmospheric Effects
   </small>
 
   <li><small>
-   <a href="s_99.html#s03_02_03_03">3.2.3.3 Fog</a> in 3.2.3 Atmospheric Effects
+   <a href="s_164.html#s03_08_12_02">3.8.12.2 Fog</a> in 3.8.12 Atmospheric Effects
   </small>
 
  </ul>
@@ -941,11 +940,11 @@
  <ul>
   
   <li><small>
-   <a href="s_162.html#s03_07_12_04">3.7.12.4 Rainbow</a> in 3.7.12 Atmospheric Effects
+   <a href="s_101.html#s03_03_02_05">3.3.2.5 Rainbow</a> in 3.3.2 Atmospheric Effects
   </small>
 
   <li><small>
-   <a href="s_99.html#s03_02_03_05">3.2.3.5 Rainbow</a> in 3.2.3 Atmospheric Effects
+   <a href="s_164.html#s03_08_12_04">3.8.12.4 Rainbow</a> in 3.8.12 Atmospheric Effects
   </small>
 
  </ul>
@@ -959,11 +958,11 @@
  <ul>
   
   <li><small>
-   <a href="s_138.html#s03_06_09_02">3.6.9.2 Vector functions and macros</a> in 3.6.9 math.inc
+   <a href="s_100.html#s03_03_01_01_03">3.3.1.1.3 Angles</a> in 3.3.1.1 Placing the Camera
   </small>
 
   <li><small>
-   <a href="s_98.html#s03_02_02_01_03">3.2.2.1.3 Angles</a> in 3.2.2.1 Placing the Camera
+   <a href="s_140.html#s03_07_09_02">3.7.9.2 Vector functions and macros</a> in 3.7.9 math.inc
   </small>
 
  </ul>
@@ -977,11 +976,11 @@
  <ul>
   
   <li><small>
-   <a href="s_162.html#s03_07_12_04">3.7.12.4 Rainbow</a> in 3.7.12 Atmospheric Effects
+   <a href="s_101.html#s03_03_02_05">3.3.2.5 Rainbow</a> in 3.3.2 Atmospheric Effects
   </small>
 
   <li><small>
-   <a href="s_99.html#s03_02_03_05">3.2.3.5 Rainbow</a> in 3.2.3 Atmospheric Effects
+   <a href="s_164.html#s03_08_12_04">3.8.12.4 Rainbow</a> in 3.8.12 Atmospheric Effects
   </small>
 
  </ul>

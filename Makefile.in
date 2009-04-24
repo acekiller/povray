@@ -76,6 +76,7 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 COMPILED_BY = @COMPILED_BY@
+CPLUS_INCLUDE_PATH = @CPLUS_INCLUDE_PATH@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -83,6 +84,7 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
+C_INCLUDE_PATH = @C_INCLUDE_PATH@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -125,6 +127,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VERSION_BASE = @VERSION_BASE@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
@@ -170,10 +173,10 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
 # Directories.
-povlibdir = @datadir@/@PACKAGE@-@VERSION@
-povdocdir = @datadir@/doc/@PACKAGE@-@VERSION@
-povconfdir = @sysconfdir@/@PACKAGE@/@VERSION@
-povconfuser = $(HOME)/.@PACKAGE@/@VERSION@
+povlibdir = @datadir@/@PACKAGE@-@VERSION_BASE@
+povdocdir = @datadir@/doc/@PACKAGE@-@VERSION_BASE@
+povconfdir = @sysconfdir@/@PACKAGE@/@VERSION_BASE@
+povconfuser = $(HOME)/.@PACKAGE@/@VERSION_BASE@
 
 # Directories to build.
 SUBDIRS = libraries source unix
@@ -834,10 +837,10 @@ uninstall-local:
 	if test -d $(DESTDIR)$(sysconfdir)/@PACKAGE@ && test -z "`ls -A $(DESTDIR)$(sysconfdir)/@PACKAGE@`"; then \
 	  rm -f -r $(DESTDIR)$(sysconfdir)/@PACKAGE@; \
 	fi
-	-rm -f $(HOME)/.@PACKAGE@/@VERSION@/povray.conf
-	-rm -f $(HOME)/.@PACKAGE@/@VERSION@/povray.ini
-	if test -d $(HOME)/.@PACKAGE@/@VERSION@ && test -z "`ls -A $(HOME)/.@PACKAGE@/@VERSION@`"; then \
-	  rm -f -r $(HOME)/.@PACKAGE@/@VERSION@; \
+	-rm -f $(HOME)/.@PACKAGE@/@VERSION_BASE@/povray.conf
+	-rm -f $(HOME)/.@PACKAGE@/@VERSION_BASE@/povray.ini
+	if test -d $(HOME)/.@PACKAGE@/@VERSION_BASE@ && test -z "`ls -A $(HOME)/.@PACKAGE@/@VERSION_BASE@`"; then \
+	  rm -f -r $(HOME)/.@PACKAGE@/@VERSION_BASE@; \
 	fi
 	if test -d $(HOME)/.@PACKAGE@ && test -z "`ls -A $(HOME)/.@PACKAGE@`"; then \
 	  rm -f -r $(HOME)/.@PACKAGE@; \

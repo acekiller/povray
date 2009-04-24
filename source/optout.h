@@ -22,10 +22,10 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/source/optout.h $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
@@ -49,10 +49,10 @@ BEGIN_POV_NAMESPACE
 /* These are used by OPTOUT.C and the machine specific modules */
 
 #define POV_RAY_IS_OFFICIAL 0
-#define POV_RAY_VERSION "3.6.0"
+#define POV_RAY_VERSION "3.6.1"
 #define POV_RAY_COPYRIGHT "Copyright 1991-2003 Persistence of Vision Team\nCopyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd."
-#define OFFICIAL_VERSION_NUMBER 360
-#define OFFICIAL_VERSION_NUMBER_HEX 0x0360
+#define OFFICIAL_VERSION_NUMBER 361
+#define OFFICIAL_VERSION_NUMBER_HEX 0x0361
 
 #define DISTRIBUTION_MESSAGE_1 "This is an unofficial version compiled by:"
 #ifndef DISTRIBUTION_MESSAGE_2

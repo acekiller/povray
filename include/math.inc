@@ -1,6 +1,6 @@
 //    Persistence of Vision Ray Tracer version 3.5 Include File
 //    File: math.inc
-//    Last updated: 2004.02.26
+//    Last updated: 2004.07.23
 //    Description: This file contains various math macros and functions
 
 #ifndef(MATH_INC_TEMP)
@@ -401,11 +401,15 @@
 // Output: the gradient as a vector expression
 #macro vGradient(__Gradient_Fn, p0)
 
+  #local p0x=p0.x;
+  #local p0y=p0.y;
+  #local p0z=p0.z;
+
    (
     <
-     __Gradient_Fn(p0.x + __Gradient_Fn_Accuracy_, p0.y, p0.z) - __Gradient_Fn(p0.x - __Gradient_Fn_Accuracy_, p0.y, p0.z),
-     __Gradient_Fn(p0.x, p0.y + __Gradient_Fn_Accuracy_, p0.z) - __Gradient_Fn(p0.x, p0.y - __Gradient_Fn_Accuracy_, p0.z),
-     __Gradient_Fn(p0.x, p0.y, p0.z + __Gradient_Fn_Accuracy_) - __Gradient_Fn(p0.x, p0.y, p0.z - __Gradient_Fn_Accuracy_)
+     __Gradient_Fn(p0x + __Gradient_Fn_Accuracy_, p0y, p0z) - __Gradient_Fn(p0x - __Gradient_Fn_Accuracy_, p0y, p0z),
+     __Gradient_Fn(p0x, p0y + __Gradient_Fn_Accuracy_, p0z) - __Gradient_Fn(p0x, p0y - __Gradient_Fn_Accuracy_, p0z),
+     __Gradient_Fn(p0x, p0y, p0z + __Gradient_Fn_Accuracy_) - __Gradient_Fn(p0x, p0y, p0z - __Gradient_Fn_Accuracy_)
     >/(2*__Gradient_Fn_Accuracy_)
    )
 
@@ -423,16 +427,20 @@
 // Output: the curl as a vector expression
 #macro vCurl(__Gradient_Fnx, __Gradient_Fny, __Gradient_Fnz, p0)
 
+  #local p0x=p0.x;
+  #local p0y=p0.y;
+  #local p0z=p0.z;
+  
   (
     <
-      __Gradient_Fnz(p0.x, p0.y + __Gradient_Fn_Accuracy_, p0.z) - __Gradient_Fnz(p0.x, p0.y - __Gradient_Fn_Accuracy_, p0.z) -
-      __Gradient_Fny(p0.x, p0.y, p0.z + __Gradient_Fn_Accuracy_) + __Gradient_Fny(p0.x, p0.y, p0.z - __Gradient_Fn_Accuracy_),
+      __Gradient_Fnz(p0x, p0y + __Gradient_Fn_Accuracy_, p0z) - __Gradient_Fnz(p0x, p0y - __Gradient_Fn_Accuracy_, p0z) -
+      __Gradient_Fny(p0x, p0y, p0z + __Gradient_Fn_Accuracy_) + __Gradient_Fny(p0x, p0y, p0z - __Gradient_Fn_Accuracy_),
+      
+      __Gradient_Fnx(p0x, p0y, p0z + __Gradient_Fn_Accuracy_) - __Gradient_Fnx(p0x, p0y, p0z - __Gradient_Fn_Accuracy_) -
+      __Gradient_Fnz(p0x + __Gradient_Fn_Accuracy_, p0y, p0z) + __Gradient_Fnz(p0x - __Gradient_Fn_Accuracy_, p0y, p0z),
 
-      __Gradient_Fnx(p0.x, p0.y, p0.z + __Gradient_Fn_Accuracy_) - __Gradient_Fnx(p0.x, p0.y, p0.z - __Gradient_Fn_Accuracy_) -
-      __Gradient_Fnz(p0.x + __Gradient_Fn_Accuracy_, p0.y, p0.z) + __Gradient_Fnz(p0.x - __Gradient_Fn_Accuracy_, p0.y, p0.z),
-
-      __Gradient_Fny(p0.x + __Gradient_Fn_Accuracy_, p0.y, p0.z) - __Gradient_Fny(p0.x - __Gradient_Fn_Accuracy_, p0.y, p0.z) -
-      __Gradient_Fnx(p0.x, p0.y + __Gradient_Fn_Accuracy_, p0.z) + __Gradient_Fnx(p0.x, p0.y - __Gradient_Fn_Accuracy_, p0.z)
+      __Gradient_Fny(p0x + __Gradient_Fn_Accuracy_, p0y, p0z) - __Gradient_Fny(p0x - __Gradient_Fn_Accuracy_, p0y, p0z) -
+      __Gradient_Fnx(p0x, p0y + __Gradient_Fn_Accuracy_, p0z) + __Gradient_Fnx(p0x, p0y - __Gradient_Fn_Accuracy_, p0z)
     >/(2*__Gradient_Fn_Accuracy_)
   )
 
@@ -450,11 +458,15 @@
 // Output: the divergence as a float expression
 #macro Divergence(__Gradient_Fnx, __Gradient_Fny, __Gradient_Fnz, p0)
 
+  #local p0x=p0.x;
+  #local p0y=p0.y;
+  #local p0z=p0.z;
+  
    (
     (
-     __Gradient_Fnx(p0.x + __Gradient_Fn_Accuracy_, p0.y, p0.z) - __Gradient_Fnx(p0.x - __Gradient_Fn_Accuracy_, p0.y, p0.z)+
-     __Gradient_Fny(p0.x, p0.y + __Gradient_Fn_Accuracy_, p0.z) - __Gradient_Fny(p0.x, p0.y - __Gradient_Fn_Accuracy_, p0.z)+
-     __Gradient_Fnz(p0.x, p0.y, p0.z + __Gradient_Fn_Accuracy_) - __Gradient_Fnz(p0.x, p0.y, p0.z - __Gradient_Fn_Accuracy_)
+     __Gradient_Fnx(p0x + __Gradient_Fn_Accuracy_, p0y, p0z) - __Gradient_Fnx(p0x - __Gradient_Fn_Accuracy_, p0y, p0z)+
+     __Gradient_Fny(p0x, p0y + __Gradient_Fn_Accuracy_, p0z) - __Gradient_Fny(p0x, p0y - __Gradient_Fn_Accuracy_, p0z)+
+     __Gradient_Fnz(p0x, p0y, p0z + __Gradient_Fn_Accuracy_) - __Gradient_Fnz(p0x, p0y, p0z - __Gradient_Fn_Accuracy_)
     )/(2*__Gradient_Fn_Accuracy_)
    )
 

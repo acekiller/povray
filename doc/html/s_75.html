@@ -63,9 +63,8 @@
 <dl class="famousquote">
  
  <dt>
-   <em>You know you have been raytracing too long when ...</em> 
- <dt>
-   <em>... You've been asked how you did that thing you did, by the author of the raytracer you used to do it.</em> 
+   <em>You know you have been raytracing too long when ...<br> ... You've been asked how you did that thing you did, 
+  by the author of the raytracer you used to do it.</em> 
  <dd>
    <em>-- Alex McLeod</em> 
 </dl>
@@ -85,8 +84,8 @@
 </p>
 
 <p>
-  What obscure idea could be behind this weirdness (besides a very serious case of YHBRFTLW...)? Why don't just use 
- POV-Ray itself to raytrace the spheres a lot faster and that's it? 
+  What obscure idea could be behind this weirdness (besides a very serious case of YHBRFTLW...)? Why do not just use 
+ POV-Ray itself to raytrace the spheres a lot faster and that is it? 
 </p>
 
 <p>
@@ -95,13 +94,13 @@
 </p>
 
 <p>
-  The idea of this document is to make a different approach to POV-Ray SDL teaching. It's intended to be a different 
+  The idea of this document is to make a different approach to POV-Ray SDL teaching. It is intended to be a different 
  type of tutorial: Instead of starting from the basics and give simple and dumb examples, we jump right into a high-end 
  SDL code and see how it is done. However, this is done in a way that even beginners can learn something from it. 
 </p>
 
 <p>
-  Another advantage is that you'll learn how a simple sphere raytracer is done by reading this tutorial. There are 
+  Another advantage is that you will learn how a simple sphere raytracer is done by reading this tutorial. There are 
  lots of misconceptions about raytracing out there, and knowing how to make one helps clear most of them. 
 </p>
 
@@ -112,13 +111,13 @@
 </p>
 
 <p class="Note">
-  <strong>Note:</strong> in some places some mathematics is needed, so you'd better not be afraid of 
+  <strong>Note:</strong> in some places some mathematics is needed, so you would better not be afraid of 
  math. 
 </p>
 
 <p>
   If some specific POV-Ray SDL syntax is unclear you should consult the POV-Ray documentation for more help. This 
- tutorial explains how they can be used, not so much what's their syntax. 
+ tutorial explains how they can be used, not so much what is their syntax. 
 </p>
 
 <h4><a name="s02_03_10_02">2.3.10.2 </a>The idea and the code</h4>
@@ -137,8 +136,8 @@
 
 <p>
   The following image is done with the raytracer SDL. It calculated the image at a resolution of 160x120 pixels and 
- then raytraced an 512x384 image from it. This causes the image to be blurred and jagged (because it's practically 
- &quot;zoomed in&quot; by a factor of 3.2). Calculating the image at 320x240 gives a much nicer result, but it's also 
+ then raytraced an 512x384 image from it. This causes the image to be blurred and jagged (because it is practically 
+ &quot;zoomed in&quot; by a factor of 3.2). Calculating the image at 320x240 gives a much nicer result, but it is also 
  much slower: 
 </p>
 
@@ -413,7 +412,7 @@ camera { orthographic location -z*2 look_at 0 }
 </p>
 
 <p>
-  First a ray is &quot;shot&quot; in a specified direction to see if there's something there. As this is solved 
+  First a ray is &quot;shot&quot; in a specified direction to see if there is something there. As this is solved 
  mathematically, we need to know the mathematical representation of the ray and the objects in the scene so that we can 
  calculate where does the ray intersect the objects. Once we get all the intersection points, we choose the closest 
  one. 
@@ -445,7 +444,7 @@ camera { orthographic location -z*2 look_at 0 }
 </ul>
 
 <p>
-  Don't worry if these things sound a bit confusing. Full details of all these things will be given through this 
+  Do not worry if these things sound a bit confusing. Full details of all these things will be given through this 
  tutorial, as we look what does the raytracing script do. The most important thing at this stage is to understand how 
  the basic raytracing algorithm works at theoretical level (the image above should say most of it). 
 </p>
@@ -481,22 +480,22 @@ camera { orthographic location -z*2 look_at 0 }
 
 <p class="Note">
   <strong>Note:</strong> this only defines the resolution of the image we are going to render in our SDL 
- (ie. into the array we will define later); it doesn't set the resolution of the image which POV-Ray will render. 
+ (ie. into the array we will define later); it does not set the resolution of the image which POV-Ray will render. 
 </p>
 
 <p>
-  The <code>MaxRecLev</code> limits the maximum number of recursive reflections the code will calculate. It's 
+  The <code>MaxRecLev</code> limits the maximum number of recursive reflections the code will calculate. It is 
  equivalent to the <code>max_trace_level</code> value in <code>global_settings</code> which POV-Ray uses to raytrace. 
 </p>
 
 <p>
   The <code>AmbientLight</code> defines a color which is added to all surfaces. This is used to &quot;lighten 
- up&quot; shadowed parts so that they are not completely dark. It's equivalent to the <code>ambient_light</code> value 
+ up&quot; shadowed parts so that they are not completely dark. It is equivalent to the <code>ambient_light</code> value 
  in <code>global_settings</code>. 
 </p>
 
 <p>
-  Finally, <code>BGColor</code> defines the color of the rays which do not hit anything. It's equivalent to the <code>background</code> 
+  Finally, <code>BGColor</code> defines the color of the rays which do not hit anything. It is equivalent to the <code>background</code> 
  block of POV-Ray. 
 </p>
 
@@ -553,9 +552,9 @@ camera { orthographic location -z*2 look_at 0 }
 
 <p class="Note">
   <strong>Note:</strong> although you can put almost anything inside an array (floats, vectors, objects 
- and so on) you can only put one type of things inside an array. That is, you can't mix float values and objects inside 
- the same array. (One nice feature is that all POV-Ray objects are considered equivalent, which means that an object 
- array can contain any objects inside it.) 
+ and so on) you can only put one type of things inside an array. That is, you cannot mix float values and objects 
+ inside the same array. (One nice feature is that all POV-Ray objects are considered equivalent, which means that an 
+ object array can contain any objects inside it.) 
 </p>
 
 <p>
@@ -606,9 +605,9 @@ camera { orthographic location -z*2 look_at 0 }
 <p>
   The <code>MaxDist</code> defines the maximum distance a surface can be from the starting point of a ray. This means 
  that if a surface is farther away from the starting point of the ray than this value, it will not be seen. Strictly 
- speaking this value is unnecessary and we can make the raytracer so that there's no such a limitation, but we save one 
- extra step when we do it this way, and for scenes sized like ours it doesn't really matter. (If you really, really 
- want to get rid of the limitation, I'm sure you'll figure out yourself how to do it after this tutorial.) 
+ speaking this value is unnecessary and we can make the raytracer so that there is no such a limitation, but we save 
+ one extra step when we do it this way, and for scenes sized like ours it does not really matter. (If you really, 
+ really want to get rid of the limitation, I am sure you will figure out yourself how to do it after this tutorial.) 
 </p>
 
 <p>
@@ -624,7 +623,7 @@ camera { orthographic location -z*2 look_at 0 }
 <p>
   The <code>#while</code>-loop uses the <code>Ind</code> identifier as an index value going from <code>0</code> to <code>LightAmnt-1</code> 
  (yes, <code>-1</code>; when <code>Ind</code> gets the value <code>LightAmnt</code> the loop is ended right away). We 
- also see that we are indexing the <code>LVect</code> array; thus, it's clear we are going through all the light 
+ also see that we are indexing the <code>LVect</code> array; thus, it is clear we are going through all the light 
  sources (specifically through their direction vectors, as we only use the <code>[0]</code> part) and we assign 
  something to them. 
 </p>
@@ -640,7 +639,7 @@ camera { orthographic location -z*2 look_at 0 }
 </p>
 
 <p>
-  Why? We will later see that for illumination calculations we will be needing unit vectors. It's more efficient to 
+  Why? We will later see that for illumination calculations we will be needing unit vectors. It is more efficient to 
  convert the light source directions to unit vectors once at the beginning than every time for each pixel later. 
 </p>
 
@@ -698,7 +697,7 @@ object { sphere { 0,1 } pigment { rgb 1 } }
 </pre>
 
 <p>
-  Of course there's no reason in making this, as you could have just #declared the <code>UnitSphere</code> as a 
+  Of course there is no reason in making this, as you could have just #declared the <code>UnitSphere</code> as a 
  sphere of radius 1. However, the power of macros kick in when you start using macro parameters. For example: 
 </p>
 
@@ -711,16 +710,16 @@ object { Sphere(3) pigment { rgb 1 } }
 </pre>
 
 <p>
-  Now you can use the macro <code>Sphere</code> to create a sphere with the specified radius. Of course this doesn't 
- make much sense either, as you could just write the sphere primitive directly because it's so short, but this example 
+  Now you can use the macro <code>Sphere</code> to create a sphere with the specified radius. Of course this does not 
+ make much sense either, as you could just write the sphere primitive directly because it is so short, but this example 
  is intentionally short to show how it works; the macros become very handy when they create something much more 
  complicated than just a sphere. 
 </p>
 
 <p>
-  There's one important difference between POV-Ray macros and real substitution macros: Any <code>#local</code> 
+  There is one important difference between macros in POV-Ray and real substitution macros: Any <code>#local</code> 
  statement inside the macro definition will be parsed at the visibility level of the macro only, that is, it will have 
- no effect on the environment where the macro was called from. The following example shows what I'm talking about: 
+ no effect on the environment where the macro was called from. The following example shows what I am talking about: 
 </p>
 
 <pre>
@@ -737,13 +736,13 @@ box { -1,1 pigment { rgb Color } }
 </pre>
 
 <p>
-  In the example above, although the macro creates a local identifier called <code>Color</code> and there's an 
- identifier with the same name at global level, the local definition doesn't affect the global one. Also even if there 
- wasn't any global definition of <code>Color</code>, the one inside the macro is not seen outside it. 
+  In the example above, although the macro creates a local identifier called <code>Color</code> and there is an 
+ identifier with the same name at global level, the local definition does not affect the global one. Also even if there 
+ was not any global definition of <code>Color</code>, the one inside the macro is not seen outside it. 
 </p>
 
 <p>
-  There's one important exception to this, and this is one of the most powerful features of macros (thanks to this 
+  There is one important exception to this, and this is one of the most powerful features of macros (thanks to this 
  they can be used as if they were functions): If an identifier (be it local or global) appears alone in the body of a 
  macro (usually at the end), its value will be passed outside the macro (as if it was a return value). The following 
  example shows how this works: 
@@ -772,7 +771,7 @@ box { -1,1 pigment { rgb Color } }
 <h5><a name="s02_03_10_07_02">2.3.10.7.2 </a>The ray-sphere intersection macro</h5>
 
 <p>
-  Here is again the macro at the beginning of the page so that you don't have to scroll so much in order to see it: 
+  Here is again the macro at the beginning of the page so that you do not have to scroll so much in order to see it: 
 </p>
 
 <pre>
@@ -808,18 +807,18 @@ box { -1,1 pigment { rgb Color } }
 
 <p>
   The return value can be negative, which means that the intersection point was actually behind the starting point. A 
- negative value will be just ignored, as if the ray didn't hit anything. We can use this to make a little trick (which 
- may seem obvious when said, but not so obvious when you have to figure it out for yourself): If the ray actually 
- doesn't hit the sphere, we return just a negative value (doesn't really matter which). 
+ negative value will be just ignored, as if the ray did not hit anything. We can use this to make a little trick (which 
+ may seem obvious when said, but not so obvious when you have to figure it out for yourself): If the ray actually does 
+ not hit the sphere, we return just a negative value (does not really matter which). 
 </p>
 
 <p>
-  And how does the macro do it? What's the theory behind those complicated-looking mathematical expressions? 
+  And how does the macro do it? What is the theory behind those complicated-looking mathematical expressions? 
 </p>
 
 <p>
-  I'll use a syntax similar to POV-Ray syntax to express mathematical formulas here since that's probably the easiest 
- way of doing it. 
+  I will use a syntax similar to POV-Ray syntax to express mathematical formulas here since that is probably the 
+ easiest way of doing it. 
 </p>
 
 <p>
@@ -870,8 +869,8 @@ box { -1,1 pigment { rgb Color } }
 </p>
 
 <p>
-  Solving <code>T</code> from that is rather trivial math. We get a 2nd order polynomial which has two solutions 
- (I'll use the &quot;&#183;&quot; symbol to represent the dot-product of two vectors): 
+  Solving <code>T</code> from that is rather trivial math. We get a 2nd order polynomial which has two solutions (I 
+ will use the &quot;&#183;&quot; symbol to represent the dot-product of two vectors): 
 </p>
 
 <p>
@@ -885,13 +884,13 @@ box { -1,1 pigment { rgb Color } }
 
 <p>
   When the discriminant (ie. the expression inside the square root) is negative, the ray does not hit the sphere and 
- thus we can return a negative value (the macro returns -1). We must check this in order to avoid the <i>square root of 
- a negative number</i> error; as it has a very logical meaning in this case, the checking is natural. 
+ thus we can return a negative value (the macro returns -1). We must check this in order to avoid the <em>square root 
+ of a negative number</em> error; as it has a very logical meaning in this case, the checking is natural. 
 </p>
 
 <p>
-  If the value is positive, there are two solutions (or just one if the value is zero, but that doesn't really matter 
- here), which corresponds to the two intersection points of the ray with the sphere. 
+  If the value is positive, there are two solutions (or just one if the value is zero, but that does not really 
+ matter here), which corresponds to the two intersection points of the ray with the sphere. 
 </p>
 
 <p>
@@ -910,7 +909,7 @@ box { -1,1 pigment { rgb Color } }
 </p>
 
 <p>
-  For our simple scene this is enough as we don't put our camera inside a sphere nor we have transparent spheres. We 
+  For our simple scene this is enough as we do not put our camera inside a sphere nor we have transparent spheres. We 
  could add a check there which looks if one of the values is positive and the other negative and returns the positive 
  one. However, this has an odd and very annoying result (you can try it if you want). This is most probably caused by 
  the inaccuracy of floating point numbers and happens when calculating reflections (the starting point is exactly on 
@@ -947,8 +946,8 @@ box { -1,1 pigment { rgb Color } }
 </p>
 
 <p>
-  The Trace-macro is <i>recursive</i>, meaning that it calls itself. More specifically, it calls itself when it wants 
- to calculate the ray reflected from the surface of a sphere. The <code>recLev</code> value is used to stop this 
+  The Trace-macro is <em>recursive</em>, meaning that it calls itself. More specifically, it calls itself when it 
+ wants to calculate the ray reflected from the surface of a sphere. The <code>recLev</code> value is used to stop this 
  recursion when the maximum recursion level is reached (ie. it calculates the reflection only if <code>recLev &lt; 
  MaxRecLev</code>). 
 </p>
@@ -978,7 +977,7 @@ box { -1,1 pigment { rgb Color } }
 <p>
   A ray can hit several spheres and we need the closest intersection point (and to know which sphere does it belong 
  to). One could think that calculating the closest intersection is rather complicated, needing things like sorting all 
- the intersection points and such. However, it's quite simple, as seen in the code above. 
+ the intersection points and such. However, it is quite simple, as seen in the code above. 
 </p>
 
 <p>
@@ -1001,11 +1000,11 @@ box { -1,1 pigment { rgb Color } }
 </p>
 
 <p>
-  Here we use a small trick, and it's related to its initial value: <code>ObjAmnt</code>. Why did we initialize it to 
- that? The purpose of it was to initialize it to some value which isn't a legal index to a sphere (<code>ObjAmnt</code> 
+  Here we use a small trick, and it is related to its initial value: <code>ObjAmnt</code>. Why did we initialize it 
+ to that? The purpose of it was to initialize it to some value which is not a legal index to a sphere (<code>ObjAmnt</code> 
  is not a legal index as the indices go from 0 to <code>ObjAmnt-1</code>); a negative value would have worked as well, 
- it really doesn't matter. If the ray doesn't hit any sphere, then this identifier is not changed and so we can see it 
- afterwards. 
+ it really does not matter. If the ray does not hit any sphere, then this identifier is not changed and so we can see 
+ it afterwards. 
 </p>
 
 <h5><a name="s02_03_10_08_02">2.3.10.8.2 </a>If the ray doesn't hit anything</h5>
@@ -1017,7 +1016,7 @@ box { -1,1 pigment { rgb Color } }
 </pre>
 
 <p>
-  If the ray didn't hit any sphere, what we do is just to return the bacground color (defined by the <code>BGColor</code> 
+  If the ray did not hit any sphere, what we do is just to return the bacground color (defined by the <code>BGColor</code> 
  identifier). 
 </p>
 
@@ -1051,7 +1050,7 @@ box { -1,1 pigment { rgb Color } }
 
 <p>
   Then we need the normal vector of the surface at the intersection point. A normal vector is a vector perpendicular 
- (ie. at 90 degrees) to the surface. For a sphere this is very easy to calculate: It's just the vector from the center 
+ (ie. at 90 degrees) to the surface. For a sphere this is very easy to calculate: It is just the vector from the center 
  of the sphere to the intersection point. 
 </p>
 
@@ -1062,7 +1061,7 @@ box { -1,1 pigment { rgb Color } }
 
 <p>
   Now a tricky one: We need the direction of the reflected ray. This vector is of course needed to calculate the 
- reflected ray, but it's also needed for specular lighting. 
+ reflected ray, but it is also needed for specular lighting. 
 </p>
 
 <p>
@@ -1128,10 +1127,10 @@ box { -1,1 pigment { rgb Color } }
 </pre>
 
 <p>
-  What we do is to go through all the spheres (we skip the current sphere although it's not necessary, but a little 
+  What we do is to go through all the spheres (we skip the current sphere although it is not necessary, but a little 
  optimization is still a little optimization), take the intersection point as starting point and the light direction as 
  the direction vector and see if the ray-sphere intersection test returns a positive value for any of them (and quit 
- the loop immediately when one is found, as we don't need to check the rest anymore). 
+ the loop immediately when one is found, as we do not need to check the rest anymore). 
 </p>
 
 <p>
@@ -1142,7 +1141,7 @@ box { -1,1 pigment { rgb Color } }
 <h5><a name="s02_03_10_08_06">2.3.10.8.6 </a>Diffuse lighting</h5>
 
 <p>
-  The diffuse component of lighting is generated when a light ray hits a surface and it's reflected equally to all 
+  The diffuse component of lighting is generated when a light ray hits a surface and it is reflected equally to all 
  directions. The brightest part of the surface is where the normal vector points directly in the direction of the 
  light. The lighting diminishes in relation to the cosine of the angle between the normal vector and the light vector. 
 </p>
@@ -1162,8 +1161,8 @@ box { -1,1 pigment { rgb Color } }
 </p>
 
 <p>
-  There's an extremely nice trick in mathematics to get the cosine of the angle between two unit vectors: It's their 
- dot-product. 
+  There is an extremely nice trick in mathematics to get the cosine of the angle between two unit vectors: It is 
+ their dot-product. 
 </p>
 
 <p>
@@ -1208,7 +1207,7 @@ box { -1,1 pigment { rgb Color } }
 <ul>
  
  <li>
-   We don't use the normal vector, but the reflected vector. 
+   We do not use the normal vector, but the reflected vector. 
  </li>
 
  <li>
@@ -1216,7 +1215,7 @@ box { -1,1 pigment { rgb Color } }
  </li>
 
  <li>
-   We don't take the dot-product as is, but we raise it to a power given in the scene definition (&quot;phong 
+   We do not take the dot-product as is, but we raise it to a power given in the scene definition (&quot;phong 
   size&quot;). 
  </li>
 
@@ -1305,14 +1304,14 @@ box { -1,1 pigment { rgb Color } }
 
 <p>
   Now we just have to calculate the image into an array of colors. This array is defined at the beginning of the code 
- above; it's a two-dimensional array representing the final image we are calculating. 
+ above; it is a two-dimensional array representing the final image we are calculating. 
 </p>
 
 <p>
   Note how we use the <code>#debug</code> stream to output useful information about the rendering process while we 
- are calculating. This is nice because the rendering process is quite slow and it's good to give the user some feedback 
- about what is happening and how long it will take. (Also note that the &quot;<code>%</code>&quot; character in the 
- string of the second <code>#debug</code> command will work ok only in the Windows version of POV-Ray; for other 
+ are calculating. This is nice because the rendering process is quite slow and it is good to give the user some 
+ feedback about what is happening and how long it will take. (Also note that the &quot;<code>%</code>&quot; character 
+ in the string of the second <code>#debug</code> command will work ok only in the Windows version of POV-Ray; for other 
  versions it may be necessary to convert it to &quot;<code>%%</code>&quot;.) 
 </p>
 
@@ -1331,21 +1330,21 @@ box { -1,1 pigment { rgb Color } }
 </pre>
 
 <p>
-  does is to scale the <code>IndY</code> so that it goes from -1 to 1. It's first divided by the maximum value it 
- gets (which is <code>ImageHeight-1</code>) and then it's multiplied by 2 and substracted by 1. This results in a value 
- which goes from -1 to 1. 
+  does is to scale the <code>IndY</code> so that it goes from -1 to 1. It is first divided by the maximum value it 
+ gets (which is <code>ImageHeight-1</code>) and then it is multiplied by 2 and substracted by 1. This results in a 
+ value which goes from -1 to 1. 
 </p>
 
 <p>
-  The <code>CoordX</code> is calculated similarly, but it's also multiplied by the aspect ratio of the image we are 
- calculating (so that we don't get a squeezed image). 
+  The <code>CoordX</code> is calculated similarly, but it is also multiplied by the aspect ratio of the image we are 
+ calculating (so that we do not get a squeezed image). 
 </p>
 
 <h4><a name="s02_03_10_10">2.3.10.10 </a>Creating the colored mesh</h4>
 
 <p>
-  If you think that these things we have been examining are advanced, then you haven't seen anything. Now comes real 
- hard-core advanced POV-Ray code, so be prepared. This could be called <i>The really advanced section</i>. 
+  If you think that these things we have been examining are advanced, then you have not seen anything. Now comes real 
+ hard-core advanced POV-Ray code, so be prepared. This could be called <em>The really advanced section</em>. 
 </p>
 
 <p>
@@ -1404,14 +1403,14 @@ box { -1,1 pigment { rgb Color } }
  instead of four, as we have done here. However, the color interpolation is not nice this way, as there appears a clear 
  diagonal line where the triangle edges go. If we make each square with four triangles instead, then the diagonal lines 
  are less apparent, and the interpolation resembles a lot better a true bilinear interpolation. And what is the color 
- of the middle points? Of course it's the average of the color of the four points in the corners. 
+ of the middle points? Of course it is the average of the color of the four points in the corners. 
 </p>
 
 <p>
   Secondly: Yes, the extra vertex points outside the mesh are completely obsolete and take no part in the creation of 
  the mesh. We could perfectly create the exact same mesh without them. However, getting rid of these extra vertex 
  points makes our lives more difficult when creating the triangles, as it would make the indexing of the points more 
- difficult. It may not be too much work to get rid of them, but they don't take any considerable amount of resources 
+ difficult. It may not be too much work to get rid of them, but they do not take any considerable amount of resources 
  and they make our lives easier, so let's just let them be (if you want to remove them, go ahead). 
 </p>
 
@@ -1420,7 +1419,7 @@ box { -1,1 pigment { rgb Color } }
 <p>
   What this means is that for each pixel we create two vertex points, one at the pixel location and one shifted by 
  &quot;0.5&quot; in the x and y directions. Then we specify the color for each vertex points: For the even vertex 
- points it's directly the color of the correspondent pixel; for the odd vertex points it's the average of the four 
+ points it is directly the color of the correspondent pixel; for the odd vertex points it is the average of the four 
  surrounding pixels. 
 </p>
 
@@ -1453,9 +1452,9 @@ mesh2
 </pre>
 
 <p>
-  First of all we use a nice trick in POV-Ray: Since we are not using light sources and there's nothing illuminating 
+  First of all we use a nice trick in POV-Ray: Since we are not using light sources and there is nothing illuminating 
  our mesh, what we do is to set the ambient value of the mesh to 1. We do this by just making it the default with the <code>#default</code> 
- command, so we don't have to bother later. 
+ command, so we do not have to bother later. 
 </p>
 
 <p>
@@ -1465,20 +1464,20 @@ mesh2
 
 <p>
   That was the easy part; now we have to figure out how to create the vertex points themselves. Each vertex location 
- should correspond to the pixel location it's representing, thus we go through each pixel index (practically the number 
- pairs in parentheses in the image above) and create vertex points using these index values. The location of these 
- pixels and vertices are the same as we assumed when we calculated the image itself (in the previous part). Thus the y 
- coordinate of each vertex point should go from -1 to 1 and similarly the x coordinate, but scaled with the aspect 
- ratio. 
+ should correspond to the pixel location it is representing, thus we go through each pixel index (practically the 
+ number pairs in parentheses in the image above) and create vertex points using these index values. The location of 
+ these pixels and vertices are the same as we assumed when we calculated the image itself (in the previous part). Thus 
+ the y coordinate of each vertex point should go from -1 to 1 and similarly the x coordinate, but scaled with the 
+ aspect ratio. 
 </p>
 
 <p>
-  If you look at the creation of the first vector in the code above, you'll see that it's almost identical to the 
+  If you look at the creation of the first vector in the code above, you will see that it is almost identical to the 
  direction vector we calculated when creating the image. 
 </p>
 
 <p>
-  The second vector should be shifted by 0.5 in both directions, and that's exactly what is done there. The second 
+  The second vector should be shifted by 0.5 in both directions, and that is exactly what is done there. The second 
  vector definition is identical to the first one except that the index values are shifted by 0.5. This creates the 
  points in the middle of the squares. 
 </p>
@@ -1591,15 +1590,15 @@ mesh2
 <p>
   The <code>IndX</code> is always multiplied by 2 because we had two vertex points for each pixel and <code>IndX</code> 
  is basically going through the pixels. Likewise <code>IndY</code> is always multiplied by <code>ImageWidth*2</code> 
- because that's how long a row of index points is (ie. to get from one row to the next at the same x coordinate we have 
- to advance <code>ImageWidth*2</code> in the index values). 
+ because that is how long a row of index points is (ie. to get from one row to the next at the same x coordinate we 
+ have to advance <code>ImageWidth*2</code> in the index values). 
 </p>
 
 <p>
   These two things are identical in all the triangles. What decides which vertex point is chosen is the 
- &quot;+1&quot; or &quot;+2&quot; (or &quot;+0&quot; when there's nothing). For <code>IndX</code> &quot;+0&quot; is the 
- current pixel, &quot;+1&quot; chooses the point in the middle of the square and &quot;+2&quot; chooses the next pixel. 
- For <code>IndY</code> &quot;+1&quot; chooses the next row of pixels. 
+ &quot;+1&quot; or &quot;+2&quot; (or &quot;+0&quot; when there is nothing). For <code>IndX</code> &quot;+0&quot; is 
+ the current pixel, &quot;+1&quot; chooses the point in the middle of the square and &quot;+2&quot; chooses the next 
+ pixel. For <code>IndY</code> &quot;+1&quot; chooses the next row of pixels. 
 </p>
 
 <p>

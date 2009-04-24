@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.4.8 Triangle Texture Interpolation</title>
+<title>3.5.6 Layered Textures</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_119.html">3.4.7 UV Mapping</a> 
+    <a href="s_119.html">3.5.5 Patterned Textures</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.4.8 
-   Triangle Texture Interpolation</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.5.6 
+   Layered Textures</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_121.html">3.4.9 Interior Texture</a> 
+    <a href="s_121.html">3.5.7 UV Mapping</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,41 +58,92 @@
   
 </table>
  
-<h3><a name="s03_04_08">3.4.8 </a>Triangle Texture Interpolation</h3>
-<a name="s03_04_08_i1"><a name="texture_list"></a><a name="s03_04_08_i2"><a name="texture_list, keyword"></a><a name="s03_04_08_i3">
+<h3><a name="s03_05_06">3.5.6 </a>Layered Textures</h3>
+
 <p>
-  This feature is utilized in a number of visualization approaches: triangles with individual textures for each 
- vertex, which are interpolated during rendering. 
+  It is possible to create a variety of special effects using layered textures. A layered texture consists of several 
+ textures that are partially transparent and are laid one on top of the other to create a more complex texture. The 
+ different texture layers show through the transparent portions to create the appearance of one texture that is a 
+ combination of several textures. 
 </p>
 
 <p>
-  Syntax: 
+  You create layered textures by listing two or more textures one right after the other. The last texture listed will 
+ be the top layer, the first one listed will be the bottom layer. All textures in a layered texture other than the 
+ bottom layer should have some transparency. For example: 
 </p>
 
 <pre>
-MESH_TRIANGLE:
-  triangle { 
-    &lt;Corner_1&gt;,
-    &lt;Corner_2&gt;,
-    &lt;Corner_3&gt;
-    [MESH_TEXTURE]
-  }   |
-  smooth_triangle { 
-    &lt;Corner_1&gt;, &lt;Normal_1&gt;, 
-    &lt;Corner_2&gt;, &lt;Normal_2&gt;, 
-    &lt;Corner_3&gt;, &lt;Normal_3&gt; 
-    [MESH_TEXTURE] 
-  }
-
-MESH_TEXTURE:
-  texture { TEXTURE_IDENTIFIER } |
-  texture_list {
-    TEXTURE_IDENTIFIER TEXTURE_IDENTIFIER TEXTURE_IDENTIFIER
+  object {
+    My_Object
+    texture {T1}  // the bottom layer
+    texture {T2}  // a semi-transparent layer
+    texture {T3}  // the top semi-transparent layer
   }
 </pre>
 
 <p>
-  To specify three vertex textures for the triangle, simply use <code>texture_list</code> instead of texture. 
+  In this example T2 shows only where T3 is transparent and T1 shows only where T2 and T3 are transparent. 
+</p>
+
+<p>
+  The color of underlying layers is filtered by upper layers but the results do not look exactly like a series of 
+ transparent surfaces. If you had a stack of surfaces with the textures applied to each, the light would be filtered 
+ twice: once on the way in as the lower layers are illuminated by filtered light and once on the way out. Layered 
+ textures do not filter the illumination on the way in. Other parts of the lighting calculations work differently as 
+ well. The results look great and allow for fantastic looking textures but they are simply different from multiple 
+ surfaces. See <code> stones.inc</code> in the standard include files directory for some magnificent layered textures. 
+</p>
+
+<p class="Note">
+  <strong>Note:</strong> in versions predating POV-Ray 3.5, <code>filter</code> used to work the same as <code>transmit</code> 
+ in layered textures. It has been changed to work as filter should. This can change the appearance of &quot;pre 
+ 3.5&quot; textures a lot. The <code>#version</code> directive can be used to get the &quot;pre 3.5&quot; behaviour. 
+</p>
+
+<p class="Note">
+  <strong>Note:</strong> layered textures must use the <code>texture</code> wrapped around any pigment, 
+ normal or finish statements. Do not use multiple pigment, normal or finish statements without putting them inside the 
+ texture statement. 
+</p>
+
+<p>
+  Layered textures may be declared. For example 
+</p>
+
+<pre>
+  #declare Layered_Examp =
+    texture {T1}
+    texture {T2}
+    texture {T3}
+</pre>
+
+<p>
+  may be invoked as follows: 
+</p>
+
+<pre>
+  object {
+    My_Object
+    texture {
+      Layer_Examp
+      // Any pigment, normal or finish here
+      // modifies the bottom layer only.
+    }
+  }
+</pre>
+
+<p class="Note">
+  <strong>Note:</strong> No macros are allowed in layered textures. The problem is that if a macro would 
+ contain a declare the parser could no longer guess that two or more texture identifiers are supposed to belong to the 
+ layered texture and not some other declare. 
+</p>
+
+<p>
+  If you wish to use a layered texture in a block pattern, such as <code> checker</code>, <code>hexagon</code>, or <code>brick</code>, 
+ or in a <code> material_map</code>, you must declare it first and then reference it inside a single texture statement. 
+ A patterned texture cannot be used as a layer in a layered texture however you may use layered textures as any of the 
+ textures contained within a patterned texture. 
 </p>
  <br> 
 <table class="NavBar" width="100%">
@@ -105,15 +156,15 @@ MESH_TEXTURE:
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_119.html">3.4.7 UV Mapping</a> 
+    <a href="s_119.html">3.5.5 Patterned Textures</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.4.8 Triangle Texture Interpolation</strong> 
+    <strong>3.5.6 Layered Textures</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_121.html">3.4.9 Interior Texture</a> 
+    <a href="s_121.html">3.5.7 UV Mapping</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

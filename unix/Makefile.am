@@ -43,8 +43,8 @@ povray_SOURCES = \
 # They cannot be placed in conf.h since they indirectly rely on $prefix.
 DEFS = \
   @DEFS@ \
-  -DPOVLIBDIR=\"@datadir@/@PACKAGE@-@VERSION@\" \
-  -DPOVCONFDIR=\"@sysconfdir@/@PACKAGE@/@VERSION@\" \
+  -DPOVLIBDIR=\"@datadir@/@PACKAGE@-@VERSION_BASE@\" \
+  -DPOVCONFDIR=\"@sysconfdir@/@PACKAGE@/@VERSION_BASE@\" \
   -DPOVCONFDIR_BACKWARD=\"@sysconfdir@\"
 
 # Include paths for headers.

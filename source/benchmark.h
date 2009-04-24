@@ -1,7 +1,7 @@
 /****************************************************************************
- *               mathutil.cpp
+ *                  benchmark.h
  *
- * This module implements the utility functions for scalar math.
+ * This module defines the prototypes for all benchmark functions.
  *
  * from Persistence of Vision(tm) Ray Tracer version 3.6.
  * Copyright 1991-2003 Persistence of Vision Team
@@ -21,43 +21,26 @@
  * DKBTrace was originally written by David K. Buck.
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
- * $File: //depot/povray/3.6-release/source/mathutil.cpp $
- * $Revision: #3 $
+ * $File: //depot/povray/3.6-release/source/benchmark.h $
+ * $Revision: #1 $
  * $Change: 3032 $
  * $DateTime: 2004/08/02 18:43:41 $
  * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
-#include <ctype.h>
-#include <time.h>
-#include <algorithm>
-#include <math.h>
-
-#include "frame.h"
-#include "mathutil.h"
+#ifndef BENCHMARK_H
+#define BENCHMARK_H
 
 BEGIN_POV_NAMESPACE
 
-#ifdef NEED_INVHYP
-DBL asinh(DBL x)
-{
-	return (x < 0 ? -1 : (x > 0 ? 1 : 0)) * log(fabs(x) + sqrt(1 + x * x));
-}
+/*****************************************************************************
+* Global functions
+******************************************************************************/
 
-DBL acosh(DBL x)
-{
-	if(x < 1.0)
-		return 0;
-	return log(x + sqrt(x * x - 1));
-}
-
-DBL atanh(DBL x)
-{
-	if(fabs(x) >= 1)
-		return 0;
-	return 0.5 * log((1 + x) / (1 - x));
-}
-#endif
+bool Write_Benchmark_File (const char *Scene_File_Name, const char *INI_File_Name) ;
+unsigned int Get_Benchmark_Version (void) ;
 
 END_POV_NAMESPACE
+
+#endif

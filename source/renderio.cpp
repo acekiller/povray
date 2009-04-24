@@ -22,17 +22,16 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/source/renderio.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
 #include <time.h>
 #include "frame.h"
 #include "vector.h"
-#include "povproto.h"
 #include "bbox.h"
 #include "chi2.h"
 #include "colour.h"
@@ -117,7 +116,7 @@ void Read_Rendered_Part(char *New_Fname)
     {
       for (x = 0; x < Frame.Screen_Width ; x++)
       {
-        extract_colors(Previous_Line[x], &Red, &Green, &Blue, &Alpha, &grey);
+        extract_colors_nocorrect(Previous_Line[x], &Red, &Green, &Blue, &Alpha, &grey);
         if (Display_Started && x >= opts.First_Column && x < opts.Last_Column)
         {
           POV_DISPLAY_PLOT(opts.Preview_RefCon, x, Output_File->Line() - 1, Red, Green, Blue, Alpha);
@@ -689,7 +688,10 @@ void output_single_image_line_with_alpha_correction(COLOUR *Line, int y)
   }
 
   if (opts.Options & DISKWRITE)
+  {
+    prepare_output_line(Line);
     Output_File->Write_Line(Line);
+  }
 
   if (Display_Started)
   {

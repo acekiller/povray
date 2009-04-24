@@ -26,10 +26,10 @@
 # Written by Nicolas Calimet <pov4grasp@free.fr>
 
 # Directories.
-povlibdir = @datadir@/@PACKAGE@-@VERSION@
-povdocdir = @datadir@/doc/@PACKAGE@-@VERSION@
-povconfdir = @sysconfdir@/@PACKAGE@/@VERSION@
-povconfuser = $(HOME)/.@PACKAGE@/@VERSION@
+povlibdir = @datadir@/@PACKAGE@-@VERSION_BASE@
+povdocdir = @datadir@/doc/@PACKAGE@-@VERSION_BASE@
+povconfdir = @sysconfdir@/@PACKAGE@/@VERSION_BASE@
+povconfuser = $(HOME)/.@PACKAGE@/@VERSION_BASE@
 
 # Directories to build.
 SUBDIRS = libraries source unix
@@ -134,10 +134,10 @@ uninstall-local:
 	if test -d $(DESTDIR)$(sysconfdir)/@PACKAGE@ && test -z "`ls -A $(DESTDIR)$(sysconfdir)/@PACKAGE@`"; then \
 	  rm -f -r $(DESTDIR)$(sysconfdir)/@PACKAGE@; \
 	fi
-	-rm -f $(HOME)/.@PACKAGE@/@VERSION@/povray.conf
-	-rm -f $(HOME)/.@PACKAGE@/@VERSION@/povray.ini
-	if test -d $(HOME)/.@PACKAGE@/@VERSION@ && test -z "`ls -A $(HOME)/.@PACKAGE@/@VERSION@`"; then \
-	  rm -f -r $(HOME)/.@PACKAGE@/@VERSION@; \
+	-rm -f $(HOME)/.@PACKAGE@/@VERSION_BASE@/povray.conf
+	-rm -f $(HOME)/.@PACKAGE@/@VERSION_BASE@/povray.ini
+	if test -d $(HOME)/.@PACKAGE@/@VERSION_BASE@ && test -z "`ls -A $(HOME)/.@PACKAGE@/@VERSION_BASE@`"; then \
+	  rm -f -r $(HOME)/.@PACKAGE@/@VERSION_BASE@; \
 	fi
 	if test -d $(HOME)/.@PACKAGE@ && test -z "`ls -A $(HOME)/.@PACKAGE@`"; then \
 	  rm -f -r $(HOME)/.@PACKAGE@; \

@@ -25,10 +25,10 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/source/gif.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
@@ -44,7 +44,6 @@
  */
 
 #include "frame.h"
-#include "povproto.h"
 #include "gif.h"
 #include "gifdecod.h"
 #include "povray.h"

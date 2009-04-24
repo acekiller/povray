@@ -22,10 +22,10 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/source/parsestr.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
@@ -39,7 +39,6 @@
 #include "pov_mem.h"
 #include "tokenize.h"
 #include "povray.h"
-#include "povproto.h"
 
 BEGIN_POV_NAMESPACE
 

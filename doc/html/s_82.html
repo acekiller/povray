@@ -63,7 +63,7 @@
 <h4><a name="s02_04_06_01">2.4.6.1 </a>Will POV-Ray render faster with a 3D card?</h4>
 
 <p>
-  <i>&quot;Will POV-Ray render faster if I buy the latest and fastest 3D videocard?&quot;</i> 
+  <em>&quot;Will POV-Ray render faster if I buy the latest and fastest 3D videocard?&quot;</em> 
 </p>
 
 <p>
@@ -72,14 +72,14 @@
 
 <p>
   3D-cards are not designed for raytracing. They read polygon meshes and then scanline-render them. Scanline 
- rendering has very little, if anything, to do with raytracing. 3D-cards can't calculate typical features of raytracing 
- as reflections etc. The algorithms used in 3D-cards have nothing to do with raytracing. 
+ rendering has very little, if anything, to do with raytracing. 3D-cards cannot calculate typical features of 
+ raytracing as reflections etc. The algorithms used in 3D-cards have nothing to do with raytracing. 
 </p>
 
 <p>
-  This means that you can't use a 3D-card to speed up raytracing (even if you wanted to do so). Raytracing makes lots 
- of float number calculations, and this is very FPU-consuming. You will get much more speed with a very fast FPU than a 
- 3D-card. 
+  This means that you cannot use a 3D-card to speed up raytracing (even if you wanted to do so). Raytracing makes 
+ lots of float number calculations, and this is very FPU-consuming. You will get much more speed with a very fast FPU 
+ than a 3D-card. 
 </p>
 
 <p>
@@ -122,9 +122,9 @@
 
  <li>
    Buss speed and level one and two memory cache - More is better. The faster the buss speed the faster the 
-  processor can swap out computations into it's level 2 cache and then read them back in. Buss speed therefore can have 
+  processor can swap out computations into its level 2 cache and then read them back in. Buss speed therefore can have 
   a large impact on both FPU and CPU calculation times. The more cache memory you have available the faster the 
-  operation becomes because the CPU doesn't have to rely on the much slower system RAM to store information in. 
+  operation becomes because the CPU does not have to rely on the much slower system RAM to store information in. 
  </li>
 
  <li>
@@ -143,15 +143,15 @@
  </li>
 
  <li>
-   And lastly your graphics card. This may seem unlikely to you but it's true. If you have a simple 16 bit graphics 
+   And lastly your graphics card. This may seem unlikely to you but it is true. If you have a simple 16 bit graphics 
   card your render times, compared to other systems with the same processor and memory but better CG cards, will be 
   equal. No more no less. If you play a lot of games or watch a lot of mpeg movies on your system then by all means own 
-  a good CG card. If it's rendering and raytracing you want to do then invest in the best system speed and architecture 
-  your money can buy. The graphics cards with hardware acceleration are designed to support fast shading of simple 
-  polygons, prevalent in the gaming industry, and offer no support for the intense mathematical number crunching that 
-  goes on inside a rendering/raytracing program like Pov-Ray, Studio Max, and Lightwave. If your modeling program uses 
-  OpenGl shading methods then a CG card with support for OpenGL will help increase the speed of updating the shading 
-  window but when it comes time to render or raytrace the image it's support dissapears. 
+  a good CG card. If it is rendering and raytracing you want to do then invest in the best system speed and 
+  architecture your money can buy. The graphics cards with hardware acceleration are designed to support fast shading 
+  of simple polygons, prevalent in the gaming industry, and offer no support for the intense mathematical number 
+  crunching that goes on inside a rendering/raytracing program like Pov-Ray, Studio Max, and Lightwave. If your 
+  modeling program uses OpenGl shading methods then a CG card with support for OpenGL will help increase the speed of 
+  updating the shading window but when it comes time to render or raytrace the image its support dissapears. 
  </li>
 
 </ol>
@@ -181,14 +181,14 @@
  </li>
 
  <li>
-   Area lights are very slow to calculate. If you have big media effects, they are <i>extremely</i> slow to 
+   Area lights are very slow to calculate. If you have big media effects, they are <em>extremely</em> slow to 
   calculate. Use as few area lights as possible. Always use adaptive area lights unless you need very high accuracy. 
   Use spot area lights whenever possible. 
  </li>
 
  <li>
    When you have many objects with the same texture, union them and apply the texture only once. This will decrease 
-  parse time and memory use. (Of course supposing that it doesn't matter if the texture doesn't move with the object 
+  parse time and memory use. (Of course supposing that it does not matter if the texture does not move with the object 
   anymore...) 
  </li>
 
@@ -219,7 +219,7 @@
    <li>
      Reflection and refraction: When an object reflects and refracts light (such as a glass object) it usually slows 
     down the rendering considerably. For test renderings turning off one of them (reflection or refraction) or both 
-    should greatly increase rendering speed. For example, while testing glass objects it's usually enough to test the 
+    should greatly increase rendering speed. For example, while testing glass objects it is usually enough to test the 
     refraction only and add the reflection only to the final rendering. (The problem with both reflecting and 
     refracting objects is that the rays will bounce inside the object until max_trace_level is reached, and this is 
     very slow.) 
@@ -239,13 +239,13 @@
 <h4><a name="s02_04_06_03">2.4.6.3 </a>CSG speed</h4>
 
 <p>
-  <i>&quot;How do the different kinds of CSG objects compare in speed? How can I speed them up?&quot;</i> 
+  <em>&quot;How do the different kinds of CSG objects compare in speed? How can I speed them up?&quot;</em> 
 </p>
 
 <p>
   There is a lot of misinformation about CSG speed out there. A very common allegation is that &quot;merge is always 
- slower than union&quot;. This statement is not true. Merge is sometimes slower than union, but in some cases it's even 
- faster. For example, consider the following code: 
+ slower than union&quot;. This statement is not true. Merge is sometimes slower than union, but in some cases it is 
+ even faster. For example, consider the following code: 
 </p>
 
 <pre>
@@ -270,7 +270,7 @@ merge
   So why is 'merge' so much faster than 'union' in this case? Well, the answer is probably that the number of visible 
  surfaces play a very important role in the rendering speed. When the spheres are unioned there are 18 inner surfaces, 
  while when merged, those inner surfaces are gone. POV-Ray has to calculate lighting and shading for each one of those 
- surfaces and that makes it so slow. When the spheres are merged, there's no need to perform lighting and shading 
+ surfaces and that makes it so slow. When the spheres are merged, there is no need to perform lighting and shading 
  calculations for those 18 surfaces. 
 </p>
 
@@ -322,8 +322,8 @@ difference
 </p>
 
 <p>
-  Since it's rather easy to automatically calculate a proper bounding box for a given object, POV-Ray does this and 
- thus you don't have to do it by yourself. 
+  Since it is rather easy to automatically calculate a proper bounding box for a given object, POV-Ray does this and 
+ thus you do not have to do it by yourself. 
 </p>
 
 <p>
@@ -347,7 +347,7 @@ intersection
 <p>
   In this example the member objects extend from &lt;-2001,-1001,-1001&gt; to &lt;2001,1001,1001&gt; although the 
  resulting CSG object is a pretty small lens-shaped object which is only 2 units wide in the x direction and perhaps 10 
- or 20 or something wide in the y and z directions. As you can see, it's very difficult to calculate the actual 
+ or 20 or something wide in the y and z directions. As you can see, it is very difficult to calculate the actual 
  dimensions of the object (but not impossible). 
 </p>
 
@@ -403,7 +403,7 @@ difference
    3DNow uses single precision numbers while POV-Ray needs (yes, it needs) double precision numbers. Single 
   precision is not enough (this has been tested in practice).<br> (To better understand the difference between single 
   and double precision numbers, imagine that you could represent values between 0 and 1000 with single precision 
-  numbers. With double precision numbers you don't get a scale from 0 to 2000 (as one might think), but from 0 to 
+  numbers. With double precision numbers you do not get a scale from 0 to 2000 (as one might think), but from 0 to 
   1000000. The difference is enormous and single precision is not precise enough for what POV-Ray does.) 
  </li>
 
@@ -415,13 +415,13 @@ difference
    
    <li>
      Compiling POV-Ray with a compiler which automatically can make 3DNow code from C. As far as I know, no such 
-    compiler exists which converts double precision math used in POV-Ray to single precision math needed by 3DNow. I 
-    don't event know if there's any compiler that supports 3DNow at all. 
+    compiler exists which converts double precision math used in POV-Ray to single precision math needed by 3DNow. I do 
+    not event know if there is any compiler that supports 3DNow at all. 
    </li>
 
    <li>
      Changing the source code by hand in order to use 3DNow instructions. This is a whole lot of work (specially 
-    because you'll probably have to use inline assembler). The source code of POV-Ray is not very small. Would it be 
+    because you will probably have to use inline assembler). The source code of POV-Ray is not very small. Would it be 
     worth the efforts? 
    </li>
 

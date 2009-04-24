@@ -22,10 +22,10 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/source/colutils.h $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
@@ -37,6 +37,7 @@ BEGIN_POV_NAMESPACE
 
 void gamma_correct(COLOUR Colour);
 void extract_colors(COLOUR Colour, unsigned char *Red, unsigned char  *Green, unsigned char  *Blue, unsigned char  *Alpha, DBL *grey);
+void extract_colors_nocorrect(COLOUR Colour, unsigned char *Red, unsigned char  *Green, unsigned char  *Blue, unsigned char  *Alpha, DBL *grey);
 
 /* ------------------------------------------------------ */
 /* small colour */
@@ -45,6 +46,8 @@ typedef unsigned char SMALL_COLOUR [4];
 
 void photonRgbe2colour(COLOUR c, SMALL_COLOUR rgbe);
 void colour2photonRgbe(SMALL_COLOUR rgbe, COLOUR c);
+
+void prepare_output_line(COLOUR *Line);
 
 END_POV_NAMESPACE
 

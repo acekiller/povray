@@ -1,4 +1,4 @@
-$Id: //depot/povray/3.6-release/distribution/revision.txt#1 $
+$Id: //depot/povray/3.6-release/distribution/revision.txt#2 $
 
 Here are the relevent changes between POV-Ray 3.5 release and the version 
 included in this installation. It does not include changes made to any 
@@ -7,6 +7,41 @@ changes to the documentation, scene and include files, but this is not
 guaranteed.
 
 See changes.txt for changes to your platform-specific version.
+
+1 August 2004 - 3.6.1 release
+-----------------------------
+
+Change 3010 on 2004/07/27 by thorsten@host27
+
+	Removes povproto.h
+	Adds benchmark.h
+
+Change 3003 on 2004/07/22 by thorsten@host27
+
+	Fixes file "saving" bug thanks to Massimo Valentini
+
+Change 3001 on 2004/07/21 by chormann@chho
+
+	fix for antialiasing method 1 + gamma correction bug.  Render
+	results will differ because antialiasing now works on
+	unclipped values.  But this has been the case for aa method 2 before.
+
+Change 2963 on 2004/07/10 by chrisc@hyperthread
+
+	add source licence to distribution dir.
+
+Change 2935 on 2004/07/03 by chrisc@hyperthread
+
+	adds distribution license.
+
+Change 2926 on 2004/06/30 by chrisc@hyperthread
+
+	adds bglass.inc to balcony scene (recovered from glass.inc#2).
+
+Change 2911 on 2004/06/28 by calimet@lavender
+
+	optout.h: wrap DISTRIBUTION_MESSAGE_2 with #ifndef and add #error
+
 
 7 June 2004 - 3.6.0 release
 ---------------------------

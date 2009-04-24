@@ -64,22 +64,22 @@
 <h4><a name="s02_04_01_01">2.4.1.1 </a>How do I make a visible light source?</h4>
 
 <p>
-  <i>&quot;How do I make a visible light source?&quot;</i> or: <i>&quot;Although I put the camera just in front of my 
- light source, I can't see anything. What am I doing wrong?&quot;</i> 
+  <em>&quot;How do I make a visible light source?&quot;</em> or: <em>&quot;Although I put the camera just in front of 
+ my light source, I cannot see anything. What am I doing wrong?&quot;</em> 
 </p>
 
 <p>
   A light source in POV-Ray is only a concept. When you add a light source to the scene, you are actually saying to 
- POV-Ray &quot;hey, there is light coming from this point&quot;. As the name says, it's a light <u>source</u>, not a 
- physical light (like a light bulb or a bright spot like a star). POV-Ray doesn't add anything to that place where the 
- light is coming, ie. there is nothing there, only empty space. It's just a kind of mathematical point POV-Ray uses to 
- make shading calculations. 
+ POV-Ray &quot;hey, there is light coming from this point&quot;. As the name says, it is a light <strong>source</strong>, 
+ not a physical light (like a light bulb or a bright spot like a star). POV-Ray does not add anything to that place 
+ where the light is coming, ie. there is nothing there, only empty space. It is just a kind of mathematical point 
+ POV-Ray uses to make shading calculations. 
 </p>
 
 <p>
   To make the light source visible, you have to put something there. There is a <code>looks_like</code> keyword in 
  the <code>light_source</code> block which allows to easily attach an object to the light source. This object 
- implicitly doesn't cast any shadows. You can make something like this: 
+ implicitly does not cast any shadows. You can make something like this: 
 </p>
 
 <pre>
@@ -97,7 +97,7 @@ light_source
 </pre>
 
 <p>
-  It's a good idea to define both things, the light source and the looks_like object, at the origin, and then 
+  It is a good idea to define both things, the light source and the looks_like object, at the origin, and then 
  translate them to their right place. 
 </p>
 
@@ -114,14 +114,14 @@ light_source
 <h4><a name="s02_04_01_02">2.4.1.2 </a>How do I make bright objects?</h4>
 
 <p>
-  <i>&quot;How do I make bright objects, which look like they are emitting light?&quot; </i> 
+  <em>&quot;How do I make bright objects, which look like they are emitting light?&quot; </em> 
 </p>
 
 <p>
   There is a simple trick to achieve this: Set the ambient value of the object to 1 or higher. This makes POV-Ray to 
  add a very bright illumination value to the object so the color of the object is in practice taken as is, without 
- darkening it due to shadows and shading. This results in an object which seems to glow light by itself even if it's in 
- full darkness (useful to make visible light sources, or small lights like leds which do not cast any considerable 
+ darkening it due to shadows and shading. This results in an object which seems to glow light by itself even if it is 
+ in full darkness (useful to make visible light sources, or small lights like leds which do not cast any considerable 
  light to their surroundings but can be easily seen even in the darkness). 
 </p>
 
@@ -133,7 +133,7 @@ light_source
 <h4><a name="s02_04_01_03">2.4.1.3 </a>How do I move the camera in a circular path?</h4>
 
 <p>
-  <i>&quot;How do I move the camera in a circular path while looking at the origin?&quot; </i> 
+  <em>&quot;How do I move the camera in a circular path while looking at the origin?&quot; </em> 
 </p>
 
 <p>
@@ -189,8 +189,8 @@ camera
 
 <p>
   To get an ellipse with this method, you can just multiply the result from vrotate by a vector, scaling the 
- resulting circle. With the last two methods you can also control the look_at vector (if you don't want it looking just 
- at the origin). 
+ resulting circle. With the last two methods you can also control the look_at vector (if you do not want it looking 
+ just at the origin). 
 </p>
 
 <p>
@@ -221,7 +221,7 @@ pigment
 </p>
 
 <p>
-  Substitute the keyword <code>gif</code> with the type of image you are using (if it isn't a GIF): <code>tga, iff, 
+  Substitute the keyword <code>gif</code> with the type of image you are using (if it is not a GIF): <code>tga, iff, 
  ppm, pgm, png or sys</code>. 
 </p>
 
@@ -238,33 +238,32 @@ pigment
 <h4><a name="s02_04_01_05">2.4.1.5 </a>How can I generate a spline?</h4>
 
 <p>
-  <i>&quot;How can I generate a spline, for example for a camera path for an animation?&quot;</i> 
+  <em>&quot;How can I generate a spline, for example for a camera path for an animation?&quot;</em> 
 </p>
 
 <p>
   POV-Ray 3.6 has a splines feature that allows you to create splines. This is covered in the documentation and there 
  are demo files showing examples of use. There exist also third party include files for spline generation that have 
- greater flexibility than the internal splines, for example the spline macros by Chris Colefax (<a href="http://www.geocities.com/ccolefax/spline/index.html" target="new">http://www.geocities.com/ccolefax/spline/index.html</a>). 
- 
+ greater flexibility than the internal splines, for example the <a href="http://www.geocities.com/ccolefax/spline/index.html" target="new">spline 
+ macros by Chris Colefax</a>. 
 </p>
 
 <h4><a name="s02_04_01_06">2.4.1.6 </a>How can I simulate motion blur?</h4>
 
 <p>
-  The official POV-Ray 3.6 doesn't support motion blur calculations, but there are some patched versions which do. 
+  The official POV-Ray 3.6 does not support motion blur calculations, but there are some patched versions which do. 
 </p>
 
 <p>
   You can also use other tools to make this. One way to simulate motion blur is calculating a small animation and 
  then averaging the images together. This averaging of several images can be made with third party programs, such as 
- the Targa Averager program (<a href="http://iki.fi/warp/PovUtils/average/" target="new">http://iki.fi/warp/PovUtils/average/</a>). 
- 
+ the <a href="http://iki.fi/warp/PovUtils/average/" target="new">Targa Averager program</a>. 
 </p>
 
 <h4><a name="s02_04_01_07">2.4.1.7 </a>How can I find the size of a text object?</h4>
 
 <p>
-  <i>&quot;How can I find the size of a text object / center text / justify text?&quot; </i> 
+  <em>&quot;How can I find the size of a text object / center text / justify text?&quot; </em> 
 </p>
 
 <p>
@@ -296,35 +295,35 @@ pigment
 </p>
 
 <p>
-  Although the POV-Ray documentation talks about &quot;solid&quot; and &quot;hollow&quot; objects, that's not how it 
+  Although the POV-Ray documentation talks about &quot;solid&quot; and &quot;hollow&quot; objects, that is not how it 
  actually works. &quot;Solid&quot; and &quot;hollow&quot; are a bit misleading terms to describe the objects. You can 
- also make an object &quot;hollow&quot; with that same keyword, but it's not that simple. 
+ also make an object &quot;hollow&quot; with that same keyword, but it is not that simple. 
 </p>
 
 <p>
-  Firstly: POV-Ray only handles surfaces, not solid 3D-objects. When you specify a sphere, it's actually just a 
- spherical surface. It's only a surface and it's not filled by anything. This can easily be seen by putting the camera 
- inside the sphere or by clipping a hole to one side of the sphere with the clipped_by keyword (so you can look 
+  Firstly: POV-Ray only handles surfaces, not solid 3D-objects. When you specify a sphere, it is actually just a 
+ spherical surface. It is only a surface and it is not filled by anything. This can easily be seen by putting the 
+ camera inside the sphere or by clipping a hole to one side of the sphere with the clipped_by keyword (so you can look 
  inside). 
 </p>
 
 <p>
   People often think that POV-Ray objects are solid, really 3D, with solid material filling the entire object because 
  they make a 'difference' CSG object and it seems like the object is actually solid. What the 'difference' CSG actually 
- does is to cut away a part of the object and <u>add a new surface</u> in the place of the hole, which completely 
- covers the hole, so you can't see inside the object (this new surface is actually the part of the second object which 
- is &quot;inside&quot; the first object). Again, if you move the camera inside the object, you will see that actually 
- it's hollow and the object is just a surface. 
+ does is to cut away a part of the object and <strong>add a new surface</strong> in the place of the hole, which 
+ completely covers the hole, so you cannot see inside the object (this new surface is actually the part of the second 
+ object which is &quot;inside&quot; the first object). Again, if you move the camera inside the object, you will see 
+ that actually it is hollow and the object is just a surface. 
 </p>
 
 <p>
-  So what's all this &quot;solid&quot; and &quot;hollow&quot; stuff the documentation talks of, and what's the 
+  So what is all this &quot;solid&quot; and &quot;hollow&quot; stuff the documentation talks of, and what is the 
  &quot;hollow&quot; keyword used for? 
 </p>
 
 <p>
   Although objects are actually surfaces, POV-Ray handles them as if they were solid. For example, fog and media do 
- not go inside solid objects. If you put a glass sphere into the fog, you will see that there's no fog inside the 
+ not go inside solid objects. If you put a glass sphere into the fog, you will see that there is no fog inside the 
  sphere. 
 </p>
 
@@ -336,12 +335,12 @@ pigment
 </p>
 
 <p>
-  If your scene does not use any atmospheric effect (fog or media) there isn't any difference between a 
+  If your scene does not use any atmospheric effect (fog or media) there is not any difference between a 
  &quot;solid&quot; or &quot;hollow&quot; object. 
 </p>
 
 <p>
-  So all the objects in POV-Ray are hollow. But the surface of the objects is always infinitely thin, and there's 
+  So all the objects in POV-Ray are hollow. But the surface of the objects is always infinitely thin, and there is 
  only one surface. With real world hollow objects you have always two surfaces: an outer surface and an inner surface. 
 </p>
 
@@ -404,7 +403,7 @@ union
 </pre>
 
 <p>
-  Now the glass is filled with water. But there's one problem: There's too much water. The glass should be filled 
+  Now the glass is filled with water. But there is one problem: There is too much water. The glass should be filled 
  only up to certain level, which should be definable. Well, this can be easily made with a CSG operation: 
 </p>
 
@@ -428,9 +427,8 @@ union
 <h4><a name="s02_04_01_11">2.4.1.11 </a>How can I bend a object?</h4>
 
 <p>
-  There's no direct support for bending in POV-Ray, but you can achieve acceptable bending with the Object Bender by 
- Chris Colefax (<a href="http://www.geocities.com/SiliconValley/Lakes/1434/bend.html" target="new">http://www.geocities.com/SiliconValley/Lakes/1434/bend.html</a>). 
- 
+  There is no direct support for bending in POV-Ray, but you can achieve acceptable bending with the <a href="http://www.geocities.com/SiliconValley/Lakes/1434/bend.html" target="new">Object 
+ Bender by Chris Colefax</a>. 
 </p>
 
 <p>
@@ -439,7 +437,7 @@ union
 </p>
 
 <p>
-  It might be a bit strange why most renderers support bending but POV-Ray doesn't. To understand this one has to 
+  It might be a bit strange why most renderers support bending but POV-Ray does not. To understand this one has to 
  know how other renderers (the so-called &quot;scanline-renderers&quot; work): 
 </p>
 
@@ -459,8 +457,8 @@ union
 
 <p>
   This difference might sound irrelevant, as the result of this kind of &quot;fake&quot; bending usually looks as 
- good as a true bending. However, it's not irrelevant from the point of view of POV-Ray. This is because POV-Ray does 
- not represent the objects with triangles, but they are true mathematical surfaces. POV-Ray can't &quot;fake&quot; a 
+ good as a true bending. However, it is not irrelevant from the point of view of POV-Ray. This is because POV-Ray does 
+ not represent the objects with triangles, but they are true mathematical surfaces. POV-Ray cannot &quot;fake&quot; a 
  bending by moving vertices because there are no vertices to move. In practice bending (and other non-linear 
  transformations) would require the calculation of the intersection of the object surface and a curve (instead of a 
  straight line), which is pretty hard and many times analytically not possible. 
@@ -479,7 +477,7 @@ union
 <h4><a name="s02_04_01_12">2.4.1.12 </a>Can I get non-grainy focal blur?</h4>
 
 <p>
-  <i>&quot;The focal blur is very grainy. Can I get rid of the graininess?&quot;</i> 
+  <em>&quot;The focal blur is very grainy. Can I get rid of the graininess?&quot;</em> 
 </p>
 
 <p>

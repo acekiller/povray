@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.6.18 transforms.inc</title>
+<title>3.7.16 strings.inc</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_146.html">3.6.17 textures.inc</a> 
+    <a href="s_146.html">3.7.15 stdinc.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.6.18 
-   transforms.inc</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.7.16 
+   strings.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_148.html">3.6.19 woodmaps.inc, woods.inc</a> 
+    <a href="s_148.html">3.7.17 textures.inc</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,264 +58,119 @@
   
 </table>
  
-<h3><a name="s03_06_18">3.6.18 </a>transforms.inc</h3>
+<h3><a name="s03_07_16">3.7.16 </a>strings.inc</h3>
 
 <p>
-  Several useful transformation macros. All these macros produce transformations, you can use them anywhere you can 
- use scale, rotate, etc. The descriptions will assume you are working with an object, but the macros will work fine for 
- textures, etc.<a name="s03_06_18_i1"><a name="Shear_Trans"></a> 
+  This include contains macros for manipulating and generating text strings.<a name="s03_07_16_i1"><a name="CRGBStr"></a> 
+ 
 </p>
 
 <p>
-  <code>Shear_Trans(A, B, C)</code>. This macro reorients and deforms an object so its original XYZ axes point along 
- A, B, and C, resulting in a shearing effect when the vectors are not perpendicular. You can also use vectors of 
- different lengths to affect scaling, or use perpendicular vectors to reorient the object.<br> Parameters: 
+  <code>CRGBStr(C, MinLen, Padding)</code> and <code>CRGBFTStr(C, MinLen, Padding)</code><br> These macros convert a 
+ color to a string. The format of the output string is &quot;rgb &lt; R, G, B&gt;&quot; or &quot;rgbft &lt; R, G, B, F, 
+ T&gt;&quot;, depending on the macro being called.<br> Parameters: 
 </p>
 
 <ul>
  
  <li>
-   <code>A, B, C</code> = Vectors representing the new XYZ axes for the transformation. 
+   <code>C</code> = The color to be turned into a string. 
+ </li>
+
+ <li>
+   <code>MinLen</code> = The minimum length of the individual components, analogous to the second parameter of 
+  str(). 
+ </li>
+
+ <li>
+   <code>Padding</code> = The padding to use for the components, see the third parameter of the str() function for 
+  details. 
  </li>
 
 </ul>
-<a name="s03_06_18_i2"><a name="Matrix_Trans"></a>
+<a name="s03_07_16_i2"><a name="Str, strings.inc"></a>
 <p>
-  <code>Matrix_Trans(A, B, C, D)</code>. This macro provides a way to specify a matrix transform with 4 vectors. The 
- effects are very similar to that of the Shear_Trans() macro, but the fourth parameter controls translation.<br> 
- Parameters: 
+  <code>Str(A)</code>. This macro creates a string containing a float with the systems default precision. It is a 
+ shortcut for using the str() function.<br> Parameters: 
 </p>
 
 <ul>
  
  <li>
-   <code>A, B, C, D</code> = Vectors for each row of the resulting matrix. 
+   <code>A</code> = The float to be converted to a string. 
  </li>
 
 </ul>
-<a name="s03_06_18_i3"><a name="Axial_Scale_Trans"></a>
+<a name="s03_07_16_i3"><a name="Vstr, strings.inc"></a><a name="s03_07_16_i4"><a name="VStr2D, short form"></a>
 <p>
-  <code>Axial_Scale_Trans(Axis, Amt)</code>. A kind of directional scale, this macro will &quot;stretch&quot; an 
- object along a specified axis.<br> Parameters: 
+  <code>VStr2D(V), VStr(V)</code>. These macros create strings containing vectors using POV syntax (&lt;X,Y,Z&gt;) 
+ with the default system precision. VStr2D() works with 2D vectors, VStr() with 3D vectors. They are shortcuts for 
+ using the <code>vstr()</code> function.<br> Parameters: 
 </p>
 
 <ul>
  
  <li>
-   <code>Axis</code> = A vector indicating the direction to stretch along. 
- </li>
-
- <li>
-   Amt = The amount to stretch. 
+   <code>V</code> = The vector to be converted to a string. 
  </li>
 
 </ul>
-<a name="s03_06_18_i4"><a name="Axis_Rotate_Trans"></a>
+<a name="s03_07_16_i5"><a name="Vstr2D, long form"></a>
 <p>
-  <code>Axis_Rotate_Trans(Axis, Angle)</code>. This is equivalent to the transformation done by the vaxis_rotate() 
- function, it rotates around an arbitrary axis.<br> Parameters: 
+  <code>Vstr2D(V,L,P), Vstr(V,L,P)</code>. These macros create strings containing vectors using POV syntax 
+ (&lt;X,Y,Z&gt;) with user specified precision. Vstr2D() works with 2D vectors, Vstr() with 3D vectors. They are 
+ shortcuts for using the vstr() function. The function of L and P is the same as in <code>vstr</code> specified in <a href="s_97.html#s03_02_01_07_03">String 
+ Functions</a>.<br> Parameters: 
 </p>
 
 <ul>
  
  <li>
-   <code>Axis</code> = A vector representing the axis to rotate around. 
+   <code>V</code> = The vector to be converted to a string. 
  </li>
 
  <li>
-   <code>Angle</code> = The amount to rotate by. 
+   <code>L</code> = Minimum length of the string and the type of left padding used if the string's representation is 
+  shorter than the minimum. 
+ </li>
+
+ <li>
+   <code>P</code> = Number of digits after the decimal point.&quot; 
  </li>
 
 </ul>
-<a name="s03_06_18_i5"><a name="Rotate_Around_Trans"></a>
+<a name="s03_07_16_i6"><a name="Triangle_Str"></a>
 <p>
-  <code>Rotate_Around_Trans(Rotation, Point)</code>. Ordinary rotation operates around the origin, this macro rotates 
- around a specific point.<br> Parameters: 
+  <code>Triangle_Str(A, B, C)</code> and <code>Smooth_Triangle_Str(A, NA, B, NB, C, NC)</code><br> These macros take 
+ vertex and normal information and return a string representing a triangle in POV-Ray syntax. They are mainly useful 
+ for generating mesh files.<br> Parameters: 
 </p>
 
 <ul>
  
  <li>
-   <code>Rotation</code> = The rotation vector, the same as the parameter to the rotate keyword. 
+   <code>A, B, C</code> = Triangle vertex points. 
  </li>
 
  <li>
-   <code>Point</code> = The point to rotate around. 
+   <code>NA, NB, NC</code> = Triangle vertex normals (Smooth_Triangle_Str() only). 
  </li>
 
 </ul>
-<a name="s03_06_18_i6"><a name="Reorient_Trans"></a>
+<a name="s03_07_16_i7"><a name="Parse_String"></a>
 <p>
-  <code>Reorient_Trans(Axis1, Axis2)</code>. This aligns <code>Axis1</code> to <code>Axis2</code> by rotating the 
- object around a vector perpendicular to both axis1 and axis2. <br>Parameters: 
+  <code>Parse_String(String)</code>. This macro takes a string, writes it to a file, and then includes that file. 
+ This has the effect of parsing that string: &quot;<code>Parse_String(&quot;MyColor&quot;)</code>&quot; will be seen by 
+ POV-Ray as &quot;<code>MyColor</code>&quot;.<br> Parameters: 
 </p>
 
 <ul>
  
  <li>
-   <code>Axis1</code> = Vector to be rotated. 
- </li>
-
- <li>
-   <code>Axis2</code> = Vectors to be rotated towards. 
+   <code>String</code> = The string to be parsed. 
  </li>
 
 </ul>
-<a name="s03_06_18_i7"><a name="Point_At_Trans"></a>
-<p>
-  <code>Point_At_Trans(YAxis)</code>. This macro is similar to Reorient_Trans(), but it points the y axis along Axis.<br> 
- Parameters: 
-</p>
-
-<ul>
- 
- <li>
-   <code>YAxis</code> = The direction to point the y axis in. 
- </li>
-
-</ul>
-<a name="s03_06_18_i8"><a name="Center_Trans"></a>
-<p>
-  <code>Center_Trans(Object, Axis)</code>. Calculates a transformation which will center an object along a specified 
- axis. You indicate the axes you want to center along by adding &quot;x&quot;, &quot;y&quot;, and &quot;z&quot; 
- together in the Axis parameter. 
-</p>
-
-<p class="Note">
-  <strong>Note:</strong> this macro actually computes the transform to center the bounding box of the 
- object, which may not be entirely accurate. There is no way to define the &quot;center&quot; of an arbitrary object. 
-</p>
-
-<p>
-  Parameters: 
-</p>
-
-<ul>
- 
- <li>
-   <code>Object</code> = The object the center transform is being computed for. 
- </li>
-
- <li>
-   <code>Axis</code> = The axes to center the object on. 
- </li>
-
-</ul>
-
-<p>
-  Usage: 
-</p>
-
-<pre>
-object {MyObj Center_Trans(MyObj, x)} //center along x axis
- </pre>
-
-<p>
-  You can also center along multiple axes: 
-</p>
-
-<pre>
-object {MyObj Center_Trans(MyObj, x+y)} //center along x and y axis
- </pre>
-<a name="s03_06_18_i9"><a name="Align_Trans"></a>
-<p>
-  <code>Align_Trans(Object, Axis, Pt)</code>. Calculates a transformation which will align the sides of the bounding 
- box of an object to a point. Negative values on Axis will align to the sides facing the negative ends of the 
- coordinate system, positive values will align to the opposite sides, 0 means not to do any alignment on that axis.<br> 
- Parameters: 
-</p>
-
-<ul>
- 
- <li>
-   <code>Object</code> = The object being aligned. 
- </li>
-
- <li>
-   <code>Axis</code> = A combination of +x, +y, +z, -x, -y, and -z, or a vector where each component is -1, 0, or +1 
-  specifying the faces of the bounding box to align to the point. 
- </li>
-
- <li>
-   <code>Point</code> = The point to which to align the bounding box of the object. 
- </li>
-
-</ul>
-
-<p>
-  Usage: 
-</p>
-
-<pre>
-  object {
-     MyObj 
-     Align_Trans(MyObj, x, Pt) //Align right side of object to be
-                               //coplanar with Pt
-     Align_Trans(MyObj,-y, Pt) //Align bottom of object to be
-                               // coplanar with Pt
-  } 
- </pre>
-<a name="s03_06_18_i10"><a name="vtransform"></a>
-<p>
-  <code>vtransform(Vect, Trans)</code> and <code>vinv_transform(Vect, Trans)</code>.<br> The <code>vtransform()</code> 
- macro takes a transformation (rotate, scale, translate, etc...) and a point, and returns the result of applying the 
- transformation to the point. The <code>vinv_transform()</code> macro is similar, but applies the inverse of the 
- transform, in effect &quot;undoing&quot; the transformation. You can combine transformations by enclosing them in a 
- transform block.<br> Parameters: 
-</p>
-
-<ul>
- 
- <li>
-   <code>Vect</code> = The vector to which to apply the transformation. 
- </li>
-
- <li>
-   <code>Trans</code> = The transformation to apply to Vect. 
- </li>
-
-</ul>
-<a name="s03_06_18_i11"><a name="spline_trans"></a>
-<p>
-  <code>Spline_Trans(Spline, Time, SkyVector, ForeSight, Banking)</code>. This macro aligns an object to a spline for 
- a given time value. The Z axis of the object will point in the forward direction of the spline and the Y axis of the 
- object will point upwards.<br> Parameters: 
-</p>
-
-<ul>
- 
- <li>
-   <code>Spline</code> = The spline that the object is aligned to. 
- </li>
-
- <li>
-   <code>Time</code> = The time value to feed to the spline, for example clock. 
- </li>
-
- <li>
-   <code>Sky</code> = The vector that is upwards in your scene, usually y. 
- </li>
-
- <li>
-   <code>Foresight</code> = A positive value that controls how much in advance the object will turn and bank. Values 
-  close to 0 will give precise results, while higher values give smoother results. It will not affect parsing speed, so 
-  just find the value that looks best. 
- </li>
-
- <li>
-   <code>Banking</code> = How much the object tilts when turning. The amount of tilting is equally much controlled 
-  by the ForeSight value. 
- </li>
-
-</ul>
-
-<p>
-  Usage: 
-</p>
-
-<pre>
-   object {MyObj Spline_Trans(MySpline, clock, y, 0.1, 0.5)}
-</pre>
  <br> 
 <table class="NavBar" width="100%">
   
@@ -327,15 +182,15 @@ object {MyObj Center_Trans(MyObj, x+y)} //center along x and y axis
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_146.html">3.6.17 textures.inc</a> 
+    <a href="s_146.html">3.7.15 stdinc.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.6.18 transforms.inc</strong> 
+    <strong>3.7.16 strings.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_148.html">3.6.19 woodmaps.inc, woods.inc</a> 
+    <a href="s_148.html">3.7.17 textures.inc</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

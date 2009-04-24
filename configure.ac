@@ -22,9 +22,9 @@
 # DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 #---------------------------------------------------------------------------
 # $File: //depot/povray/3.6-release/unix/configure.ac $
-# $Revision: #6 $
-# $Change: 2997 $
-# $DateTime: 2004/07/17 21:59:00 $
+# $Revision: #7 $
+# $Change: 3032 $
+# $DateTime: 2004/08/02 18:43:41 $
 # $Author: chrisc $
 # $Log$
 ##############################################################################
@@ -60,7 +60,13 @@ AC_PREREQ(2.57)
 
 # Inits.
 # Cannot use a variable to define the POV-Ray version string.
-AC_INIT([POV-Ray], [3.6], [pov4grasp@free.fr], [povray])
+AC_INIT([POV-Ray], [3.6.1], [pov4grasp@free.fr], [povray])
+VERSION_BASE=3.6
+AC_SUBST([VERSION_BASE])
+AC_DEFINE_UNQUOTED([VERSION_BASE],
+  ["$VERSION_BASE"],
+  [Base version number of package]
+)
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_HEADERS([conf.h])
 AC_CONFIG_SRCDIR([unix/unix.cpp])
@@ -183,6 +189,13 @@ AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([1.7 dist-bzip2])
 AM_MAINTAINER_MODE
+
+POV_CHECK_PATH(C_INCLUDE_PATH, ".",
+  [pov_warn_path="$pov_warn_path C_INCLUDE_PATH"]
+)
+POV_CHECK_PATH(CPLUS_INCLUDE_PATH, ".",
+  [pov_warn_path="$pov_warn_path CPLUS_INCLUDE_PATH"]
+)
 
 
 ###############################################################################
@@ -911,12 +924,6 @@ if test x"$enable_optimiz" != x"no"; then
             POV_PROG_CXX_FLAGS([$pov_flags],
               [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
             )
-            if test x"$pov_vendorid" = x"GenuineIntel"; then
-              pov_arch="pentium4"  # for GCC / ICC
-            elif test x"$pov_vendorid" = x"AuthenticAMD"; then
-              pov_arch="k8"
-            fi
-            pov_arch_fallback="i686"
             ;;
         esac
       done
@@ -928,7 +935,16 @@ if test x"$enable_optimiz" != x"no"; then
           i686-*|i386-*)  # FreeBSD seems to only report i386
             pov_cpu=${pov_modelname:-`uname -p 2> /dev/null`}
             case "$pov_cpu" in
+              # Intel
               *pentium*4*|*xeon*)  pov_arch="pentium4";;  # for GCC / ICC
+              *pentium*mmx*)       pov_arch="pentium";;   # catch this first
+              *pentium*m*)
+                if test x"$CXX" = x"icc"; then
+                  pov_arch="pentium4"
+                else
+                  pov_arch="pentium-m"
+                fi
+                ;;
               *pentium*iii*|*celeron*)  # assume all celerons belong here
                 if test x"$CXX" = x"icc"; then
                   pov_arch="pentiumiii"
@@ -945,9 +961,11 @@ if test x"$enable_optimiz" != x"no"; then
                 ;;
               *pentium*pro*)       pov_arch="pentiumpro";;  # for GCC / ICC
               *pentium*)           pov_arch="pentium";;     # for GCC / ICC
+              # AMD
               *athlon*xp*)         pov_arch="athlon-xp";;
               *athlon*mp*)         pov_arch="athlon-mp";;
               *athlon*|*duron*)    pov_arch="athlon";;
+              # others
               *)                   pov_arch="i686";;  # don't support true i386
             esac
             pov_arch_fallback="i686"
@@ -1128,6 +1146,19 @@ $PACKAGE_NAME $PACKAGE_VERSION has been configured with the following features:
   SVGAlib display : ${pov_svga_msg}
 
 Type 'make' to build, and 'make install' to install all files in the hierarchy
-${prefix}
-===============================================================================
+${prefix}])
+
+if test "$pov_warn_path"; then
+  echo "
+WARNING: configure has detected that the list of search paths specified
+by the following environment variables
+ $pov_warn_path
+erroneously contain the \".\" directory, which may cause a build failure.
+In order to build POV-Ray successfully, the package has been configured
+with all \".\" directory entries removed from the variables above.  You're
+strongly advised to correct your configuration accordingly."
+fi
+
+AC_MSG_RESULT(
+[===============================================================================
 ])

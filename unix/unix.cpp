@@ -22,10 +22,10 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/unix/unix.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
@@ -69,7 +69,7 @@
 #include <sys/time.h>   // for gettimeofday() and time()
 
 #ifdef UNIX_DEBUG
-#include <assert.h>
+# include <assert.h>
 #endif
 
 #ifdef HAVE_CONFIG_H
@@ -78,24 +78,30 @@
 # error "!!!!! conf.h is required !!!!!"
 #endif
 
+// source/frontend
 #include "defaultrenderfrontend.h"
 #include "processrenderoptions.h"
 #include "defaultplatformbase.h"
+
+// source/base
 #include "stringutilities.h"  // for pov_stricmp(), pov_tsprintf() 
-#include "optout.h"
+
+// source
+#include "benchmark.h"
+#include "povray.h"
 #include "povmsgid.h"   // for kPOVObjectClass_ROptions
 #include "povmsrec.h"   // for Receive_RenderOptions()
-#include "povproto.h"   // for Error(), Warning()
 #include "userdisp.h"   // for POV_Std functions
 
+// unix
 #include "unix.h"
 
 #ifndef X_DISPLAY_MISSING
-#include "xwin.h"
+# include "xwin.h"
 #endif
 
 #if defined(HAVE_LIBVGA) && defined(HAVE_LIBVGAGL)
-#include "svga.h"
+# include "svga.h"
 #endif
 
 
@@ -122,17 +128,16 @@ USING_POV_FRONTEND_NAMESPACE
  * These constants don't have to be in config.h .
  */
 #ifndef POVLIBDIR
-# define POVLIBDIR  "/usr/local/share/" PACKAGE "-" VERSION
+# define POVLIBDIR  "/usr/local/share/" PACKAGE "-" VERSION_BASE
 #endif
 
 #ifndef POVCONFDIR
-# define POVCONFDIR  "/usr/local/etc/" PACKAGE "/" VERSION
+# define POVCONFDIR  "/usr/local/etc/" PACKAGE "/" VERSION_BASE
 #endif
 
 #ifndef POVCONFDIR_BACKWARD
 # define POVCONFDIR_BACKWARD  "/usr/local/etc"
 #endif
-
 
 
 /*****************************************************************************
@@ -300,7 +305,7 @@ static void unix_create_globals(void)
 
   // user configuration file
   config->userconf = config->home
-    ? UNIX_stradd(config->home, "/." PACKAGE "/" VERSION "/povray.conf")
+    ? UNIX_stradd(config->home, "/." PACKAGE "/" VERSION_BASE "/povray.conf")
     : NULL
     ;
 
@@ -310,7 +315,7 @@ static void unix_create_globals(void)
 
   // user ini file
   config->userini = config->home
-    ? UNIX_stradd(config->home, "/." PACKAGE "/" VERSION "/povray.ini")
+    ? UNIX_stradd(config->home, "/." PACKAGE "/" VERSION_BASE "/povray.ini")
     : NULL
     ;
   config->userini_old = config->home

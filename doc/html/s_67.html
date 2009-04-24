@@ -65,9 +65,8 @@
 <dl class="famousquote">
  
  <dt>
-   <em>You know you have been raytracing too long when ...</em> 
- <dt>
-   <em>... You think that the evolution theory was based on the triangular origin of the wheel.</em> 
+   <em>You know you have been raytracing too long when ...<br> ... You think that the evolution theory was based on 
+  the triangular origin of the wheel.</em> 
  <dd>
    <em>-- Mark Kadela</em> 
 </dl>
@@ -181,7 +180,7 @@
 <p>
   Due to its nature, <code>mesh2</code> is not really suitable for building meshes by hand, it is intended for use by 
  modelers and file format converters. An other option is building the meshes by macros. Yet, to understand the format, 
- we'll do a small example by hand and go through all options. 
+ we will do a small example by hand and go through all options. 
 </p>
 
 <p>
@@ -297,7 +296,7 @@ mesh2 {
 
 <p>
   Next step is to rebuild the list of face_indices, as they now point to indices in the <code>vertex_vector{}</code> 
- list that don't exist anymore. 
+ list that do not exist anymore. 
 </p>
 
 <pre>
@@ -400,8 +399,8 @@ mesh2 {
 <p>
   Now, in <code>mesh2</code> we first build a list of 2D-vectors that are the coordinates of the triangular sections 
  in the xy-plane. This is the <code>uv_vectors{}</code> list. In the example we map the texture from the rectangular 
- area <nobr><code>&lt;-0.5,-0.5&gt;, &lt;0.5,0.5&gt;</code></nobr> to the triangles in the mesh. Again we can omit all 
- duplicate coordinates 
+ area <code>&lt;-0.5,-0.5&gt;, &lt;0.5,0.5&gt;</code> to the triangles in the mesh. Again we can omit all duplicate 
+ coordinates 
 </p>
 
 <pre>
@@ -549,7 +548,7 @@ mesh2 {
 <h4><a name="s02_03_02_03">2.3.2.3 </a>Polygon Object</h4>
 <a name="s02_03_02_03_i1">
 <p>
-  The <code><a href="s_104.html#s03_03_02_05">polygon</a></code> object can be used to create any planar, n-sided 
+  The <code><a href="s_106.html#s03_04_02_05">polygon</a></code> object can be used to create any planar, n-sided 
  shapes like squares, rectangles, pentagons, hexagons, octagons, etc. 
 </p>
 
@@ -617,7 +616,7 @@ mesh2 {
 </pre>
 
 <p>
-  Both letters P and O have a hole while the letter V consists of only one polygon. We'll start with the letter V 
+  Both letters P and O have a hole while the letter V consists of only one polygon. We will start with the letter V 
  because it is easier to define than the other two letters. 
 </p>
 
@@ -651,10 +650,10 @@ mesh2 {
 </p>
 
 <p>
-  After we have created the letter V we'll continue with the letter P. Since it has a hole we have to find a way of 
+  After we have created the letter V we will continue with the letter P. Since it has a hole we have to find a way of 
  cutting this hole into the basic shape. This is quite easy. We just define the outer shape of the letter P, which is a 
- closed polygon, and add the sequence of points that describes the hole, which is also a closed polygon. That's all we 
- have to do. There'll be a hole where both polygons overlap. 
+ closed polygon, and add the sequence of points that describes the hole, which is also a closed polygon. That is all we 
+ have to do. There will be a hole where both polygons overlap. 
 </p>
 
 <p>
@@ -664,7 +663,7 @@ mesh2 {
 
 <p>
   The letter P consists of two sub-polygons, one for the outer shape and one for the hole. Since the hole polygon 
- overlaps the outer shape polygon we'll get a hole. 
+ overlaps the outer shape polygon we will get a hole. 
 </p>
 
 <p>
@@ -712,11 +711,11 @@ mesh2 {
  <ul>
   
   <li><small>
-   <a href="s_104.html#s03_03_02_03">3.3.2.3 Mesh</a> in 3.3.2 Finite Patch Primitives
+   <a href="s_106.html#s03_04_02_03">3.4.2.3 Mesh</a> in 3.4.2 Finite Patch Primitives
   </small>
 
   <li><small>
-   <a href="s_104.html#s03_03_02_04">3.3.2.4 Mesh2</a> in 3.3.2 Finite Patch Primitives
+   <a href="s_106.html#s03_04_02_04">3.4.2.4 Mesh2</a> in 3.4.2 Finite Patch Primitives
   </small>
 
  </ul>

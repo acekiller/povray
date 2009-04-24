@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.6.10 metals.inc, golds.inc</title>
+<title>3.7.8 glass.inc, glass_old.inc</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_138.html">3.6.9 math.inc</a> 
+    <a href="s_138.html">3.7.7 functions.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.6.10 
-   metals.inc, golds.inc</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.7.8 
+   glass.inc, glass_old.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_140.html">3.6.11 rand.inc</a> 
+    <a href="s_140.html">3.7.9 math.inc</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,164 +58,254 @@
   
 </table>
  
-<h3><a name="s03_06_10">3.6.10 </a>metals.inc, golds.inc</h3>
+<h3><a name="s03_07_08">3.7.8 </a>glass.inc, glass_old.inc</h3>
 
 <p>
-  These files define several metal textures. The file metals.inc contains copper, silver, chrome, and brass textures, 
- and golds.inc contains the gold textures.<br> Rendering the demo files will come in useful in using these textures. 
+  This file contains glass materials using new features introduced in POV 3.1 and 3.5. The old glass.inc file is 
+ still included for backwards compatibility (it is named glass_old.inc, and is included by glass.inc, so you do not 
+ need to change any scenes), but these materials will give more realistic results. 
 </p>
 
-<h4><a name="s03_06_10_01">3.6.10.1 </a>metals.inc</h4>
+<h4><a name="s03_07_08_01">3.7.8.1 </a>Glass colors (with transparency)</h4>
 
-<p>
-  Colors: 
-</p>
+<table cellpadding="5" cellspacing="5" summary="glass.inc glass colors with transparency" width="100%">
+ 
+ <tr valign="top">
+  
+  <td width="33%">
+    <code> Col_Glass_Beerbottle<br> Col_Glass_Bluish<br> Col_Glass_Clear<br> Col_Glass_Dark_Green<br> </code> 
+   
+  </td>
+
+  <td width="33%">
+    <code> Col_Glass_General<br> Col_Glass_Green<br> Col_Glass_Old<br> Col_Glass_Orange<br> </code> 
+  </td>
+
+  <td width="33%">
+    <code> Col_Glass_Ruby<br> Col_Glass_Vicksbottle<br> Col_Glass_Winebottle<br> Col_Glass_Yellow<br> </code> 
+   
+  </td>
+
+ </tr>
+
+</table>
+
+<h4><a name="s03_07_08_02">3.7.8.2 </a>Glass colors (without transparency, for fade_color)</h4>
+
+<table cellpadding="5" cellspacing="5" summary="glass.inc glass colors without transparency for fade_color" width="100%">
+ 
+ <tr valign="top">
+  
+  <td width="33%">
+    <code> Col_Amber_01<br> Col_Amber_02<br> Col_Amber_03<br> Col_Amber_04<br> Col_Amber_05<br> </code> 
+  </td>
+
+  <td width="33%">
+    <code> Col_Amber_06<br> Col_Amber_07<br> Col_Amber_08<br> Col_Amber_09<br> Col_Amethyst_01<br> </code> 
+   
+  </td>
+
+  <td width="33%">
+    <code> Col_Amethyst_02<br> Col_Amethyst_03<br> Col_Amethyst_04<br> Col_Amethyst_05<br> 
+   Col_Amethyst_06<br> </code> 
+  </td>
+
+ </tr>
+
+ <tr valign="top">
+  
+  <td>
+    <code> Col_Apatite_01<br> Col_Apatite_02<br> Col_Apatite_03<br> Col_Apatite_04<br> Col_Apatite_05<br> </code> 
+  </td>
+
+  <td>
+    <code> Col_Aquamarine_01<br> Col_Aquamarine_02<br> Col_Aquamarine_03<br> Col_Aquamarine_04<br> Col_Aquamarine_05<br> 
+   </code> 
+  </td>
+
+  <td>
+    <code> Col_Aquamarine_06<br> Col_Azurite_01<br> Col_Azurite_02<br> Col_Azurite_03<br> Col_Azurite_04<br> </code> 
+  </td>
+
+ </tr>
+
+ <tr valign="top">
+  
+  <td>
+    <code> Col_Beerbottle<br> Col_Blue_01<br> Col_Blue_02<br> Col_Blue_03<br> Col_Blue_04<br> </code> 
+  </td>
+
+  <td>
+    <code> Col_Citrine_01<br> Col_Dark_Green<br> Col_Emerald_01<br> Col_Emerald_02<br> Col_Emerald_03<br> </code> 
+  </td>
+
+  <td>
+    <code> Col_Emerald_04<br> Col_Emerald_05<br> Col_Emerald_06<br> Col_Emerald_07<br> Col_Fluorite_01<br> </code> 
+  </td>
+
+ </tr>
+
+ <tr valign="top">
+  
+  <td>
+    <code> Col_Fluorite_02<br> Col_Fluorite_03<br> Col_Fluorite_04<br> Col_Fluorite_05<br> Col_Fluorite_06<br> </code> 
+   
+  </td>
+
+  <td>
+    <code> Col_Fluorite_07<br> Col_Fluorite_08<br> Col_Fluorite_09<br> Col_Green<br> Col_Green_01<br> </code> 
+  </td>
+
+  <td>
+    <code> Col_Green_02<br> Col_Green_03<br> Col_Green_04<br> Col_Gypsum_01<br> Col_Gypsum_02<br> </code> 
+  </td>
+
+ </tr>
+
+ <tr valign="top">
+  
+  <td>
+    <code> Col_Gypsum_03<br> Col_Gypsum_04<br> Col_Gypsum_05<br> Col_Gypsum_06<br> Col_Orange<br> </code> 
+  </td>
+
+  <td>
+    <code> Col_Red_01<br> Col_Red_02<br> Col_Red_03<br> Col_Red_04<br> Col_Ruby<br> </code> 
+  </td>
+
+  <td>
+    <code> Col_Ruby_01<br> Col_Ruby_02<br> Col_Ruby_03<br> Col_Ruby_04<br> Col_Ruby_05<br> </code> 
+  </td>
+
+ </tr>
+
+ <tr valign="top">
+  
+  <td>
+    <code> Col_Sapphire_01<br> Col_Sapphire_02<br> Col_Sapphire_03<br> Col_Topaz_01<br> Col_Topaz_02<br> </code> 
+  </td>
+
+  <td>
+    <code> Col_Topaz_03<br> Col_Tourmaline_01<br> Col_Tourmaline_02<br> Col_Tourmaline_03<br> Col_Tourmaline_04<br> </code> 
+   
+  </td>
+
+  <td>
+    <code> Col_Tourmaline_05<br> Col_Tourmaline_06<br> Col_Vicksbottle<br> Col_Winebottle<br> Col_Yellow<br> </code> 
+  </td>
+
+ </tr>
+
+ <tr valign="top">
+  
+  <td>
+    <code> Col_Yellow_01<br> Col_Yellow_02<br> Col_Yellow_03<br> Col_Yellow_04<br> </code> 
+  </td>
+
+  <td>
+    <code> </code> 
+  </td>
+
+  <td>
+    <code> </code> 
+  </td>
+
+ </tr>
+
+</table>
+
+<h4><a name="s03_07_08_03">3.7.8.3 </a>Glass finishes</h4>
+<code>F_Glass5, ..., F_Glass10</code>
+<h4><a name="s03_07_08_04">3.7.8.4 </a>Glass interiors</h4>
 
 <dl>
  
  <dt>
-   <code>P_Brass1</code> 
+   <code>I_Glass1, ..., I_Glass4</code> 
  <dd>
-   Dark brown bronze. 
+   <code>I_Glass_Fade_Sqr1</code> (identical to <code>I_Glass1</code>) 
+ <dd>
+   <code>I_Glass_Fade_Exp1</code> (identical to <code>I_Glass2</code>) 
+ <dd>
+   <code>I_Glass_Fade_Exp2</code> (identical to <code>I_Glass3</code>) 
+ <dd>
+   <code>I_Glass_Fade_Exp3</code> (identical to <code>I_Glass4</code>) 
+ <dd>
+   Glass interiors with various fade_power settings. 
  <dt>
-   <code>P_Brass2</code> 
+   <code>I_Glass_Dispersion1, I_Glass_Dispersion2</code> 
  <dd>
-   Somewhat lighter brown than Brass4. Old penny, in soft finishes. 
+   Glass interiors with dispersion. <code>I_Glass_Dispersion1</code> has an approximately natural glass dispersion. <code>I_Glass_Dispersion2</code> 
+  is exaggerated. 
  <dt>
-   <code>P_Brass3</code> 
+   <code>I_Glass_Caustics1, I_Glass_Caustics2</code> 
  <dd>
-   Used by Steve Anger's Polished_Brass. Slightly coppery. 
- <dt>
-   <code>P_Brass4</code> 
- <dd>
-   A little yellower than Brass1. 
- <dt>
-   <code>P_Brass5</code> 
- <dd>
-   Very light bronze, ranges from med tan to almost white. 
+   Glass interiors with caustics. 
 </dl>
 
-<dl>
- 
- <dt>
-   <code>P_Copper1</code> 
- <dd>
-   Bronze-like. Best in finish #C. 
- <dt>
-   <code>P_Copper2</code> 
- <dd>
-   Slightly brownish copper/bronze. Best in finishes #B-#D. 
- <dt>
-   <code>P_Copper3</code> 
- <dd>
-   Reddish-brown copper. Best in finishes #C-#E. 
- <dt>
-   <code>P_Copper4</code> 
- <dd>
-   Pink copper, like new tubing. Best in finishes #C-#E. 
- <dt>
-   <code>P_Copper5</code> 
- <dd>
-   Bronze in softer finishes, gold in harder finishes. 
-</dl>
-
-<dl>
- 
- <dt>
-   <code>P_Chrome1</code> 
- <dd>
-   20% Gray. Used in Steve Anger's Polished_Chrome. 
- <dt>
-   <code>P_Chrome2</code> 
- <dd>
-   Slightly blueish 60% gray. Good steel w/finish #A. 
- <dt>
-   <code>P_Chrome3</code> 
- <dd>
-   50% neutral gray. 
- <dt>
-   <code>P_Chrome4</code> 
- <dd>
-   75% neutral gray. 
- <dt>
-   <code>P_Chrome5</code> 
- <dd>
-   95% neutral gray. 
-</dl>
-
-<dl>
- 
- <dt>
-   <code>P_Silver1</code> 
- <dd>
-   Yellowish silverplate. Somewhat tarnished looking. 
- <dt>
-   <code>P_Silver2</code> 
- <dd>
-   Not quite as yellowish as Silver1 but more so than Silver3. 
- <dt>
-   <code>P_Silver3</code> 
- <dd>
-   Reasonably neutral silver. 
- <dt>
-   <code>P_Silver4</code> 
- <dt>
-   <code>P_Silver5</code> 
-</dl>
+<h4><a name="s03_07_08_05">3.7.8.5 </a>Glass interior macros</h4>
 
 <p>
-  Finishes: 
+  <code>I_Glass_Exp(Distance)</code> and <code>I_Glass_Sqr(Distance)</code>.<br> These macros return an interior with 
+ either exponential or fade_power 2 falloff, and a fade_distance of Distance. 
 </p>
 
-<dl>
- 
- <dt>
-   <code>F_MetalA</code> 
- <dd>
-   Very soft and dull. 
- <dt>
-   <code>F_MetalB</code> 
- <dd>
-   Fairly soft and dull. 
- <dt>
-   <code>F_MetalC</code> 
- <dd>
-   Medium reflectivity. Holds color well. 
- <dt>
-   <code>F_MetalD</code> 
- <dd>
-   Very hard and highly polished. High reflectivity. 
- <dt>
-   <code>F_MetalE</code> 
- <dd>
-   Very highly polished and reflective. 
-</dl>
+<h4><a name="s03_07_08_06">3.7.8.6 </a>glass_old.inc</h4>
 
 <p>
-  Textures: 
-</p>
-
-<dl>
- 
- <dt>
-   <code>T_Brass_1A to T_Brass_5E</code> 
- <dt>
-   <code>T_Copper_1A to T_Copper_5E</code> 
- <dt>
-   <code>T_Chrome_1A to T_Chrome_5E</code> 
- <dt>
-   <code>T_Silver_1A to T_Silver_5E</code> 
-</dl>
-
-<h4><a name="s03_06_10_02">3.6.10.2 </a>golds.inc</h4>
-
-<p>
-  This file has its own versions of <code>F_MetalA</code> through <code>F_MetalB</code>. 
+  This file contains glass textures for POV-Ray versions 3.1 and earlier. These textures do not take advantage of the 
+ new features introduced with POV-Ray 3.5 and are included for backwards compatability, you will get better results 
+ with the materials in glass.inc. 
 </p>
 
 <p>
-  The gold textures themselves are <code>T_Gold_1A</code> through <code>T_Gold_5E</code>. 
+  These textures are designed to be used with the I_Glass interior, also defined in this file. 
 </p>
+
+<h5><a name="s03_07_08_06_01">3.7.8.6.1 </a>Glass finishes</h5>
+
+<p>
+  <code>F_Glass1, ..., F_Glass4</code> 
+</p>
+
+<h5><a name="s03_07_08_06_02">3.7.8.6.2 </a>Glass textures</h5>
+
+<dl>
+ 
+ <dt>
+   <code>T_Glass1</code> 
+ <dd>
+   Simple clear glass. 
+ <dt>
+   <code>T_Glass2</code> 
+ <dd>
+   More like an acrylic plastic. 
+ <dt>
+   <code>T_Glass3</code> 
+ <dd>
+   An excellent lead crystal glass. 
+ <dt>
+   <code>T_Glass4</code> 
+ <dt>
+   <code>T_Old_Glass</code> 
+ <dt>
+   <code>T_Winebottle_Glass</code> 
+ <dt>
+   <code>T_Beerbottle_Glass</code> 
+ <dt>
+   <code>T_Ruby_Glass</code> 
+ <dt>
+   <code>T_Green_Glass</code> 
+ <dt>
+   <code>T_Dark_Green_Glass</code> 
+ <dt>
+   <code>T_Yellow_Glass</code> 
+ <dt>
+   <code>T_Orange_Glass</code> 
+ <dd>
+   Orange/amber glass. 
+ <dt>
+   <code>T_Vicksbottle_Glass</code> 
+</dl>
  <br> 
 <table class="NavBar" width="100%">
   
@@ -227,15 +317,15 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_138.html">3.6.9 math.inc</a> 
+    <a href="s_138.html">3.7.7 functions.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.6.10 metals.inc, golds.inc</strong> 
+    <strong>3.7.8 glass.inc, glass_old.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_140.html">3.6.11 rand.inc</a> 
+    <a href="s_140.html">3.7.9 math.inc</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">

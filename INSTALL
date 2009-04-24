@@ -33,9 +33,9 @@ are also described.  These options are listed with 'configure --help'.
 The COMPILED_BY argument is required to configure the package.  It is used
 to identify unambiguously that the binary you are preparing will NOT be
 supported by the POV-Team(tm) but, rather, that YOU are responsible for
-supporting it in case you intend to distribute this binary.  This argument
+supporting this binary in case you intend to distribute it.  This argument
 allows configure to automatically update the DISTRIBUTION_MESSAGE definitions
-in the source/optout.h file.  Please refer to the POV-Ray Source Code License
+in the source/optout.h file.  Please refer to the POV-Ray Source License
 (source-license.txt) for details.
 
 The 'make' command builds the program once it is configured.  The optional

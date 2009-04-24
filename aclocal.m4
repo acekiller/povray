@@ -34,10 +34,10 @@
 # DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 #---------------------------------------------------------------------------
 # $File: //depot/povray/3.6-release/unix/acinclude.m4 $
-# $Revision: #2 $
-# $Change: 2939 $
-# $DateTime: 2004/07/04 13:43:26 $
-# $Author: root $
+# $Revision: #3 $
+# $Change: 3032 $
+# $DateTime: 2004/08/02 18:43:41 $
+# $Author: chrisc $
 # $Log$
 
 # acinclude.m4 for the source distribution of POV-Ray 3.6 for UNIX
@@ -308,6 +308,37 @@ AC_DEFUN([POV_PROG_CXX_STATIC],
       )
     ]
   )
+])
+
+
+# POV_CHECK_PATH(ENVVAR, PATH, [ACTION-IF-FOUND], [ACTION-IF-MISSING]))
+# --------------
+# Check whether the environment variable contains a given path, warn and
+# remove it.
+AC_DEFUN([POV_CHECK_PATH],
+[
+  AC_SUBST([$1])
+
+  # process paths containing dots and create regexp
+  pov_check_path_regexp="[[=:]]*`echo $2 | sed 's,\.,\\\\.,g'`:*"
+  AC_TRY_COMMAND([echo pov_check_path_regexp = $pov_check_path_regexp > /dev/null])
+
+  # initial and processed variable values
+  eval "pov_check_path_old=\$$1"
+  pov_check_path_new=`echo $pov_check_path_old | sed s,$pov_check_path_regexp,,g`
+  AC_TRY_COMMAND([echo pov_check_path_old    = $pov_check_path_old > /dev/null])
+  AC_TRY_COMMAND([echo pov_check_path_new    = $pov_check_path_new > /dev/null])
+
+  AC_MSG_CHECKING([whether \$$1 contains the $2 path])
+  if test x"$pov_check_path_new" != x"$pov_check_path_old"; then
+    AC_MSG_RESULT([yes])
+    AC_MSG_WARN([\$$1 is incorrectly set with the $2 path])
+    eval $1=$pov_check_path_new
+    ifelse([$3],[],[:],[$3])
+  else
+    AC_MSG_RESULT([no])
+    ifelse([$4],[],[:],[$4])
+  fi
 ])
 
 

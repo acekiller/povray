@@ -22,17 +22,16 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/source/colutils.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
 #include <time.h>
 #include "frame.h"
 #include "vector.h"
-#include "povproto.h"
 #include "bbox.h"
 #include "chi2.h"
 #include "colour.h"
@@ -158,19 +157,92 @@ void gamma_correct(COLOUR Colour)
 
 void extract_colors(COLOUR Colour, unsigned char *Red, unsigned char  *Green, unsigned char  *Blue, unsigned char  *Alpha, DBL *grey)
 {
+  COLOUR ColourG;
+
+  Clip_Colour(ColourG, Colour);
+  gamma_correct(ColourG);
+
   if (opts.PaletteOption == GREY)
   {
-    *grey = Colour[pRED] * GREY_SCALE(Colour);
+    *grey = ColourG[pRED] * GREY_SCALE(ColourG);
 
     *Red = *Green = *Blue = (unsigned char)((*grey) * maxclr);
   }
   else
   {
-    *Red   = (unsigned char)(Colour[pRED]    * maxclr);
-    *Green = (unsigned char)(Colour[pGREEN]  * maxclr);
-    *Blue  = (unsigned char)(Colour[pBLUE]   * maxclr);
-    *Alpha = (unsigned char)(Colour[pTRANSM] * maxclr);
+    *Red   = (unsigned char)(ColourG[pRED]    * maxclr);
+    *Green = (unsigned char)(ColourG[pGREEN]  * maxclr);
+    *Blue  = (unsigned char)(ColourG[pBLUE]   * maxclr);
+    *Alpha = (unsigned char)(ColourG[pTRANSM] * maxclr);
   }
+}
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   extract_colors_nocorrect
+*
+* INPUT
+*
+*   Colour, Red, Green, Blue, Alpha, grey
+*   
+* OUTPUT
+*
+*   Red, Green, Blue, Alpha, grey
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Christoph Hormann
+*   
+* DESCRIPTION
+*
+*   Create appropriate rgba values without gamma correction and clipping.
+*   Used for reading images in continued trace.
+*
+* CHANGES
+*
+*   Jul 2004 : Creation based on extract_colors()
+*
+******************************************************************************/
+
+void extract_colors_nocorrect(COLOUR Colour, unsigned char *Red, unsigned char  *Green, unsigned char  *Blue, unsigned char  *Alpha, DBL *grey)
+{
+  int RedU, GreenU, BlueU, AlphaU;
+
+  if (opts.PaletteOption == GREY)
+  {
+    *grey = Colour[pRED] * GREY_SCALE(Colour);
+
+    RedU = GreenU = BlueU = (int)((*grey) * maxclr);
+    AlphaU = 0;
+  }
+  else
+  {
+    RedU   = (int)(Colour[pRED]    * maxclr);
+    GreenU = (int)(Colour[pGREEN]  * maxclr);
+    BlueU  = (int)(Colour[pBLUE]   * maxclr);
+    AlphaU = (int)(Colour[pTRANSM] * maxclr);
+  }
+
+  if (RedU > UCHAR_MAX) RedU = UCHAR_MAX;
+  else if (RedU < 0) RedU = 0;
+
+  if (GreenU > UCHAR_MAX) GreenU = UCHAR_MAX;
+  else if (GreenU < 0) GreenU = 0;
+
+  if (BlueU > UCHAR_MAX) BlueU = UCHAR_MAX;
+  else if (BlueU < 0) BlueU = 0;
+
+  if (AlphaU > UCHAR_MAX) AlphaU = UCHAR_MAX;
+  else if (AlphaU < 0) AlphaU = 0;
+
+  *Red   = RedU;
+  *Green = GreenU;
+  *Blue  = BlueU;
+  *Alpha = AlphaU;
 }
 
 
@@ -301,6 +373,45 @@ void photonRgbe2colour(COLOUR c, SMALL_COLOUR rgbe)
   }
   else
     c[pRED] = c[pGREEN] = c[pBLUE] = 0.0;
+}
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   prepare_output_line
+*
+* INPUT
+*
+*   Line - input/output line
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Christoph Hormann
+*
+* DESCRIPTION
+*
+*   Clip and gamma correct a line for file output
+*
+* CHANGES
+*
+*   Mar 2003 : Creation.
+*
+******************************************************************************/
+
+void prepare_output_line(COLOUR *Line)
+{
+  int i;
+
+  for (i = 0; i <= Frame.Screen_Width ; i++)
+  {
+    Clip_Colour(Line[i], Line[i]);
+    gamma_correct(Line[i]);
+  }
 }
 
 END_POV_NAMESPACE

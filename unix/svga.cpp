@@ -22,10 +22,10 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  *---------------------------------------------------------------------------
  * $File: //depot/povray/3.6-release/unix/svga.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
+ * $Revision: #3 $
+ * $Change: 3032 $
+ * $DateTime: 2004/08/02 18:43:41 $
+ * $Author: chrisc $
  * $Log$
  *****************************************************************************/
 
@@ -46,7 +46,6 @@
 
 #include "frame.h"
 #include "pov_util.h"   /* For pov_stricmp */
-#include "povproto.h"   /* For Status_Info, pov_terminate */
 #include "povray.h"     /* For Stop_Flag */
 #include "defaultrenderfrontend.h"
 #include "svga.h"

@@ -64,7 +64,7 @@
 
 <p>
   Blobs are described as spheres and cylinders covered with &quot;goo&quot; which stretches to smoothly join them 
- (see section &quot;<a href="s_103.html#s03_03_01_01">Blob</a>&quot;). 
+ (see section &quot;<a href="s_105.html#s03_04_01_01">Blob</a>&quot;). 
 </p>
 
 <p>
@@ -333,7 +333,7 @@ sphere{&lt;.41,-.7,0&gt;, .25, -.89}   //counteract thumb heel bulge
 </pre>
 
 <p>
-  The <code><a href="s_100.html#s03_02_04_04">hf_gray_16</a></code> keyword causes the output to be in a special 16 
+  The <code><a href="s_102.html#s03_03_03_04">hf_gray_16</a></code> keyword causes the output to be in a special 16 
  bit grayscale that is perfect for generating height fields. The normal 8 bit output will lead to less smooth surfaces. 
 </p>
 
@@ -442,10 +442,8 @@ sphere{&lt;.41,-.7,0&gt;, .25, -.89}   //counteract thumb heel bulge
 <dl class="famousquote">
  
  <dt>
-   <em>You know you have been raytracing too long when ...</em> 
- <dt>
-   <em>... You find yourself wishing you'd paid attention in math class to all those formulae you thought you'd 
-  never have any use for in real life.</em> 
+   <em>You know you have been raytracing too long when ...<br> ... You find yourself wishing you'd paid attention in 
+  math class to all those formulae you thought you'd never have any use for in real life.</em> 
  <dd>
    <em>-- Jeff Lee</em> 
 </dl>
@@ -473,7 +471,7 @@ sphere{&lt;.41,-.7,0&gt;, .25, -.89}   //counteract thumb heel bulge
 </p>
 
 <p>
-  The isosurface object takes this function as a <a href="s_94.html#s03_01_01_06">user defined function</a>: 
+  The isosurface object takes this function as a <a href="s_97.html#s03_02_01_06">user defined function</a>: 
 </p>
 
 <pre>
@@ -670,7 +668,7 @@ sphere{&lt;.41,-.7,0&gt;, .25, -.89}   //counteract thumb heel bulge
 <h5><a name="s02_03_03_03_04">2.3.3.3.4 </a>Specifying functions</h5>
 
 <p>
-  As we've seen, the functions used to define the isosurface are written in the <code>function{...}</code> block. 
+  As we have seen, the functions used to define the isosurface are written in the <code>function {...}</code> block. 
 </p>
 
 <p>
@@ -727,7 +725,7 @@ isosurface {
 <p>
   There are a lot of internal functions available in POV-Ray. For example a sphere could also be generated with <code>function 
  { f_sphere(x, y, z, 2) }</code> These functions are declared in the <code>functions.inc</code> include file. Most of 
- them are more complicated and it's usually faster to use them instead of a hand coded equivalent. See the <a href="s_136.html#s03_06_07_02">complete 
+ them are more complicated and it is usually faster to use them instead of a hand coded equivalent. See the <a href="s_138.html#s03_07_07_02">complete 
  list</a> for details. 
 </p>
 
@@ -755,15 +753,15 @@ isosurface {
 
 <p>
   The parameters x, y and z are required, because it is a declared function. You can also declare functions yourself 
- like it is explained in the <a href="s_94.html#s03_01_01_06_03">reference section</a>. 
+ like it is explained in the <a href="s_97.html#s03_02_01_06_03">reference section</a>. 
 </p>
 
 <h5><a name="s02_03_03_03_06">2.3.3.3.6 </a>Combining isosurface functions</h5>
 
 <p>
-  We can also simulate some Constructive Solid Geometry with isosurface functions. If you don't know about CSG we 
+  We can also simulate some Constructive Solid Geometry with isosurface functions. If you do not know about CSG we 
  suggest you have a look at <a href="s_59.html#s02_02_03_01">&quot;What is CSG?&quot;</a> or the corresponding part of 
- the <a href="s_108.html#s03_03_06">reference section</a> first. 
+ the <a href="s_110.html#s03_04_06">reference section</a> first. 
 </p>
 
 <p>
@@ -871,21 +869,21 @@ function{fn_A(x,y,z) + pow(Blob_threshold,(Fn_B(x,y,z) + Strength))}
  </li>
 
  <li>
-   <code>f_noise_generator(x,y,z, noise_generator)</code><br> generates noise with a specified noise generator. 
+   <code>f_noise_generator(x, y, z, noise_generator)</code><br> generates noise with a specified noise generator. 
  </li>
 
  <li>
-   <code>f_ridged_mf(x,y,z, H, Lacunarity, Octaves, Offset, Gain, noise_generator)</code><br> generates a ridged 
+   <code>f_ridged_mf(x, y, z, H, Lacunarity, Octaves, Offset, Gain, noise_generator)</code><br> generates a ridged 
   multifractal pattern. 
  </li>
 
  <li>
-   <code>f_ridge(x,y,z, Lambda, Octaves, Omega, Offset, Ridge, noise_generator)</code><br> generates another noise 
+   <code>f_ridge(x, y, z, Lambda, Octaves, Omega, Offset, Ridge, noise_generator)</code><br> generates another noise 
   with ridges. 
  </li>
 
  <li>
-   <code>f_hetero_mf(x,y,z, H, Lacunarity, Octaves, Offset, T, noise_generator)</code><br> generates heterogenic 
+   <code>f_hetero_mf(x, y, z, H, Lacunarity, Octaves, Offset, T, noise_generator)</code><br> generates heterogenic 
   multifractal noise. 
  </li>
 
@@ -914,7 +912,7 @@ function{fn_A(x,y,z) + pow(Blob_threshold,(Fn_B(x,y,z) + Strength))}
 </p>
 
 <p>
-  <code> function { x+f_noise3d(0, y, z) }</code> 
+  <code> function { x + f_noise3d(0, y, z) }</code> 
 </p>
 
 <p>
@@ -926,7 +924,7 @@ function{fn_A(x,y,z) + pow(Blob_threshold,(Fn_B(x,y,z) + Strength))}
 </p>
 
 <p>
-  <code> function { x-f_noise3d(0, y, z) }</code> 
+  <code> function { x - f_noise3d(0, y, z) }</code> 
 </p>
 
 <p>
@@ -944,7 +942,7 @@ function{fn_A(x,y,z) + pow(Blob_threshold,(Fn_B(x,y,z) + Strength))}
 </p>
 
 <p>
-  <code> function { f_sphere(x, y, z, 1.2)-f_noise3d(x, y, z) }</code> 
+  <code> function { f_sphere(x, y, z, 1.2) - f_noise3d(x, y, z) }</code> 
 </p>
 
 <p>
@@ -957,7 +955,7 @@ function{fn_A(x,y,z) + pow(Blob_threshold,(Fn_B(x,y,z) + Strength))}
 </p>
 
 <p>
-  <code> function { f_sphere(x, y, z, 1.6)-f_noise3d(x*5, y*5, z*5)*0.5 }</code> 
+  <code> function { f_sphere(x, y, z, 1.6) - f_noise3d(x * 5, y * 5, z * 5) * 0.5 }</code> 
 </p>
 
 <p>
@@ -1172,7 +1170,7 @@ function {
 </p>
 
 <p>
-  Here's an overview of some useful substitutions: <br>Using a declared object P(x,y,z) 
+  Here is an overview of some useful substitutions: <br>Using a declared object P(x,y,z) 
 </p>
 
 <p>
@@ -1301,7 +1299,7 @@ function {
 
 <p>
   POV-Ray can also dynamically change the <code>max_gradient</code> when you specify <code>evaluate</code> with 3 
- parameters the isosurface definition. Concerning the details on this and other things see the <a href="s_106.html#s03_03_04">evaluate</a> 
+ parameters the isosurface definition. Concerning the details on this and other things see the <a href="s_108.html#s03_04_04">evaluate</a> 
  in the reference section. 
 </p>
 
@@ -1315,19 +1313,19 @@ function {
  to do a lot of superfluous sampling: especially with complex functions this can become very time consuming. On top of 
  this, the <code>max_gradient</code> needed to get a proper surface will also increase rapidly (almost proportional to 
  the oversize!). <br>You could use a transparent copy of the container (using exactly the same transformations) to 
- check how it fits. Getting the <code>min_extent</code> and <code>max_extent</code> of the <code>isosurface</code> 
- isn't useful because it only gives the extent of the container and not of the actual isosurface. 
+ check how it fits. Getting the <code>min_extent</code> and <code>max_extent</code> of the <code>isosurface</code> is 
+ not useful because it only gives the extent of the container and not of the actual isosurface. 
 </p>
 
 <h4><a name="s02_03_03_04">2.3.3.4 </a>Poly Object</h4>
 <a name="s02_03_03_04_i1">
 <p>
-  The polynomial object (and its &quot;shortcut&quot; versions: <code><a href="s_105.html#s03_03_03_02">cubic</a></code>, 
- <code><a href="s_105.html#s03_03_03_02">quartic</a></code> and <code><a href="s_105.html#s03_03_03_03">quadric</a></code>) 
- of POV-Ray is one of the most complex and mathematical primitives of the program. One could think that it's seldom 
+  The polynomial object (and its &quot;shortcut&quot; versions: <code><a href="s_107.html#s03_04_03_02">cubic</a></code>, 
+ <code><a href="s_107.html#s03_04_03_02">quartic</a></code> and <code><a href="s_107.html#s03_04_03_03">quadric</a></code>) 
+ of POV-Ray is one of the most complex and mathematical primitives of the program. One could think that it is seldom 
  used and more or less obsolete, but we have to remember that for example the torus primitive is just a shortcut for 
  the equivalent <code>quartic</code>, which is just a shortcut for the equivalent <code>poly</code> object. Polys are, 
- however, seldom used in scenes due to the fact that they are so difficult to define and it's far from trivial to get 
+ however, seldom used in scenes due to the fact that they are so difficult to define and it is far from trivial to get 
  the desired shape with just a polynomial equation. It is mostly used by the most mathematically oriented POV-Ray 
  users. 
 </p>
@@ -1351,7 +1349,7 @@ function {
 
 <p class="Note">
   <strong>Note:</strong> at maximum a 15th degree polynomial can be represented with the poly object. If 
- a higher degree polynomial or other non-polynomial function has to be represented, then it's necessary to use the 
+ a higher degree polynomial or other non-polynomial function has to be represented, then it is necessary to use the 
  isosurface object. 
 </p>
 
@@ -1371,7 +1369,7 @@ function {
 </p>
 
 <p>
-  <br><center><img alt="sphere function" src="images/polyfunc1.png"></center> 
+  <br><center><img alt="sphere function" src="images/tutorial/polyfunc1.png"></center> 
 </p>
 
 <p>
@@ -1379,7 +1377,7 @@ function {
 </p>
 
 <p>
-  <br><center><img alt="sphere polynomial" src="images/polyfunc2.png"></center> 
+  <br><center><img alt="sphere polynomial" src="images/tutorial/polyfunc2.png"></center> 
 </p>
 
 <p>
@@ -1395,7 +1393,7 @@ function {
 </p>
 
 <p>
-  <br><center><img alt="function" src="images/polyfunc3.png"></center> 
+  <br><center><img alt="function" src="images/tutorial/polyfunc3.png"></center> 
 </p>
 
 <p>
@@ -1403,11 +1401,11 @@ function {
 </p>
 
 <p>
-  <br><center><img alt="polynomial" src="images/polyfunc4.png"></center> 
+  <br><center><img alt="polynomial" src="images/tutorial/polyfunc4.png"></center> 
 </p>
 
 <p>
-  Although the highest power is 4 we will need a 5th order polynomial to represent this function (because we can't 
+  Although the highest power is 4 we will need a 5th order polynomial to represent this function (because we cannot 
  represent y<sup>4</sup>z with a 4th order polynomial). 
 </p>
 
@@ -1420,7 +1418,7 @@ function {
 </p>
 
 <p>
-  <br><center><img alt="torus function" src="images/polyfunc5.png"></center> 
+  <br><center><img alt="torus function" src="images/tutorial/polyfunc5.png"></center> 
 </p>
 
 <p>
@@ -1432,7 +1430,7 @@ function {
 </p>
 
 <p>
-  <br><center><img alt="torus polynomial" src="images/polyfunc6.png"></center> 
+  <br><center><img alt="torus polynomial" src="images/tutorial/polyfunc6.png"></center> 
 </p>
 
 <p>
@@ -1454,9 +1452,9 @@ function {
 
 <p>
   Now that we have the function in polynomial form, we have to write it in POV-Ray syntax. The syntax is specified in 
- the in the chapters &quot;<a href="s_105.html#s03_03_03_02">Poly, Cubic and Quartic</a>&quot; and &quot;<a href="s_105.html#s03_03_03_03">Quadric</a>&quot; 
- of the SDL section. There's also a table in this chapter which we will be using to make the polynomial vector. It's 
- most easy to have this table printed on paper. 
+ the in the chapters &quot;<a href="s_107.html#s03_04_03_02">Poly, Cubic and Quartic</a>&quot; and &quot;<a href="s_107.html#s03_04_03_03">Quadric</a>&quot; 
+ of the SDL section. There is also a table in this chapter which we will be using to make the polynomial vector. It is 
+ easier to have this table printed on paper. 
 </p>
 
 <p class="Note">
@@ -1479,7 +1477,7 @@ function {
 </p>
 
 <p>
-  <br><center><img alt="sphere polynomial" src="images/polyfunc2.png"></center> 
+  <br><center><img alt="sphere polynomial" src="images/tutorial/polyfunc2.png"></center> 
 </p>
 
 <p>
@@ -1501,7 +1499,7 @@ poly
 
 <p>
   In the table we see that the first item is the factor for x<sup>2</sup>, which is 1 in the function. The next item 
- is xy. Since it isn't in the function, its factor is 0. Likewise the next item, which is xz. And so on. The last item 
+ is xy. Since it is not in the function, its factor is 0. Likewise the next item, which is xz. And so on. The last item 
  is the scalar term, which is in this case -r<sup>2</sup>. 
 </p>
 
@@ -1528,7 +1526,7 @@ poly
 </p>
 
 <p class="Note">
-  <strong>Note:</strong> there's a shortcut for 2nd degree polynomials: The <code><a href="s_105.html#s03_03_03_03">quadric</a></code> 
+  <strong>Note:</strong> there is a shortcut for 2nd degree polynomials: The <code><a href="s_107.html#s03_04_03_03">quadric</a></code> 
  primitive. Using a shortcut version, whenever possible, can lead to faster renderings. We can write the sphere code 
  described above in the following way: 
 </p>
@@ -1550,7 +1548,7 @@ quadric
 </p>
 
 <p>
-  <br><center><img alt="5th order polynomial" src="images/polyfunc4.png"></center> 
+  <br><center><img alt="5th order polynomial" src="images/tutorial/polyfunc4.png"></center> 
 </p>
 
 <p>
@@ -1616,7 +1614,7 @@ poly
 </p>
 
 <p>
-  <br><center><img alt="torus polynomial" src="images/polyfunc6.png"></center> 
+  <br><center><img alt="torus polynomial" src="images/tutorial/polyfunc6.png"></center> 
 </p>
 
 <p>
@@ -1652,7 +1650,7 @@ poly
 </p>
 
 <p>
-  There's a shortcut for 4th order polynomials: The <code><a href="s_105.html#s03_03_03_02">quartic</a></code> 
+  There is a shortcut for 4th order polynomials: The <code><a href="s_107.html#s03_04_03_02">quartic</a></code> 
  primitive. We can write the torus like this: 
 </p>
 
@@ -1712,7 +1710,7 @@ quartic
   We save the file and trace it at 200x150 <code>-A</code> to see the shape. It will look like a box, but the edges 
  will be rounded off. Now let's experiment with different values of <em>Value_E</em> and <em> Value_N</em>. For the 
  next trace, try &lt;1, 0.2&gt;. The shape now looks like a cylinder, but the top edges are rounded. Now try &lt;0.1, 
- 1&gt;. This shape is an odd one! We don't know exactly what to call it, but it is interesting. Finally, let's try 
+ 1&gt;. This shape is an odd one! We do not know exactly what to call it, but it is interesting. Finally, let's try 
  &lt;1, 1&gt;. Well, this is more familiar... a sphere! 
 </p>
 
@@ -1761,7 +1759,7 @@ quartic
 
 <p>
   Superellipsoids are roughly 2*2*2 units unless we scale them otherwise. If we wish to lay a bunch of our tiles side 
- by side, they will have to be offset from each other so they don't overlap. We should select an offset value that is 
+ by side, they will have to be offset from each other so they do not overlap. We should select an offset value that is 
  slightly more than 2 so that we have some space between the tiles to fill with grout. So we now add this: 
 </p>
 
@@ -1915,11 +1913,11 @@ quartic
  <ul>
   
   <li><small>
-   <a href="s_153.html#s03_07_03_04">3.7.3.4 User defined Functions</a> in 3.7.3 Language Basics
+   <a href="s_155.html#s03_08_03_04">3.8.3.4 User defined Functions</a> in 3.8.3 Language Basics
   </small>
 
   <li><small>
-   <a href="s_94.html#s03_01_01_06">3.1.1.6 User-Defined Functions</a> in 3.1.1 Language Basics
+   <a href="s_97.html#s03_02_01_06">3.2.1.6 User-Defined Functions</a> in 3.2.1 Language Basics
   </small>
 
  </ul>
@@ -1933,11 +1931,11 @@ quartic
  <ul>
   
   <li><small>
-   <a href="s_153.html#s03_07_03_04">3.7.3.4 User defined Functions</a> in 3.7.3 Language Basics
+   <a href="s_155.html#s03_08_03_04">3.8.3.4 User defined Functions</a> in 3.8.3 Language Basics
   </small>
 
   <li><small>
-   <a href="s_94.html#s03_01_01_06">3.1.1.6 User-Defined Functions</a> in 3.1.1 Language Basics
+   <a href="s_97.html#s03_02_01_06">3.2.1.6 User-Defined Functions</a> in 3.2.1 Language Basics
   </small>
 
  </ul>
@@ -1951,7 +1949,7 @@ quartic
  <ul>
   
   <li><small>
-   <a href="s_136.html#s03_06_07_02">3.6.7.2 Internal Functions</a> in 3.6.7 functions.inc
+   <a href="s_138.html#s03_07_07_02">3.7.7.2 Internal Functions</a> in 3.7.7 functions.inc
   </small>
 
   <li><small>
@@ -1969,11 +1967,11 @@ quartic
  <ul>
   
   <li><small>
-   <a href="s_114.html#s03_04_02">3.4.2 Normal</a> in 3.4 Textures
+   <a href="s_116.html#s03_05_02">3.5.2 Normal</a> in 3.5 Textures
   </small>
 
   <li><small>
-   <a href="s_160.html#s03_07_10_05">3.7.10.5 Normal</a> in 3.7.10 Texture
+   <a href="s_162.html#s03_08_10_05">3.8.10.5 Normal</a> in 3.8.10 Texture
   </small>
 
   <li><small>
@@ -1991,15 +1989,15 @@ quartic
  <ul>
   
   <li><small>
-   <a href="s_100.html#s03_02_04_10">3.2.4.10 Noise_generator</a> in 3.2.4 Global Settings
+   <a href="s_102.html#s03_03_03_10">3.3.3.10 Noise_generator</a> in 3.3.3 Global Settings
   </small>
 
   <li><small>
-   <a href="s_124.html#s03_04_12">3.4.12 Pattern Modifiers</a> in 3.4 Textures
+   <a href="s_126.html#s03_05_12">3.5.12 Pattern Modifiers</a> in 3.5 Textures
   </small>
 
   <li><small>
-   <a href="s_124.html#s03_04_12_04">3.4.12.4 Noise Generators</a> in 3.4.12 Pattern Modifiers
+   <a href="s_126.html#s03_05_12_04">3.5.12.4 Noise Generators</a> in 3.5.12 Pattern Modifiers
   </small>
 
  </ul>

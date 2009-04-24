@@ -23,7 +23,7 @@
    
  <meta content="0" http-equiv="expires">
    
-<title>3.6.16 strings.inc</title>
+<title>3.7.14 stones.inc, stones1.inc, stones2.inc, stoneold.inc</title>
  <link href="povray35.css" rel="stylesheet" type="text/css"> 
 </head>
  <body> 
@@ -37,16 +37,16 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_144.html">3.6.15 stdinc.inc</a> 
+    <a href="s_144.html">3.7.13 skies.inc, stars.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.6.16 
-   strings.inc</strong> 
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>3.7.14 
+   stones.inc, stones1.inc, stones2.inc, stoneold.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_146.html">3.6.17 textures.inc</a> 
+    <a href="s_146.html">3.7.15 stdinc.inc</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
@@ -58,119 +58,397 @@
   
 </table>
  
-<h3><a name="s03_06_16">3.6.16 </a>strings.inc</h3>
+<h3><a name="s03_07_14">3.7.14 </a>stones.inc, stones1.inc, stones2.inc, stoneold.inc</h3>
 
 <p>
-  This include contains macros for manipulating and generating text strings.<a name="s03_06_16_i1"><a name="CRGBStr"></a> 
- 
+  The two files stones1.inc and stones2.inc contain lists of predefined stone textures. 
 </p>
 
 <p>
-  <code>CRGBStr(C, MinLen, Padding)</code> and <code>CRGBFTStr(C, MinLen, Padding)</code><br> These macros convert a 
- color to a string. The format of the output string is &quot;rgb &lt; R, G, B&gt;&quot; or &quot;rgbft &lt; R, G, B, F, 
- T&gt;&quot;, depending on the macro being called.<br> Parameters: 
+  The file &quot;stones1.inc&quot; contains texture definitions for T_Grnt0 to T_Grnt29, T_Grnt1a to T_Grnt24a, and 
+ T_Stone0 to T_Stone24. 
 </p>
 
-<ul>
- 
- <li>
-   <code>C</code> = The color to be turned into a string. 
- </li>
-
- <li>
-   <code>MinLen</code> = The minimum length of the individual components, analogous to the second parameter of 
-  str(). 
- </li>
-
- <li>
-   <code>Padding</code> = The padding to use for the components, see the third parameter of the str() function for 
-  details. 
- </li>
-
-</ul>
-<a name="s03_06_16_i2"><a name="Str, strings.inc"></a>
 <p>
-  <code>Str(A)</code>. This macro creates a string containing a float with the systems default precision. It is a 
- shortcut for using the str() function.<br> Parameters: 
+  The T_GrntXX, T_GrntXXa, and CrackX textures are &quot;building blocks that are used to create the final 
+ &quot;usable&quot; T_StoneX textures (and other textures that *you* design, of course!) 
 </p>
 
-<ul>
- 
- <li>
-   <code>A</code> = The float to be converted to a string. 
- </li>
-
-</ul>
-<a name="s03_06_16_i3"><a name="Vstr, strings.inc"></a><a name="s03_06_16_i4"><a name="VStr2D, short form"></a>
 <p>
-  <code>VStr2D(V), VStr(V)</code>. These macros create strings containing vectors using POV syntax (&lt;X,Y,Z&gt;) 
- with the default system precision. VStr2D() works with 2D vectors, VStr() with 3D vectors. They are shortcuts for 
- using the <code>vstr()</code> function.<br> Parameters: 
+  The T_GrntXX textures generally contain no transparency, but the T_GrntXXa textures do contain transparency. The 
+ CrackX textures are clear with thin opaque bands, simulating cracks. 
 </p>
 
-<ul>
- 
- <li>
-   <code>V</code> = The vector to be converted to a string. 
- </li>
-
-</ul>
-<a name="s03_06_16_i5"><a name="Vstr2D, long form"></a>
 <p>
-  <code>Vstr2D(V,L,P), Vstr(V,L,P)</code>. These macros create strings containing vectors using POV syntax 
- (&lt;X,Y,Z&gt;) with user specified precision. Vstr2D() works with 2D vectors, Vstr() with 3D vectors. They are 
- shortcuts for using the vstr() function. The function of L and P is the same as in <code>vstr</code> specified in <a href="s_94.html#s03_01_01_07_03">String 
- Functions</a>.<br> Parameters: 
+  The file &quot;stones2.inc&quot; provides additional stone textures, and contains texture definitions for T_Stone25 
+ to T_Stone44. 
 </p>
 
-<ul>
- 
- <li>
-   <code>V</code> = The vector to be converted to a string. 
- </li>
-
- <li>
-   <code>L</code> = Minimum length of the string and the type of left padding used if the string's representation is 
-  shorter than the minimum. 
- </li>
-
- <li>
-   <code>P</code> = Number of digits after the decimal point.&quot; 
- </li>
-
-</ul>
-<a name="s03_06_16_i6"><a name="Triangle_Str"></a>
 <p>
-  <code>Triangle_Str(A, B, C)</code> and <code>Smooth_Triangle_Str(A, NA, B, NB, C, NC)</code><br> These macros take 
- vertex and normal information and return a string representing a triangle in POV-Ray syntax. They are mainly useful 
- for generating mesh files.<br> Parameters: 
+  The file &quot;stones.inc&quot; simply includes both &quot;stones1.inc&quot; and &quot;stones2.inc&quot;, and the 
+ file &quot;stoneold.inc&quot; provides backwards compatability for old scenes, the user is advised to use the textures 
+ in &quot;stones1.inc&quot; instead. 
 </p>
 
-<ul>
+<h4><a name="s03_07_14_01">3.7.14.1 </a>stones1.inc</h4>
+
+<dl>
  
- <li>
-   <code>A, B, C</code> = Triangle vertex points. 
- </li>
+ <dt>
+   <code>T_Grnt0</code> 
+ <dd>
+   Gray/Tan with Rose. 
+ <dt>
+   <code>T_Grnt1</code> 
+ <dd>
+   Creamy Whites with Yellow &amp; Light Gray. 
+ <dt>
+   <code>T_Grnt2</code> 
+ <dd>
+   Deep Cream with Light Rose, Yellow, Orchid, &amp; Tan. 
+ <dt>
+   <code>T_Grnt3</code> 
+ <dd>
+   Warm tans olive &amp; light rose with cream. 
+ <dt>
+   <code>T_Grnt4</code> 
+ <dd>
+   Orchid, Sand &amp; Mauve. 
+ <dt>
+   <code>T_Grnt5</code> 
+ <dd>
+   Medium Mauve Med.Rose &amp; Deep Cream. 
+ <dt>
+   <code>T_Grnt6</code> 
+ <dd>
+   Med. Orchid, Olive &amp; Dark Tan &quot;mud pie&quot;. 
+ <dt>
+   <code>T_Grnt7</code> 
+ <dd>
+   Dark Orchid, Olive &amp; Dark Putty. 
+ <dt>
+   <code>T_Grnt8</code> 
+ <dd>
+   Rose &amp; Light Cream Yellows 
+ <dt>
+   <code>T_Grnt9</code> 
+ <dd>
+   Light Steely Grays 
+ <dt>
+   <code>T_Grnt10</code> 
+ <dd>
+   Gray Creams &amp; Lavender Tans 
+ <dt>
+   <code>T_Grnt11</code> 
+ <dd>
+   Creams &amp; Grays Kahki 
+ <dt>
+   <code>T_Grnt12</code> 
+ <dd>
+   Tan Cream &amp; Red Rose 
+ <dt>
+   <code>T_Grnt13</code> 
+ <dd>
+   Cream Rose Orange 
+ <dt>
+   <code>T_Grnt14</code> 
+ <dd>
+   Cream Rose &amp; Light Moss w/Light Violet 
+ <dt>
+   <code>T_Grnt15</code> 
+ <dd>
+   Black with subtle chroma 
+ <dt>
+   <code>T_Grnt16</code> 
+ <dd>
+   White Cream &amp; Peach 
+ <dt>
+   <code>T_Grnt17</code> 
+ <dd>
+   Bug Juice &amp; Green 
+ <dt>
+   <code>T_Grnt18</code> 
+ <dd>
+   Rose &amp; Creamy Yellow 
+ <dt>
+   <code>T_Grnt19</code> 
+ <dd>
+   Gray Marble with White feather Viens 
+ <dt>
+   <code>T_Grnt20</code> 
+ <dd>
+   White Marble with Gray feather Viens 
+ <dt>
+   <code>T_Grnt21</code> 
+ <dd>
+   Green Jade 
+ <dt>
+   <code>T_Grnt22</code> 
+ <dd>
+   Clear with White feather Viens (has some transparency) 
+ <dt>
+   <code>T_Grnt23</code> 
+ <dd>
+   Light Tan to Mauve 
+ <dt>
+   <code>T_Grnt24</code> 
+ <dd>
+   Light Grays 
+ <dt>
+   <code>T_Grnt25</code> 
+ <dd>
+   Moss Greens &amp; Tan 
+ <dt>
+   <code>T_Grnt26</code> 
+ <dd>
+   Salmon with thin Green Viens 
+ <dt>
+   <code>T_Grnt27</code> 
+ <dd>
+   Dark Green &amp; Browns 
+ <dt>
+   <code>T_Grnt28</code> 
+ <dd>
+   Red Swirl 
+ <dt>
+   <code>T_Grnt29</code> 
+ <dd>
+   White, Tan, w/ thin Red Viens 
+</dl>
 
- <li>
-   <code>NA, NB, NC</code> = Triangle vertex normals (Smooth_Triangle_Str() only). 
- </li>
+<dl>
+ 
+ <dt>
+   <code>T_Grnt0a</code> 
+ <dd>
+   Translucent T_Grnt0 
+ <dt>
+   <code>T_Grnt1a</code> 
+ <dd>
+   Translucent T_Grnt1 
+ <dt>
+   <code>T_Grnt2a</code> 
+ <dd>
+   Translucent T_Grnt2 
+ <dt>
+   <code>T_Grnt3a</code> 
+ <dd>
+   Translucent T_Grnt3 
+ <dt>
+   <code>T_Grnt4a</code> 
+ <dd>
+   Translucent T_Grnt4 
+ <dt>
+   <code>T_Grnt5a</code> 
+ <dd>
+   Translucent T_Grnt5 
+ <dt>
+   <code>T_Grnt6a</code> 
+ <dd>
+   Translucent T_Grnt6 
+ <dt>
+   <code>T_Grnt7a</code> 
+ <dd>
+   Translucent T_Grnt7 
+ <dt>
+   <code>T_Grnt8a</code> 
+ <dd>
+   Aqua Tints 
+ <dt>
+   <code>T_Grnt9a</code> 
+ <dd>
+   Transmit Creams With Cracks 
+ <dt>
+   <code>T_Grnt10a</code> 
+ <dd>
+   Transmit Cream Rose &amp; light yellow 
+ <dt>
+   <code>T_Grnt11a</code> 
+ <dd>
+   Transmit Light Grays 
+ <dt>
+   <code>T_Grnt12a</code> 
+ <dd>
+   Transmit Creams &amp; Tans 
+ <dt>
+   <code>T_Grnt13a</code> 
+ <dd>
+   Transmit Creams &amp; Grays 
+ <dt>
+   <code>T_Grnt14a</code> 
+ <dd>
+   Cream Rose &amp; light moss 
+ <dt>
+   <code>T_Grnt15a</code> 
+ <dd>
+   Transmit Sand &amp; light Orange 
+ <dt>
+   <code>T_Grnt16a</code> 
+ <dd>
+   Cream Rose &amp; light moss (again?) 
+ <dt>
+   <code>T_Grnt17a</code> 
+ <dd>
+   ??? 
+ <dt>
+   <code>T_Grnt18a</code> 
+ <dd>
+   ??? 
+ <dt>
+   <code>T_Grnt19a</code> 
+ <dd>
+   Gray Marble with White feather Viens with Transmit 
+ <dt>
+   <code>T_Grnt20a</code> 
+ <dd>
+   White Feather Viens 
+ <dt>
+   <code>T_Grnt21a</code> 
+ <dd>
+   Thin White Feather Viens 
+ <dt>
+   <code>T_Grnt22a</code> 
+ <dd>
+   ??? 
+ <dt>
+   <code>T_Grnt23a</code> 
+ <dd>
+   Transparent Green Moss 
+ <dt>
+   <code>T_Grnt24a</code> 
+ <dd>
+   ??? 
+</dl>
 
-</ul>
-<a name="s03_06_16_i7"><a name="Parse_String"></a>
+<dl>
+ 
+ <dt>
+   <code>T_Crack1</code> 
+ <dd>
+   T_Crack &amp; Red Overtint 
+ <dt>
+   <code>T_Crack2</code> 
+ <dd>
+   Translucent Dark T_Cracks 
+ <dt>
+   <code>T_Crack3</code> 
+ <dd>
+   Overtint Green w/ Black T_Cracks 
+ <dt>
+   <code>T_Crack4</code> 
+ <dd>
+   Overtint w/ White T_Crack 
+</dl>
+
 <p>
-  <code>Parse_String(String)</code>. This macro takes a string, writes it to a file, and then includes that file. 
- This has the effect of parsing that string: &quot;<code>Parse_String(&quot;MyColor&quot;)</code>&quot; will be seen by 
- POV-Ray as &quot;<code>MyColor</code>&quot;.<br> Parameters: 
+  The StoneXX textures are the complete textures, ready to use. 
 </p>
 
-<ul>
+<dl>
  
- <li>
-   <code>String</code> = The string to be parsed. 
- </li>
+ <dt>
+   <code>T_Stone1</code> 
+ <dd>
+   Deep Rose &amp; Green Marble with large White Swirls 
+ <dt>
+   <code>T_Stone2</code> 
+ <dd>
+   Light Greenish Tan Marble with Agate style veining 
+ <dt>
+   <code>T_Stone3</code> 
+ <dd>
+   Rose &amp; Yellow Marble with fog white veining 
+ <dt>
+   <code>T_Stone4</code> 
+ <dd>
+   Tan Marble with Rose patches 
+ <dt>
+   <code>T_Stone5</code> 
+ <dd>
+   White Cream Marble with Pink veining 
+ <dt>
+   <code>T_Stone6</code> 
+ <dd>
+   Rose &amp; Yellow Cream Marble 
+ <dt>
+   <code>T_Stone7</code> 
+ <dd>
+   Light Coffee Marble with darker patches 
+ <dt>
+   <code>T_Stone8</code> 
+ <dd>
+   Gray Granite with white patches 
+ <dt>
+   <code>T_Stone9</code> 
+ <dd>
+   White &amp; Light Blue Marble with light violets 
+ <dt>
+   <code>T_Stone10</code> 
+ <dd>
+   Dark Brown &amp; Tan swirl Granite with gray undertones 
+ <dt>
+   <code>T_Stone11</code> 
+ <dd>
+   Rose &amp; White Marble with dark tan swirl 
+ <dt>
+   <code>T_Stone12</code> 
+ <dd>
+   White &amp; Pinkish Tan Marble 
+ <dt>
+   <code>T_Stone13</code> 
+ <dd>
+   Medium Gray Blue Marble 
+ <dt>
+   <code>T_Stone14</code> 
+ <dd>
+   Tan &amp; Olive Marble with gray white veins 
+ <dt>
+   <code>T_Stone15</code> 
+ <dd>
+   Deep Gray Marble with white veining 
+ <dt>
+   <code>T_Stone16</code> 
+ <dd>
+   Peach &amp; Yellow Marble with white veining 
+ <dt>
+   <code>T_Stone17</code> 
+ <dd>
+   White Marble with gray veining 
+ <dt>
+   <code>T_Stone18</code> 
+ <dd>
+   Green Jade with white veining 
+ <dt>
+   <code>T_Stone19</code> 
+ <dd>
+   Peach Granite with white patches &amp; green trim 
+ <dt>
+   <code>T_Stone20</code> 
+ <dd>
+   Brown &amp; Olive Marble with white veining 
+ <dt>
+   <code>T_Stone21</code> 
+ <dd>
+   Red Marble with gray &amp; white veining 
+ <dt>
+   <code>T_Stone22</code> 
+ <dd>
+   Dark Tan Marble with gray &amp; white veining 
+ <dt>
+   <code>T_Stone23</code> 
+ <dd>
+   Peach &amp; Cream Marble with orange veining 
+ <dt>
+   <code>T_Stone24</code> 
+ <dd>
+   Green &amp; Tan Moss Marble 
+</dl>
 
-</ul>
+<h4><a name="s03_07_14_02">3.7.14.2 </a>stones2.inc</h4>
+
+<p>
+  <code>T_Stone25, ..., T_Stone44</code> 
+</p>
  <br> 
 <table class="NavBar" width="100%">
   
@@ -182,15 +460,15 @@
   </td>
    
   <td align="left" valign="middle" width="30%">
-    <a href="s_144.html">3.6.15 stdinc.inc</a> 
+    <a href="s_144.html">3.7.13 skies.inc, stars.inc</a> 
   </td>
    
   <td align="center" valign="middle">
-    <strong>3.6.16 strings.inc</strong> 
+    <strong>3.7.14 stones.inc, stones1.inc, stones2.inc, stoneold.inc</strong> 
   </td>
    
   <td align="right" valign="middle" width="30%">
-    <a href="s_146.html">3.6.17 textures.inc</a> 
+    <a href="s_146.html">3.7.15 stdinc.inc</a> 
   </td>
    
   <td align="right" nowrap="" valign="middle" width="32">
