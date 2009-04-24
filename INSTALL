@@ -1,0 +1,12 @@
+I have very basic instructions for now, but more details will be provided later.  The quick
+summary, a familiar drill to many reading this, I'm sure:
+
+$ ./configure
+$ make
+$ su
+# make install
+
+The configure script takes some optional arguments.  To find out more:
+
+$ ./configure -help
+

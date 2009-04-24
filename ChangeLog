@@ -1,0 +1,2265 @@
+$Id: //depot/povray/3.5/distribution/revision.txt#25 $
+
+Here are the relevent changes between POV-Ray 3.5 beta 1 and the version 
+included in this installation. It does not include changes made to any 
+platform-specific files (e.g. Windows or Mac GUI), It will sometimes note
+changes to the documentation, scene and include files, but this is not
+guaranteed.
+
+See changes.txt for changes to your platform-specific version.
+
+8 July 2002 - 3.5 release
+-------------------------
+
+Change 1713 on 2002/07/08 by thorsten@host27
+
+  Completes Mac documentation tweak in the main docs.
+   This is all I have for 3.5!
+
+Change 1712 on 2002/07/08 by nkopp@impulse
+
+  Fixed problem that caused blob component textures to be transformed twice.
+
+Change 1710 on 2002/07/07 by chrisc@lilliput
+
+  Various VFAQ tweaks.
+
+Change 1709 on 2002/07/07 by chrisc@lilliput
+
+  Updated abyss.pov from Gilles Tran.
+
+Change 1708 on 2002/07/07 by chrisc@lilliput
+
+  Small documentation/scene update from Ingo.
+
+Change 1707 on 2002/07/06 by thorsten@host27
+
+  Alternate solution for function changes
+
+Change 1706 on 2002/07/06 by thorsten@host27
+
+  Some small function change
+
+Change 1705 on 2002/07/06 by nkopp@impulse
+
+  Hopefully a final fix to media method 3's brightness problems.
+  
+  An in-depth review of the code revealed that it was just too
+  complex for its own good.  We were doing extension/absorption
+  attenuation twice, which made it too dark.  And that mystery code
+  just compounded the confusion.
+  
+  Tests of the sample scenes show same brightness levels for all three
+  sampling methods for media2.pov, media3.pov, and mediasky.pov.
+
+Change 1703 on 2002/07/04 by thorsten@host27
+
+  Fixes bug in media code introduced by a change added from MegaPOV 0.7
+
+Change 1700 on 2002/07/04 by chrisc@lilliput
+
+  Doc update from Ingo.
+
+  Further work to keep <pre> formatted sections to within 70 columns.
+
+Change 1697 on 2002/07/03 by thorsten@host27
+
+  Misc HTML fixes, in particular to messed up vfaq.
+
+Change 1696 on 2002/07/03 by chrisc@lilliput
+
+  Update version number in benchmark.pov.
+
+Change 1695 on 2002/07/03 by chrisc@lilliput
+
+  Doc update from Ingo.
+
+  doc_1_3, 2_4, 2_6, 3_2, 4_1 to 4_11 & 4_21
+    - reduced characters per line to ~70 for preformatted sections.
+      In a few places it's still a bit bigger.
+
+  doc_1_6
+    - changed link to normal accuracy
+
+  doc_3_2
+    - changed mosaic preview
+
+Change 1693 on 2002/07/02 by chrisc@lilliput
+
+  Scene update from Christoph.
+
+  advanced/balcony/building.inc
+    - fixed error in iso function introduced during ^-pow() conversion
+
+  advanced/benchmark.pov
+    - added photons 'pass_through' to clouds object
+
+Change 1689 on 2002/07/02 by chrisc@lilliput
+
+  Doc updates from Ingo.
+
+  doc_1 
+    - nine sections
+    - directory updates to /usr/.../povray35
+
+  doc_1_6
+    - solid mesh and inside_vector added
+    - noise_generator 2 = default.
+    - added spotlight changes to "Changed features that may 'break' old scenes"
+
+  doc_4_1
+    - inside_vector added
+
+  doc_4_5
+    - added bool to a few objectmodifiers.
+    - gray value = Red*29.7% + Green*58.9% + Blue*11.4%
+    - added solid mesh
+    - changes spotlight & cylinder light
+
+  doc_4_7, doc_4_11
+    - noise_generator 2 = default.
+
+  doc_4_10
+    - changed text for radius in photons.
+
+  doc_5_5
+    - added "Realistic Image Synthesis Using Photon Mapping" Henrik Wann Jensen 
+      ISBN: 1568811470; AK Peters; July 2001.
+
+  various docs
+    - replace ..^.. by pow(..,..)
+    - several minor tweaks
+
+  quickref
+    - added bool to a few objectmodifiers.
+    - added prod & sum
+    - slope_map change
+    - object pattern in density
+    - added for floats to radius photons
+    - inside_vector added to mesh & mesh2
+
+Change 1688 on 2002/07/02 by nkopp@impulse
+
+  prevent crash if uv_mapping used within pigment_pattern
+
+Change 1687 on 2002/07/01 by nkopp@impulse
+
+  speed up spotlight+media code
+
+Change 1686 on 2002/06/30 by nkopp@impulse
+
+  change default noise generator to 2 instead of 3
+
+Change 1685 on 2002/06/30 by nkopp@impulse
+
+  New default values for radius, falloff, and tightness:
+  
+  Spotlight
+  Radius: 30 degrees
+  Falloff: 45 degrees
+  Tightness: 0
+  
+  Cylinder
+  Radius: 0.75
+  Falloff: 1.0
+  Tightness: 0
+  
+  Cylinder lights have been fixed to handle radius and falloff correctly.  
+  This affects both regular lighting and photons.
+  
+  The documentation also needs to be changed.  As it turns out, the code 
+  is correct, but the documentation is unclear.  If a "tightness" value 
+  other than ZERO is used, the light inside the "radius" cone will not be 
+  constant, but will instead be affected by tightness.  This leads to 
+  confusion, because, when explaining radius and falloff, the documentation 
+  assumes a tightness of 0.0, while the default tightness was 10.  To top 
+  it off, the documentation states that "values from 1 to 100 are acceptable",
+  leading the user to assume that zero is invalid, even though zero is 
+  required in order to achieve the results specified in the previous sections!
+  
+  That is why the default tightness value is now zero.
+
+Change 1684 on 2002/06/29 by chrisc@lilliput
+
+  VFAQ update from Warp.
+
+Change 1683 on 2002/06/29 by chrisc@lilliput
+
+  Final scene/include update from Rune.
+
+  scenes\incdemo\i_internal.pov
+    - fixed frame 78
+
+  scenes\animations\float4\float4.pov
+    - fixed wrong text labels
+
+  include\math.inc
+    - fixed Vpow and added Vpow5D
+
+  include\logo.inc
+    - fixed typo
+
+Change 1680 on 2002/06/23 by chrisc@lilliput
+
+  vnormalize(<0,0,0>) is now a PossibleError() if version >= 3.5.
+
+Change 1675 on 2002/06/21 by chrisc@lilliput
+
+  Set version to 3.5 official release.
+
+Change 1672 on 2002/06/19 by chrisc@lilliput
+
+  Allow vnormalize (<0,0,0>) if version is less than 3.5 (returns zero vector).
+
+Change 1665 on 2002/06/11 by thorsten@host27
+
+  Tweaks function self-referencing when compiling functions for function VM
+
+Change 1663 on 2002/06/11 by thorsten@host27
+
+  Small function problem correction
+
+9 June 2002 - 3.5.beta.RC6 (Release Candidate #6)
+-------------------------------------------------
+
+Change 1659 on 2002/06/09 by chrisc@lilliput
+
+  Make hashTable static (fixes aliasing problem on P4).
+
+Change 1658 on 2002/06/09 by chrisc@lilliput
+
+  Update benchmap.cpp to take account of the removal of the ^ operator.
+
+Change 1652 on 2002/06/07 by chrisc@lilliput
+
+  Scene/include update from Rune.
+
+  include\debug.inc
+    - removed Render() macro.
+
+  scenes\advanced\abyss.pov
+    - fixed typo.
+
+Change 1651 on 2002/06/07 by chrisc@lilliput
+
+  Doc update from Ingo.
+
+  doc_1_6
+    - removed range_divider
+    - added sum & prod in keyword list
+
+  doc_4_1
+    - updated limits for user-define functions
+    - removed hat operator(^)
+    - removed range_divider
+    - added sum & prod in keyword list
+    - added sum & prod functions chapter to user defined functions
+      (This may be relocated later)
+
+  doc_4_5
+    - corrections to the "up and right vector" chapter
+
+  doc_4_5
+    - sturm for lathe changed.
+
+  doc_4_10
+    - removed all references to range_divider
+
+  doc_4_20
+    - removed Render() macro
+    - changed P0 & P1 of f_mesh1 
+
+  quickref
+    - removed hat expression(^) and mod expression(%)
+    - sum & prod are not yet added!
+
+  CC - minor tweak to doc_5_2.html.
+
+Change 1650 on 2002/06/05 by thorsten@host27
+
+  Corrects copy of bump_map error message
+
+Change 1649 on 2002/06/05 by thorsten@host27
+
+  Misc. little function compiler bug fixes
+
+Change 1647 on 2002/06/02 by chrisc@lilliput
+
+  Update windows docs for new 'online update' functionality.
+
+Change 1643 on 2002/06/02 by thorsten@host27
+
+  Adds optimisations for pow functions
+  Increases various function limits
+
+Change 1642 on 2002/06/01 by thorsten@host27
+
+  Adds back PPM continue trace functionality
+
+Change 1641 on 2002/06/01 by thorsten@host27
+
+  Adds TIFF image support experimental warning
+
+Change 1640 on 2002/06/01 by thorsten@host27
+
+  Fixes minor function problem
+  Removes obsolete camera keywords
+
+Change 1639 on 2002/06/01 by nkopp@impulse
+
+  fix bilinear interpolaiton
+
+Change 1638 on 2002/05/30 by nkopp@impulse
+
+  Fix shadow for "filter all" and "transmit all" for non-indexed images.
+
+Change 1636 on 2002/05/30 by thorsten@host27
+
+  Adds photon time and a few other time-related POVMS message changes.
+
+Change 1635 on 2002/05/30 by thorsten@host27
+
+  Added more information to the dda_traversal message.
+
+Change 1634 on 2002/05/30 by thorsten@host27
+
+  Removes "hat"-operator and replaces it with "pow"-function
+
+Change 1630 on 2002/05/27 by thorsten@host27
+
+  Misc little internal changes
+
+Change 1629 on 2002/05/27 by nkopp@impulse
+
+  Increase the functionality of the "radius" keyword for photon mapping.
+  This gives the user more control over the photon gather radius, so the
+  user can choose between image quality and render speed.
+
+Change 1628 on 2002/05/25 by nkopp@impulse
+
+  Use Greg Ward's RGBE format instead of my RBGI for storing photon intensity
+  values.  Also fixed a bug with the photonsAlreadyGathered variable.
+  
+  RGBE eliminates the need for range_divider, so that was removed from the
+  parser and from the documentation.
+  
+  RBGE code originally written by:
+  Bruce Walter - http://www.graphics.cornell.edu/online/formats/rgbe/
+
+Change 1627 on 2002/05/22 by nkopp@impulse
+
+  allow a min-gather of zero.
+
+Change 1625 on 2002/05/20 by thorsten@host27
+
+  Eliminates range clipping in hash function use in noise/dnoise.
+
+Change 1623 on 2002/05/20 by thorsten@host27
+
+  Some more noise/dnoise tweaks
+
+Change 1622 on 2002/05/20 by thorsten@host27
+
+  Turns FNCode set of functions into a class to fix a few bugs
+   resulting from global variable (re)use.
+
+Change 1620 on 2002/05/19 by thorsten@host27
+
+  Faster regular new noise. Tests showed about 8% speed
+   increase using benchmark.pov with various settings at
+   least on PowerPCs. All platforms should benefit as this
+   change removes several constant multiplications from
+   the noise and dnoise functions.
+
+19 May 2002 - 3.5.beta.RC5 (Release Candidate #5)
+-------------------------------------------------
+
+Change 1615 on 2002/05/19 by chrisc@lilliput
+
+  Initial support for Intel SSE2 optimizations.
+  (Still lacking in some areas, only moderate speedup).
+
+Change 1613 on 2002/05/18 by thorsten@host27
+
+  Changes getline eof handling
+
+Change 1610 on 2002/05/18 by thorsten@host27
+
+  Fixes a pair of quotes in HTML docs
+
+Change 1609 on 2002/05/18 by chrisc@lilliput
+
+  Include update from Rune.
+
+  Changes:
+
+  include\arrays.inc
+    - fixed bug in Rand_Array_Item() macro.
+
+  include\colors.inc
+    - fixed bug in CRGB2H() macro.
+
+  include\shapes.inc
+    - fixed bug in HFCreate_() macro and did optimizations.
+
+Change 1608 on 2002/05/18 by chrisc@lilliput
+
+  Doc update from Ingo.
+
+  corrected some misspellings in index
+
+  doc_2_11
+    - position of orthographic in code example corrected.
+
+  doc_4_1
+    - removed % (mod) and asc() from user-defined functions
+    - user define functions, amount of parameters changed to 56, added nesting depth 1024.
+
+  doc_4_5
+    - changed syntax height_field
+
+  doc_4_9
+    - added note on infinite ray in atmospheric media
+
+  doc_4_20
+    - changes to array macros.
+
+  doc_4_21
+    - changes to the pattern macros.
+
+  doc_5_2
+    - Rune's mail
+
+Change 1605 on 2002/05/18 by thorsten@host27
+
+  Disallows modification of a copied camera by means other than transforms
+
+Change 1604 on 2002/05/17 by thorsten@host27
+
+  Disallow declaring of functions inside functions.
+
+Change 1603 on 2002/05/16 by thorsten@host27
+
+  Fixes problems with default output stream names
+
+Change 1602 on 2002/05/14 by thorsten@host27
+
+  Fixes camera transformed twice when copied problem.
+
+Change 1600 on 2002/05/12 by thorsten@host27
+
+  Increased function resursion limit to 1024.
+  A few other tweaks.
+
+Change 1599 on 2002/05/12 by thorsten@host27
+
+  Added a few isosurface fixes from R. Suzuki
+
+Change 1597 on 2002/05/12 by thorsten@host27
+
+  Fixes hfield parsing implementation.
+  Removes unused code.
+
+Change 1595 on 2002/05/09 by thorsten@host27
+
+  Corrects some doc HTML problems.
+  Updates INI file doc section.
+  Better text for default platform template.
+
+Change 1594 on 2002/05/09 by thorsten@host27
+
+  Fixes macro returning parameter problem.
+  Adds more precise rounding check when accessing arrays.
+
+8 May 2002 - 3.5.beta.RC4 (Release Candidate #4)
+------------------------------------------------
+
+Change 1589 on 2002/05/08 by chrisc@lilliput
+
+  Doc updates from Ingo.
+
+  Various
+    - bad spelling on links
+  
+  doc_2_4
+    - added yellow point in spline tut.
+    - changed background colour in poly tut.
+    - change in sor text.
+  
+  doc_4_5
+    - removed value from jitter in syntax.
+  
+  doc_4_11
+    - changes to max_trace_level
+  
+  doc_4_21
+    - change in HF-macros.
+  
+  doc_5_4
+    - Removed
+
+  CJC - tweak doc_5_3.html and filelist.txt/config.txt
+
+Change 1588 on 2002/05/08 by chrisc@lilliput
+
+  Portfolio update from Ingo.
+  
+  ini- and pov-files changed so that rendering starts at frame 1.
+
+Change 1586 on 2002/05/08 by chrisc@lilliput
+
+  Update benchmark.cpp to match benchmark.pov.
+  Bump benchmark version to 1.01.
+
+Change 1585 on 2002/05/08 by chrisc@lilliput
+
+  Scene/include update from Rune.
+
+  Removed the following files:
+    scenes\incdemo\rand_disribution.pov
+    scenes\textures\patterns\moun_dat.pov
+    scenes\textures\patterns\mountain.pov
+    scenes\lights\dispersion-photons.pov
+  
+  Changes:
+  
+  include\textures.inc
+    - existing macros changed and new one added.
+
+  include\math.inc
+    - fixed vCurl() macro.
+    - fixed VPerp_To_Vector() macro to work for all input vectors.
+
+  include\transforms.inc
+    - fixed Axis_Rotate_Trans() macro to work with any axis.
+    - fixed mirroring problem in Point_At_Trans() macro.
+
+  include\shapes.inc
+    - optimized HF macros.
+    - improved several macros to better handle special cases.
+
+  include\arrays.inc
+    - improved error messages in case of wrong input.
+
+  [Tons of scene files]
+    - specified max_trace_level to avoid warning.
+
+  scenes\incdemo\func_gradient.pov
+    - added.
+
+  scenes\advanced\isocacti.pov
+  scenes\advanced\cats\povcatray.pov
+  scenes\advanced\cats\cattext.inc
+  scenes\advanced\cats\cattex.inc
+  scenes\advanced\cats\coolcat.inc
+  scenes\advanced\glasschess\glasschess.pov
+  scenes\textures\normals\norm_acc.pov
+    - changed file names and included file names to lowercase.
+
+  scenes\textures\pigments\skies\stars.pov
+  scenes\textures\pigments\txtravg.pov
+  scenes\textures\pigments\warp1.pov
+  scenes\textures\pigments\warp2.pov
+  scenes\textures\pigments\spiral1a.pov
+  scenes\textures\normals\normavg.pov
+  scenes\textures\normals\normavg.pov
+  scenes\lights\glassthing.pov
+  scenes\lights\phot_met_glass.pov
+  scenes\lights\projected_through.pov
+  scenes\language\image_size.pov
+  scenes\objects\primitiv.pov
+  scenes\objects\primitiv.pov
+    - added "hollow on" to avoid 'camera inside non-hollow object' warning.
+
+  scenes\textures\pigments\transmitfx.pov
+  scenes\incdemo\logo.pov
+    - fixed orthographic camera.
+
+  scenes\incdemo\woods\woods1.pov
+    - fixed missing ";" at one declare.
+  
+  scenes\advanced\benchmark.pov
+    - removed 'test version' comment.
+    - fixed to avoid max_gradient warnings.
+
+  scenes\advanced\balcony\balcony.pov
+    - fixed to avoid max_gradient warnings.
+  
+  scenes\objects\isosurfaces.pov
+    - fixed to avoid max_gradient warnings, but still warning in RC3 due to 'open' problem.
+
+  scenes\lights\orient.pov
+    - added required circular to orient light.
+  
+  scenes\language\turbulence.pov
+    - fixed degenerate cylinders in animation with Style=1.
+
+  scenes\objects\ttf1.pov
+    - changed text to read 'version 3.5'.
+  
+  scenes\incdemo\glasses\glass.pov
+    - fixed problem with the parts of the scene being out of view.
+  
+  scenes\incdemo\glasses\sample.inc
+    - removed marking as WIP.
+
+  scenes\incdemo\glasses\glass.pov
+    - corrected for frame_number 0, added warning when rendering without clock.
+
+  scenes\incdemo\glasses\samp_demo.pov
+    - corrected array size, added warning when rendering without clock.
+
+  scenes\camera\spherical.pov
+    - corrected spherical camera syntax.
+
+  scenes\textures\patterns\crackle_form.pov
+    - added max_gradient for frame_number 0.
+
+  scenes\animations\splinefollow\splinefollow.pov
+    - added extra control points at beginning and end of spline to avoid error.
+
+  scenes\incdemo\texture_macros.pov
+    - added.
+
+  scenes\incdemo\sort.pov
+    - rewrote scene with color sorting example.
+
+Change 1582 on 2002/05/07 by thorsten@host27
+
+  Adds missing functions to match expression/function implementations.
+
+Change 1580 on 2002/05/05 by thorsten@host27
+
+  Fixes problem in default console output function.
+  Tweaks macro parameter name rules.
+
+Change 1579 on 2002/05/05 by nkopp@impulse
+
+  fix radiosity speed problem when scene includes reflecting or transmitting objects
+
+Change 1578 on 2002/05/04 by nkopp@impulse
+
+  Fixed the code for dispersion-aware fresnel reflection, but left
+  it commented out because I need to check the theoretical valididty
+  of the algorithm, as well as add performance optimizations. [NK]
+
+Change 1576 on 2002/05/02 by nkopp@impulse
+
+  fix radiosity AmbCol initialization bug
+  remove some unused variable warnings
+
+Change 1575 on 2002/05/02 by nkopp@impulse
+
+  disable Dispersion interaction with Fresnel refleciton
+
+Change 1573 on 2002/05/01 by chrisc@lilliput
+
+  Minor correction to tips.
+
+Change 1572 on 2002/05/01 by chrisc@lilliput
+
+  Update benchmark files for 384x384 resolution.
+  Add default INI options to benchmark.pov.
+
+29 April 2002 - 3.5.beta.RC3 (Release Candidate #3)
+---------------------------------------------------
+
+Change 1562 on 2002/04/29 by nkopp@impulse
+
+  Add light_group support to photons
+
+Change 1560 on 2002/04/28 by chrisc@lilliput
+
+  Scene/include update from Rune.
+
+  include\shapes.inc
+    - rewrote HF macros to use mesh2 and added support for UV texture mapping.
+    - fixed Round_Box macro to give correct results no matter what vectors A
+      and B are.
+
+  scenes\incdemo\shapes.pov
+    - updated for new HF macro syntax.
+
+Change 1559 on 2002/04/28 by thorsten@host27
+
+  Little function VM compiler change
+
+Change 1558 on 2002/04/28 by chrisc@lilliput
+
+  Doc update from Ingo. Also portfolio change.
+
+  doc_4_1
+    - completed the list of directives.
+
+  doc_4_7
+    - added note to "layered textures".
+
+  doc_4_11
+    - added Float to pretrace start and end.
+
+  doc_4_21
+    - updated HF_macro's
+
+Change 1555 on 2002/04/28 by chrisc@lilliput
+
+  Revert to old version of benchmark.pov.
+
+  Update suggested render dimensions to 512x384.
+
+Change 1553 on 2002/04/27 by nkopp@impulse
+
+  fix alpha channel + anti-alias problems
+
+Change 1549 on 2002/04/27 by thorsten@host27
+
+  Set initial intersection object pointer to NULL in various places
+
+Change 1545 on 2002/04/24 by nkopp@impulse
+
+  fix photon problems
+    * fix photon automatic gather radius calculation
+    * fix photon sorting AGAIN
+
+Change 1544 on 2002/04/23 by thorsten@host27
+
+  Fixes function VM stack problem with complex functions
+  Fixes spline copy with type problems
+  Changes max_trace_level warning to be displayed only if no
+   max_trace_level had been set in the scene
+  Changes INI file path output to include quotes
+  Changes parsing of INI files to accept any end of line sequence
+  Adds photon statistics to POVMS statistics object
+
+22 April 2002 - 3.5.beta.RC2 (Release Candidate #2)
+---------------------------------------------------
+
+Change 1540 on 2002/04/21 by chrisc@lilliput
+
+  Scene update from Rune.
+
+  include\shapes.inc
+    - debugged and optimized HF macros.
+
+  scenes\incdemo\shapes.pov
+    - raised max_trace_level.
+
+  scenes\textures\patterns\crackle2.pov
+  scenes\textures\patterns\crackle3.pov
+  scenes\textures\patterns\crackle_form.pov
+    - fixed parsing errors and got rid of max_gradient warnings.
+
+  CJC - Tweak NTREAL.POV to suit camera changes.
+
+Change 1539 on 2002/04/21 by chrisc@lilliput
+
+  Doc update from Ingo (also portfolio tweak).
+
+  doc_3_2
+    - addition to +UA
+
+  doc_4_1
+    - addition to vnormalize()
+    - addition to pow()
+    - added note about cubic_spline end points
+
+  quickref
+    - updated
+
+Change 1530 on 2002/04/20 by thorsten@host27
+
+  Some changes that probably fix the crash with PNG output
+   when rendering is interrupted during mosaic preview
+
+Change 1529 on 2002/04/20 by thorsten@host27
+
+  Fixes color dot operator expression as macro parameter bug
+  Color identifiers are passed by reference if #version is 3.5
+
+Change 1528 on 2002/04/20 by thorsten@host27
+
+  Restores AA functions to working 3.1 state.
+
+Change 1526 on 2002/04/18 by thorsten@host27
+
+  Removes trace level fixes and replaces it by a better solution
+  Adds support for up to 100 layers in textures
+  Adds error message for vnormalize(<0,0,0>)
+
+Change 1523 on 2002/04/15 by thorsten@host27
+
+  Partial fix for radiosity recursion problems
+
+15 April 2002 - 3.5.beta.RC1 (Release Candidate #1)
+---------------------------------------------------
+
+Change 1519 on 2002/04/14 by chrisc@lilliput
+
+  Portfolio change from Ingo.
+
+Change 1518 on 2002/04/14 by chrisc@lilliput
+
+  Doc update from Ingo.
+    many sections
+      - changed to a uniform format for a 'Note:'
+      - css_versions: added class="note" to all notes
+
+    doc_1_6
+      - added camera to 'things that may break scenes'.
+
+    doc_4_1
+      - changed "Functions and Macros" section
+      - changed syntax and text for splines.
+      - added "Splines and Macros" section
+
+    doc_4_21
+      - added HF_Torus, changed text for other HF_macros.
+
+Change 1516 on 2002/04/14 by thorsten@host27
+
+  Fixes bug with max_tracel_level is not always being used in reflection tracing.
+  Should fix radiosity and max_trace_level recursion interaction
+  (Note: Stats display may not like this!)
+
+Change 1515 on 2002/04/14 by thorsten@host27
+
+  Should fix macro returning local bug (needs testing)
+
+Change 1513 on 2002/04/14 by chrisc@lilliput
+
+  Scene/include update from Rune:
+    include\shapes.inc
+      - rewrote the three existing HF macros from scratch and added HF_Torus
+        macro. (NEEDS TESTING!)
+
+    scenes\incdemo\shapes.pov
+      - updated for new HF macros.
+      - changed lighting and texturing in the scene.
+
+    include\shapes2.inc
+      - bounded polyhedrons, HalfCone_Y, Hexagon, Rhomboid, and Pyramid2.
+
+    scenes\incdemo\shapes2.pov
+      - removed bounding of all objects, since they are now bounded in
+        shapes2.inc.
+
+Change 1512 on 2002/04/14 by chrisc@lilliput
+
+  Fix pigment_pattern memory leak reported in
+    http://news.povray.org/3cb3217f$1@news.povray.org
+
+Change 1510 on 2002/04/14 by chrisc@lilliput
+
+  Update POVLEGAL (new version is dated 14 April 2002).
+
+Change 1509 on 2002/04/13 by thorsten@host27
+
+  Fixes media light (group) handling
+  Better error message when parsing invalid function/spline calls
+  Adds rtfm message for the famous max_trace_level "bug"
+
+Change 1508 on 2002/04/09 by thorsten@host27
+
+  Fixes misc little HTML problems in docs
+
+Change 1504 on 2002/04/07 by thorsten@host27
+
+  Fixes spline copy bug.
+
+Change 1502 on 2002/04/07 by thorsten@host27
+
+  Should eliminate all add-parenthesis requirements for functions and splines
+   while still allowing direct copies of functions and splines.
+  
+8 April 2002 - 3.5.beta.16
+---------------------------
+
+Change 1500 by thorsten@host27 on 2002/04/07 07:15:07
+
+  Fixes bug in spline parsing which always resulted in a 5d vector (aka color).
+
+Change 1494 on 2002/04/06 by thorsten@host27
+
+  Adds cache for spline values
+
+Change 1493 on 2002/04/06 by thorsten@host27
+
+  Ups, splines should be passed by reference of course.
+
+Change 1492 on 2002/04/06 by thorsten@host27
+
+  Adds direct passing of functions and splines
+   (by value, not by reference to avoid some
+   unpredictable side effects!) to macros.
+
+Change 1487 on 2002/04/03 by thorsten@host27
+
+  Fixes partically broken #undef
+  Fixes Bounding_Threshold lower limit
+  Fixes invalid intersection object pointer problems
+
+Change 1483 on 2002/03/31 by thorsten@host27
+
+  Fixes light_group with media interaction
+  Misc other little changes
+
+1 April 2002 - 3.5.beta.15
+---------------------------
+
+Change 1479 on 2002/03/31 by thorsten@host27
+
+  Fixes some parametric object bugs
+
+Change 1478 on 2002/03/31 by thorsten@host27
+
+  Added power function domain error checks
+
+Change 1477 on 2002/03/31 by thorsten@host27
+
+  Fixes spline copying
+  Fixes #undef of some function types
+
+Change 1476 on 2002/03/30 by chrisc@lilliput
+
+  Doc updates from Ingo.
+
+  doc_1
+    - reference to VFAQ changed.
+
+  doc_1_6
+    - removed h_angle, v_angle
+
+  doc_2_4
+    - updated isosurface tutorial: "accuracy, max_gradient, etc."
+
+  doc_2_11
+    - camera setup in Raytracer code changed
+
+  doc_4_1
+    - removed h_angle, v_angle
+    - added #declare Var = ( MySpline(pos) ) to spline
+    - changed spline syntax
+    - moved select description froom 'user defined functions' to
+      'float functions' and changed it.
+    - changed min and max in 'float functions'
+    - changed 'float functions' syntax.
+
+  doc_4_4
+    - Changed camera 'introduction' text.
+    - removed h_angle, v_angle from spherical camera
+      and updated text.
+    - Changed orthographic projection section
+
+  doc_4_5
+    - updated Isosurface Syntax.
+    - updated maximum gradient.
+    - removed pointlight from LIGHT_TYPE
+    - A77
+
+  doc_4_7
+    - added [Bump_Size] in patterns, in cases
+      where it isn't obvious where it should go.
+
+  doc_4_20
+    - odd and even decapitalized
+
+  quickref
+    - converted tables to definition lists,
+      content is not updated yet.
+
+Change 1473 on 2002/03/30 by chrisc@lilliput
+
+  Add benchmark.cpp file to support standard benchmark test.
+
+Change 1472 on 2002/03/29 by thorsten@host27
+
+  Fixes precision problem in animation loop
+  Fixes uv_mapping in function patterns (it is not allowed)
+
+Change 1471 on 2002/03/29 by nkopp@impulse
+
+  fix merge shadows/no_image interaction
+
+Change 1470 on 2002/03/29 by nkopp@impulse
+
+  Fix palette-image transparency
+
+Change 1469 on 2002/03/26 by nkopp@impulse
+
+  Fix gamma + alpha channel output
+
+Change 1468 on 2002/03/26 by nkopp@impulse
+
+  Fix photon sorting problems
+  
+    * Use an O(N) median search instead of current O(N log N)
+    * I commented out some code that apparantly was causing problems.
+    * Now the black holes are gone and it doesn't crash on the bug-demo scene
+    * And, it is faster!!!!  :-)
+
+Change 1464 on 2002/03/24 by thorsten@host27
+
+  Allows a comma in spherical camera
+
+25 March 2002 - 3.5.beta.14
+---------------------------
+
+Change 1461 by thorsten@host27 on 2002/03/24 07:48:42
+
+  Adds support for #undef spline_identifier
+
+Change 1455 on 2002/03/23 by chrisc@lilliput
+
+  Upgrade zlib to 1.14 to fix 'double-free' vulnerability.
+
+Change 1452 on 2002/03/23 by thorsten@host27
+
+  Fixes function stack overflow/underflow problems
+   (was caused by some casting added for recent
+   min/max C macro to C++ template conversion)
+  Functions in arrays should work properly now
+  
+  Changed macro POV_MEMMOVE to use pov_memmove
+   function by default rather than the default system
+   memmove function. If you want the system function
+   be used, make sure to define POV_MEMMOVE in your
+   config.h file!
+   Reason for change: For compilers that do not support
+   substitution of system function calls with inline code
+   this change yields a performance increase.
+
+Change 1441 on 2002/03/16 by thorsten@host27
+
+  Adds help parsing code I forgot to submit for command line
+
+Change 1433 on 2002/03/14 by thorsten@host27
+
+  Fixes access to NULL token data pointer in fnsyntax.cpp
+
+15 March 2002 - 3.5.beta.13
+---------------------------
+
+Change 1431 on 2002/03/14 by chrisc@lilliput
+
+  Fix 'radiosity slowdown after re-starting trace' bug (see job #215).
+
+Change 1427 on 2002/03/14 by chrisc@lilliput
+
+  Scene/include updates from Rune.
+
+  scenes\animations\boing\boing.pov
+    - fixed semicolons.
+
+  scenes\advanced\cliche\sign.pov
+    - changed camera to not use the orthographic "trick".
+
+  scenes\advanced\landscape.pov
+    - fixed.
+
+  include\maze.png
+    - deleted, as it was only used in a scene in POV-Ray 3.0.
+
+Change 1426 on 2002/03/13 by thorsten@host27
+
+  Catmull-Rom spline bug fix from mark Wagner
+  Misc little optimisations in vector.h
+
+Change 1425 on 2002/03/13 by thorsten@host27
+
+  Fixes crash with too long strings.
+  Fixes camera transformation problems.
+  Added 'angle HANGLE, [VANGLE]' in spherical camera.
+   Please replace old v_angle and h_angle with new
+   syntax in scenes!  However, the old syntax is still
+   supported temporarily.
+  Added multi-parameter 'min' and 'max' to parser.
+  Added 'select' to parser.
+  
+  Replaced min and max macros with versions from
+   C++ algorithm library.
+
+Change 1424 on 2002/03/13 by chrisc@lilliput
+
+  Doc updates from Ingo.
+
+  All doc
+    Changed lots of jumptargets in a way that using the exact keyword
+    in the index always leads to the SDL section (I hope). Same for using F1-
+    key in the windows version.
+
+  doc_1_6
+    - radiosity upper recursion_limit = 20
+
+  doc_3_2
+    - changed "Height and Width of Output"
+    - changed "Help Screen Switches"
+
+  doc_4_1
+    - removed one normal-indices from listing
+
+  doc_4_10
+    - removed gather pointer to advanced photons
+
+  doc_4_11
+    - upper recursion_limit = 20
+
+Change 1421 on 2002/03/10 by thorsten@host27
+
+  Allow function variable names to be used as macro
+   parameter names (using the correct namespace)
+
+Change 1420 on 2002/03/10 by thorsten@host27
+
+  Functions references are now stored in pointers, which fixes
+   all kinds of problems with pointer checks on references.
+  Function redeclaring is always disallowed now.
+  Function compiler now prevents function length overflows.
+
+Change 1418 on 2002/03/10 by nkopp@impulse
+
+  fix photons & dispersion
+
+Change 1417 on 2002/03/10 by nkopp@impulse
+
+  fix photon auto-determination of gathering options
+    * improve the gather radius auto-determination
+    * improve the range_divider auto-determination
+
+Change 1415 on 2002/03/09 by thorsten@host27
+
+  Added output of warning/debug message when using isosurface 'evaluate' keyword
+  Added statistics for function VM and isosurface root finder calls
+  Fixed warning message output function that would use the fatal error stream
+  rather than the warning stream.
+
+5 March 2002 - 3.5.beta.12
+--------------------------
+
+Change 1404 on 2002/03/03 by chrisc@lilliput
+
+  Scene and include update from Rune.
+
+  include\math.inc
+    - added vector analysis macros.
+    - added even and odd functions.
+    - optimized min3, max3 and sng functions.
+
+  scenes\advanced\abyss.pov
+    - updated with proper max_gradient.
+
+  include\maze.png
+    - was corrupt; replaced by one from POV-Ray 3.1.
+
+  scenes\advanced\biscuit.pov
+    - changed max_gradient to 3.9 to avoid warning.
+
+
+Change 1397 on 2002/03/02 by thorsten@host27
+
+  Radiosity recursion_limit has now an upper limit of 20.
+
+Change 1396 on 2002/03/02 by thorsten@host27
+
+  Fixes camera normal crash
+
+Change 1390 on 2002/03/02 by chrisc@lilliput
+
+  Doc updates from Ingo.
+
+  All
+    - removed #39; and replaced by '
+
+  doc_1_6
+    - removed catmull_rom added natural_spline
+
+  doc_2_4
+    - replace catmull_rom by cubic
+
+  doc_3_2
+    - some changes in the aa-text.
+
+  doc_4_1
+    - seed(I) was seed(A)
+    - added natural_spline to keywords.
+    - added natural_spline to spline identifier.
+
+  doc_4_5
+    - HF: smooth
+    - replace catmull_rom by cubic
+
+  doc_4_20
+    - f_superellipsoid
+
+  doc_4_21
+    - added even and odd
+    - added vector analysis section.
+
+  NEW: Quickreference, thanks to Robert B Chaffe.
+
+Change 1389 on 2002/03/02 by chrisc@lilliput
+
+  Bump version to beta.12.
+  Set expiry date to 15 March 2002.
+
+Change 1387 on 2002/03/02 by thorsten@host27
+
+  Some more tweaking of #write output handling
+
+Change 1383 on 2002/02/28 by thorsten@host27
+
+  Fixes buffer overflow when writing very long strings
+
+Change 1382 on 2002/02/28 by thorsten@host27
+
+  Added Catmull-Rom Spline code from Mark Wagner
+
+  Misc. spline syntax changes
+   - Former 'cubic_spline' is now 'natural_spline'
+   - Catmull-Rom spline is now 'cubic_spline'
+
+  New camera is now default with version 3.5
+
+  Sphere_sweep 'catmull_rom_spline' still supported
+   in beta 12, but will be removed in favor of
+   'cubic_spline' later.
+
+  Sphere_sweep now supports 'cubic_spline' to match
+    Catmull-Rom spline behavior in lathe and prism
+
+Change 1379 on 2002/02/14 by lutz@lutz
+
+  Fixed the broken bicubic patch parsing (coughed on commas between control points).
+
+Change 1375 on 2002/02/08 by parkrrrr@parkerr
+
+  Fix crash when copying arrays of UV vectors (potentially, when copying any UV vectors
+    using Copy_Identifier, but arrays were where it was noticed.)
+
+Change 1374 on 2002/02/08 by parkrrrr@parkerr
+
+  Fix crash when invoking a macro while declaring its parameters 
+    (i.e. when the parentheses haven't been closed - or possibly even
+    opened - yet.)
+
+Change 1373 on 2002/02/08 by thorsten@host27
+
+  Replaces NAN with HUGE_VAL (from frame.h) in parse.cpp
+  Removes misplaced Parse_Vector from look_at code
+
+10 February 2002 - 3.5.beta.11
+------------------------------
+
+Change 1370 on 2002/02/07 by thorsten@host27
+
+  Fixes first function is array element problem.
+
+Change 1369 on 2002/02/07 by thorsten@host27
+
+   Camera parsing changes.
+   Note: In order to give everybody time to adjust, the changes will not
+   be active if version 3.5 is specified, but only if version is 3.51. This
+   special behavior is *ONLY* for beta 11 to give time for adjustment.
+   In beta 12 it will be the default for version 3.5 and scenes depending
+   on the old syntax will break unless version 3.1 has be specified!!!
+
+Change 1367 on 2002/02/07 by chrisc@lilliput
+
+  Bump version to beta.11.
+  Set expiry date to 5 March 2002.
+
+Change 1363 on 2002/02/06 by thorsten@host27
+
+  Allow transform and tranform-block everywhere
+
+Change 1360 on 2002/02/05 by parkrrrr@parkerr
+
+  When copying bezier patches, we were only copying the first 3 UV vectors, leaving
+  the 4th at the default 0,1.
+
+Change 1359 on 2002/02/05 by parkrrrr@parkerr
+
+  Fixed three crashes:
+   - enough #local #local #local in a row (say, in a while loop) would crash.
+   - bbox reallocation couldn't have possibly worked as written unless we were very lucky.
+   - Tokenizer wasn't being properly terminated if POV was stopped during parse.
+
+Change 1358 on 2002/02/05 by thorsten@host27
+
+  Fixes light_group shadow problems.  This really needs testing!!!
+   There might have been other problems with light_groups and
+   media (at least the code "appeared" broken).  So light_groups
+   and media should be tested extensively with light buffers on
+   as well as off!
+
+Change 1357 on 2002/02/01 by thorsten@trfatfhg
+
+  Misc. POVMS fixes.
+
+Change 1356 on 2002/02/01 by nkopp@impulse
+
+  Fix spline based on Mark Wagner's suggestions and SUZUKI Ryoichi's code.
+
+Change 1355 on 2002/02/01 by nkopp@impulse
+
+  Fix triangle texture interpolation
+
+Change 1354 on 2002/02/01 by nkopp@impulse
+
+  Add interactin of photons & projected_through
+  
+  NOTE: After the photon ray hits the target object, it will once again IGNORE
+  projected_through.  The projected_through object is only tested on the initial
+  photon ray cast, not after any bounces.
+
+Change 1350 on 2002/01/26 by chrisc@lilliput
+
+  Update copyright dates in generic and windows source files for 2002.
+
+Change 1347 on 2002/01/14 by mtgordon@mtgordon
+
+  Modified camera scenes to work with new camera syntax 
+
+Change 1346 on 2002/01/14 by parkrrrr@parkerr-linux
+
+  Fixed FUNCT_ID_TOKEN and VECT_FUNCT_ID_TOKEN to contain spaces in
+  the token text so they won't get highlighted and/or recognized by 
+  the tokenizer.
+
+Change 1340 on 2002/01/14 by parkrrrr@parkerr-linux
+
+  Move camera rays right and up by half a pixel to move from the 
+  lower-left corner of the pixel to the center of the pixel
+
+  (if version is 3.5 or later)
+
+15 January 2002 - 3.5.beta.10
+-----------------------------
+
+Change 1330 on 2002/01/12 by thorsten@host27
+
+  Adjust isosurface max_gradient warning heuristic to work
+   better with small max_gradients.
+  Change option/switch filename parsing to correctly handle
+   strings that are insider single or double quotes.
+  Fix problem introduced in shell command fix which would
+   cause POV-Ray to not notice a user abort for a long time.
+
+Change 1329 on 2002/01/12 by thorsten@host27
+
+  Spheresweep internal intersection stack size is now
+   determined dynamically rather than being fixed to
+   64 entries.
+
+Change 1328 on 2002/01/12 by thorsten@host27
+
+  Fix reversed initial bounds in spheresweep
+
+Change 1322 on 2002/01/12 by thorsten@host27
+
+  Added PNG library 1.2.1 (the most recent version as of today)
+
+Change 1315 on 2002/01/12 by thorsten@host27
+
+  Spheresweep object bounding changes (need testing!)
+  Help command line options are "-h", "-?" and "-help" as well
+   as an empty command line.
+  Added version numbers for ZLib, LibPNG, LibJPEG and LibTIFF
+   to copyright banner output (so users know what we are using)
+
+Change 1314 on 2002/01/11 by thorsten@host27
+
+  Turn on zip and jpeg image subformats and lzw off in LibTIFF 3.5.7
+   source to match the configuration of LibTIFF 3.5.5.
+
+Change 1308 on 2002/01/08 by chrisc@lilliput
+
+  Add tiff library v3.5.7.
+
+Change 1306 on 2002/01/06 by thorsten@host27
+
+  Fix a function VM problem with multi-min/max
+  Change some camera behavior.  Now up/right and direction
+   are not changed by angle if they appear after angle or
+   lookat appears after them. For now this resolves a few
+   problems with certain scenes (i.e. skyvase.pov) until
+   a definite order of camera keywords has been determined
+   and the scenes can be adjusted.
+
+Change 1303 on 2001/12/31 by thorsten@host27
+
+  Some more camera changes and adjustments. In particular
+   the "angle" keyword no longer depends on the position to
+   work (I hope) if the language version is 3.5.
+  
+Change 1302 on 2001/12/31 by thorsten@host27
+
+  Force semi-colon after certain declares (not after version) if
+   version is 3.5 of higher. Using #version 3.1 makes it work
+   like it work in 3.1. Note that it doesn't force the semi-colon
+   after #version because this would break older scenes!
+  Add compatibility warning to max_intersections and
+   max_trace_level outside global_settings.
+  Added lower limit of 1 to max_intersections (it still has no
+   upper limit)
+  Fix camera parsing problems. If language version is 3.5 it is
+   much more restrictive. Now, if version 3.5 is specified the
+   camera type has to be the first thing in a camera statement.
+   The default type (which obviously does not need to be 
+   specified) is still perspective, of course.
+   (NOTE: Read my notes in job 208!)
+
+Change 1300 on 2001/12/30 by thorsten@host27
+
+  Should fix the JPEG image reading memory leak
+
+Change 1299 on 2001/12/30 by thorsten@host27
+
+  Some changes to the function compiler that need testing *before* the next public beta:
+    - min and max now take two or more parameters
+    - fixed optimistation for constants and division
+    - added error handling for pow(0,0), aka pow(sin(x),sin(x)) crash
+    - added error handling for constant division by zero
+    - now optimises pow(...,0) to one
+    - now optimises away constant multiplications and divisions by one
+    - now optimises away constant additions and substrations of zero
+    - misc. little things here and there
+
+Change 1298 on 2001/12/30 by thorsten@host27
+
+  This fixes two isosurface problems:
+    - Messages for max_gradient/gradient of 0
+    - Duplicate messages for copies of isosurfaces (i.e. abyss.pov)
+
+Change 1297 on 2001/12/26 by parkrrrr@parkerr
+
+  If a declare doesn't start with a '#' don't allow the optional 
+   semicolons.  This shouldn't be a problem, as the hash-less syntax 
+   has been deprecated for at least two versions now and the optional
+   semicolons are new with this version.
+
+  This is a roundabout bugfix for a problem where declare without the
+   hash would ignore the following token.
+
+Change 1296 on 2001/12/26 by thorsten@host27
+
+  Misc function VM changes and bugfixes - thanks to R. Suzuki!
+  Increased hfield tolerance to avoid some holes (change by R. Suzuki).
+  Needs testing to make sure there are no side-effects on different platforms!
+  Also still need to check if this fixes any of the outstanding hfield bugs...
+
+21 December 2001 - 3.5.beta.9
+-----------------------------
+
+Change 1293 on 2001/12/20 by thorsten@host27
+
+  Invoke_Macro() crsh fix by R. Suzuki
+
+Change 1288 on 2001/12/17 by chrisc@lilliput
+
+  Bump version to beta.9.
+  Change expiry date to 15-Jan-2002.
+
+Change 1286 on 2001/12/17 by chrisc@lilliput
+
+  Scene file updates from Rune.
+
+  include\shapes.inc
+    - added Text_Space macro.
+
+  scenes\incdemo\logo.pov
+    - updated.
+
+  include\rand.inc
+    - fixed distribution in VRand_In_Sphere macro.
+    - fixed distribution in VRand_In_Box macro.
+    - fixed VRand_In_Obj macro.
+    - fixed RRand macro.
+
+  include\functions.inc
+    - fixed comments for f_mesh1.
+
+  include\arrays.inc
+    - fixed ARRAYS_InsertionSort macro.
+
+  scenes\objects\crater.pov
+  scenes\objects\crater_dat.pov
+    - improved the comments in the headers.
+
+  scenes\advanced\chess2.pov
+    - fixed the knight's ear.
+
+  scenes\objects\mesh2.pov
+  scenes\advanced\benchmark.pov
+    - added.
+
+Change 1285 on 2001/12/17 by chrisc@lilliput
+
+  Portfolio update from Ingo.
+
+Change 1281 on 2001/12/10 by parkrrrr@parkerr-linux
+
+  Make hf_gray_16 force 16-bpp PGM output.  This isn't perfect,
+  as the status report still says it's a 24-bpp PPM if that's what
+  you asked for.  This should probably be fixed.
+
+Change 1271 on 2001/12/08 by thorsten@host27
+
+  Focal blur changes suggested by Warp. Need testing for
+   possible unexpected side effects.
+
+Change 1270 on 2001/12/08 by thorsten@host27
+
+  Should fix with high-bit characters in path and filenames
+   specified in INI files. Needs testing!
+  Should fix problem with max_intersections and trace
+   function. Needs testing!
+
+Change 1269 on 2001/12/08 by thorsten@host27
+
+  Added max_trace_level upper limit. The default is 256
+   but can be changed in config.h using MAX_TRACE_LEVEL_LIMIT.
+  Anti-aliasing now takes into account the transmit channel.
+  Improved Include_Header option handling so it is easier to use.
+
+Change 1267 on 2001/12/07 by thorsten@host27
+
+  Added a missing '#' in povray.h
+
+Change 1266 on 2001/12/07 by parkrrrr@parkerr-linux
+
+  Allow #undef <macro-id>
+
+Change 1265 on 2001/12/07 by thorsten@host27
+
+  Fixes function crash when first function is destroyed even
+   when it is used.  Special thanks to Ryoichi Suzuki for finding
+   this problem!
+
+Change 1264 on 2001/12/06 by parkrrrr@parkerr-linux
+
+  Fix 16-bpp grayscale PNG output.
+
+30 November 2001 - 3.5.beta.8
+-----------------------------
+
+Change 1261 on 2001/11/29 by chrisc@lilliput
+
+  Documentation update.
+
+Change 1247 on 2001/11/11 by chrisc@lilliput
+
+  Prevent code within Destroy_Frame() from being called twice when user hits
+  CANCEL during shutdown. This would cause a crash.
+
+Change 1245 on 2001/11/11 by chrisc@lilliput
+
+  Add note regarding no longer recommending CRC Press books.
+
+Change 1243 on 2001/11/06 by parkrrrr@parkerr-linux
+
+  Reflection was ignoring the normals on layers below the top.
+
+Change 1242 on 2001/11/06 by parkrrrr@parkerr-linux
+
+  Fixed a couple of array declaration bugs (zero dims, size <= 0)
+
+Change 1241 on 2001/11/03 by nkopp@impulse
+
+  fix bug with turbulence
+
+Change 1239 on 2001/11/02 by thorsten@host27
+
+  Some more isosurface changes to re-enable 'evaluate', which is
+   now only responsible for the 'dynamic max_gradient' method.
+  The found maximum gradient will always be printed based on
+   certain rules. It is no longer necessary to use 'evaluate' only
+   to see the found maximum gradient!
+
+Change 1238 on 2001/11/02 by thorsten@host27
+
+  Fixes problems with #undef of functions
+  Fixes & and | operators in functions
+  Fixes <= operator in functions
+
+Change 1235 on 2001/10/31 by thorsten@host27
+
+  Another isosurface max_gradient and evaluate change.  This is an
+   attempt to remove the need for evaluate completely.  Needs testing!
+
+31 October 2001 - 3.5.beta.7
+----------------------------
+
+Change 1231 by nkopp@impulse on 2001/10/28 16:54:28
+
+  fix problems of photons getting very dim on non-flat surfaces.
+
+Change 1230 by nkopp@impulse on 2001/10/28 15:41:37
+
+  fix some noise generator issues.
+  Some textures were tweaked to work with the old (broken) noise
+  generator, so they had to be adjusted so that they work in a
+  similar way with all three noise generators.
+
+Change 1228 on 2001/10/28 by thorsten@host27
+
+  Added missing 'int' function in functions.
+  Changes to user #error directive output.
+
+Change 1223 on 2001/10/27 by chrisc@lilliput
+
+  Rename file in portfolio.
+
+Change 1222 on 2001/10/27 by chrisc@lilliput
+
+  Scene/include update from Rune.
+
+  scenes\objects\crater.pov
+    - fixed reference to crater_dat.pov.
+
+  include\screen.inc
+    - fixed Set_Camera macro to use Set_Camera_Angle macro.
+
+  include\strings.inc
+    - fixed Str() bug to use str() instead of vstr().
+
+  scenes\animations\life\life.ini
+  scenes\animations\boing\bounce.ini
+    - fixed.
+
+  include\shapes.inc
+    - changed macro name TextWidth to Text_Width for consistency.
+    - changed macro name SuperTorus to Supertorus for consistency.
+    - fixed Supertorus macro.
+    - fixed Supercone macro.
+    - fixed kerning in Circle_Text macro.
+    - changed Text_Width macro.
+
+  include\arrays.inc
+    - fixed ARRAYS_HybridQuickSortStep macro.
+
+  scenes\incdemo\circletext.pov
+    - updated for updated Circle_Text macro.
+
+Change 1220 on 2001/10/25 by thorsten@host27
+
+  Some isosurface changes. Note that these changes are preliminary and
+   not complete yet!
+
+Change 1219 on 2001/10/25 by thorsten@host27
+
+  Hfield images from 16-bit per component color images now use
+   the grayscale macro rather than the red color component.
+   For backward compatibility 8-bit per component color images
+   still use the red-grean format! As usual, use grayscale images
+   if you don't want this to happen.
+
+Change 1218 on 2001/10/25 by thorsten@host27
+
+  Some changes to blend map parsing (does *not* fix blend map bug!)
+  Added an additional warning in function parser
+
+Change 1215 on 2001/10/17 by chrisc@lilliput
+
+  Fix 'crash on render cancel during radiosity preview/mosaic preview' if PNG
+  output is selected.
+
+Change 1211 on 2001/10/17 by chrisc@lilliput
+
+  Disallow continue trace on an image with different dimensions (fixes crash).
+
+Change 1208 on 2001/10/12 by thorsten@host27
+
+  POV-Ray now switches to UTF-8 automatically if it finds a UCS byte-order
+   code or any other character code >= 128 at the beginning of the file.
+  Fixes a problem switching the Y-component of contained_by boxes if the
+   first one was higher than the second one.
+
+Change 1206 on 2001/10/10 by nkopp@impulse
+
+  fix photon "load_file"
+  fix photons & area_light problem (photons shooting from corner of area light)
+  fix photons + parallel area_light
+
+9 October 2001 - 3.5.beta.6
+---------------------------
+
+Change 1203 by chrisc@lilliput on 2001/10/09 12:38:08
+
+  Bump version to beta.6.
+
+Change 1201 by chrisc@lilliput on 2001/10/09 12:25:19
+
+  Include Anders K's TTF spacing bug fix (kerning was not being accumulated).
+  See http://news.povray.org/3bbb210d$1@news.povray.org
+
+Change 1199 by parkrrrr@parkerr on 2001/10/08 22:58:17
+
+  Fixed crash in while loops that were just a bunch of declarations.
+  Repeat after me, class...  inifinite recursion BAD.
+
+Change 1198 by nkopp@impulse on 2001/10/07 23:42:31
+
+  fix radiosity recursion > 2
+
+7 October 2001 - 3.5.beta.5
+---------------------------
+
+Change 1194 on 2001/10/06 by chrisc@lilliput
+
+  Add new scene files not yet in depot.
+
+Change 1193 on 2001/10/06 by chrisc@lilliput
+
+  Scene and include update from Rune.
+
+  Changes since beta 3:
+
+    includes\arrays.inc
+      - updated Rand_Array_Item, Resize_Array, Reverse_Array.
+
+    includes\transforms.inc
+      - updated Reorient_Trans.
+
+    scenes\advanced\newltpot\
+      - changed teapot.c1 to teapot_c1.inc
+      - changed teapot.c2 to teapot_c2.inc
+      - changed teapot.c3 to teapot_c3.inc
+      - changed teapot.sph to teapot_sph.inc
+      - changed teapot.tri to teapot_tri.inc
+      - changed teapot.cat to teapot.txt
+      - updated teapot2.pov, teapot3.pov, teapot4.pov
+
+    include\functions.inc
+    include\transforms.inc
+      - moved vtransform and vinv_transform to transforms.inc
+
+    scenes\objects\crat_dat.pov
+      - renamed to crater_dat.pov
+
+    scenes\objects\crater.pov
+    scenes\objects\crater_dat.pov
+    scenes\advanced\cliche\cliche.pov
+    scenes\advanced\cliche\sign.pov
+    scenes\textures\patterns\slopemt.pov
+    scenes\textures\patterns\slopemt_dat.pov
+      - removed specific image type.
+
+    scenes\radiosity\cornell.pov
+    scenes\radiosity\radiosity.pov
+    scenes\radiosity\radiosity2.pov
+    scenes\radiosity\radiosity3.pov
+    scenes\advanced\object_pattern.pov
+    scenes\advanced\balcony\balcony.pov
+      - removed +qr from the suggested options
+
+    scenes\advanced\optics.pov
+      - added line breaks
+
+    includes\strings.inc
+      - added semi-colon to array macros.
+
+Change 1192 on 2001/10/06 by chrisc@lilliput
+
+	Doc updates from Ingo.
+
+Change 1191 on 2001/10/06 by chrisc@lilliput
+
+	Portfolio update from Ingo.
+
+Change 1188 on 2001/10/05 by lutz@lutz
+
+	Documentation for UV Mapping updated after code change
+
+Change 1187 on 2001/10/05 by lutz@lutz
+
+	Changed UV mapping to generate coordinates corresponding to environment mapping.
+
+Change 1186 on 2001/10/04 by thorsten@host27
+
+	Fix crash with too long strings when printing them
+	 (POV-Ray will now cut off the end if it is longer than 128/160 characters)
+	Fix problem with UTF-8 files that start with UTF-8 encoding information
+	 (all characters at the beginning of a scene/inc file and whose charcater code
+	  is above 128 are ignored now until the first ASCII character is found)
+
+Change 1184 on 2001/10/02 by parkrrrr@parkerr-linux
+
+	Allow semicolon at the end of any #declare or #local
+
+Change 1183 on 2001/10/02 by parkrrrr@parkerr-linux
+
+	Fix problem with ASCII PGM files.
+
+Change 1182 on 2001/10/01 by nkopp@impulse
+
+	fix dispersion initialization for photons
+
+Change 1181 on 2001/09/30 by nkopp@impulse
+
+	Add ability to use pigment_pattern within a function pattern.
+	Yes, I realize that the user could simply put the pigment
+	directly into the function... this fix is simply for language
+	consistency.
+
+Change 1180 on 2001/09/30 by nkopp@impulse
+
+	fix u/v mapping with normals
+
+Change 1179 on 2001/09/30 by nkopp@impulse
+
+	Implement Rune's version of fisheye camera
+
+Change 1178 on 2001/09/29 by parkrrrr@parkerr-linux
+
+	Made translate translate the projected_through object as well.
+
+Change 1177 on 2001/09/29 by lutz@lutz
+
+  Fixed a bug that caused POV-Ray to hang when reading an INI option that had
+  nothing behind the '=' sign.
+
+Change 1176 on 2001/09/28 by parkrrrr@parkerr-linux
+
+	Fix last change.  Segfaults on file-not-found aren't fun.
+
+Change 1175 on 2001/09/28 by parkrrrr@parkerr-linux
+
+	Allow image_map {"foo"} syntax.  This assumes that the file to be
+	read is of the same type as the output file, and if no extension is
+	provided an appropriate one is added.
+	
+	This might be particularly useful in the sample scene files.
+
+Change 1174 on 2001/09/28 by nkopp@impulse
+
+	Fixed problems with spotlights causing black photons, which could
+	mess up photons from other light sources, too.
+
+Change 1171 on 2001/09/26 by nkopp@impulse
+
+	fix problems with "once" keyword and shadows
+
+Change 1170 on 2001/09/26 by parkrrrr@parkerr-linux
+
+	Fix to 1169: don't seek if the buffer contained the whole skip.
+
+Change 1169 on 2001/09/26 by parkrrrr@parkerr-linux
+
+	Fix skip routine to update buffer as well as file pointer; this
+	fixes reading of weird chunks such as those that appear in Photoshop
+	JPGs.
+
+Change 1167 on 2001/09/25 by parkrrrr@parkerr-linux
+
+	Fix error finding intersections with sor caps 	
+
+Change 1165 on 2001/09/25 by thorsten@host27
+
+	This should fix the 'facets' parser bug.
+
+Change 1162 on 2001/09/25 by parkrrrr@parkerr-linux
+
+	#default wasn't being properly ignored when inside of a false condition.
+
+Change 1161 on 2001/09/25 by chrisc@lilliput
+
+	Fix 'missing line on continue' problem for bmp, tga and png output.
+
+Change 1160 on 2001/09/25 by chrisc@lilliput
+
+	Change core mosiac preview code to allow alpha (needs testing for side-effects).
+
+Change 1158 on 2001/09/24 by parkrrrr@parkerr
+
+	Fix trailing CRLF on INI options
+
+Change 1157 on 2001/09/24 by parkrrrr@parkerr-linux
+
+	Fix inability to use PNG or TIFF images as heightfields
+
+Change 1156 on 2001/09/24 by parkrrrr@parkerr-linux
+
+	Fix error opening histogram file: POV was forgetting the file type.
+
+Change 1155 on 2001/09/24 by parkrrrr@parkerr-linux
+
+	Fix error opening hf_gray_16 file: POV was forgetting the file type.
+
+Change 1152 on 2001/09/24 by parkrrrr@parkerr-linux
+
+	slope==1 should use the entry from the 1 end of the color map,
+    regardless of wrapping.  It's just too easy to get a slope that's
+    exactly 1 (e.g. a plane that's axis-aligned.)
+
+Change 1150 on 2001/09/24 by parkrrrr@parkerr-linux
+
+	Fix concat("1" "2" "3") to output "123" instead of "13"
+
+23 September 2001 - 3.5.beta.4
+------------------------------
+
+Change 1145 on 2001/09/23 by thorsten@host27
+
+	Fixes a bug in the function optimiser that would pick the first
+	 argument of a built-in math function as result if the first
+	 argument was a constant and the function had more than
+	 one argument.
+
+Change 1144 on 2001/09/23 by thorsten@host27
+
+	This should fix the INI file on command-line infinite loop problem.
+
+22 September 2001 - 3.5.beta.3
+------------------------------
+
+  Change 1139 on 2001/09/22 by thorsten@host27
+
+    Fixes function optimiser bug
+
+  Change 1132 on 2001/09/20 by thorsten@host27
+
+    Fixes continue-trace for PNG
+
+  Change 1130 on 2001/09/19 by nkopp@impulse
+
+    allow commas in mesh triangle texture_list
+
+  Change 1129 on 2001/09/19 by thorsten@host27
+
+    First changes to fix broken continue-trace - right now targa
+    images should work again, othere changes to fix the other
+    formats will follow soon.
+
+  Change 1126 on 2001/09/18 by nkopp@impulse
+
+    enable photons, too.  opts.OutputQuality really means bits per pixel.
+    what we want here is opts.Quality
+
+  Change 1125 on 2001/09/18 by nkopp@impulse
+
+    Allow radiosity to actually turn on :-)
+
+  Change 1124 on 2001/09/18 by nkopp@impulse
+
+    fix problems with quilted pattern parser(s)
+
+  Change 1123 on 2001/09/18 by nkopp@impulse
+
+    Fix u/v mapping for bicubic_patch
+    Thanks to Mike Hough for this fix.
+
+  Change 1122 on 2001/09/18 by nkopp@impulse
+
+    Changed confidence default to 1/10000.  According to warp, this gives much
+    better results with a reasonable render time.
+	
+    However, this indicates a potential problem with POV's confidence interval 
+    (variance) estimate.  We should be able to get by with a 1/256 or at least 
+    1/512 variance, as long as the confidence is high.  However, that still 
+    produces grainy results.
+
+  Change 1121 on 2001/09/18 by nkopp@impulse
+
+    Fix problems with fisheye and omnimax cameras.
+	
+    Also, improved the "fit" of the omnimax camera.
+    Thanks to Greg Smith <gsmith@alumni.uwaterloo.ca> for these changes.
+
+  Change 1120 on 2001/09/18 by thorsten@host27
+
+    This should fix the command line crash
+
+  Change 1116 on 2001/09/17 by thorsten@host27
+
+    This should allow TIFF images in h-fields
+
+  Change 1115 on 2001/09/17 by thorsten@host27
+
+    Fixes a few uninited pointers
+
+  Change 1114 on 2001/09/17 by thorsten@host27
+
+    Fixes "No pigment" warning for light_groups
+    Allows TTC type fonts to be used
+     (not tested because I have no TTC style fonts that I can use)
+    Added feature to specify input file without -i switch on command line
+
+  Change 1098 on 2001/09/14 by chrisc@lilliput
+
+    Fix radiosity+histogram=crash.
+
+13 September 2001 - 3.5.beta.2
+------------------------------
+
+  Change 1090 by thorsten@host27 on 2001/09/12 13:12:11
+
+    Radiosity switch changes.
+
+  Change 1082 on 2001/09/11 by parkrrrr@parkerr-linux
+
+    Fix Transform_Camera so it doesn't translate the three camera-based
+    vectors (up, right, direction)
+
+  Change 1081 on 2001/09/11 by parkrrrr@parkerr-linux
+
+    Allow transform {foo} in lots of places that it wasn't working.
+
+  Change 1080 on 2001/09/11 by parkrrrr@parkerr-linux
+
+    remove reflection_min, reflection_max, and reflection_samples 
+    tokens.
+
+  Change 1079 on 2001/09/11 by parkrrrr@parkerr-linux
+
+    Fixed what looked like a couple of bad asserts.
+
+  Change 1076 on 2001/09/09 by parkrrrr@parkerr
+
+    Make atan and the hyperbolic functions work as float functions.
+
+  Change 1073 on 2001/09/09 by parkrrrr@parkerr
+
+    Make unrecognized escape sequences be a fatal error.
+
+  Change 1065 on 2001/09/06 by parkrrrr@parkerr
+
+    Fixed visual artifact problem where crackle was sharing caches between multiple
+    instantiations of a single #declared pattern.  
+    Also, fixed memory leak where crackle cache was not being freed when the pattern
+    was destroyed.
+
+  Change 1064 on 2001/09/04 by nkopp@impulse
+
+    fix scaling of patterns (pigments) within functions
+
+  Change 1063 on 2001/09/04 by nkopp@impulse
+
+    Fix orient and add some new rules for the feature
+      1) It can be used with "circular" lights only.
+      2) The two axes of the area light must be of equal length.
+      3) The two axes of the area light should use an equal number
+        of samples, and that number should be greater than one
+
+  Change 1062 on 2001/09/04 by nkopp@impulse
+
+    updated the 'cells' fix to include Small_Tolerance and also to use the floor
+    function (even though it is slower)
+
+  Change 1061 on 2001/09/04 by nkopp@impulse
+
+    fix cells - eliminate duplication in pattern around the axes
+
+1 September 2001 - 3.5.beta.1
+-----------------------------
+
+  Initial public release.
+
+
+This file is a historical record of changes to POV-Ray 3.5 as we develop it.
+
+3.5.alpha.3h 3/29/00 Mark Gordon
+Included <stdarg.h> in optout, povms, statspov to make gcc happy.
+
+3.5.alpha.3g     03/19/00 Thorsten Froehlich
+Changes to TrueType text encoding. Supports ASCII (default), UTF8 and a 
+ system specific encoding.
+
+3.5.alpha.3f     03/17/00 Nathan Kopp
+Changes of media and radiosity from MegaPov
+
+3.5.alpha.3e     12/15/99 Thorsten Froehlich
+Changes to POVMS message dispatch code.
+Minor fixes in POVMS.
+
+3.5.alpha.3d      9/26/99 Thorsten Froehlich
+Other minor fixes in POVMS.
+Added support for read and write INI POVMS messages.
+
+3.5.alpha.3c      9/16/99 Thorsten Froehlich
+Some fixes in POVMS.
+Added (option) passing of reference to POV_DISPLAY_xxx functions. Make sure
+ to fix your macros.
+Attempt to fix a strange bug with opts.Language_Version. Depending on
+ precision settings it would sometimes be 3.099999 instead of 3.1 causing
+ the parser to report problems with the presumed 3.0 scene file.
+ The change is to use BCD numbers. Hopefully this will work everywhere, or
+ we will need to find another way to fix it.
+
+3.5.alpha.3b      7/30/99 Thorsten Froehlich
+Removed some files.
+
+3.5.alpha.3a      7/22/99 Chris Young
+Same as below with lots of bugs fixed.  Still more remain.  Team
+members should get this version and beat on it.
+
+3.5.alpha.3       7/6/99 Chris Young
+Includes lots of new files and bunches of changes to add superpatch items
+Does not run properly.  Just an interim version between me and Thorsten.
+
+3.5.alpha.2e      4/20/99 Thorsten Froehlich
+Rewrote INI and command line code to allow easy integration with POVMS.
+Added JPEG image_map, heigh field, etc support.
+Added debug support to POVMS: If you want to see all POVMS messages that
+ are sent simply define _DEBUG_POVMS_ inside povms.h. You can also view
+ an individual message/object by calling POVMSObject_Dump.
+Changed povray_cooperate to allow rerendering of scene (still with
+ re-parsing).
+Improved stability of POVMS in low (no) memory conditions.
+Added abstract POVMS basic data type: Use POVMSType, POVMSInt, POVMSLong,
+ POVMSFloat and POVMSBool instead of unsigned long, int, long, DBL and
+ bool (or int).
+Added (hopefully working) reentrancy support. If you use threads in your
+ operating system define the macros POVMS_BeginAtomic and POVMS_EndAtomic.
+Added POVMS_Malloc, POVMS_Calloc, POVMS_Realloc and POVMS_Free to allow
+ changed to POVMS memory allocation (NOTE: You cannot use POV_MALLOC,
+ POV_CALLOC, POV_REALLOC and POV_FREE!)
+Added/changed various POVMS internals.
+Moved some functions into separate files in order to convert them to C++
+ classes later.
+
+Added files (all are required):
+COLUTILS.C, COLUTILS.H, FILE_POV.C, FILE_POV.H, HISTOGRA.C, HISTOGRA.H,
+JPEG_POV.C, JPEG_POV.H, POV_UTIL.C, POV_UTIL.H, RENDERIO.C, RENDERIO.H,
+STATSPOV.C, STATSPOV.H
+
+Added JPEG library directory jpeg-6b. The following files are required
+to compile the library (there are also various makefiles):
+jdatadst.c, jdatasrc.c, jerror.c, jmemnobs.c, jcapimin.c, jcapistd.c, 
+jctrans.c, jcparam.c, jcinit.c, jcmaster.c, jcmarker.c, jcmainct.c, 
+jcprepct.c, jccoefct.c, jccolor.c, jcsample.c, jchuff.c, jcphuff.c, 
+jcdctmgr.c, jfdctfst.c, jfdctflt.c, jfdctint.c, jdapimin.c, jdapistd.c, 
+jdtrans.c, jdmaster.c, jdinput.c, jdmarker.c, jdhuff.c, jdphuff.c, 
+jdmainct.c, jdcoefct.c, jdpostct.c, jddctmgr.c, jidctfst.c, jidctflt.c, 
+jidctint.c, jidctred.c, jdsample.c, jdcolor.c, jquant1.c, jquant2.c, 
+jdmerge.c, jcomapi.c, jutils.c, jmemmgr.c
+
+3.5.alpha.2d      3/26/99 Chris Young
+Added Eric Brown patches
+ no_image and no_reflection (still buggy, fails in csg, no bounds)
+ circular and orient area lights (needs testing, may be ok)
+ 
+3.5.alpha.2c      3/19/99 Chris Young
+Added Daren Scot Wilson's color dispersion patch
+ (needs work to eliminate yellow tint)
+
+3.5.alpha.2b      3/19/99 Chris Young
+Added Scott Manley's image_map repeat feature
+Added offset keyword to image_map (see enclosed scene)
+
+3.5.alpha.2a      3/15/99 Chris Young
+Added patch 3.1e to 3.5
+Fixed missing return values introduced in 3.5a2
+Fixed error for mixed vector math
+
+3.5.alpha.2       3/10/99 Thorsten Froehlich
+Just fixed name to be alpha 2.
+
+3.5.alpha.1g       3/04/99 Thorsten Froehlich
+Added many POVMS features
+Updated POVMS documentation
+
+3.5.alpha.1f       2/23/99 Chris Young
+Added MANY missing includes
+Updated MS-Dos make files
+
+3.5.alpha.1e       2/20/99 Thorsten Froehlich
+Added iso_surface patches.  Chris may change some features or syntax
+ later.  See demo included with patch.
+Added function pattern type. Works as iso_surface function.
+Changed some TRUE and FALSE marco use in 3.5.alpha.1d to true and false.
+
+3.5.alpha.1d       2/20/99 Chris Young
+Added all Nathan Kopp's patches.  May change some features or syntax
+ later.  See docs included with patch/
+Fixed bugs in Found_Instead
+
+3.5.alpha.1c       2/12/99 Thorsten Froehlich
+Fixed some minor bugs in POVMS implementation.
+Added the message kPOVIdent_RenderDone of class kPOVClass_Output which is
+  send by the core when rendering is done. It has no attributes for now.
+
+3.5.alpha.1b       2/11/99 Chris Young
+Renamed mem.c and mem.h to pov_mem.c and pov_mem.h
+Eliminated POV_CONSOLE
+Fixed many problems that alpha.1 caused for MS-Dos
+Renamed RED, GREEN, BLUE, FILTER, TRANSM to pRED, pGREEN, pBLUE, 
+  pFILTER, pTRANSM to eliminate conflict with conio.h enum
+Updated MS-Dos makefiles for new modules but dependencies are not complete
+Many C++ warnings eliminated
+ 
+3.5.alpha.1a       2/09/99 Thorsten Froehlich
+Added back in POV_BANNER, POV_WARNING, POV_RENDER_INFO, POV_STATUS_INFO, 
+  POV_DEBUG_INFO, POV_FATAL, POV_STATISTICS.
+ 
+3.5.alpha.1        2/08/99 Thorsten Froehlich
+Removed macros MAIN_RETURN_TYPE, MAIN_RETURN_STATEMENT, UICB_PARSE_ERROR,
+  UICB_USER_ABORT, UICB_OPEN_INCLUDE, UICB_CLOSE_INCLUDE_FILE, POV_BANNER,
+  POV_WARNING, POV_RENDER_INFO, POV_STATUS_INFO, POV_DEBUG_INFO, POV_FATAL,
+  POV_STATISTICS.
+Added macro POVRAY_PLATFORM_NAME, the name of the platform as string.
+Added macro EXIT_POVRAY(int). Terminates POV-Ray and exits by default.
+Added macro offers a result (error) code. This will be called in case of an
+  error to return from povray_render(..) or povray_cooperate().
+Added macro POV_NUM_ECHO_LINES, allows customising a former fixed value.
+  Defaults to 5.
+Added macro POV_ECHO_LINE_LENGTH, allows customising a former fixed value.
+  Defaults to 180.
+Added macro POV_ERROR_MARKER_TEXT, allows customising a former fixed value.
+  Defaults to "<--- Error".
+Added macro POV_CONSOLE, replaces POV_BANNER, POV_WARNING, POV_RENDER_INFO,
+  POV_STATUS_INFO, POV_DEBUG_INFO, POV_FATAL, POV_STATISTICS macros that
+  are now superseded by the POVMS.
+Added macro DONT_USE_POVMS, deactivates most POVMS message building source
+  code.
+Added macro POV_RAY_IS_OFFICIAL which is set to true if the POV-Ray version
+  is official and set to false if it is not.
+Changed use of macros ALTMAIN and NOCMDLINE, there no longer is an alt_main
+  function. ALTMAIN will only deactivate the main function.
+Changed use of macro FINISH_POVRAY, do longer provide a result (error) code
+  argument. Does not need to be defined. This is now the last call POV-Ray
+  makes before termination by povray_terminate().
+Moved POV_Std_Display_xxx functions into USERDISP.C and USERDISP.H to solve
+  a recursive include problem the when function prototypes were needed in
+  CONFIG.H.
+Replaced macros TRUE and FALSE by C++ keywords true and false.
+Changed macros X,Y,Z,T,U,V,RED,GREEN,BLUE,FILTER,TRANSM to be enums. When
+  system specific include files use the same types there should be a
+  compiler warning now.
+Changed wording of some error messages.
+Replaced function pre_init_povray() with povray_init().
+Replaced function alt_main(..) with povray_render(..).
+Replaced function POV_Terminate(int) with povray_exit(int) to end rendering.
+Added function povray_terminate() which will clean up before termination.
+  This function may only be called if povray_init() has been called, and it
+  may only be called at the end of execution, not at the end of rendering!
+  It is mainly intended for GUI interfaces which don't terminate between
+  renders. Only it will free all memory, povray_exit(int) will only free the
+  memory needed for rendering.
+Added new, optional GUI <=> core interface function povray_cooperate(). It
+  is mainly intended for GUI interfaces. See the POVMS documentation for
+  all details.
+Added the POVMS (POV-Ray Message System). It is designed to significantly
+  ease the creation of GUIs for POV-Ray. See the POVMS documentation for
+  all details. Be careful not to link it in a way it can be misused to
+  control POV-Ray by an external program.
+  NOTE: The POVMS cannot use POV_MALLOC, POV_CALLOC, POV_REALLOC or POV_FREE
+  functions because these functions depend on the POVMS and are onyl 
+  available after the POVMS has been inited. The POVMS uses the standard C
+  memory management functions malloc, calloc, realloc and free instead.
+Added macro POVMSType. It needs to be 32 bit (unsigned). It will be used
+  to store data composed of four characters, i.e. 'MyTp', 'any ', '4Mac'.
+Added macros POVMSInt, POVMSFloat and POVMSBool. Adjust them if needed.
+  Note that POVMSFloat will be used to store values up to the size of
+  DBL - so you may want to define POVMSFloat to be of size DBL. If the
+  compiler used has native bool support you may want to define POVMSBool
+  to be bool.
+Added POVMS_Export and POVMS_CDECL macros. If you need to export some POVMS
+  functions and the eported functions need some platform sepcific
+  declarations, look into POVMS.H for how they are used and define the
+  macros as needed.
+Added macro POVMS_ASSERT_OUTPUT(s). The POVMS cannot use the error stream
+  because it is available before the streams are inited. This macro is used
+  to output an error message.
+
+Added files (all are required):
+POVMS.C, POVMS.H, POVMSEND.C, POVMSEND.H, POVMSREC.C, POVMSREC.H,
+POVMSGID.H, USERDISP.C, USERDISP.H
