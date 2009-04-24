@@ -9,6 +9,9 @@
 // The number of "arms" of the spiral,
 // increases from top to bottom.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 
 
 global_settings { assumed_gamma 2.2 }

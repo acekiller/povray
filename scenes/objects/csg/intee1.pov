@@ -4,6 +4,9 @@
 // File by Dan Farmer.
 // Demonstrates CSG intersection,  layered stone texture.
 // POV-Ray 2.0 Time: about 3 hours @640x480+a0.2 on 486/33
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

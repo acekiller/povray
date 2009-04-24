@@ -2,7 +2,9 @@
 // POV-Ray 3.0 sample data file by Dieter Bayer, Nov. 1994
 //
 // This scene shows a number of cubic superellipsoids.
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

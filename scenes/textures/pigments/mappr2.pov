@@ -2,7 +2,9 @@
 // Image_map demonstration, shows various types of mapping
 // File by Alexander Enzmann
 // NOTE: Requires "test.png"
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

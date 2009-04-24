@@ -1,5 +1,8 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // Illustrates how adaptive level can affect soft shadows
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 // The shadow on the left uses "adaptive 0" and shows some major shadow
 // artifacts causes by undersampling. As the adaptive level increases

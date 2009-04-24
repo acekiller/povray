@@ -2,6 +2,9 @@
 // by Chris Young
 // ARRAY3.POV demonstrates basic use of the float functions
 // dimensions(ARRAY_ID) and dimension_size(ARRAY_ID,INT).
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 

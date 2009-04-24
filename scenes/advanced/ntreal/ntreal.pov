@@ -3,7 +3,9 @@
 // Title-"Not a Trace of Reality"
 // Compuserve Hall Of Fame award winner
 // This one is hard to describe and easy to look at. Have fun with it!
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 max_trace_level 5 }
 

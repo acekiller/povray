@@ -2,6 +2,7 @@
 
 #ifndef(Shapes_Old_Inc_Temp)
 #declare Shapes_Old_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including shapes_old.inc\n"

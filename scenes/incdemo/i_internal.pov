@@ -8,6 +8,10 @@
 // Using the "subset start" and "subset end" allows to choose the desired frames
 //    example: all frames: start 1, end 78
 //                   frame 14 (cushion): start 14, end 14
+//
+// -w320 -h240 +kfi1 +kff78
+// -w800 -h600 +a0.3 +kfi1 +kff78
+
 #if (clock_on = 0)
 	#warning " This demo was designed to be used with the clock: \n please read the comments in the scene's header"#end
 #include "functions.inc"

@@ -9,7 +9,9 @@
 //
 // Note some spheres are redundant.  See PYRAMID2.POV
 // for a version which eliminates duplicate spheres.
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 // Define the macro.  Parameters are:
 //   X:  position of sphere

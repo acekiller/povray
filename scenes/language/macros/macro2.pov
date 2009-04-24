@@ -6,6 +6,9 @@
 // an object identifier and re-declares it turned a specified
 // amount about a particular axis. The result is passed back
 // through the parameter.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 

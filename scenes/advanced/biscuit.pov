@@ -5,7 +5,8 @@
 //                                                                        //
 // Experienced windows users: try right-clicking on the line below ...    //
 //                                                                        //
-//   +w800 +h600 +a0.3 +am2
+// +w320 +h240
+// +w800 +h600 +a0.3 +am2
 //                                                                        //
 // See the docs for full explanations of new features such as the above.  //
 //                                                                        //

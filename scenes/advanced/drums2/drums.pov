@@ -3,6 +3,9 @@
 // Copyright Dan Farmer 1992
 // Time: a little over 3 hours no anti-aliasing, 640,480 on 33/486
 //       7 hrs, 22 min +a0.05
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 /*
 Fractint 17 parameter file to reconstruct REDNEWT.PNG:

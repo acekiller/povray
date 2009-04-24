@@ -1,7 +1,6 @@
-#ifdef(Shapes2_Inc_Temp)
-// do nothing
-#else
+#ifndef(Shapes2_Inc_Temp)
 #declare Shapes2_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
 #   debug "including shapes2.inc\n"

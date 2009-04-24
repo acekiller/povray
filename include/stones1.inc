@@ -2,6 +2,11 @@
 //    File: stones1.inc
 //    Last updated: 2001.7.24
 //    Description:
+
+#ifndef(Stones1_Inc_Temp)
+#declare Stones1_Inc_Temp = version;
+#version 3.5;
+
 /*     T_Stone1 through T_Stone24 created by Mike Miller, 1992
 
     Contains declared texture statements defining a variety of
@@ -126,11 +131,6 @@
     This file was modified July 2001 to work as it should with POV-Ray 3.5,
 all filters being changed to transmits.
 */
-
-#ifdef(Stones1_Inc_Temp)
-// do nothing
-#else
-#declare Stones1_Inc_Temp = version;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including stones1.inc\n"

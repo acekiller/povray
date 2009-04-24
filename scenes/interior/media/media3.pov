@@ -5,6 +5,9 @@
 // This scene shows the effect of a partially transparent image
 // map inside a participating medium.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 //

@@ -1,7 +1,6 @@
-#ifdef(Gold_Inc_Temp)
-// do nothing
-#else
+#ifndef(Gold_Inc_Temp)
 #declare Gold_Inc_Temp=version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
 #   debug "including golds.inc\n"
@@ -228,5 +227,6 @@ finish {
 #declare T23 = texture { T_Gold_5C }
 #declare T24 = texture { T_Gold_5D }
 #declare T25 = texture { T_Gold_5E }
+
 #version Gold_Inc_Temp;
 #end

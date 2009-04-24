@@ -92,7 +92,7 @@ union {
   scale <1,1,0.6>
 }
 
-#include "glass.inc"
+#include "bglass.inc"
 
 union {
   object {

@@ -8,6 +8,10 @@
 
 // The shadows are a bit confusing, but try to render both
 // with and without them.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
+
 #declare Shadows = off;
 
 // A camera that looks down from above.

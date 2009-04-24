@@ -11,10 +11,9 @@
  use as top layers.
 */
 
-#ifdef(Woodmaps_Inc_Temp)
-// do nothing
-#else
+#ifndef(Woodmaps_Inc_Temp)
 #declare Woodmaps_Inc_Temp=version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including woodmaps.inc\n"

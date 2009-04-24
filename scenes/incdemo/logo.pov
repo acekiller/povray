@@ -11,6 +11,9 @@
 // applied to the logo, that way allowing for a great variety of looks.
 //
 // For more information on the POV-Ray logo, see logo.inc
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "logo.inc"
 

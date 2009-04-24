@@ -3,10 +3,9 @@
 //    Last updated: 2001.7.24
 //    Description: Sky textures, sky_spheres, and sky objects.
 
-#ifdef(Skies_Inc_Temp)
-// do nothing
-#else
+#ifndef(Skies_Inc_Temp)
 #declare Skies_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including skies.inc\n"

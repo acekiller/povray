@@ -8,6 +8,8 @@
 // by the PNG, TGA and PPM image types. For example the command
 // line setting +fn will set the output image type to PNG. See
 // the documentation for details. ) 
+//
+// -w512 -h384
 
 global_settings { assumed_gamma 2.2 hf_gray_16 }
 

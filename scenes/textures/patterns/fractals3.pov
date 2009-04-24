@@ -8,7 +8,7 @@
 
 // In WinPov, use the right mouse button to copy the following
 // to the command line:
-// +W800 +H267 +a0.1 +fn
+// +W800 +H267 +a0.1
 
 #declare P =
   box

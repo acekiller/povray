@@ -2,6 +2,9 @@
 // updated for compatibility with POV-Ray v3.5 by Ken Tyler on 08-26-01
 // piece 3
 // by Truman Brown (12/91)
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 // Due to the large number of objects, you will probably have to
 // have a lot of memory to render this scene.

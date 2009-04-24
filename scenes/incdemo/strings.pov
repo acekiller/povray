@@ -5,6 +5,8 @@
 //	This file will not render an image, check the debug messages
 //	for the results.
 //
+// -f
+//
 //*******************************************
 
 #include "strings.inc"

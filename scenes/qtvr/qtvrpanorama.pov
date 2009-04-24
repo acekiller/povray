@@ -17,6 +17,7 @@
 // Auth: Eduard Schwan
 // Camera  Enhancements: Stephen Andrusyszyn, balalaika@earthlink.net
 //
+// -w384 -h1284
 
 #version 3.5;
 

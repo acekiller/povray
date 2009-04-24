@@ -2,6 +2,9 @@
 // "Black and White Stripes"
 // Copyright 2001 Rune S. Johansen
 
+// -w320 -h240
+// -w800 -h600 +a0.3
+
 // This scene makes use of a contrast enhancing filter.
 // For more information, see the demo scene transmitfx.pov
 // located in the folder \scenes\textures\pigments\

@@ -4,6 +4,9 @@
 //                                 WICKER WORK with "trace ()".
 //=================================================================================
 // [Fabien Mosen - August 2001]
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 //This scene demonstrates the use of the "trace" fonction to create shapes
 //that fits irregular shapes.  We are going to model a wicker work surrounding

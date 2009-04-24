@@ -2,6 +2,9 @@
 // A single wooden torus
 // Illustrates what is possible with POV-Raywood textures.
 // File by Dan Farmer Jan 1992
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

@@ -6,7 +6,13 @@
 // Updated : 2001-07-27
 // Auth: Ingo Janssen
 //
-// ====================================================== 
+
+#ifndef(SunPos_Inc_Temp)
+#declare SunPos_Inc_Temp=version;
+#version 3.5;
+
+//
+// ======================================================
 //
 // Assumption: in the scene north is in the +Z direction, south is -Z.
 //
@@ -120,3 +126,5 @@
 
 #end
 
+#version SunPos_Inc_Temp;
+#end

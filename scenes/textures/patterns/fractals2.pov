@@ -8,6 +8,9 @@
 // - Wall: A magnet2m pigment with interior type 1.
 // - Floor: A mandelbrot pigment and normal with
 //   interior type 1.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings {
   max_trace_level 5

@@ -6,6 +6,9 @@
 // Updated: 2001-07-27
 // Auth: Ingo Janssen
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 
 
 // with +w400 +h300 +a0.3

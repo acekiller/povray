@@ -4,6 +4,9 @@
 //   Description:
 // This scene demonstrates some of the new macros in shapes.inc.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 #version 3.5;

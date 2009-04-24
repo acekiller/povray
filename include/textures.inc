@@ -2,6 +2,11 @@
 //    File: textures.inc
 //    Last updated: 2001.7.25
 //    Description:
+
+#ifndef(Textures_Inc_Temp)
+#declare Textures_Inc_Temp = version;
+#version 3.5;
+
 /*                     Standard textures include file
 
     Contents:
@@ -34,10 +39,6 @@
 #ifdef(View_POV_Include_Stack)
     #debug "including textures.inc\n"
 #end
-
-#local Textures_Inc_Temp = version;
-
-#version 3.5;
 
 
 //*****************************************************************************
@@ -1467,4 +1468,4 @@ centered around the origin.
 #end
 
 #version Textures_Inc_Temp;
-// end of file
+#end

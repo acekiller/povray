@@ -10,6 +10,7 @@
 
 #ifndef(Rad_Def2_Inc_Temp)
 #declare Rad_Def2_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including rad_def.inc\n"

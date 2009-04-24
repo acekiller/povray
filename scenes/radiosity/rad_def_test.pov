@@ -4,6 +4,9 @@
 // Desc: rad_def.inc demo scene
 // Date: May 2001
 // Auth: Christoph Hormann
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "rad_def.inc"
 global_settings {

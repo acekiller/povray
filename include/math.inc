@@ -1,6 +1,6 @@
 //    Persistence of Vision Ray Tracer version 3.5 Include File
 //    File: math.inc
-//    Last updated: 2002.04.29
+//    Last updated: 2004.02.26
 //    Description: This file contains various math macros and functions
 
 #ifndef(MATH_INC_TEMP)
@@ -122,13 +122,13 @@
 // Trig:
 // --------------------------------------------------------
 
-#declare sind = function (V) {sin(radians(V))}
-#declare cosd = function (V) {cos(radians(V))}
-#declare tand = function (V) {tan(radians(V))}
+#declare sind = function (x) {sin(radians(x))}
+#declare cosd = function (x) {cos(radians(x))}
+#declare tand = function (x) {tan(radians(x))}
 
-#declare asind = function (V) {degrees(asin(V))}
-#declare acosd = function (V) {degrees(acos(V))}
-#declare atan2d = function (A, B) {degrees(atan2(A, B))}
+#declare asind = function (x) {degrees(asin(x))}
+#declare acosd = function (x) {degrees(acos(x))}
+#declare atan2d = function (x, y) {degrees(atan2(x, y))}
 
 
 // --------------------------------------------------------
@@ -138,30 +138,33 @@
 #declare max3 = function (x, y, z) {max(x,y,z)}
 #declare min3 = function (x, y, z) {min(x,y,z)}
 
-#declare even = function(N) {select(mod(N, 2), 0, 1, 0)}
-#declare odd  = function(N) {select(mod(N, 2), 1, 0, 1)}
+#declare even = function(x) {select(mod(x, 2), 0, 1, 0)}
+#declare odd  = function(x) {select(mod(x, 2), 1, 0, 1)}
 
 // Squares the value
-#declare f_sqr = function (V) {(V*V)}
+#declare f_sqr = function (x) {(x*x)}
 
 // Returns the sign of a value
-#declare sgn = function (V) {select(V,-1, 0, 1)}
-//#declare sgn = function (V) {V/abs(V)}
+#declare sgn = function (x) {select(x,-1, 0, 1)}
+//#declare sgn = function (x) {x/abs(x)}
 
 // Range handling
-// clips a number to the range [Min, Max]. Values above Max return Max,
+// clips a number (x) to the range [Min, Max] ([y, z]). Values above Max return Max,
 // below Min return Min.
-#declare clip = function (V, Mn, Mx) {min(Mx, max(V, Mn))}
+#declare clip = function (x, y, z) {min(z, max(x, y))}
 
-// Clamps a number to the range [Min, Max].
+// Clamps a number (x) to the range [Min, Max] ([y, z]).
 // Values outside this range wrap around.
-#declare clamp = function (V, Mn, Mx) {mod(V - Mn, Mx - Mn) + select(mod(V - Mn, Mx - Mn), Mx, Mn)}
+#declare clamp = function (x, y, z) {mod(x - y, z - y) + select(mod(x - y, z - y), z, y)}
 
-// Adjusts input values in the range [0, 1] to output values in range [Rmn, Rmx].
-#declare adj_range = function (V, Mn, Mx) {V*(Mx - Mn) + Mn}
+// Adjusts input values (x) in the range [0, 1] to output values in range [Rmn, Rmx] ([y, z]).
+#declare adj_range = function (x, y, z) {x*(z - y) + y}
 
 // Adjusts values in a specified range [Rmn, Rmx] to the specified range [Min, Max]
-#declare adj_range2 = function (V, Mn, Mx, OMn, OMx) {((V - Mn)/(Mx - Mn))*(OMx - OMn) + OMn}
+#declare adj_range2 = 
+  function (x, y, z, _Math_INC_OMn, _Math_INC_OMx) {
+    ((x - y)/(z - y))*(_Math_INC_OMx - _Math_INC_OMn) + _Math_INC_OMn
+  }
 
 // Interpolate author: Margus Ramst
 // Interpolation

@@ -6,7 +6,9 @@
 // self-including image_maps in the picture frame.  See DESK.INI.
 // Specifies .PNG format for the image_maps, so you may need to do
 // some editing if your standard output format is different than that.
-
+//
+// -w320 -h240 +kfi1 +kff4 +ki1.0 +kf4.0 +fn
+// -w800 -h600 +a0.3 +kfi1 +kff4 +ki1.0 +kf4.0 +fn
 
 global_settings {
   assumed_gamma 2.2

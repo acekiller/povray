@@ -3,6 +3,9 @@
 // Note: Original used 640 x 480 height field.
 // This version is scaled down for distribution.
 // Requires "fract003.png" plasma png for the height field.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings {
   assumed_gamma 2.2

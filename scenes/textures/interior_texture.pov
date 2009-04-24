@@ -1,5 +1,8 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // This file demonstrates the "interior_texture" feature
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 

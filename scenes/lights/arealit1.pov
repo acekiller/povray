@@ -1,5 +1,8 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // Illustrates how area light grid size affects soft shadows
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 // Left   shadow - area_light <8,0,0>, <0,0,8>,  3,  3 (renders fastest)
 // Middle shadow - area_light <8,0,0>, <0,0,8>,  5,  5

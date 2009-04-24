@@ -2,6 +2,9 @@
 // Created by Fabien Mosen - April 8 2001
 // This file demonstrates the use of the "perspective" (default)
 // camera.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 #include "camera-context.inc" //common file containing object definitions for the camera demos

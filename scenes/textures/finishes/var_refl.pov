@@ -5,6 +5,9 @@
 // Date: 2001/04/15
 // Auth: ingo
 // Updated 28. Aug 01 by Christoph Hormann
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #version 3.5;
 global_settings {assumed_gamma 1.0}

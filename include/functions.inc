@@ -1,9 +1,8 @@
 //    Persistence of Vision Ray Tracer version 3.5 Include File
 
-#ifdef(Functions_Inc_Temp)
-// do nothing
-#else
+#ifndef(Functions_Inc_Temp)
 #declare Functions_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
 #   debug "including function.inc\n"
@@ -681,6 +680,6 @@
 #declare f_scallop_wave = function {abs(sin(x*z*pi)*y)}
     // f_scallop_wave(val, amplitude, frequency)
 
-
+#version Functions_Inc_Temp;
 #end//functions.inc
 

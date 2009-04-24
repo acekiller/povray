@@ -4,6 +4,9 @@
 // Auth: Rune S. Johansen
 // Desc: This scene demonstrates the use of several slope pattern textures.
 //       First render SLOPEMT_DAT.POV and then render this file.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 camera {
    location <0,1,-40>

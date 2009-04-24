@@ -1,6 +1,9 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // Recursive cluster of mirrored spheres
 // After a classic, Sphereflake, by Eric Haines
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { max_trace_level 20  assumed_gamma 2.2 }
 

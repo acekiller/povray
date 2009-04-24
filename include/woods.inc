@@ -61,10 +61,9 @@
   (generally 2 to 4 degrees seems to work well).
 */
 
-#ifdef(Woods_Inc_Temp)
-// do nothing
-#else
+#ifndef(Woods_Inc_Temp)
 #declare Woods_Inc_Temp=version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including woods.inc\n"

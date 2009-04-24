@@ -7,7 +7,9 @@
 //       and for smoothly changing colors.
 // Date: 10/1/95
 // Auth: Eduard Schwan
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 
 global_settings { assumed_gamma 1.0 }

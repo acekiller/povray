@@ -13,6 +13,9 @@
 // - Right box: A mandel4 pigment with interior type 1
 //   and exterior type 5.
 // - Sphere: A julia4 normal.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings {
   max_trace_level 5

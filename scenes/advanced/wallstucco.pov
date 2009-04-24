@@ -5,6 +5,9 @@
 // Updated: 2001/07/26
 // Auth: Ingo Janssen
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 
 global_settings {
    assumed_gamma 1.0

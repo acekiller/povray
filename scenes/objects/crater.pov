@@ -9,7 +9,9 @@
 // Alternatively you can specify the image type of the
 // height_field object in line 23 in this file. See the
 // documentation for details. )
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

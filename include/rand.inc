@@ -275,7 +275,7 @@
    #local Cut=exp(-Mu);
    #local N=0;
    #local R=1;
-   #while (R>=Cut)
+   #while (R>Cut)
       #local R=R*rand(Stream);
       #local N=N+1;
       #if(N>Maxtimes)

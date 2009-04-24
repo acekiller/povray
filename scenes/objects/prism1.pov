@@ -3,6 +3,9 @@
 //
 // back to front: linear, quadratic, cubic interpolation
 // left to right: linear and conic (2x) sweeping
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

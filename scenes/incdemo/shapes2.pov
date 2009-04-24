@@ -1,6 +1,9 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // By Chris Young
 // This image contains an example of every shape from SHAPES2.INC
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #version 3.1;
 global_settings { assumed_gamma 2.2 }

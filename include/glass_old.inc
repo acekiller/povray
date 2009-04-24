@@ -9,6 +9,7 @@
 
 #ifndef(Glass_Old_Inc_Temp)
 #declare Glass_Old_Inc_Temp=version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including glass_old.inc\n"

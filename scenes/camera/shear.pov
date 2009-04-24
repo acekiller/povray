@@ -3,6 +3,9 @@
 // Created by Fabien Mosen - April 8 2001
 // This file demonstrates shearing the camera,
 // to prevent 'falling buildings'.
+//
+// -w320 -h240 -uv
+// -w800 -h600 +a0.3 -uv
 
 // ********** IMPORTANT *******************
 // Use ' -uv ' on the commandline,

@@ -2,6 +2,9 @@
 // Bump map example
 // File by Drew Wells
 // NOTE: Calls for "bumpmap_.png", but any 320x200 gif will work.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

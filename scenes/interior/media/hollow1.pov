@@ -15,6 +15,8 @@
 // because it is filled with fog. Thus the background seen through
 // it and its shadow is darker.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
 //
 //*******************************************
 

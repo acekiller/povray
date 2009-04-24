@@ -3,7 +3,9 @@
 // Broken dowel, uses clipped heightfields and heightfield as a clipping
 // object to create the fractured end of the dowel.  Uses a Fractint
 // "plasma cloud" image for the heightfield.  (just about any size will do).
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

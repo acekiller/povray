@@ -20,6 +20,9 @@
 //		This can be made single-ended, replace abs(y) with max(y, 0).
 //	12: a kind of spindle shape
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 #version 3.5;

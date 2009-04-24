@@ -1,7 +1,9 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // By Chris Young & Dan Farmer
 // Illustrates many of the colors in standard include file "colors.inc"
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

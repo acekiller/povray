@@ -17,6 +17,10 @@
 // Tracing time : >2h min
 // Peak memory : 207 Mb
 // ------------------------------
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
+
 #declare WriteFile=true;  // turns on the generation of the stacks and write them to a file
 #declare WriteFile=false; // turns off the generation of the file, just read them from the previous file
 // ------------------------------

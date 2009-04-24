@@ -4,7 +4,9 @@
 // (and something to view through it)
 // This example doesn't work very well, but it gives a good
 // starting point for a better use of the magnifying glass.
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

@@ -1,7 +1,6 @@
-#ifdef(Metals_Inc_Temp)
-// do nothing
-#else
+#ifndef(Metals_Inc_Temp)
 #declare Metals_Inc_Temp=version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
 #   debug "including metals.inc\n"

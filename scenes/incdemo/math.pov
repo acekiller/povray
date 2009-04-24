@@ -4,6 +4,9 @@
 //      Authors: Chris Huff / Bob Hughes / Tor Olav Kristensen
 //      Description: Graphing of functions
 //*******************************************
+//
+// -w320 -h320
+// -w800 -h800 +a0.3
 
 #version 3.5;
 
@@ -57,7 +60,7 @@ global_settings { assumed_gamma 1 }
 
 
 #macro PlotPoint(p0)
-  
+
   sphere { v2Dto3D(vNorm(p0)), CylRadius }
 
 #end // macro PlotPoint

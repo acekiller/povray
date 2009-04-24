@@ -2,6 +2,9 @@
 // By Dan Farmer
 // Parabolic arches on the water.  Is this the St. Louis McDonalds?
 // Enhanced for POV-Ray 3.1
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { 
   assumed_gamma 2.2 

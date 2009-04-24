@@ -4,6 +4,9 @@
 //	Description:
 // Participating media with spotlights.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 //

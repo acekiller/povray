@@ -4,6 +4,9 @@
 //	Description:
 // A demonstration of the Circle_Text(), Align_Object(), and Center_Object macros.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 #include "shapes.inc"

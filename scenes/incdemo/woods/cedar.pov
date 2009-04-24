@@ -1,4 +1,8 @@
 // Persistence Of Vision Raytracer version 3.5 sample file.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
+
 #include "colors.inc"
 #include "textures.inc"
 #include "shapes.inc"

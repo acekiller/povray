@@ -4,6 +4,9 @@
 //	Description:
 // This scene shows a hollow, checkered sphere filled with fire.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 global_settings {

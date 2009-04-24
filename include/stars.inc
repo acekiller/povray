@@ -1,3 +1,7 @@
+#ifndef(Stars_Inc_Temp)
+#declare Stars_Inc_Temp=version;
+#version 3.5;
+
 /*
          Persistence of Vision Raytracer Version 3.1
 
@@ -148,4 +152,5 @@ texture {
     finish { diffuse 0 ambient 1 }
 }
 
-
+#version Stars_Inc_Temp;
+#end

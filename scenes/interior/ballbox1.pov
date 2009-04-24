@@ -3,6 +3,9 @@
 // Demonstrates glass textures, CGS with box primitives, one of Mike Miller's
 // fabulous marble textures, modified with an "octaves" change, and doesn't
 // make a half-bad image, either.  Interesting lighting effect, too.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { 
   assumed_gamma 2.2 

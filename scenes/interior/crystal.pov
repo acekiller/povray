@@ -7,6 +7,9 @@
 // in POV-Ray.  The original image is available on CompuServe
 // (GO GRAPHDEV), by the name of crysta.gif.
 //---------------------------------------------------------------------------
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 #include "shapes.inc"

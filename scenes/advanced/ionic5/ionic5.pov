@@ -16,7 +16,9 @@
 
 // gamma devised to approximate the illustration in Ray Tracing Creations II
 // updated for compatibility with POV-Ray v3.5 by Ken Tyler on 08-26-01
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 1.8 }
 

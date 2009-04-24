@@ -1,0 +1,317 @@
+
+<!--  This file copyright Persistence of Vision Raytracer Pty. Ltd. 2003-2004  -->
+<html> 
+<head>
+  
+<!--  NOTE: In order to users to help find information about POV-Ray using  -->
+ 
+<!--  web search engines, we ask you to *not* let them index documentation  -->
+ 
+<!--  mirrors because effectively, when searching, users will get hundreds  -->
+ 
+<!--  of results containing the same information! For this reason, the two  -->
+ 
+<!--  meta tags below disable archiving and indexing of this page by all  -->
+ 
+<!--  search engines that support these meta tags.  -->
+ 
+ <meta content="noarchive" name="robots">
+   
+ <meta content="noindex" name="robots">
+   
+ <meta content="no-cache" http-equiv="Pragma">
+   
+ <meta content="0" http-equiv="expires">
+   
+<title>2.1.7 Notation and Basic Assumptions</title>
+ <link href="povray35.css" rel="stylesheet" type="text/css"> 
+</head>
+ <body> 
+<table class="NavBar" width="100%">
+  
+ <tr>
+   
+  <td align="left" nowrap="" valign="middle" width="32">
+    <a href="s_54.html"><img alt="previous" border="0" src="prev.png"></a> 
+   
+  </td>
+   
+  <td align="left" valign="middle" width="30%">
+    <a href="s_54.html">2.1.6 How Do I Begin?</a> 
+  </td>
+   
+  <td align="center" valign="middle">
+    <strong class="NavBar">POV-Ray 3.6 for UNIX documentation</strong><br> <strong>2.1.7 
+   Notation and Basic Assumptions</strong> 
+  </td>
+   
+  <td align="right" valign="middle" width="30%">
+    <a href="s_56.html">2.2 Getting Started</a> 
+  </td>
+   
+  <td align="right" nowrap="" valign="middle" width="32">
+    <a href="s_56.html"><img alt="next" border="0" src="next.png"></a> 
+   
+  </td>
+   
+ </tr>
+  
+</table>
+ 
+<h3><a name="s02_01_07">2.1.7 </a>Notation and Basic Assumptions</h3>
+
+<p>
+  Throughout the tutorial and reference section of this document, the following notation is used to mark keywords of 
+ the scene description language, command line switches, INI file keywords and file names. 
+</p>
+
+<table summary="Basic notation">
+ 
+ <tr>
+  
+  <td>
+    <code>keyword</code> 
+  </td>
+
+  <td>
+    mono-spaced 
+  </td>
+
+  <td>
+    POV-Ray keywords and punctuation 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    <code>+W640 +H480</code> 
+  </td>
+
+  <td>
+    mono-spaced 
+  </td>
+
+  <td>
+    command-line switches 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    C:\MYFILE.POV 
+  </td>
+
+  <td>
+    all caps 
+  </td>
+
+  <td>
+    file names, directories, paths 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    SYNTAX_ITEM 
+  </td>
+
+  <td>
+    italics, all caps 
+  </td>
+
+  <td>
+    required syntax item 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    [SYNTAX_ITEM] 
+  </td>
+
+  <td>
+    italics, all caps, braces 
+  </td>
+
+  <td>
+    optional syntax item 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    SYNTAX_ITEM... 
+  </td>
+
+  <td>
+    italics, all caps, ellipsis 
+  </td>
+
+  <td>
+    one or more syntax items 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    [SYNTAX_ITEM...] 
+  </td>
+
+  <td>
+    italics, all caps, braces, ellipsis 
+  </td>
+
+  <td>
+    zero or more syntax items 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    Value_1 
+  </td>
+
+  <td>
+    italics, mixed case 
+  </td>
+
+  <td>
+    a float value or expression 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    &lt;Value_1&gt; 
+  </td>
+
+  <td>
+    italics, mixed case, angle braces 
+  </td>
+
+  <td>
+    a vector value or expression 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    <code>[</code> ITEM <code>]</code> 
+  </td>
+
+  <td>
+    mono-spaced square braces 
+  </td>
+
+  <td>
+    ITEM enclosed in required braces 
+  </td>
+
+ </tr>
+
+ <tr>
+  
+  <td>
+    ITEM1 | ITEM2 
+  </td>
+
+  <td>
+    vertical bar 
+  </td>
+
+  <td>
+    choice of ITEM1 or ITEM2 
+  </td>
+
+ </tr>
+
+</table>
+
+<p>
+  In the plain ASCII version of the document there is no visible difference between the different notations. 
+</p>
+
+<p>
+  <strong>Note:</strong> POV-Ray is a command-line program on Unix and other text-based operating systems and is 
+ menu-driven on Windows and Macintosh platforms. Some of these operating systems use folders to store files while 
+ others use directories. Some separate the folders and sub-folders with a slash character (<code>/</code>), back-slash 
+ character (<code>\</code>), or others. 
+</p>
+
+<p>
+  We have tried to make this documentation as generic as possible but sometimes we have to refer to folders, files, 
+ options etc. and there's no way to escape it. Here are some assumptions we make... 
+</p>
+
+<p>
+  1) You installed POV-Ray in the &quot;<code>C:\POVRAY36</code>&quot; directory. For MS-Dos this is probably true 
+ but for Unix it might be &quot;<code>/usr/povray3</code>&quot;, or for Windows it might be &quot;<code>C:\Program 
+ Files\POV-Ray for Windows v3.6</code>&quot;, for Mac it might be &quot;<code>MyHD:Apps:POV-Ray 36:</code>&quot;, or 
+ you may have used some other drive or directory. So if we tell you that &quot;Include files are stored in the <code>\povray36\include</code> 
+ directory,&quot; we assume you can translate that to something like &quot;<code>::POVRAY36:INCLUDE</code>&quot; or 
+ &quot;<code>C:\Program Files\POV-Ray for Windows v3.6\include</code>&quot; or whatever is appropriate for your 
+ platform, operating system and installation. 
+</p>
+
+<p>
+  2) POV-Ray uses INI files and/or command-line switches (if available) to choose options in all versions, but 
+ Windows and Mac also use dialog boxes or menu choices to set options. We will describe options assuming you are using 
+ switches or INI files when describing what the options do. We have taken care to use the same terminology in designing 
+ menus and dialogs as we use in describing switches or INI keywords. See your version-specific documentation on menu 
+ and dialogs. 
+</p>
+
+<p>
+  3) Some of you are reading this using a help-reader, built-in help, web-browser, formatted printout, or plain text 
+ file. We assume you know how to get around in which ever medium you're using. We'll say &quot;See the chapter on &quot;<a href="s_64.html#s02_02_08">Setting 
+ POV-Ray Options</a>&quot; we assume you can click, scroll, browse, flip pages or whatever to get there. 
+</p>
+ <br> 
+<table class="NavBar" width="100%">
+  
+ <tr>
+   
+  <td align="left" nowrap="" valign="middle" width="32">
+    <a href="s_54.html"><img alt="previous" border="0" src="prev.png"></a> 
+   
+  </td>
+   
+  <td align="left" valign="middle" width="30%">
+    <a href="s_54.html">2.1.6 How Do I Begin?</a> 
+  </td>
+   
+  <td align="center" valign="middle">
+    <strong>2.1.7 Notation and Basic Assumptions</strong> 
+  </td>
+   
+  <td align="right" valign="middle" width="30%">
+    <a href="s_56.html">2.2 Getting Started</a> 
+  </td>
+   
+  <td align="right" nowrap="" valign="middle" width="32">
+    <a href="s_56.html"><img alt="next" border="0" src="next.png"></a> 
+   
+  </td>
+   
+ </tr>
+  
+</table>
+ </body> </html>

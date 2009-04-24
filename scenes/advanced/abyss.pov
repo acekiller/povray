@@ -6,6 +6,9 @@
 //--------------------------------------------
 // Render with a 2.67 ratio such as 320*120, 640*240, 1024*384, 1280*480
 //--------------------------------------------
+// -w320 -h120
+// -w640 -h240 +a0.3
+// -w1024 -h384 +a0.3
 
 // Uncomment AreaOK=true below to turn on the area light
 // This will blur the shadow under the submarine

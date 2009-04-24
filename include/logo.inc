@@ -1,5 +1,9 @@
 //	Persistence of Vision Raytracer Version 3.5 Scene Description File
 
+#ifndef(Logo_Inc_Temp)
+#declare Logo_Inc_Temp=version;
+#version 3.5;
+
 /*
 The official POV-Ray Logo
 Designed by Chris Colefax
@@ -96,3 +100,6 @@ merge {
    translate <-0.5,-0.35,0>
    scale <1,1,-1>/4
 }
+
+#version Logo_Inc_Temp;
+#end

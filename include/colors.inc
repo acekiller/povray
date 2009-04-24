@@ -3,11 +3,10 @@
 //    Last updated: 2001.7.21
 //    Description: This file contains pre-defined colors and color-manipulation macros.
 
-#ifdef(Colors_Inc_Temp)
-// do nothing
-#else
-#declare Colors_Inc_Temp = version;
+#ifndef(Colors_Inc_Temp)
 
+#declare Colors_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including colors.inc\n"

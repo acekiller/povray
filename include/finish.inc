@@ -1,5 +1,6 @@
-#local Finish_Inc_Temp = version;
-
+#ifndef(Finish_Inc_Temp)
+#declare Finish_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
 #   debug "including finish.inc\n"
@@ -38,3 +39,4 @@
 #declare Mirror = finish {ambient 0  diffuse 0 reflection 1}
 
 #version Finish_Inc_Temp;
+#end

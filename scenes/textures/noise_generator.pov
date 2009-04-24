@@ -7,6 +7,9 @@
 //	The middle column uses noise_generator 2, the MegaPOV corrected version.
 //	The right column uses noise_generator 3, the new Perlin noise.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 #version 3.5;

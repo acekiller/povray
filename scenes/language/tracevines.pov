@@ -6,6 +6,9 @@
 //     Proceedings of Ausgraph '88, pages 27-33
 //     by James Arvo and David Kirk
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 #macro Interfere( A, B, Object )

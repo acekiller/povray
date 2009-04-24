@@ -3,6 +3,9 @@
 //	Author:
 //	Description: Density_file pattern example
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 camera {direction z*2 location <0,0,-10>}

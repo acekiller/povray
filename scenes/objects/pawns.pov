@@ -1,6 +1,9 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // "Pawns", a study in wood... three pawns on a chessboard
 // File by Douglas Otwell
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 1.8 }
 

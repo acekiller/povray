@@ -3,6 +3,8 @@
 // Composed by Greg M. Johnson 2001
 // Uses a macro by Rico Reusser.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #declare UseRadiosity = no;
 #declare S = seed(20173);
@@ -66,7 +68,10 @@ plane {y,-0.9105  pigment {White}}
 		sphere {Posy[N], CompRadius}
 	}
 
-//	#debug concat(str(N,4,0), "\n")
+	#if(mod(N,1000) = 0)
+		#debug concat(str(N,4,0), "\n")
+	#end
+
 	#declare N=N+1;
 #end
 

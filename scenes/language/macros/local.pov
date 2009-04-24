@@ -3,6 +3,9 @@
 // LOCAL.POV demonstrates basic use of a temporary local identifier
 // using the #local directive.  Also demonstrates new #undef directive.
 // See debug messages after rendering.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 

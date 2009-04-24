@@ -3,6 +3,9 @@
 // FILEIO.POV demonstrates basic use of fopen, read and write directives.
 // A string, float and vector are written to a file, read back in
 // and displayed.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 

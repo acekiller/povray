@@ -1,15 +1,17 @@
-#ifdef(Chars_Inc_Temp)
-// do nothing
-#else
-#declare Chars_Inc_Temp=version;
+//    Persistence of Vision Ray Tracer version 3.5 Include File
+//    File: chars.inc
+//    Last updated: 2001.7.21
+//    Description: This file contains letters as objects.
 
+#ifndef(Chars_Inc_Temp)
+#declare Chars_Inc_Temp=version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
 #   debug "including chars.inc\n"
 #end
 
 /*
-	      Persistence of Vision Raytracer Version 3.1
 
 		   Characters for POV-Ray Version 3.1
 		     Original by Ken Maeno 1992-93

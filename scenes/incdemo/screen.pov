@@ -4,6 +4,9 @@
 // Desc: screen.inc demo scene
 // Date: August 2001
 // Auth: Christoph Hormann, Chris Huff and Rune S. Johansen.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "screen.inc"
 

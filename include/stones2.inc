@@ -3,10 +3,9 @@
 //    Last updated: 2001.7.24
 //    Description: Stone textures.
 
-#ifdef(Stones2_Inc_Temp)
-// do nothing
-#else
+#ifndef(Stones2_Inc_Temp)
 #declare Stones2_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
     #debug "including stones2.inc\n"

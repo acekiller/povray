@@ -3,6 +3,9 @@
 // Wine glass and chessboard
 // Updated October, 1996
 // Updated January, 1998  DCB
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 1.0 number_of_waves 3 max_trace_level 5 }
 

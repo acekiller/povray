@@ -1,5 +1,8 @@
 // Persistence Of Vision raytracer version 3.1	sample file.
 // File by Alexander Enzmann
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

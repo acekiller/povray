@@ -1,5 +1,8 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // Demo scene for the "no_image" object modifier
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 #include "thingy.inc"

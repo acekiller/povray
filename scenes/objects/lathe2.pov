@@ -1,7 +1,9 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // Demo showing several surfaces of revolution ... Dieter Bayer, June 1994
 // dmf -- changed glass textures to solid pigments for speed's sake.
-
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

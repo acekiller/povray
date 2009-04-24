@@ -19,6 +19,9 @@
  *   EMail: vs@iki.fi
  */
 
+// -w320 -h240
+// -w800 -h600 +a0.3
+
 global_settings { assumed_gamma 1 }
 #default { finish { ambient .08 diffuse .92 } }
 camera { location <-15, 8, -10> look_at <0, 5, 5> }

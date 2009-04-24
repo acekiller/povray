@@ -4,6 +4,10 @@
 // of procedure that "returns" a value via a parameter but
 // only when a lone identifier is passed.  If a constant
 // or expression is passed, the value cannot be returned.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
+
 #include "colors.inc"
 
 light_source { <100,1000,-1000>, White}

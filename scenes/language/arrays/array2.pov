@@ -3,6 +3,9 @@
 // ARRAY2.POV demonstrates basic use of a two dimension array.
 // A 4 x 10 array is declared and initialized with one digit
 // float values. This digits are displayed as 40 text objects.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 

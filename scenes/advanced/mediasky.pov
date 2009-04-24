@@ -9,6 +9,9 @@
 //	that passes through is tinted orange by its passage, giving the
 //	clouds an orange color.
 //
+// -w320 -h180
+// +w640 +h360 +a0.3
+//
 //*******************************************
 
 #include "colors.inc"

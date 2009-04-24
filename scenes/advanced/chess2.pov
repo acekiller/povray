@@ -8,6 +8,9 @@
 //
 // If you do some nice modifications or additions to this file, please send
 // me a copy. My Internet address is:  vsaari@niksula.hut.fi
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 // Note : CHESS2.POV was created from Ville Saari's chess.pov
 // -- Dan Farmer 1996

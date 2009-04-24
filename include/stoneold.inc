@@ -1,7 +1,6 @@
-#ifdef(Stoneold_Inc_Temp)
-// do nothing
-#else
+#ifndef(Stoneold_Inc_Temp)
 #declare Stoneold_Inc_Temp = version;
+#version 3.5;
 
 #ifdef(View_POV_Include_Stack)
 #   debug "including stoneold.inc\n"

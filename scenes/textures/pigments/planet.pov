@@ -18,6 +18,9 @@
  *   EMail: vs@iki.fi
  */
 
+// -w320 -h240
+// -w800 -h600 +a0.3
+
 global_settings { assumed_gamma 1 }
 
 default { finish { ambient 0.000002 diffuse 0.999998 } }

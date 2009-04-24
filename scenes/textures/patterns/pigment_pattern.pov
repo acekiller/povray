@@ -3,6 +3,9 @@
 
 // first, we'll define a reasonably complex pigment, made of wrinkles
 // and leopard pigments mapped within a bozo pattern in another pigment.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 

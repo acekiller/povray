@@ -15,6 +15,9 @@
 // resulting in a different result than that for an unbent ray,
 // which would show no discontinuities.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 global_settings {

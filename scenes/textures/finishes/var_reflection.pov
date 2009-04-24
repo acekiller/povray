@@ -5,6 +5,7 @@
 // Date: August 2001
 // Auth: Christoph Hormann
 
+// -w320 -h240
 // -w512 -h384 +a0.3
 
 // reflection samples:

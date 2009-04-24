@@ -6,6 +6,8 @@
 // Update: 2001/07/26, to work with POV-Ray 3.5
 // Auth: Ingo Janssen
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #version 3.5;
 

@@ -5,6 +5,9 @@
 // the 7 element light bank (flourescent tube?).  Eliminating some of the
 // lights (and adjusting the brightness color, "Watts", accordingly)
 // will help quite a bit.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { max_trace_level 20 assumed_gamma 2.2 }
 

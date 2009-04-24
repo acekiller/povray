@@ -4,6 +4,9 @@
 //	Description:
 // This file demonstrates the "min_extent" and "max_extent" functions.
 //
+// -w320 -h240
+// -w800 -h600 +a0.3
+//
 //*******************************************
 
 #include "colors.inc"

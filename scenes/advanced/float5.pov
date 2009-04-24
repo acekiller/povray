@@ -3,6 +3,9 @@
 //	Author:
 //	Description: Demonstrates various new float math functions and #while loop
 // Modified for 3.5: changed "log()" to "ln()".
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 1.0 }
 

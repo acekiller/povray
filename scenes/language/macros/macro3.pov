@@ -3,6 +3,10 @@
 // MACRO3.POV demonstrates basic use of a macro as a type
 // of "inline function" that "returns" a value like a built-in
 // function.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
+
 #include "colors.inc"
 
 light_source { <100,1000,-1000>, White}

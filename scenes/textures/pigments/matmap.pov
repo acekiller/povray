@@ -1,7 +1,10 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // Material_map example
 // File by Drew Wells
-// NOTE: Uses POVMAP.GIF
+// NOTE: Uses povmap.png
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings { assumed_gamma 2.2 }
 

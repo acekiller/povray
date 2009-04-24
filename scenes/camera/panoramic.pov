@@ -1,6 +1,9 @@
 // Persistence Of Vision raytracer version 3.5 sample file.
 // Created by Fabien Mosen - April 8 2001
 // This file demonstrates the use of the "panoramic" camera.
+//
+// -w320 -h320
+// -w512 -h512 +a0.3
 
 #include "colors.inc"
 #include "camera-context.inc" //common file containing object definitions for the camera demos

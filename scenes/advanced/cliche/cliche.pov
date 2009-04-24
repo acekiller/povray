@@ -9,6 +9,9 @@
 // 
 // NOTE:
 // First render the file SIGN.POV and then render this file.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 global_settings {max_trace_level 5}
 

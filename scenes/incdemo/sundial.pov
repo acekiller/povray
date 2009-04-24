@@ -12,6 +12,9 @@
 //
 // The motto for this sundial:
 // "By a shadow I explain the heavens"
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "sunpos.inc"
 

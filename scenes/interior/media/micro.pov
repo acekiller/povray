@@ -2,6 +2,9 @@
 // File: micro.pov
 // Author: Chris Huff
 // Desc: Playing with emitting media...resembles something under a microscope
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 #include "functions.inc"

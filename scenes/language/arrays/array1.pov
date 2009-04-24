@@ -3,6 +3,9 @@
 // ARRAY1.POV demonstrates basic use of an array.  A one dimension
 // array is filled with 10 text objects that are a random digit.
 // These objects are displayed in a union object in reverse order.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "debug.inc"
 #include "colors.inc"

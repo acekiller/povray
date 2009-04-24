@@ -4,6 +4,9 @@
 // Demonstrates some of the woods.inc textures.
 // Several wooden spheres (and one glass one), in and around
 // a wooden box.
+//
+// -w320 -h240
+// -w800 -h600 +a0.3
 
 #include "colors.inc"
 #include "textures.inc"
