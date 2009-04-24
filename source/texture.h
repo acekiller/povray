@@ -4,16 +4,16 @@
 *  This file contains defines and variables for the txt*.c files
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -81,31 +81,29 @@ extern VECTOR *Wave_Sources;         /* dmf */
 * Global functions
 ******************************************************************************/
 
-void Compute_Colour PARAMS((COLOUR Colour,PIGMENT *Pigment, DBL value));
-void Initialize_Noise PARAMS((void));
-void Free_Noise_Tables PARAMS((void));
-DBL Noise PARAMS((VECTOR EPoint));
-void DNoise PARAMS((VECTOR result, VECTOR EPoint));
-DBL Turbulence PARAMS((VECTOR EPoint, TURB *Turb));
-void DTurbulence PARAMS((VECTOR result, VECTOR EPoint, TURB *Turb));
-DBL cycloidal PARAMS((DBL value));
-DBL Triangle_Wave PARAMS((DBL value));
-void Translate_Textures PARAMS((TEXTURE *Textures, TRANSFORM *Trans));
-void Rotate_Textures PARAMS((TEXTURE *Textures, TRANSFORM *Trans));
-void Scale_Textures PARAMS((TEXTURE *Textures, TRANSFORM *Trans));
-void Transform_Textures PARAMS((TEXTURE *Textures, TRANSFORM *Trans));
-void Destroy_Textures PARAMS((TEXTURE *Textures));
-void Post_Textures PARAMS((TEXTURE *Textures));
-FINISH *Create_Finish PARAMS((void));
-FINISH *Copy_Finish PARAMS((FINISH *Old));
-TEXTURE *Create_PNF_Texture PARAMS((void));
-TEXTURE *Copy_Texture_Pointer PARAMS((TEXTURE *Texture));
-TEXTURE *Copy_Textures PARAMS((TEXTURE *Textures));
-TEXTURE *Create_Texture PARAMS((void));
-int Test_Opacity PARAMS((TEXTURE *Texture));
-TURB *Create_Turb PARAMS((void));
-int POV_Std_rand PARAMS((void));
-void POV_Std_srand PARAMS((int seed));
+void Compute_Colour (COLOUR Colour,PIGMENT *Pigment, DBL value);
+void Initialize_Noise (void);
+void Free_Noise_Tables (void);
+DBL Noise (VECTOR EPoint);
+void DNoise (VECTOR result, VECTOR EPoint);
+DBL Turbulence (VECTOR EPoint, TURB *Turb);
+void DTurbulence (VECTOR result, VECTOR EPoint, TURB *Turb);
+DBL cycloidal (DBL value);
+DBL Triangle_Wave (DBL value);
+void Transform_Textures (TEXTURE *Textures, TRANSFORM *Trans);
+void Destroy_Textures (TEXTURE *Textures);
+void Post_Textures (TEXTURE *Textures);
+FINISH *Create_Finish (void);
+FINISH *Copy_Finish (FINISH *Old);
+TEXTURE *Create_PNF_Texture (void);
+TEXTURE *Copy_Texture_Pointer (TEXTURE *Texture);
+TEXTURE *Copy_Textures (TEXTURE *Textures);
+TEXTURE *Create_Texture (void);
+int Test_Opacity (TEXTURE *Texture);
+TURB *Create_Turb (void);
+int POV_RAND (void);
+void POV_SRAND (int seed);
+int POV_GET_OLD_RAND(void);
 
 
 #endif

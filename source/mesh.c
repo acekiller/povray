@@ -6,16 +6,16 @@
 *  This module was written by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -89,31 +89,31 @@ struct Hash_Table_Struct
 * Static functions
 ******************************************************************************/
 
-static int Intersect_Mesh  PARAMS((RAY *Ray, MESH *Mesh, ISTACK *Depth_Stack));
-static int All_Mesh_Intersections  PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_Mesh  PARAMS((VECTOR IPoint, OBJECT *Object));
-static void Mesh_Normal  PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Mesh  PARAMS((OBJECT *Object));
-static void Translate_Mesh  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Mesh  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Mesh  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Mesh  PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Mesh  PARAMS((OBJECT *Object));
-static void Destroy_Mesh  PARAMS((OBJECT *Object));
+static int Intersect_Mesh  (RAY *Ray, MESH *Mesh, ISTACK *Depth_Stack);
+static int All_Mesh_Intersections  (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_Mesh  (VECTOR IPoint, OBJECT *Object);
+static void Mesh_Normal  (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static MESH *Copy_Mesh  (OBJECT *Object);
+static void Translate_Mesh  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Mesh  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Mesh  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Mesh  (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Mesh  (OBJECT *Object);
+static void Destroy_Mesh  (OBJECT *Object);
 
-static void compute_smooth_triangle PARAMS((MESH_TRIANGLE *Triangle, VECTOR P1, VECTOR P2, VECTOR P3));
-static int intersect_mesh_triangle PARAMS((RAY *Ray, MESH *Mesh, MESH_TRIANGLE *Triangle, DBL *Depth));
-static int test_hit PARAMS((MESH_TRIANGLE *Triangle, MESH *Mesh, RAY *Ray, DBL Depth, ISTACK *Depth_Stack));
-static void smooth_mesh_normal PARAMS((MESH *Mesh, VECTOR Result, MESH_TRIANGLE *Triangle, VECTOR IPoint));
-static void get_triangle_bbox PARAMS((MESH *Mesh, MESH_TRIANGLE *Triangle, BBOX *BBox));
+static void compute_smooth_triangle (MESH_TRIANGLE *Triangle, VECTOR P1, VECTOR P2, VECTOR P3);
+static int intersect_mesh_triangle (RAY *Ray, MESH *Mesh, MESH_TRIANGLE *Triangle, DBL *Depth);
+static int test_hit (MESH_TRIANGLE *Triangle, MESH *Mesh, RAY *Ray, DBL Depth, ISTACK *Depth_Stack);
+static void smooth_mesh_normal (MESH *Mesh, VECTOR Result, MESH_TRIANGLE *Triangle, VECTOR IPoint);
+static void get_triangle_bbox (MESH *Mesh, MESH_TRIANGLE *Triangle, BBOX *BBox);
 
-static int intersect_bbox_tree PARAMS((MESH *Mesh, RAY *Ray, RAY *Orig_Ray, DBL len, ISTACK *Depth_Stack));
+static int intersect_bbox_tree (MESH *Mesh, RAY *Ray, RAY *Orig_Ray, DBL len, ISTACK *Depth_Stack);
 
-static void get_triangle_vertices PARAMS((MESH *Mesh, MESH_TRIANGLE *Triangle, VECTOR P1, VECTOR P2, VECTOR P3));
-static void get_triangle_normals PARAMS((MESH *Mesh, MESH_TRIANGLE *Triangle, VECTOR N1, VECTOR N2, VECTOR N3));
+static void get_triangle_vertices (MESH *Mesh, MESH_TRIANGLE *Triangle, VECTOR P1, VECTOR P2, VECTOR P3);
+static void get_triangle_normals (MESH *Mesh, MESH_TRIANGLE *Triangle, VECTOR N1, VECTOR N2, VECTOR N3);
 
-static int mesh_hash PARAMS((HASH_TABLE **Hash_Table,
-  int *Number, int *Max, SNGL_VECT **Elements, VECTOR aPoint));
+static int mesh_hash (HASH_TABLE **Hash_Table,
+  int *Number, int *Max, SNGL_VECT **Elements, VECTOR aPoint);
 
 
 
@@ -125,7 +125,7 @@ METHODS Mesh_Methods =
 {
   All_Mesh_Intersections,
   Inside_Mesh, Mesh_Normal,
-  Copy_Mesh,
+  (COPY_METHOD)Copy_Mesh,
   Translate_Mesh, Rotate_Mesh,
   Scale_Mesh, Transform_Mesh, Invert_Mesh, Destroy_Mesh
 };
@@ -162,10 +162,7 @@ static PRIORITY_QUEUE *Mesh_Queue;
 *
 ******************************************************************************/
 
-static int All_Mesh_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Mesh_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   Increase_Counter(stats[Ray_Mesh_Tests]);
 
@@ -207,10 +204,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Intersect_Mesh(Ray, Mesh, Depth_Stack)
-RAY *Ray;
-MESH *Mesh;
-ISTACK *Depth_Stack;
+static int Intersect_Mesh(RAY *Ray, MESH *Mesh, ISTACK *Depth_Stack)
 {
   int i;
   unsigned found;
@@ -289,9 +283,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_Mesh(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Mesh(VECTOR IPoint, OBJECT *Object)
 {
   return(FALSE);
 }
@@ -324,10 +316,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Mesh_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Mesh_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   VECTOR IPoint;
   MESH_TRIANGLE *Triangle;
@@ -396,10 +385,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void smooth_mesh_normal(Mesh, Result, Triangle, IPoint)
-MESH *Mesh;
-VECTOR Result, IPoint;
-MESH_TRIANGLE *Triangle;
+static void smooth_mesh_normal(MESH *Mesh, VECTOR Result, MESH_TRIANGLE *Triangle, VECTOR  IPoint)
 {
   int axis;
   DBL u, v;
@@ -460,10 +446,7 @@ MESH_TRIANGLE *Triangle;
 *
 ******************************************************************************/
 
-static void Translate_Mesh(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Mesh(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Mesh(Object, Trans);
 }
@@ -496,10 +479,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Mesh(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Mesh(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Mesh(Object, Trans);
 }
@@ -532,10 +512,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Mesh(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Mesh(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Mesh(Object, Trans);
 }
@@ -568,10 +545,9 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Mesh(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Mesh(OBJECT *Object, TRANSFORM *Trans)
 {
+  int i;
   if (((MESH *)Object)->Trans == NULL)
   {
     ((MESH *)Object)->Trans = Create_Transform();
@@ -580,6 +556,11 @@ TRANSFORM *Trans;
   Recompute_BBox(&Object->BBox, Trans);
 
   Compose_Transforms(((MESH *)Object)->Trans, Trans);
+
+  for (i=0; i<((MESH *)Object)->Data->Number_Of_Textures; i++)
+  {
+    Transform_Textures(((MESH *)Object)->Data->Textures[i], Trans);
+  }
 }
 
 
@@ -610,8 +591,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Mesh(Object)
-OBJECT *Object;
+static void Invert_Mesh(OBJECT *Object)
 {
 }
 
@@ -693,8 +673,7 @@ MESH *Create_Mesh()
 *
 ******************************************************************************/
 
-static void *Copy_Mesh(Object)
-OBJECT *Object;
+static MESH *Copy_Mesh(OBJECT *Object)
 {
   MESH *New;
 
@@ -739,8 +718,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Mesh(Object)
-OBJECT *Object;
+static void Destroy_Mesh(OBJECT *Object)
 {
   int i;
   MESH *Mesh = (MESH *)Object;
@@ -814,8 +792,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Mesh_BBox(Mesh)
-MESH *Mesh;
+void Compute_Mesh_BBox(MESH *Mesh)
 {
   int i;
   VECTOR P1, P2, P3;
@@ -868,10 +845,7 @@ MESH *Mesh;
 *
 ******************************************************************************/
 
-int Compute_Mesh_Triangle(Triangle, Smooth, P1, P2, P3, S_Normal)
-MESH_TRIANGLE *Triangle;
-int Smooth;
-VECTOR P1, P2, P3, S_Normal;
+int Compute_Mesh_Triangle(MESH_TRIANGLE *Triangle, int Smooth, VECTOR P1, VECTOR  P2, VECTOR  P3, VECTOR  S_Normal)
 {
   int temp, swap;
   DBL x, y, z;
@@ -994,9 +968,7 @@ VECTOR P1, P2, P3, S_Normal;
 *
 ******************************************************************************/
 
-static void compute_smooth_triangle(Triangle, P1, P2, P3)
-MESH_TRIANGLE *Triangle;
-VECTOR P1, P2, P3;
+static void compute_smooth_triangle(MESH_TRIANGLE *Triangle, VECTOR P1, VECTOR  P2, VECTOR  P3)
 {
   VECTOR P3MinusP2, VTemp1, VTemp2;
   DBL x, y, z, uDenominator, Proj;
@@ -1058,11 +1030,7 @@ VECTOR P1, P2, P3;
 *
 ******************************************************************************/
 
-static int intersect_mesh_triangle(Ray, Mesh, Triangle, Depth)
-RAY *Ray;
-MESH *Mesh;
-MESH_TRIANGLE *Triangle;
-DBL *Depth;
+static int intersect_mesh_triangle(RAY *Ray, MESH *Mesh, MESH_TRIANGLE *Triangle, DBL *Depth)
 {
   DBL NormalDotOrigin, NormalDotDirection;
   DBL s, t;
@@ -1188,12 +1156,7 @@ DBL *Depth;
 *
 ******************************************************************************/
 
-static int test_hit(Triangle, Mesh, Ray, Depth, Depth_Stack)
-MESH_TRIANGLE *Triangle;
-MESH *Mesh;
-RAY *Ray;
-DBL Depth;
-ISTACK *Depth_Stack;
+static int test_hit(MESH_TRIANGLE *Triangle, MESH *Mesh, RAY *Ray, DBL Depth, ISTACK *Depth_Stack)
 {
   VECTOR IPoint;
   OBJECT *Object = (OBJECT *)Mesh;
@@ -1238,8 +1201,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-void Init_Mesh_Triangle(Triangle)
-MESH_TRIANGLE *Triangle;
+void Init_Mesh_Triangle(MESH_TRIANGLE *Triangle)
 {
   Triangle->Smooth = FALSE;
 
@@ -1295,10 +1257,7 @@ MESH_TRIANGLE *Triangle;
 *
 ******************************************************************************/
 
-static void get_triangle_bbox(Mesh, Triangle, BBox)
-MESH *Mesh;
-MESH_TRIANGLE *Triangle;
-BBOX *BBox;
+static void get_triangle_bbox(MESH *Mesh, MESH_TRIANGLE *Triangle, BBOX *BBox)
 {
   VECTOR P1, P2, P3;
   VECTOR Min, Max;
@@ -1344,8 +1303,7 @@ BBOX *BBox;
 *
 ******************************************************************************/
 
-void Build_Mesh_BBox_Tree(Mesh)
-MESH *Mesh;
+void Build_Mesh_BBox_Tree(MESH *Mesh)
 {
   int i, nElem, maxelements;
   BBOX_TREE **Triangles;
@@ -1420,11 +1378,7 @@ MESH *Mesh;
 *
 ******************************************************************************/
 
-static int intersect_bbox_tree(Mesh, Ray, Orig_Ray, len, Depth_Stack)
-MESH *Mesh;
-RAY *Ray, *Orig_Ray;
-DBL len;
-ISTACK *Depth_Stack;
+static int intersect_bbox_tree(MESH *Mesh, RAY *Ray, RAY  *Orig_Ray, DBL len, ISTACK *Depth_Stack)
 {
   int i, found;
   DBL Best, Depth;
@@ -1540,11 +1494,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int mesh_hash(Hash_Table, Number, Max, Elements, aPoint)
-HASH_TABLE **Hash_Table;
-int *Number, *Max;
-SNGL_VECT **Elements;
-VECTOR aPoint;
+static int mesh_hash(HASH_TABLE **Hash_Table, int *Number, int  *Max, SNGL_VECT **Elements, VECTOR aPoint)
 {
   int hash;
   SNGL_VECT D, P;
@@ -1639,10 +1589,7 @@ VECTOR aPoint;
 *
 ******************************************************************************/
 
-int Mesh_Hash_Vertex(Number_Of_Vertices, Max_Vertices, Vertices, Vertex)
-int *Number_Of_Vertices, *Max_Vertices;
-SNGL_VECT **Vertices;
-VECTOR Vertex;
+int Mesh_Hash_Vertex(int *Number_Of_Vertices, int  *Max_Vertices, SNGL_VECT **Vertices, VECTOR Vertex)
 {
   return(mesh_hash(Vertex_Hash_Table, Number_Of_Vertices, Max_Vertices, Vertices, Vertex));
 }
@@ -1684,10 +1631,7 @@ VECTOR Vertex;
 *
 ******************************************************************************/
 
-int Mesh_Hash_Normal(Number_Of_Normals, Max_Normals, Normals, S_Normal)
-int *Number_Of_Normals, *Max_Normals;
-SNGL_VECT **Normals;
-VECTOR S_Normal;
+int Mesh_Hash_Normal(int *Number_Of_Normals, int  *Max_Normals, SNGL_VECT **Normals, VECTOR S_Normal)
 {
   return(mesh_hash(Normal_Hash_Table, Number_Of_Normals, Max_Normals, Normals, S_Normal));
 }
@@ -1729,9 +1673,7 @@ VECTOR S_Normal;
 *
 ******************************************************************************/
 
-int Mesh_Hash_Texture(Number_Of_Textures, Max_Textures, Textures, Texture)
-int *Number_Of_Textures, *Max_Textures;
-TEXTURE ***Textures, *Texture;
+int Mesh_Hash_Texture(int *Number_Of_Textures, int  *Max_Textures, TEXTURE ***Textures, TEXTURE  *Texture)
 {
   int i;
 
@@ -1912,10 +1854,7 @@ void Destroy_Mesh_Hash_Tables()
 *
 ******************************************************************************/
 
-static void get_triangle_vertices(Mesh, Triangle, P1, P2, P3)
-MESH *Mesh;
-MESH_TRIANGLE *Triangle;
-VECTOR P1, P2, P3;
+static void get_triangle_vertices(MESH *Mesh, MESH_TRIANGLE *Triangle, VECTOR P1, VECTOR  P2, VECTOR  P3)
 {
   Assign_SNGL_Vect(P1, Mesh->Data->Vertices[Triangle->P1]);
   Assign_SNGL_Vect(P2, Mesh->Data->Vertices[Triangle->P2]);
@@ -1955,10 +1894,7 @@ VECTOR P1, P2, P3;
 *
 ******************************************************************************/
 
-static void get_triangle_normals(Mesh, Triangle, N1, N2, N3)
-MESH *Mesh;
-MESH_TRIANGLE *Triangle;
-VECTOR N1, N2, N3;
+static void get_triangle_normals(MESH *Mesh, MESH_TRIANGLE *Triangle, VECTOR N1, VECTOR  N2, VECTOR  N3)
 {
   Assign_SNGL_Vect(N1, Mesh->Data->Normals[Triangle->N1]);
   Assign_SNGL_Vect(N2, Mesh->Data->Normals[Triangle->N2]);
@@ -1997,8 +1933,7 @@ VECTOR N1, N2, N3;
 *
 ******************************************************************************/
 
-int Mesh_Degenerate(P1, P2, P3)
-VECTOR P1, P2, P3;
+int Mesh_Degenerate(VECTOR P1, VECTOR  P2, VECTOR  P3)
 {
   VECTOR V1, V2, Temp;
   DBL Length;
@@ -2116,8 +2051,7 @@ void Deinitialize_Mesh_Code()
 *
 ******************************************************************************/
 
-void Test_Mesh_Opacity(Mesh)
-MESH *Mesh;
+void Test_Mesh_Opacity(MESH *Mesh)
 {
   int i;
 

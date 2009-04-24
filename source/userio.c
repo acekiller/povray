@@ -4,16 +4,16 @@
 *  This module contains I/O routines.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -31,15 +31,13 @@
 #include "userio.h"
 
 STREAM_INFO Stream_Info[MAX_STREAMS];
-static char *vsbuffer;
-static void PrintToStream PARAMS((int stream, char *s));
+static char vsbuffer[1000];
+static void PrintToStream (int stream, char *s);
 
 /****************************************************************************/
 /* Prints s to the stream's console or file destination, as specified by type */
 
-static void PrintToStream(stream, s)
-int stream;
-char *s;
+static void PrintToStream(int stream, char *s)
 {
   if (Stream_Info[stream].handle != NULL)
   {
@@ -207,6 +205,11 @@ int CDECL Error(char *format,...)
     if (POV_SHELLOUT(USER_ABORT_SHL) != FATAL_RET)
     {
       POV_STATUS_INFO("\nUser abort.\n");
+
+      UICB_USER_ABORT
+
+      Terminate_Tokenizer(); /* Closes scene file */
+
       Terminate_POV(2);
     }
     else
@@ -222,7 +225,7 @@ int CDECL Error(char *format,...)
       break;
 
     case STAGE_BANNER:
-      Error_Line("\nBanner error.\n");
+      Error_Line("\n Banner error.\n");
       break;
 
     case STAGE_INIT:
@@ -299,10 +302,11 @@ int CDECL Error(char *format,...)
   {
     case STAGE_INCLUDE_ERR:
       Error_Line("Check that the file is in a directory specifed with a +L switch\n");
-      Error_Line("or 'Library_Path=' .INI item.  Standard include files are distributed with \n");
-      Error_Line("the documentation archive.  Please read POVINF.DOC carefully to make sure\n");
-      Error_Line("you have all required files!\n");
+      Error_Line("or 'Library_Path=' .INI item.  Standard include files are in the\n");
+      Error_Line("include directory or folder. Please read your documentation carefully.\n");
   }
+
+  UICB_PARSE_ERROR
 
   Terminate_Tokenizer(); /* Closes scene file */
 
@@ -340,8 +344,6 @@ void Init_Text_Streams()
 {
   int i;
   
-  vsbuffer = POV_MALLOC(1000,"text buffer");
-
   for (i = 0; i < MAX_STREAMS; i++)
   {
     Stream_Info[i].handle = NULL;
@@ -364,7 +366,7 @@ void Open_Text_Streams()
       if (opts.Options & CONTINUE_TRACE)
       {
         if ((Stream_Info[i].handle =
-             fopen(Stream_Info[i].name, APPEND_FILE_STRING)) == NULL)
+             fopen(Stream_Info[i].name, APPEND_TXTFILE_STRING)) == NULL)
         {
           Warning(0.0, "Couldn't append stream to file %s.\n", Stream_Info[i].name);
         }
@@ -372,7 +374,7 @@ void Open_Text_Streams()
       else
       {
         if ((Stream_Info[i].handle =
-             fopen(Stream_Info[i].name, WRITE_FILE_STRING)) == NULL)
+             fopen(Stream_Info[i].name, WRITE_TXTFILE_STRING)) == NULL)
         {
           Warning(0.0, "Couldn't write stream to file %s.\n", Stream_Info[i].name);
         }
@@ -394,73 +396,64 @@ void Destroy_Text_Streams()
       Stream_Info[i].name = NULL;
     }
   }
-  POV_FREE(vsbuffer);
 }
 
 
 /****************************************************************************/
-void POV_Std_Banner(s)
-char *s;
+void POV_Std_Banner(char *s)
 {
   fprintf(stderr, s);
   fflush(stderr);
 }
 
 /****************************************************************************/
-void POV_Std_Warning(s)
-char *s;
+void POV_Std_Warning(char *s)
 {
   fprintf(stderr, s);
   fflush(stderr);
 }
 
 /****************************************************************************/
-void POV_Std_Status_Info(s)
-char *s;
+void POV_Std_Status_Info(char *s)
 {
   fprintf(stderr, s);
   fflush(stderr);
 }
 
 /****************************************************************************/
-void POV_Std_Render_Info(s)
-char *s;
+void POV_Std_Render_Info(char *s)
 {
   fprintf(stderr, s);
   fflush(stderr);
 }
 
 /****************************************************************************/
-void POV_Std_Debug_Info(s)
-char *s;
+void POV_Std_Debug_Info(char *s)
 {
   fprintf(stderr, s);
   fflush(stderr);
 }
 
 /****************************************************************************/
-void POV_Std_Fatal(s)
-char *s;
+void POV_Std_Fatal(char *s)
 {
   fprintf(stderr, s);
   fflush(stderr);
 }
 
 /****************************************************************************/
-void POV_Std_Statistics(s)
-char *s;
+void POV_Std_Statistics(char *s)
 {
   fprintf(stderr, s);
   fflush(stderr);
 }
 
 /****************************************************************************/
-void Terminate_POV(i)
-int i;
+void Terminate_POV(int i)
 {
   close_all();
   
-  mem_release_all(i == 0);
+  POV_MEM_RELEASE_ALL(i == 0);
 
   pre_init_flag=0;
   
@@ -477,8 +470,7 @@ static DBL Display_Width_Scale, Display_Height_Scale;
 static int Prev_X, Prev_Y;
 
 /****************************************************************************/
-void POV_Std_Display_Init(w, h)
-int w, h;
+void POV_Std_Display_Init(int w, int  h)
 {
   Display_Width_Scale = 78.0 / (DBL)w;
   Display_Height_Scale = 24.0 / (DBL)h;
@@ -506,14 +498,12 @@ void POV_Std_Display_Close()
 }
 
 /****************************************************************************/
-void POV_Std_Display_Plot(x, y, r, g, b, a)
-int x, y;
-unsigned int r, g, b, a;
+void POV_Std_Display_Plot(int x, int y, unsigned int r, unsigned int g, unsigned int b, unsigned int a)
 {
   int sx = (int)(Display_Width_Scale * ((DBL)x));
   int sy = (int)(Display_Height_Scale * ((DBL)y));
   char I;
-  unsigned char G[6] = " .o*@M";
+  unsigned char G[6] = { ' ', '.', 'o', '*', '@', 'M' };
 
   if (sy > Prev_Y)
   {
@@ -535,10 +525,51 @@ unsigned int r, g, b, a;
 }
 
 /****************************************************************************/
-void POV_Std_Display_Plot_Rect(x1, x2, y1, y2, r, g, b, a)
-int x1, x2, y1, y2;
-unsigned int r, g, b, a;
+void POV_Std_Display_Plot_Rect(int x1, int y1, int x2, int y2, unsigned int r, unsigned int g, unsigned int b, unsigned int a)
 {
   POV_Std_Display_Plot(x1, y1, r, g, b, a);
 }
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   POV_Std_Display_Plot_Box
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Chris Young
+*   
+* DESCRIPTION
+*
+*   Generic box drawing routine which may be overriden in POV_DRAW_BOX
+*   by a platform specific routine.
+*
+* CHANGES
+*
+*   Nov 1995 : Creation.
+*
+******************************************************************************/
+void POV_Std_Display_Plot_Box(int x1, int y1, int x2, int y2, unsigned int r, unsigned int g, unsigned int b, unsigned int a)
+{
+     int x,y;
+   
+     for (x = x1; x <= x2; x++)
+     {
+       POV_DISPLAY_PLOT(x, y1, r, g, b, a);
+       POV_DISPLAY_PLOT(x, y2, r, g, b, a);
+     }
+
+     for (y = y1; y <= y2; y++)
+     {
+       POV_DISPLAY_PLOT(x1, y, r, g, b, a);
+       POV_DISPLAY_PLOT(x2, y, r, g, b, a);
+     }
+  }
 

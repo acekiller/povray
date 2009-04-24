@@ -4,16 +4,16 @@
 *  This module implements the bounding sphere calculations.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -54,14 +54,14 @@ static int maxelements, Axis;
 * Static functions
 ******************************************************************************/
 
-static void merge_spheres PARAMS((VECTOR C, DBL *r, VECTOR C1, DBL r1, VECTOR C2, DBL r2));
-static void recompute_bound PARAMS((BSPHERE_TREE *Node));
+static void merge_spheres (VECTOR C, DBL *r, VECTOR C1, DBL r1, VECTOR C2, DBL r2);
+static void recompute_bound (BSPHERE_TREE *Node);
 
-static int find_axis PARAMS((BSPHERE_TREE **Elements, int first, int last));
-static void build_area_table PARAMS((BSPHERE_TREE **Elements, int a, int b, DBL *areas));
-static int sort_and_split PARAMS((BSPHERE_TREE **Root, BSPHERE_TREE **Elements, int *nElem, int first, int last));
+static int find_axis (BSPHERE_TREE **Elements, int first, int last);
+static void build_area_table (BSPHERE_TREE **Elements, int a, int b, DBL *areas);
+static int sort_and_split (BSPHERE_TREE **Root, BSPHERE_TREE **Elements, int *nElem, int first, int last);
 
-static int CDECL comp_elements PARAMS((CONST void *in_a, CONST void *in_b));
+static int CDECL comp_elements (CONST void *in_a, CONST void *in_b);
 
 
 
@@ -98,9 +98,7 @@ static int CDECL comp_elements PARAMS((CONST void *in_a, CONST void *in_b));
 *
 ******************************************************************************/
 
-static void merge_spheres(C, r, C1, r1, C2, r2)
-VECTOR C, C1, C2;
-DBL *r, r1, r2;
+static void merge_spheres(VECTOR C, DBL *r, VECTOR  C1, DBL  r1, VECTOR  C2, DBL  r2)
 {
   DBL l, r1r, r2r, k1, k2;
   VECTOR D;
@@ -178,8 +176,7 @@ DBL *r, r1, r2;
 *
 ******************************************************************************/
 
-static void recompute_bound(Node)
-BSPHERE_TREE *Node;
+static void recompute_bound(BSPHERE_TREE *Node)
 {
   short i;
   DBL r2;
@@ -233,9 +230,7 @@ BSPHERE_TREE *Node;
 *
 ******************************************************************************/
 
-static int CDECL comp_elements(in_a, in_b)
-CONST void *in_a;
-CONST void *in_b;
+static int CDECL comp_elements(CONST void *in_a, CONST void *in_b)
 {
   DBL am, bm;
 
@@ -287,9 +282,7 @@ CONST void *in_b;
 *
 ******************************************************************************/
 
-static int find_axis(Elements, first, last)
-BSPHERE_TREE **Elements;
-int first, last;
+static int find_axis(BSPHERE_TREE **Elements, int first, int  last)
 {
   int which = X;
   int i;
@@ -365,10 +358,7 @@ int first, last;
 *
 ******************************************************************************/
 
-static void build_area_table(Elements, a, b, areas)
-BSPHERE_TREE **Elements;
-int a, b;
-DBL *areas;
+static void build_area_table(BSPHERE_TREE **Elements, int a, int  b, DBL *areas)
 {
   int i, imin, dir;
   DBL r2;
@@ -423,10 +413,7 @@ DBL *areas;
 *
 ******************************************************************************/
 
-static int sort_and_split(Root, Elements, nElem, first, last)
-BSPHERE_TREE **Root;
-BSPHERE_TREE **Elements;
-int *nElem, first, last;
+static int sort_and_split(BSPHERE_TREE **Root, BSPHERE_TREE **Elements, int *nElem, int  first, int  last)
 {
   int size, i, best_loc;
   DBL *area_left, *area_right;
@@ -578,9 +565,7 @@ int *nElem, first, last;
 *
 ******************************************************************************/
 
-void Build_Bounding_Sphere_Hierarchy(Root, nElem, Elements)
-int nElem;
-BSPHERE_TREE **Root, **Elements;
+void Build_Bounding_Sphere_Hierarchy(BSPHERE_TREE **Root, int nElem, BSPHERE_TREE  **Elements)
 {
   int low, high;
 
@@ -643,8 +628,7 @@ BSPHERE_TREE **Root, **Elements;
 *
 ******************************************************************************/
 
-void Destroy_Bounding_Sphere_Hierarchy(Node)
-BSPHERE_TREE *Node;
+void Destroy_Bounding_Sphere_Hierarchy(BSPHERE_TREE *Node)
 {
   short i;
 

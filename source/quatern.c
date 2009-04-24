@@ -7,16 +7,16 @@
 *  Revised and updated for POV-Ray 3.x by Tim Wegner
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -104,9 +104,7 @@
 *
 ******************************************************************************/
 
-int Iteration_z3(point, Julia)
-VECTOR point;
-FRACTAL * Julia;
+int Iteration_z3(VECTOR point, FRACTAL *Julia)
 {
   int i;
   DBL x, y, z, w;
@@ -171,9 +169,7 @@ FRACTAL * Julia;
 *
 ******************************************************************************/
 
-int Iteration_Julia(point, Julia)
-VECTOR point;
-FRACTAL * Julia;
+int Iteration_Julia(VECTOR point, FRACTAL *Julia)
 {
   int i;
   DBL x, y, z, w;
@@ -242,10 +238,7 @@ FRACTAL * Julia;
 
 /*----------- Distance estimator + iterations ------------*/
 
-int D_Iteration_z3(point, Julia, Dist)
-VECTOR point;
-FRACTAL * Julia;
-DBL * Dist;
+int D_Iteration_z3(VECTOR point, FRACTAL *Julia, DBL *Dist)
 {
   int i, j;
   DBL Norm, d;
@@ -340,10 +333,7 @@ DBL * Dist;
 *
 ******************************************************************************/
 
-int D_Iteration_Julia(point, Julia, Dist)
-VECTOR point;
-FRACTAL * Julia;
-DBL * Dist;
+int D_Iteration_Julia(VECTOR point, FRACTAL *Julia, DBL *Dist)
 {
   int i, j;
   DBL Norm, d;
@@ -437,10 +427,7 @@ DBL * Dist;
 *
 ******************************************************************************/
 
-void Normal_Calc_z3(Result, N_Max, fractal)
-VECTOR Result;
-int N_Max;
-FRACTAL *fractal;
+void Normal_Calc_z3(VECTOR Result, int N_Max, FRACTAL *fractal)
 {
   DBL
   n11 = 1.0, n12 = 0.0, n13 = 0.0, n14 = 0.0,
@@ -505,10 +492,7 @@ FRACTAL *fractal;
 *
 ******************************************************************************/
 
-void Normal_Calc_Julia(Result, N_Max, fractal)
-VECTOR Result;
-int N_Max;
-FRACTAL *fractal;
+void Normal_Calc_Julia(VECTOR Result, int N_Max, FRACTAL *fractal)
 {
   DBL
   n11 = 1.0, n12 = 0.0, n13 = 0.0, n14 = 0.0,
@@ -566,10 +550,7 @@ FRACTAL *fractal;
 *
 ******************************************************************************/
 
-int F_Bound_Julia(Ray, Fractal, Depth_Min, Depth_Max)
-RAY *Ray;
-FRACTAL *Fractal;
-DBL *Depth_Min, *Depth_Max;
+int F_Bound_Julia(RAY *Ray, FRACTAL *Fractal, DBL *Depth_Min, DBL *Depth_Max)
 {
   return (Intersect_Sphere(Ray, Fractal->Center, Fractal->Radius_Squared, Depth_Min, Depth_Max));
 }

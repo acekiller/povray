@@ -6,20 +6,22 @@
 *  This module was written by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modifications by Thomas Willhalm, March 1999, used with permission
 *
 *****************************************************************************/
 
@@ -129,19 +131,19 @@
 * Static functions
 ******************************************************************************/
 
-static int  intersect_sor PARAMS((RAY *Ray, SOR *Sor, ISTACK *Depth_Stack));
-static int  All_Sor_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int  Inside_Sor PARAMS((VECTOR point, OBJECT *Object));
-static void Sor_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Sor PARAMS((OBJECT *Object));
-static void Translate_Sor PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Sor PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Sor PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Sor PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Sor PARAMS((OBJECT *Object));
-static void Destroy_Sor PARAMS((OBJECT *Object));
+static int  intersect_sor (RAY *Ray, SOR *Sor, ISTACK *Depth_Stack);
+static int  All_Sor_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int  Inside_Sor (VECTOR point, OBJECT *Object);
+static void Sor_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static SOR  *Copy_Sor (OBJECT *Object);
+static void Translate_Sor (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Sor (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Sor (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Sor (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Sor (OBJECT *Object);
+static void Destroy_Sor (OBJECT *Object);
 
-static int test_hit PARAMS((SOR *, RAY *, ISTACK *, DBL, int, int));
+static int test_hit (SOR *, RAY *, ISTACK *, DBL, int, int);
 
 /*****************************************************************************
 * Local variables
@@ -151,7 +153,7 @@ static METHODS Sor_Methods =
 {
   All_Sor_Intersections,
   Inside_Sor, Sor_Normal,
-  Copy_Sor,
+  (COPY_METHOD)Copy_Sor,
   Translate_Sor, Rotate_Sor,
   Scale_Sor, Transform_Sor, Invert_Sor, Destroy_Sor
 };
@@ -194,10 +196,7 @@ static METHODS Sor_Methods =
 *
 ******************************************************************************/
 
-static int All_Sor_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Sor_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   Increase_Counter(stats[Ray_Sor_Tests]);
 
@@ -251,10 +250,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int intersect_sor(Ray, Sor, Depth_Stack)
-RAY *Ray;
-SOR *Sor;
-ISTACK *Depth_Stack;
+static int intersect_sor(RAY *Ray, SOR *Sor, ISTACK *Depth_Stack)
 {
   int cnt;
   int found, j, n;
@@ -353,7 +349,7 @@ ISTACK *Depth_Stack;
 
     if (Sor->Cap_Radius_Squared > DEPTH_TOLERANCE)
     {
-      k = (Sor->Height1 - P[Y]) / D[Y];
+      k = (Sor->Height2 - P[Y]) / D[Y];
 
       u = P[X] + k * D[X];
       v = P[Z] + k * D[Z];
@@ -465,15 +461,13 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_Sor(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Sor(VECTOR IPoint, OBJECT *Object)
 {
   int i;
   DBL r0, r;
   VECTOR P;
   SOR *Sor = (SOR *)Object;
-  SOR_SPLINE_ENTRY *Entry;
+  SOR_SPLINE_ENTRY *Entry = NULL; /* tw */
 
   /* Transform the point into the surface of revolution space. */
 
@@ -557,10 +551,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Sor_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Sor_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   DBL k;
   VECTOR P;
@@ -643,10 +634,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Sor(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Sor(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Sor(Object, Trans);
 }
@@ -684,10 +672,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Sor(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Sor(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Sor(Object, Trans);
 }
@@ -725,10 +710,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Sor(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Sor(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Sor(Object, Trans);
 }
@@ -766,9 +748,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Sor(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Sor(OBJECT *Object, TRANSFORM *Trans)
 {
   Compose_Transforms(((SOR *)Object)->Trans, Trans);
 
@@ -807,8 +787,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Sor(Object)
-OBJECT *Object;
+static void Invert_Sor(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -859,6 +838,10 @@ SOR *Create_Sor()
   New->Base_Radius_Squared =
   New->Cap_Radius_Squared  = 0.0;
 
+  /* SOR should have capped ends by default. CEY 3/98*/
+
+  Set_Flag(New, CLOSED_FLAG);
+
   return(New);
 }
 
@@ -899,8 +882,7 @@ SOR *Create_Sor()
 *
 ******************************************************************************/
 
-static void *Copy_Sor(Object)
-OBJECT *Object;
+static SOR *Copy_Sor(OBJECT *Object)
 {
   SOR *New, *Sor = (SOR *)Object;
 
@@ -955,8 +937,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Sor (Object)
-OBJECT *Object;
+static void Destroy_Sor (OBJECT *Object)
 {
   SOR *Sor = (SOR *)Object;
 
@@ -1006,8 +987,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Sor_BBox(Sor)
-SOR *Sor;
+void Compute_Sor_BBox(SOR *Sor)
 {
   Make_BBox(Sor->BBox, -Sor->Radius2, Sor->Height1, -Sor->Radius2,
     2.0 * Sor->Radius2, Sor->Height2 - Sor->Height1, 2.0 * Sor->Radius2);
@@ -1051,9 +1031,7 @@ SOR *Sor;
 *
 ******************************************************************************/
 
-void Compute_Sor(Sor, P)
-SOR *Sor;
-UV_VECT *P;
+void Compute_Sor(SOR *Sor, UV_VECT *P)
 {
   int i, n;
   DBL *tmp_r1;
@@ -1210,7 +1188,7 @@ UV_VECT *P;
 
   /* Get cap radius. */
 
-  w = tmp_h1[Sor->Number-1];
+  w = tmp_h2[Sor->Number-1];
 
   A = Sor->Spline->Entry[Sor->Number-1].A;
   B = Sor->Spline->Entry[Sor->Number-1].B;
@@ -1283,12 +1261,7 @@ UV_VECT *P;
 *
 ******************************************************************************/
 
-static int test_hit(Sor, Ray, Depth_Stack, d, t, n)
-SOR *Sor;
-RAY *Ray;
-ISTACK *Depth_Stack;
-DBL d;
-int t, n;
+static int test_hit(SOR *Sor, RAY *Ray, ISTACK *Depth_Stack, DBL d, int t, int  n)
 {
   VECTOR IPoint;
 

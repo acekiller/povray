@@ -6,16 +6,16 @@
 *  discs and generously provided us these enhancements.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -44,18 +44,18 @@
 * Static functions
 ******************************************************************************/
 
-static int Intersect_Disc PARAMS((RAY *Ray, DISC *Disc, DBL *Depth));
-static int All_Disc_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_Disc PARAMS((VECTOR point, OBJECT *Object));
-static void Disc_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Disc PARAMS((OBJECT *Object));
-static void Translate_Disc PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Disc PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Disc PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Disc PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Disc PARAMS((OBJECT *Object));
-static void Destroy_Disc PARAMS((OBJECT *Object));
-static void Compute_Disc_BBox PARAMS((DISC *Disc));
+static int Intersect_Disc (RAY *Ray, DISC *Disc, DBL *Depth);
+static int All_Disc_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_Disc (VECTOR point, OBJECT *Object);
+static void Disc_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static DISC *Copy_Disc (OBJECT *Object);
+static void Translate_Disc (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Disc (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Disc (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Disc (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Disc (OBJECT *Object);
+static void Destroy_Disc (OBJECT *Object);
+static void Compute_Disc_BBox (DISC *Disc);
 
 /*****************************************************************************
 * Local variables
@@ -65,7 +65,7 @@ static METHODS Disc_Methods =
 {
   All_Disc_Intersections,
   Inside_Disc, Disc_Normal,
-  Copy_Disc, Translate_Disc, Rotate_Disc, Scale_Disc, Transform_Disc,
+  (COPY_METHOD)Copy_Disc, Translate_Disc, Rotate_Disc, Scale_Disc, Transform_Disc,
   Invert_Disc, Destroy_Disc
 };
 
@@ -96,10 +96,7 @@ static METHODS Disc_Methods =
 *
 ******************************************************************************/
 
-static int All_Disc_Intersections (Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Disc_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Intersection_Found;
   DBL Depth;
@@ -149,10 +146,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Intersect_Disc (Ray, disc, Depth)
-RAY *Ray;
-DISC *disc;
-DBL *Depth;
+static int Intersect_Disc (RAY *Ray, DISC *disc, DBL *Depth)
 {
   DBL t, u, v, r2, len;
   VECTOR P, D;
@@ -223,9 +217,7 @@ DBL *Depth;
 *
 ******************************************************************************/
 
-static int Inside_Disc (IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Disc (VECTOR IPoint, OBJECT *Object)
 {
   VECTOR New_Point;
   DISC *disc = (DISC *) Object;
@@ -276,10 +268,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Disc_Normal (Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Disc_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   Assign_Vector(Result, ((DISC *)Object)->normal);
 }
@@ -312,10 +301,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Disc (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Disc (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Disc(Object, Trans);
 }
@@ -348,13 +334,8 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Disc(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Disc(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
-  MTransNormal(((DISC *)Object)->normal, ((DISC *)Object)->normal, Trans);
-
   Transform_Disc(Object, Trans);
 }
 
@@ -386,15 +367,8 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Disc(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Disc(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
-  MTransNormal(((DISC *)Object)->normal, ((DISC *)Object)->normal, Trans);
-
-  VNormalize(((DISC *)Object)->normal, ((DISC *)Object)->normal);
-
   Transform_Disc(Object, Trans);
 }
 
@@ -426,8 +400,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Disc (Object)
-OBJECT *Object;
+static void Invert_Disc (OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -460,11 +433,13 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Transform_Disc (Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Disc (OBJECT *Object, TRANSFORM *Trans)
 {
   DISC *Disc = (DISC *)Object;
+
+  MTransNormal(((DISC *)Object)->normal, ((DISC *)Object)->normal, Trans);
+
+  VNormalize(((DISC *)Object)->normal, ((DISC *)Object)->normal);
 
   Compose_Transforms(Disc->Trans, Trans);
 
@@ -554,8 +529,7 @@ DISC *Create_Disc ()
 *
 ******************************************************************************/
 
-static void *Copy_Disc (Object)
-OBJECT *Object;
+static DISC *Copy_Disc (OBJECT *Object)
 {
   DISC *New;
 
@@ -602,8 +576,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Disc (Object)
-OBJECT *Object;
+static void Destroy_Disc (OBJECT *Object)
 {
   Destroy_Transform(((DISC *)Object)->Trans);
 
@@ -643,8 +616,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Disc(Disc)
-DISC *Disc;
+void Compute_Disc(DISC *Disc)
 {
   Compute_Coordinate_Transform(Disc->Trans, Disc->center, Disc->normal, 1.0, 1.0);
 
@@ -683,8 +655,7 @@ DISC *Disc;
 *
 ******************************************************************************/
 
-static void Compute_Disc_BBox(Disc)
-DISC *Disc;
+static void Compute_Disc_BBox(DISC *Disc)
 {
   DBL rad;
 

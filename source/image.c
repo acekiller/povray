@@ -5,16 +5,16 @@
 *  and material map.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -54,16 +54,16 @@
 * Static functions
 ******************************************************************************/
 
-static int cylindrical_image_map PARAMS((VECTOR EPoint, IMAGE * Image, DBL *u, DBL *v));
-static int torus_image_map PARAMS((VECTOR EPoint, IMAGE * Image, DBL *u, DBL *v));
-static int spherical_image_map PARAMS((VECTOR EPoint, IMAGE * Image, DBL *u, DBL *v));
-static int planar_image_map PARAMS((VECTOR EPoint, IMAGE * Image, DBL *u, DBL *v));
-static void no_interpolation PARAMS((IMAGE * Image, DBL xcoor, DBL ycoor, COLOUR colour, int *index));
-static DBL bilinear PARAMS((DBL *corners, DBL x, DBL y));
-static DBL norm_dist PARAMS((DBL *corners, DBL x, DBL y));
-static void Interp PARAMS((IMAGE * Image, DBL xcoor, DBL ycoor, COLOUR colour, int *index));
-static void image_colour_at PARAMS((IMAGE * Image, DBL xcoor, DBL ycoor, COLOUR colour, int *index));
-static int map PARAMS((VECTOR EPoint, TPATTERN * Turb, DBL *xcoor, DBL *ycoor));
+static int cylindrical_image_map (VECTOR EPoint, IMAGE * Image, DBL *u, DBL *v);
+static int torus_image_map (VECTOR EPoint, IMAGE * Image, DBL *u, DBL *v);
+static int spherical_image_map (VECTOR EPoint, IMAGE * Image, DBL *u, DBL *v);
+static int planar_image_map (VECTOR EPoint, IMAGE * Image, DBL *u, DBL *v);
+static void no_interpolation (IMAGE * Image, DBL xcoor, DBL ycoor, COLOUR colour, int *index);
+static DBL bilinear (DBL *corners, DBL x, DBL y);
+static DBL norm_dist (DBL *corners, DBL x, DBL y);
+static void Interp (IMAGE * Image, DBL xcoor, DBL ycoor, COLOUR colour, int *index);
+static void image_colour_at (IMAGE * Image, DBL xcoor, DBL ycoor, COLOUR colour, int *index);
+static int map (VECTOR EPoint, TPATTERN * Turb, DBL *xcoor, DBL *ycoor);
 
 /*
  * 2-D to 3-D Procedural Texture Mapping of a Bitmapped Image onto an Object:
@@ -110,10 +110,7 @@ static int map PARAMS((VECTOR EPoint, TPATTERN * Turb, DBL *xcoor, DBL *ycoor));
 *
 ******************************************************************************/
 
-int image_map(EPoint, Pigment, colour)
-VECTOR EPoint;
-PIGMENT *Pigment;
-COLOUR colour;
+int image_map(VECTOR EPoint, PIGMENT *Pigment, COLOUR colour)
 {
   int reg_number;
   DBL xcoor = 0.0, ycoor = 0.0;
@@ -158,9 +155,7 @@ COLOUR colour;
 *
 ******************************************************************************/
 
-TEXTURE *material_map(EPoint, Texture)
-VECTOR EPoint;
-TEXTURE *Texture;
+TEXTURE *material_map(VECTOR EPoint, TEXTURE *Texture)
 {
   int reg_number = 0;
   int Material_Number;
@@ -229,10 +224,7 @@ TEXTURE *Texture;
 *
 ******************************************************************************/
 
-void bump_map(EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+void bump_map(VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   DBL xcoor = 0.0, ycoor = 0.0;
   int index, index2, index3;
@@ -311,7 +303,7 @@ VECTOR normal;
     p1[Y] = Amount * (0.229 * colour1[RED] + 0.587 * colour1[GREEN] + 0.114 * colour1[BLUE]);
     p1[Z] = 0;
 
-    p2[X] = 0;
+    p2[X] = -1;
     p2[Y] = Amount * (0.229 * colour2[RED] + 0.587 * colour2[GREEN] + 0.114 * colour2[BLUE]);
     p2[Z] = 1;
 
@@ -325,7 +317,7 @@ VECTOR normal;
     p1[Y] = Amount * index;
     p1[Z] = 0;
 
-    p2[X] = 0;
+    p2[X] = -1;
     p2[Y] = Amount * index2;
     p2[Z] = 1;
 
@@ -342,6 +334,7 @@ VECTOR normal;
   VNormalize(bump_normal, bump_normal);
 
   Assign_Vector(yprime, normal);
+  VScaleEq(yprime, -1);
   Make_Vector(Temp, 0.0, 1.0, 0.0);
   VCross(xprime, yprime, Temp);
   VLength(Length, xprime);
@@ -366,7 +359,7 @@ VECTOR normal;
   VCross(zprime, xprime, yprime);
   VNormalizeEq(zprime);
   VScaleEq(xprime, bump_normal[X]);
-  VScaleEq(yprime, bump_normal[Y]);
+  VScaleEq(yprime, (-bump_normal[Y]));
   VScaleEq(zprime, bump_normal[Z]);
   VAdd(Temp, xprime, yprime);
   VAdd(normal, Temp, zprime);
@@ -392,11 +385,7 @@ VECTOR normal;
 *
 ******************************************************************************/
 
-static void image_colour_at(Image, xcoor, ycoor, colour, index)
-IMAGE *Image;
-DBL xcoor, ycoor;
-COLOUR colour;
-int *index;
+static void image_colour_at(IMAGE *Image, DBL xcoor, DBL  ycoor, COLOUR colour, int *index)
 {
   switch (Image->Interpolation_Type)
   {
@@ -437,10 +426,7 @@ int *index;
 *
 ******************************************************************************/
 
-static int cylindrical_image_map(EPoint, Image, u, v)
-VECTOR EPoint;
-IMAGE *Image;
-DBL *u, *v;
+static int cylindrical_image_map(VECTOR EPoint, IMAGE *Image, DBL *u, DBL  *v)
 {
   DBL len, theta;
   DBL x = EPoint[X];
@@ -529,10 +515,7 @@ DBL *u, *v;
 *
 ******************************************************************************/
 
-static int torus_image_map(EPoint, Image, u, v)
-VECTOR EPoint;
-IMAGE *Image;
-DBL *u, *v;
+static int torus_image_map(VECTOR EPoint, IMAGE *Image, DBL *u, DBL  *v)
 {
   DBL len, phi, theta;
   DBL r0;
@@ -625,10 +608,7 @@ DBL *u, *v;
 *
 ******************************************************************************/
 
-static int spherical_image_map(EPoint, Image, u, v)
-VECTOR EPoint;
-IMAGE *Image;
-DBL *u, *v;
+static int spherical_image_map(VECTOR EPoint, IMAGE *Image, DBL *u, DBL  *v)
 {
   DBL len, phi, theta;
   DBL x = EPoint[X];
@@ -731,10 +711,7 @@ DBL *u, *v;
 *
 ******************************************************************************/
 
-static int planar_image_map(EPoint, Image, u, v)
-VECTOR EPoint;
-IMAGE *Image;
-DBL *u, *v;
+static int planar_image_map(VECTOR EPoint, IMAGE *Image, DBL *u, DBL  *v)
 {
   DBL x = EPoint[X];
   DBL y = EPoint[Y];
@@ -824,10 +801,7 @@ DBL *u, *v;
 *
 ******************************************************************************/
 
-static int map(EPoint, TPattern, xcoor, ycoor)
-VECTOR EPoint;
-TPATTERN *TPattern;
-DBL *xcoor, *ycoor;
+static int map(VECTOR EPoint, TPATTERN *TPattern, DBL *xcoor, DBL  *ycoor)
 {
   IMAGE *Image = TPattern->Vals.Image;
 
@@ -944,38 +918,63 @@ DBL *xcoor, *ycoor;
 *
 ******************************************************************************/
 
-static void no_interpolation(Image, xcoor, ycoor, colour, index)
-IMAGE *Image;
-DBL xcoor, ycoor;
-COLOUR colour;
-int *index;
+static void no_interpolation(IMAGE *Image, DBL xcoor, DBL  ycoor, COLOUR colour, int *index)
 {
   IMAGE_LINE *line;
   int iycoor, ixcoor;
   IMAGE_COLOUR *map_colour;
 
-  if (xcoor < 0.0)
+  if(Image->Once_Flag)
   {
-    xcoor += (DBL)Image->iwidth;
+     if (xcoor < 0.0)
+     {
+       xcoor = 0.0;
+     }
+     else
+     {
+       if (xcoor >= (DBL)Image->iwidth)
+       {
+         xcoor -= 1.0;
+       }
+     }
+   
+     if (ycoor < 0.0)
+     {
+       ycoor = 0.0;
+     }
+     else
+     {
+       if (ycoor >= (DBL)Image->iheight)
+       {
+         ycoor -= 1.0;
+       }
+     }
   }
   else
   {
-    if (xcoor >= (DBL)Image->iwidth)
-    {
-      xcoor -= (DBL)Image->iwidth;
-    }
-  }
-
-  if (ycoor < 0.0)
-  {
-    ycoor += (DBL)Image->iheight;
-  }
-  else
-  {
-    if (ycoor >= (DBL)Image->iheight)
-    {
-      ycoor -= (DBL)Image->iheight;
-    }
+     if (xcoor < 0.0)
+     {
+       xcoor += (DBL)Image->iwidth;
+     }
+     else
+     {
+       if (xcoor >= (DBL)Image->iwidth)
+       {
+         xcoor -= (DBL)Image->iwidth;
+       }
+     }
+   
+     if (ycoor < 0.0)
+     {
+       ycoor += (DBL)Image->iheight;
+     }
+     else
+     {
+       if (ycoor >= (DBL)Image->iheight)
+       {
+         ycoor -= (DBL)Image->iheight;
+       }
+     }
   }
 
   iycoor = (int)ycoor;
@@ -1031,11 +1030,7 @@ int *index;
 
 /* Interpolate color and filter values when mapping */
 
-static void Interp(Image, xcoor, ycoor, colour, index)
-IMAGE *Image;
-DBL xcoor, ycoor;
-COLOUR colour;
-int *index;
+static void Interp(IMAGE *Image, DBL xcoor, DBL  ycoor, COLOUR colour, int *index)
 {
   int iycoor, ixcoor, i;
   int Corners_Index[4];
@@ -1165,8 +1160,7 @@ int *index;
 /* Girish T. Hagan in the C Programmer's Journal V 9 No. 8 */
 /* They were adapted for POV-Ray by CdW */
 
-static DBL bilinear(corners, x, y)
-DBL *corners, x, y;
+static DBL bilinear(DBL *corners, DBL  x, DBL  y)
 {
   DBL p, q;
   DBL val;
@@ -1209,8 +1203,7 @@ DBL *corners, x, y;
 #define MAX_PTS 4
 #define PYTHAGOREAN_SQ(a,b)  ( (a)*(a) + (b)*(b) )
 
-static DBL norm_dist(corners, x, y)
-DBL *corners, x, y;
+static DBL norm_dist(DBL *corners, DBL  x, DBL  y)
 {
   register int i;
 
@@ -1321,8 +1314,7 @@ IMAGE *Create_Image()
 *
 ******************************************************************************/
 
-IMAGE *Copy_Image(Old)
-IMAGE *Old;
+IMAGE *Copy_Image(IMAGE *Old)
 {
   if (Old != NULL)
   {
@@ -1360,8 +1352,7 @@ IMAGE *Old;
 *
 ******************************************************************************/
 
-void Destroy_Image(Image)
-IMAGE *Image;
+void Destroy_Image(IMAGE *Image)
 {
   int i;
 

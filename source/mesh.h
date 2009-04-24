@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for MESH.C.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -91,21 +91,21 @@ extern METHODS Mesh_Methods;
 * Global functions
 ******************************************************************************/
 
-MESH *Create_Mesh PARAMS((void));
-int Compute_Mesh_Triangle PARAMS((MESH_TRIANGLE *Triangle, int Smooth, VECTOR P1, VECTOR P2, VECTOR P3, VECTOR S_Normal));
-void Compute_Mesh_BBox PARAMS((MESH *Mesh));
-void Init_Mesh_Triangle PARAMS((MESH_TRIANGLE *Triangle));
-void Build_Mesh_BBox_Tree PARAMS((MESH *Mesh));
-void Test_Mesh_Opacity PARAMS((MESH *Blob));
+MESH *Create_Mesh (void);
+int Compute_Mesh_Triangle (MESH_TRIANGLE *Triangle, int Smooth, VECTOR P1, VECTOR P2, VECTOR P3, VECTOR S_Normal);
+void Compute_Mesh_BBox (MESH *Mesh);
+void Init_Mesh_Triangle (MESH_TRIANGLE *Triangle);
+void Build_Mesh_BBox_Tree (MESH *Mesh);
+void Test_Mesh_Opacity (MESH *Blob);
 
-void Create_Mesh_Hash_Tables PARAMS((void));
-void Destroy_Mesh_Hash_Tables PARAMS((void));
-int Mesh_Hash_Vertex PARAMS((int *Number_Of_Vertices, int *Max_Vertices, SNGL_VECT **Vertices, VECTOR Vertex));
-int Mesh_Hash_Normal PARAMS((int *Number_Of_Normals, int *Max_Normals, SNGL_VECT **Normals, VECTOR Normal));
-int Mesh_Hash_Texture PARAMS((int *Number_Of_Textures, int *Max_Textures, TEXTURE ***Textures, TEXTURE *Texture));
-int Mesh_Degenerate PARAMS((VECTOR P1, VECTOR P2, VECTOR P3));
-void Initialize_Mesh_Code PARAMS((void));
-void Deinitialize_Mesh_Code PARAMS((void));
+void Create_Mesh_Hash_Tables (void);
+void Destroy_Mesh_Hash_Tables (void);
+int Mesh_Hash_Vertex (int *Number_Of_Vertices, int *Max_Vertices, SNGL_VECT **Vertices, VECTOR Vertex);
+int Mesh_Hash_Normal (int *Number_Of_Normals, int *Max_Normals, SNGL_VECT **Normals, VECTOR Normal);
+int Mesh_Hash_Texture (int *Number_Of_Textures, int *Max_Textures, TEXTURE ***Textures, TEXTURE *Texture);
+int Mesh_Degenerate (VECTOR P1, VECTOR P2, VECTOR P3);
+void Initialize_Mesh_Code (void);
+void Deinitialize_Mesh_Code (void);
 
 
 

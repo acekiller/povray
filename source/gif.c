@@ -7,20 +7,22 @@
 *         here with his permission.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modification by Hans-Deltev Fink, January 1999, used with permission
 *
 *****************************************************************************/
 
@@ -101,9 +103,7 @@ static int colourmap_size;
 *
 ******************************************************************************/
 
-int out_line (pixels, linelen)
-unsigned char *pixels;
-int linelen;
+int out_line (unsigned char *pixels, int linelen)
 {
   register int x;
   register unsigned char *line;
@@ -206,9 +206,7 @@ int gif_get_byte()
 *
 ******************************************************************************/
 
-void Read_Gif_Image(Image, filename)
-IMAGE *Image;
-char *filename;
+void Read_Gif_Image(IMAGE *Image, char *filename)
 {
   register int i, j, status;
   unsigned finished, planes;
@@ -218,7 +216,7 @@ char *filename;
 
   Current_Image = Image;
 
-  if ((Bit_File = Locate_File(filename, READ_FILE_STRING, ".gif", ".GIF",TRUE)) == NULL)
+  if ((Bit_File = Locate_File(filename, READ_BINFILE_STRING, ".gif", ".GIF",NULL,TRUE)) == NULL)
   {
     Error ("Error opening GIF image.\n");
   }
@@ -383,5 +381,10 @@ char *filename;
     }
   }
 
-  fclose(Bit_File);
+  if (Bit_File != NULL)		/* -hdf99- */
+  {
+    fclose(Bit_File);
+  }
+
 }
+

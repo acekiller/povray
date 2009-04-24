@@ -7,16 +7,16 @@
 *         here with his permission.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -173,16 +173,15 @@ LOCAL UTINY *pbytes;                      /* Pointer to next byte in block */
   0x07FF, 0x0FFF
   };
 
-static void cleanup_gif_decoder PARAMS((void));
+static void cleanup_gif_decoder (void);
 /* changed param to int to avoid problems with 32bit int ANSI compilers. */
-static WORD init_exp PARAMS((int i_size));
-static WORD get_next_code PARAMS((void));
+static WORD init_exp (int i_size);
+static WORD get_next_code (void);
 
 /* This function initializes the decoder for reading a new image.
  */
-static WORD init_exp (i_size)
-int i_size;
-  {
+static WORD init_exp (int i_size)
+{
   WORD size;
   size = (WORD)i_size;
   curr_size = size + 1;
@@ -199,7 +198,7 @@ int i_size;
  * a negative number in case of file errors...
  */
 static WORD get_next_code()
-  {
+{
   WORD i, x;
   ULONG ret;
 
@@ -299,7 +298,7 @@ extern UTINY *decoderline;              /* decoded line goes here */
  *
  */
 
-static void cleanup_gif_decoder() 
+static void cleanup_gif_decoder ()
 {
   POV_FREE (dstack);
   POV_FREE (suffix);
@@ -310,9 +309,8 @@ static void cleanup_gif_decoder()
   prefix = NULL;
 }
 
-WORD decoder (i_linewidth)
-int i_linewidth;
-  {
+WORD decoder (int i_linewidth)
+{
   WORD linewidth;
   FAST UTINY *sp, *bufptr;
   UTINY *buf;
@@ -358,6 +356,8 @@ int i_linewidth;
     */
   while ((c = get_next_code()) != ending)
     {
+
+    COOPERATE_0
 
     /* If we had a file error, return without completing the decode
        */

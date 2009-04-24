@@ -1,10 +1,16 @@
 #***************************************************************
 #*
-#*  UNIX Makefile for Persistence of Vision Raytracer v3.0.beta
+#*  UNIX Makefile for Persistence of Vision Raytracer v3.1e
 #*
 #*  Aug-95 : Created by Chris Cason.
 #*  Nov-95 : Modified by Andreas Dilger to combine X and non-X.
 #*  Mar-96 : Modified by Andreas Dilger to add SVGA
+#*  Nov-98 : Modified by Mark Gordon to remove halo and add media and interior.
+#*  Jan-99 : Modified by Mike Fleetwood to add John Cairns 3.1 changes
+#*  Feb-99 : Modified by Mike Fleetwood to add a more flexible default 
+#*           INI file search method 
+#*  Mar-99 : More cleanup by Mark Gordon, including suggestions by Axel Hecht
+#*  Mar-99 : Modified by Mark Gordon to add -ffast-math to Linux compiler flags 
 #*
 #***************************************************************
 
@@ -34,11 +40,27 @@ LIBPNGINC = -I$(PNGDIR)
 LIBPNGLIB = -L$(PNGDIR) -lpng
 #LIBPNGLIB = -L/usr/local/lib -lpng
 
+# The following options are added at the suggestion of Axel Hecht
+# Modify png_povDEP accordingly if you use this option
+# PREFIX = $HOME
+# LIBPNGINCDIR = $(PREFIX)/include
+# LIBPNGINC = -I$(LIBPNGINCDIR)
+# LIBPNGLIB = -L$(PREFIX)/lib -lpng
+
 ZLIBDIR = $(SRCDIR)/zlib
 ZLIBINC = -I$(ZLIBDIR)
 #ZLIBLIB = $(ZLIBDIR)/libz.a
 ZLIBLIB = -L$(ZLIBDIR) -lz
 #ZLIBLIB = -L/usr/local/lib -lz
+
+# The following options are added at the suggestion of Axel Hecht
+# PREFIX = $HOME
+# ZLIBINCDIR = $(PREFIX)/include
+# ZLIBINC = -I$(LIBPNGINCDIR)
+# ZLIBLIB = -L$(PREFIX)/lib -lpng
+
+# Define the default POV-Ray library location
+POVLIBDIR = /usr/local/lib/povray31
 
 # This is the suffix for object files.
 OBJ     = .o
@@ -53,9 +75,14 @@ RM    = /bin/rm -f
 # If you already have it set, comment all of these lines out.  Otherwise,
 #   uncomment one of the following lines, or edit one to suit your system.
 #X11 = /usr/local/X11R6
-#X11 = /usr/openwin        # for some SunOS systems
-#X11 = /usr/lpp/X11        # for some AIX systems
-X11 = /usr/X11
+
+# for some SunOS systems:
+#X11 = /usr/openwin        
+
+# for some AIX systems:
+#X11 = /usr/lpp/X11        
+
+X11 = /usr/X11R6
 
 # You probably won't need to change these if you have the X11 variable
 #   above set properly...
@@ -79,11 +106,16 @@ SRCINC  = -I. -I$(SRCDIR)
 #   for compiles unless you are debugging new code, as it slows things down.
 # The option -DPOV_COMMENTS enables informational comments in PNG and PPM
 #   format output files (see png_pov.c and ppm.c for more info).
-CFLAGS      = -O2 -ansi -c -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC) $(XLIBINC)
+#
+# The POVLIBDIR section was added by Mike Fleetwood.
+# The -ffast-math flag was added to the Linux flags by Mark Gordon
+#
+#
+# CFLAGS      = -O2 -ansi -c -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC) $(XLIBINC)
 LFLAGS      = $(LIBPNGLIB) $(ZLIBLIB) -lm
 
 # Linux compiler flags
-#CFLAGS      = -O6 -finline-functions -c -ansi -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
+CFLAGS      = -O6 -finline-functions -ffast-math -c -ansi -DCOMPILER_VER=\".`uname`.$(CC)\" -DPOV_LIB_DIR=\"$(POVLIBDIR)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
 
 # HPUX compiler flags
 #CFLAGS      = +O2 -finline-functions -c -Aa -D_HPUX_SOURCE -DCOMPILER_VER=\".`uname`.$(CC)\" $(SRCINC) $(LIBPNGINC) $(ZLIBINC)
@@ -93,9 +125,9 @@ CC          = gcc
 
 # This decides which version of the executable you will get, either the
 # Unix text-only version, the X-Windows version, or the SVGAlib version.
-default: config.h unix
+# default: config.h unix
 #default: unix
-#default: xwin
+default: xwin
 #default: svga
 
 #
@@ -119,15 +151,16 @@ POVOBJS = $(ODIR)/atmosph$(OBJ)  \
           $(ODIR)/fractal$(OBJ)  \
           $(ODIR)/gif$(OBJ)      \
           $(ODIR)/gifdecod$(OBJ) \
-          $(ODIR)/halos$(OBJ)    \
           $(ODIR)/hcmplx$(OBJ)   \
           $(ODIR)/hfield$(OBJ)   \
           $(ODIR)/iff$(OBJ)      \
           $(ODIR)/image$(OBJ)    \
+          $(ODIR)/interior$(OBJ) \
           $(ODIR)/lathe$(OBJ)    \
           $(ODIR)/lbuffer$(OBJ)  \
           $(ODIR)/lighting$(OBJ) \
           $(ODIR)/matrices$(OBJ) \
+	  $(ODIR)/media$(OBJ)    \
           $(ODIR)/mem$(OBJ)      \
           $(ODIR)/mesh$(OBJ)     \
           $(ODIR)/normal$(OBJ)   \
@@ -179,16 +212,20 @@ atmosphDEP              = $(SRCDIR)/atmosph.c  \
                           $(SRCDIR)/atmosph.h  \
                           $(SRCDIR)/bbox.h     \
                           $(SRCDIR)/camera.h   \
+			  $(SRCDIR)/chi2.h     \
                           $(SRCDIR)/colour.h   \
                           config.h             \
                           $(SRCDIR)/frame.h    \
                           $(SRCDIR)/lighting.h \
+			  $(SRCDIR)/matrices.h \
+			  $(SRCDIR)/media.h    \
                           $(SRCDIR)/objects.h  \
                           $(SRCDIR)/pattern.h  \
                           $(SRCDIR)/pigment.h  \
                           $(SRCDIR)/point.h    \
                           $(SRCDIR)/povproto.h \
                           $(SRCDIR)/povray.h   \
+			  $(SRCDIR)/ray.h      \
                           $(SRCDIR)/render.h   \
                           $(SRCDIR)/texture.h  \
                           $(SRCDIR)/vector.h   \
@@ -430,26 +467,57 @@ gifdecodDEP             = $(SRCDIR)/gifdecod.c \
                           $(SRCDIR)/gifdecod.h \
                           $(SRCDIR)/povproto.h
 
-halosDEP                = $(SRCDIR)/halos.c    \
-                          $(SRCDIR)/atmosph.h  \
-                          $(SRCDIR)/bbox.h     \
-                          $(SRCDIR)/camera.h   \
-                          $(SRCDIR)/colour.h   \
-                          config.h             \
-                          $(SRCDIR)/frame.h    \
-                          $(SRCDIR)/halos.h    \
-                          $(SRCDIR)/lighting.h \
-                          $(SRCDIR)/matrices.h \
-                          $(SRCDIR)/objects.h  \
-                          $(SRCDIR)/pattern.h  \
-                          $(SRCDIR)/point.h    \
-                          $(SRCDIR)/povproto.h \
-                          $(SRCDIR)/povray.h   \
-                          $(SRCDIR)/render.h   \
-                          $(SRCDIR)/texture.h  \
-                          $(SRCDIR)/vector.h   \
-                          $(SRCDIR)/vlbuffer.h \
-                          $(SRCDIR)/warps.h
+mediaDEP                = $(SRCDIR)/media.c    \
+			  config.h             \
+			  $(SRCDIR)/atmosph.h  \
+			  $(SRCDIR)/bbox.h     \
+			  $(SRCDIR)/camera.h   \
+                          $(SRCDIR)/chi2.h     \
+			  $(SRCDIR)/colour.h   \
+			  $(SRCDIR)/frame.h    \
+			  $(SRCDIR)/interior.h \
+			  $(SRCDIR)/lighting.h \
+			  $(SRCDIR)/matrices.h \
+			  $(SRCDIR)/media.h    \
+			  $(SRCDIR)/mem.h      \
+			  $(SRCDIR)/objects.h  \
+			  $(SRCDIR)/pattern.h  \
+                          $(SRCDIR)/pigment.h \
+			  $(SRCDIR)/point.h    \
+			  $(SRCDIR)/povproto.h \
+			  $(SRCDIR)/povray.h   \
+			  $(SRCDIR)/ray.h      \
+			  $(SRCDIR)/render.h   \
+			  $(SRCDIR)/texture.h  \
+			  $(SRCDIR)/vector.h   \
+			  $(SRCDIR)/vlbuffer.h \
+			  $(SRCDIR)/warps.h
+    
+interiorDEP             = $(SRCDIR)/interior.c \
+			  config.h             \
+			  $(SRCDIR)/atmosph.h  \
+			  $(SRCDIR)/bbox.h     \
+			  $(SRCDIR)/camera.h   \
+			  $(SRCDIR)/chi2.h     \
+			  $(SRCDIR)/colour.h   \
+			  $(SRCDIR)/frame.h    \
+			  $(SRCDIR)/media.h    \
+			  $(SRCDIR)/interior.h \
+			  $(SRCDIR)/lighting.h \
+			  $(SRCDIR)/matrices.h \
+			  $(SRCDIR)/mem.h      \
+			  $(SRCDIR)/objects.h  \
+			  $(SRCDIR)/pattern.h  \
+			  $(SRCDIR)/pigment.h  \
+			  $(SRCDIR)/point.h    \
+			  $(SRCDIR)/povproto.h \
+			  $(SRCDIR)/povray.h   \
+			  $(SRCDIR)/ray.h      \
+			  $(SRCDIR)/render.h   \
+			  $(SRCDIR)/texture.h  \
+			  $(SRCDIR)/vector.h   \
+			  $(SRCDIR)/vlbuffer.h \
+			  $(SRCDIR)/warps.h  
 
 hcmplxDEP               = $(SRCDIR)/hcmplx.c   \
                           $(SRCDIR)/atmosph.h  \
@@ -538,6 +606,7 @@ quaternDEP              = $(SRCDIR)/quatern.c  \
 latheDEP                = $(SRCDIR)/lathe.c    \
                           $(SRCDIR)/atmosph.h  \
                           $(SRCDIR)/bbox.h     \
+			  $(SRCDIR)/bcyl.h     \
                           $(SRCDIR)/camera.h   \
                           config.h             \
                           $(SRCDIR)/frame.h    \
@@ -580,10 +649,11 @@ lightingDEP             = $(SRCDIR)/lighting.c \
                           $(SRCDIR)/colour.h   \
                           config.h             \
                           $(SRCDIR)/frame.h    \
-                          $(SRCDIR)/halos.h    \
                           $(SRCDIR)/image.h    \
+                          $(SRCDIR)/interior.h \
                           $(SRCDIR)/lbuffer.h  \
                           $(SRCDIR)/lighting.h \
+                          $(SRCDIR)/media.h    \
                           $(SRCDIR)/mesh.h     \
                           $(SRCDIR)/normal.h   \
                           $(SRCDIR)/objects.h  \
@@ -661,6 +731,7 @@ objectsDEP              = $(SRCDIR)/objects.c  \
                           $(SRCDIR)/camera.h   \
                           config.h             \
                           $(SRCDIR)/frame.h    \
+                          $(SRCDIR)/interior.h \
                           $(SRCDIR)/objects.h  \
                           $(SRCDIR)/pattern.h  \
                           $(SRCDIR)/point.h    \
@@ -677,6 +748,7 @@ octreeDEP               = $(SRCDIR)/octree.c   \
                           $(SRCDIR)/frame.h    \
                           $(SRCDIR)/octree.h   \
                           $(SRCDIR)/povproto.h \
+                          $(SRCDIR)/povray.h   \
                           $(SRCDIR)/radiosit.h \
                           $(SRCDIR)/vector.h
 
@@ -693,6 +765,7 @@ optinDEP                = $(SRCDIR)/optin.c    \
                           $(SRCDIR)/optout.h   \
                           $(SRCDIR)/parse.h    \
                           $(SRCDIR)/point.h    \
+                          $(SRCDIR)/png_pov.h  \
                           $(SRCDIR)/povproto.h \
                           $(SRCDIR)/povray.h   \
                           $(SRCDIR)/ppm.h      \
@@ -773,10 +846,10 @@ parseDEP                = $(SRCDIR)/parse.c    \
                           $(SRCDIR)/fractal.h  \
                           $(SRCDIR)/frame.h    \
                           $(SRCDIR)/gif.h      \
-                          $(SRCDIR)/halos.h    \
                           $(SRCDIR)/hfield.h   \
                           $(SRCDIR)/iff.h      \
                           $(SRCDIR)/image.h    \
+                          $(SRCDIR)/interior.h \
                           $(SRCDIR)/lathe.h    \
                           $(SRCDIR)/matrices.h \
                           $(SRCDIR)/mesh.h     \
@@ -822,16 +895,17 @@ parstxtrDEP             = $(SRCDIR)/parstxtr.c \
                           $(SRCDIR)/express.h  \
                           $(SRCDIR)/frame.h    \
                           $(SRCDIR)/gif.h      \
-                          $(SRCDIR)/halos.h    \
                           $(SRCDIR)/iff.h      \
                           $(SRCDIR)/image.h    \
                           $(SRCDIR)/matrices.h \
+                          $(SRCDIR)/media.h    \
                           $(SRCDIR)/normal.h   \
                           $(SRCDIR)/parse.h    \
                           $(SRCDIR)/parstxtr.h \
                           $(SRCDIR)/pattern.h  \
                           $(SRCDIR)/pgm.h      \
                           $(SRCDIR)/pigment.h  \
+                          $(SRCDIR)/png_pov.h  \
                           $(SRCDIR)/point.h    \
                           $(SRCDIR)/povproto.h \
                           $(SRCDIR)/povray.h   \
@@ -852,6 +926,7 @@ patternDEP              = $(SRCDIR)/pattern.c  \
                           $(SRCDIR)/matrices.h \
                           $(SRCDIR)/pattern.h  \
                           $(SRCDIR)/povproto.h \
+                          $(SRCDIR)/povray.h   \
                           $(SRCDIR)/texture.h  \
                           $(SRCDIR)/txttest.h  \
                           $(SRCDIR)/vector.h   \
@@ -918,6 +993,22 @@ png_povDEP              = $(SRCDIR)/png_pov.c  \
                           $(SRCDIR)/render.h   \
                           $(SRCDIR)/vlbuffer.h \
                           $(SRCDIR)/warps.h
+
+#png_povDEP              = $(SRCDIR)/png_pov.c  \
+#                          $(SRCDIR)/atmosph.h  \
+#                          $(SRCDIR)/bbox.h     \
+#                          $(SRCDIR)/camera.h   \
+#                          config.h             \
+#                          $(SRCDIR)/frame.h    \
+#                          $(SRCDIR)/optout.h   \
+#                          $(LIBPNGINCDIR)/png.h\
+#                          $(SRCDIR)/png_pov.h  \
+#                          $(SRCDIR)/point.h    \
+#                          $(SRCDIR)/povproto.h \
+#                          $(SRCDIR)/povray.h   \
+#                          $(SRCDIR)/render.h   \
+#                          $(SRCDIR)/vlbuffer.h \
+#                          $(SRCDIR)/warps.h
 
 pointDEP                = $(SRCDIR)/point.c    \
                           $(SRCDIR)/atmosph.h  \
@@ -997,6 +1088,7 @@ povrayDEP               = $(SRCDIR)/povray.c   \
                           config.h             \
                           $(SRCDIR)/csg.h      \
                           $(SRCDIR)/discs.h    \
+                          $(SRCDIR)/express.h  \
                           $(SRCDIR)/fractal.h  \
                           $(SRCDIR)/frame.h    \
                           $(SRCDIR)/hfield.h   \
@@ -1012,6 +1104,7 @@ povrayDEP               = $(SRCDIR)/povray.c   \
                           $(SRCDIR)/parse.h    \
                           $(SRCDIR)/pattern.h  \
                           $(SRCDIR)/pgm.h      \
+                          $(SRCDIR)/pigment.h  \
                           $(SRCDIR)/planes.h   \
                           $(SRCDIR)/png_pov.h  \
                           $(SRCDIR)/point.h    \
@@ -1045,6 +1138,7 @@ ppmDEP                  = $(SRCDIR)/ppm.c      \
                           $(SRCDIR)/camera.h   \
                           config.h             \
                           $(SRCDIR)/frame.h    \
+                          $(SRCDIR)/optout.h   \
                           $(SRCDIR)/pgm.h      \
                           $(SRCDIR)/point.h    \
                           $(SRCDIR)/povproto.h \
@@ -1091,9 +1185,9 @@ quadricsDEP             = $(SRCDIR)/quadrics.c \
                           $(SRCDIR)/warps.h
 
 rad_dataDEP             = $(SRCDIR)/rad_data.c \
-                          $(SRCDIR)/frame.h  \
-                          $(SRCDIR)/octree.h     \
-                          $(SRCDIR)/radiosit.h   \
+                          $(SRCDIR)/frame.h    \
+                          $(SRCDIR)/octree.h   \
+                          $(SRCDIR)/radiosit.h \
                           config.h
 
 radiositDEP             = $(SRCDIR)/radiosit.c \
@@ -1102,6 +1196,7 @@ radiositDEP             = $(SRCDIR)/radiosit.c \
                           $(SRCDIR)/camera.h   \
                           config.h             \
                           $(SRCDIR)/frame.h    \
+                          $(SRCDIR)/lighting.h \
                           $(SRCDIR)/octree.h   \
                           $(SRCDIR)/optin.h    \
                           $(SRCDIR)/pattern.h  \
@@ -1119,8 +1214,11 @@ radiositDEP             = $(SRCDIR)/radiosit.c \
 rayDEP                  = $(SRCDIR)/ray.c      \
                           config.h             \
                           $(SRCDIR)/frame.h    \
+                          $(SRCDIR)/interior.h \
                           $(SRCDIR)/povproto.h \
+                          $(SRCDIR)/povray.h   \
                           $(SRCDIR)/ray.h      \
+                          $(SRCDIR)/texture.h  \
                           $(SRCDIR)/vector.h
 
 renderDEP               = $(SRCDIR)/render.c   \
@@ -1131,6 +1229,7 @@ renderDEP               = $(SRCDIR)/render.c   \
                           $(SRCDIR)/colour.h   \
                           config.h             \
                           $(SRCDIR)/frame.h    \
+                          $(SRCDIR)/interior.h \
                           $(SRCDIR)/lighting.h \
                           $(SRCDIR)/normal.h   \
                           $(SRCDIR)/objects.h  \
@@ -1207,7 +1306,8 @@ svgaDEP                 = svga.c               \
                           config.h             \
                           unixconf.h           \
                           $(SRCDIR)/frame.h    \
-                          $(SRCDIR)/povproto.h
+                          $(SRCDIR)/povproto.h \
+                          $(SRCDIR)/povray.h
 
 targaDEP                = $(SRCDIR)/targa.c    \
                           $(SRCDIR)/atmosph.h  \
@@ -1229,7 +1329,6 @@ textureDEP              = $(SRCDIR)/texture.c  \
                           $(SRCDIR)/camera.h   \
                           config.h             \
                           $(SRCDIR)/frame.h    \
-                          $(SRCDIR)/halos.h    \
                           $(SRCDIR)/image.h    \
                           $(SRCDIR)/matrices.h \
                           $(SRCDIR)/normal.h   \
@@ -1248,14 +1347,17 @@ tokenizeDEP             = $(SRCDIR)/tokenize.c \
                           $(SRCDIR)/atmosph.h  \
                           $(SRCDIR)/bbox.h     \
                           $(SRCDIR)/camera.h   \
+                          $(SRCDIR)/colour.h   \
                           config.h             \
                           $(SRCDIR)/express.h  \
                           $(SRCDIR)/frame.h    \
+                          $(SRCDIR)/matrices.h \
                           $(SRCDIR)/parse.h    \
                           $(SRCDIR)/point.h    \
                           $(SRCDIR)/povproto.h \
                           $(SRCDIR)/povray.h   \
                           $(SRCDIR)/render.h   \
+                          $(SRCDIR)/texture.h  \
                           $(SRCDIR)/tokenize.h \
                           $(SRCDIR)/vlbuffer.h \
                           $(SRCDIR)/warps.h
@@ -1333,7 +1435,9 @@ txttestDEP              = $(SRCDIR)/txttest.c  \
 unixDEP                 = unix.c               \
                           config.h             \
                           $(SRCDIR)/frame.h    \
-                          $(SRCDIR)/povproto.h
+                          $(SRCDIR)/povproto.h \
+			  $(SRCDIR)/povray.h   \
+			  $(SRCDIR)/optin.h
 
 userioDEP               = $(SRCDIR)/userio.c   \
                           $(SRCDIR)/atmosph.h  \
@@ -1515,9 +1619,6 @@ $(ODIR)/gif$(OBJ)      : $(gifDEP)
 $(ODIR)/gifdecod$(OBJ) : $(gifdecodDEP)
 	$(CC) $(CFLAGS) $(SRCDIR)/gifdecod.c -o $@
 
-$(ODIR)/halos$(OBJ)    : $(halosDEP)
-	$(CC) $(CFLAGS) $(SRCDIR)/halos.c -o $@
-
 $(ODIR)/hcmplx$(OBJ)   : $(hcmplxDEP)
 	$(CC) $(CFLAGS) $(SRCDIR)/hcmplx.c -o $@
 
@@ -1530,6 +1631,9 @@ $(ODIR)/iff$(OBJ)      : $(iffDEP)
 $(ODIR)/image$(OBJ)    : $(imageDEP)
 	$(CC) $(CFLAGS) $(SRCDIR)/image.c -o $@
 
+$(ODIR)/interior$(OBJ) : $(interiorDEP)
+	$(CC) $(CFLAGS) $(SRCDIR)/interior.c -o $@
+
 $(ODIR)/lathe$(OBJ)    : $(latheDEP)
 	$(CC) $(CFLAGS) $(SRCDIR)/lathe.c -o $@
 
@@ -1541,6 +1645,9 @@ $(ODIR)/lighting$(OBJ) : $(lightingDEP)
 
 $(ODIR)/matrices$(OBJ) : $(matricesDEP)
 	$(CC) $(CFLAGS) $(SRCDIR)/matrices.c -o $@
+
+$(ODIR)/media$(OBJ)    : $(mediaDEP)
+	$(CC) $(CFLAGS) $(SRCDIR)/media.c -o $@
 
 $(ODIR)/mem$(OBJ)      : $(memDEP)
 	$(CC) $(CFLAGS) $(SRCDIR)/mem.c -o $@
@@ -1673,5 +1780,19 @@ $(ODIR)/warps$(OBJ)    : $(warpsDEP)
 
 $(ODIR)/xwindows$(OBJ) : $(xwindowsDEP)
 	$(CC) $(CFLAGS) $(XLIBINC) xwindows.c -o $@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

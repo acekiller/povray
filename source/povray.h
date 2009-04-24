@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for POVRAY.C.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -29,6 +29,7 @@
 
 #include "atmosph.h"
 #include "camera.h"
+#include "media.h"
 #include "point.h"
 #include "render.h"
 
@@ -90,8 +91,6 @@
 #define Q_VOLUME       0x000080L
 
 #define EF_RADIOS  1
-#define EF_HALOS   2
-#define EF_ATMOS   4
 
 #define QUALITY_0  Q_QUICKC+Q_FULL_AMBIENT
 #define QUALITY_1  QUALITY_0
@@ -122,7 +121,7 @@ struct Frame_Struct
   COLOUR Background_Colour;
   COLOUR Ambient_Light;
   COLOUR Irid_Wavelengths;
-  ATMOSPHERE *Atmosphere;
+  IMEDIA *Atmosphere;
   FOG *Fog;
   RAINBOW *Rainbow;
   SKYSPHERE *Skysphere;
@@ -212,12 +211,13 @@ typedef enum STATS
   Ray_TTF_Tests_Succeeded,
   Ray_Superellipsoid_Tests,
   Ray_Superellipsoid_Tests_Succeeded,
-  Atmosphere_Samples,
-  Atmosphere_Supersamples,
+  Media_Samples,
+  Media_Intervals,
 
   Reflected_Rays_Traced,
   Refracted_Rays_Traced,
   Transmitted_Rays_Traced,
+  Internal_Reflected_Rays_Traced,
   Shadow_Cache_Hits,
   Shadow_Rays_Succeeded,
   Shadow_Ray_Tests,
@@ -234,10 +234,6 @@ typedef enum STATS
   LBuffer_Tests,
   LBuffer_Tests_Succeeded,
 
-  Halo_Samples,
-  Halo_Supersamples,
-  Halo_Rays_Traced,
-
 #if defined(MEM_STATS)
   MemStat_Smallest_Alloc,
   MemStat_Largest_Alloc,
@@ -253,9 +249,8 @@ typedef enum STATS
 
 } Stats;
 
-
 typedef enum shelltype
- {
+{
    PRE_SCENE_SHL = 0,
    PRE_FRAME_SHL,
    POST_FRAME_SHL,
@@ -263,7 +258,7 @@ typedef enum shelltype
    USER_ABORT_SHL,
    FATAL_SHL,
    MAX_SHL /* Must be last */
- } SHELLTYPE;
+} SHELLTYPE;
 
 typedef enum shellret
 {
@@ -275,12 +270,19 @@ typedef enum shellret
   ALL_SKIP_RET
 } SHELLRET;
 
+#ifdef __cplusplus
+#undef POV_SHELLOUT_CAST
+#define POV_SHELLOUT_CAST SHELLRET
+#else
+#define POV_SHELLOUT_CAST int
+#endif
+
 typedef struct shelldata
- {
+{
    SHELLRET Ret;
    int Inverse;
    char Command[POV_MAX_CMD_LENGTH];
- } SHELLDATA;
+} SHELLDATA;
 
 typedef struct OPTIONS_STRUCT
 {
@@ -393,6 +395,7 @@ extern int Experimental_Flag;
 
 extern int Num_Echo_Lines, Echo_Line_Length;
 extern char *Option_String_Ptr;      
+extern DBL Clock_Delta;
 
 /*****************************************************************************
 * Global functions
@@ -400,26 +403,26 @@ extern char *Option_String_Ptr;
 
 #ifdef NOCMDLINE
 # ifdef ALTMAIN
-  MAIN_RETURN_TYPE alt_main PARAMS((void));
+  MAIN_RETURN_TYPE alt_main (void);
 # else
-  MAIN_RETURN_TYPE main PARAMS((void));
+  MAIN_RETURN_TYPE main (void);
 # endif
 #else
 # ifdef ALTMAIN
-  MAIN_RETURN_TYPE alt_main PARAMS((int argc, char ** argv));
+  MAIN_RETURN_TYPE alt_main (int argc, char ** argv);
 # else
-  MAIN_RETURN_TYPE main PARAMS((int argc, char ** argv));
+  MAIN_RETURN_TYPE main (int argc, char ** argv);
 # endif
 #endif
 
-int pov_stricmp PARAMS((char *s1,char *s2));
-void close_all PARAMS((void));
-void POV_Std_Split_Time PARAMS((DBL time_dif,unsigned long *hrs,unsigned long *mins,DBL *secs));
-FILE *Locate_File PARAMS((char *filename, char *mode, char *ext1, char *ext2, int err_flag));
+int pov_stricmp (char *s1,char *s2);
+void close_all (void);
+void POV_Std_Split_Time (DBL time_dif,unsigned long *hrs,unsigned long *mins,DBL *secs);
+FILE *Locate_File (char *filename, char *mode, char *ext1, char *ext2, char *buffer, int err_flag);
 
-SHELLRET pov_shellout PARAMS((SHELLTYPE Type));
-void pre_init_povray PARAMS((void));
+SHELLRET pov_shellout (SHELLTYPE Type);
+void pre_init_povray (void);
 
-void POV_Split_Path PARAMS((char *s, char *p, char *f));
+void POV_Split_Path (char *s, char *p, char *f);
 
 #endif

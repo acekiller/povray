@@ -5,16 +5,16 @@
 *  globally-accessible types and constants.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -121,6 +121,23 @@
 #define PRINT_STATS(a) Print_Stats(a);
 #endif
 
+/* Platform-specific User Interface callbacks, allowing the UI to get status information */
+#ifndef UICB_PARSE_ERROR  /* Alert UI that a parse error occurred */
+#define UICB_PARSE_ERROR
+#endif
+
+#ifndef UICB_USER_ABORT  /* alert UI that user aborted the render */
+#define UICB_USER_ABORT
+#endif
+
+#ifndef UICB_OPEN_INCLUDE_FILE  /* alert UI that an include file was opened during parse */
+#define UICB_OPEN_INCLUDE_FILE
+#endif
+
+#ifndef UICB_CLOSE_INCLUDE_FILE  /* alert UI that an include file was closed during parse */
+#define UICB_CLOSE_INCLUDE_FILE
+#endif
+
 
 /* Various numerical constants that are used in the calculations */
 #ifndef EPSILON     /* A small value used to see if a value is nearly zero */
@@ -218,14 +235,6 @@
 #endif
 
 
-/*
- * Whether we want ANSI or K&R function prototypes.  The default gives us
- * ANSI prototypes, and the other option is to define PARAMS to nothing.
- */
-#ifndef PARAMS
-#define PARAMS(x) x
-#endif
-
 #ifndef TRUE
 #define TRUE 1
 #define FALSE 0
@@ -282,17 +291,30 @@
 #define POV_SPLIT_PATH(s,p,f) POV_Split_Path((s),(p),(f))
 #endif
 
-/* How to read, write and append to binary files using fopen() */
-#ifndef READ_FILE_STRING
-#define READ_FILE_STRING "rb"
+/* How to read, write and append to files using fopen() */
+/* -- Binary -- */
+#ifndef READ_BINFILE_STRING
+#define READ_BINFILE_STRING "rb"
 #endif
 
-#ifndef WRITE_FILE_STRING
-#define WRITE_FILE_STRING "wb"
+#ifndef WRITE_BINFILE_STRING
+#define WRITE_BINFILE_STRING "wb"
 #endif
 
-#ifndef APPEND_FILE_STRING
-#define APPEND_FILE_STRING "ab"
+#ifndef APPEND_BINFILE_STRING
+#define APPEND_BINFILE_STRING "ab"
+#endif
+/* -- Text -- */
+#ifndef READ_TXTFILE_STRING
+#define READ_TXTFILE_STRING "r"
+#endif
+
+#ifndef WRITE_TXTFILE_STRING
+#define WRITE_TXTFILE_STRING "w"
+#endif
+
+#ifndef APPEND_TXTFILE_STRING
+#define APPEND_TXTFILE_STRING "a"
 #endif
 
 /* The output file format used if the user doesn't specify one */
@@ -421,20 +443,6 @@
 
 
 /*
- * Functions which have POV default replacements, but which can be replaced
- * by system-specific functions.  Care should be taken with the RAND
- * functions, as changing these means your images will render differently.
- */
-#ifndef POV_RAND   /* Return a pseudo-random 32-bit value in [0, 2^32-1] */
-#define POV_RAND() POV_Std_rand()
-#endif
-
-#ifndef POV_SRAND  /* Seed the random number generator with the given value */
-#define POV_SRAND(i) POV_Std_srand(i)
-#endif
-
-
-/*
  * Functions that write text for the user to see.  These functions will
  * usually be customized for GUI environments so that POV outputs its
  * messages to a status bar or popup window.
@@ -491,13 +499,24 @@
 #endif
 
 #ifndef POV_DISPLAY_PLOT_RECT  /* Plots a filled rectangle */
-#define POV_DISPLAY_PLOT_RECT(x1,x2,y1,y2,r,g,b,a) POV_Std_Display_Plot_Rect((x1),(x2),(y1),(y2),(r),(g),(b),(a));
+#define POV_DISPLAY_PLOT_RECT(x1,y1,x2,y2,r,g,b,a) POV_Std_Display_Plot_Rect((x1),(y1),(x2),(y2),(r),(g),(b),(a));
 #endif
 
 #ifndef POV_DISPLAY_PLOT_BOX   /* Plots a hollow box */
 #define POV_DISPLAY_PLOT_BOX(x1,y1,x2,y2,r,g,b,a) POV_Std_Display_Plot_Box((x1),(y1),(x2),(y2),(r),(g),(b),(a));
 #endif
 
+#ifndef POV_GET_FULL_PATH      /* returns full pathspec */
+#define POV_GET_FULL_PATH(f,p,b) if (b) strcpy(b,p);
+#endif
+
+#ifndef POV_WRITE_LINE         /* write the current line to something */
+#define POV_WRITE_LINE(line,y)
+#endif
+
+#ifndef POV_ASSIGN_PIXEL       /* assign the colour of a pixel */
+#define POV_ASSIGN_PIXEL(x,y,colour)
+#endif
 
 /* The next two are palette modes, for normal and grayscale display */
 #ifndef NORMAL
@@ -558,9 +577,21 @@
 #define POV_FREE(ptr)               pov_free ((void *)(ptr), __FILE__, __LINE__)
 #endif
 
+#ifndef POV_MEM_INIT
+#define POV_MEM_INIT()              mem_init()
+#endif
+
+#ifndef POV_MEM_RELEASE_ALL
+#define POV_MEM_RELEASE_ALL(log)    mem_release_all(log)
+#endif
+
+#ifndef POV_STRDUP
+#define POV_STRDUP(str)             pov_strdup(str)
+#endif
+
 /* For those systems that don't have memmove, this can also be pov_memmove */
 #ifndef POV_MEMMOVE
-#define POV_MEMMOVE                 memmove
+#define POV_MEMMOVE(dst,src,len)    memmove((dst),(src),(len))
 #endif
 
 
@@ -602,12 +633,11 @@ typedef struct istk_entry INTERSECTION;
 
 typedef DBL UV_VECT [2];
 typedef DBL VECTOR [3];
+typedef DBL VECTOR_4D [4];
 typedef DBL MATRIX [4][4];
 typedef DBL EXPRESS [5];
 typedef COLC COLOUR [5];
 typedef COLC RGB [3];
-typedef int TOKEN;
-typedef int CONSTANT;
 typedef short WORD;
 
 /* Stuff for bounding boxes. */
@@ -693,6 +723,9 @@ typedef SNGL SNGL_VECT[3];
 #define Assign_UV_Vect(d,s) memcpy((d),(s),sizeof(UV_VECT))
 #define Destroy_UV_Vect(x)  if ((x)!=NULL) POV_FREE(x)
 
+#define Assign_Vector_4D(d,s) memcpy((d),(s),sizeof(VECTOR_4D))
+#define Destroy_Vector_4D(x)  if ((x)!=NULL) POV_FREE(x)
+
 #define Assign_Colour(d,s)  memcpy((d),(s),sizeof(COLOUR))
 #define Make_Colour(c,r,g,b) {(c)[RED]=(r);(c)[GREEN]=(g);(c)[BLUE]=(b);(c)[FILTER]=0.0;(c)[TRANSM]=0.0;}
 #define Make_ColourA(c,r,g,b,a,t) {(c)[RED]=(r);(c)[GREEN]=(g);(c)[BLUE]=(b);(c)[FILTER]=(a);(c)[TRANSM]=t;}
@@ -713,7 +746,9 @@ typedef SNGL SNGL_VECT[3];
 #define LOW_RESOLUTION  1
 #define HIGH_RESOLUTION 2
 
+#ifndef COUNTER_RESOLUTION
 #define COUNTER_RESOLUTION HIGH_RESOLUTION
+#endif
 
 #if COUNTER_RESOLUTION == HIGH_RESOLUTION
 
@@ -814,7 +849,6 @@ typedef struct Tnormal_Struct TNORMAL;
 typedef struct Finish_Struct FINISH;
 typedef struct Turb_Struct TURB;
 typedef struct Warps_Struct WARP;
-typedef struct Halo_Struct HALO;
 
 struct Blend_Map_Entry
 {
@@ -843,6 +877,64 @@ struct Blend_Map_Struct
   (entry).Same = (s); \
   Make_ColourA((entry).Vals.Colour, r, g, b, a, t); \
 }
+
+
+
+/*****************************************************************************
+ *
+ * Media stuff.
+ *
+ *****************************************************************************/
+
+typedef struct Media_Struct IMEDIA;
+
+struct Media_Struct
+{
+  int Type;
+  int Intervals;
+  int Min_Samples;
+  int Max_Samples;
+  int is_constant;
+  DBL Eccentricity,sc_ext;
+  int use_absorption;
+  int use_emission;
+  int use_extinction;
+  int use_scattering;
+  COLOUR Absorption;
+  COLOUR Emission;
+  COLOUR Extinction;
+  COLOUR Scattering;
+
+  DBL Ratio;
+  DBL Confidence;
+  DBL Variance;
+  DBL *Sample_Threshold;
+
+  PIGMENT *Density;
+
+  IMEDIA *Next_Media;
+};
+
+
+
+/*****************************************************************************
+ *
+ * Interior stuff.
+ *
+ *****************************************************************************/
+
+typedef struct Interior_Struct INTERIOR;
+
+struct Interior_Struct
+{
+  long References;
+  int  hollow;
+  SNGL IOR;
+  SNGL Caustics, Old_Refract;
+  SNGL Fade_Distance, Fade_Power;
+  IMEDIA *IMedia;
+};
+
 
 
 /*****************************************************************************
@@ -933,22 +1025,43 @@ struct Image_Struct
 #define TEXTURE_TYPE  4
 #define COLOUR_TYPE   5
 #define SLOPE_TYPE    6
+#define DENSITY_TYPE  7
 
 
 /*****************************************************************************
  *
- * Pigment, Tnormal, Finish, Halo, Texture & Warps stuff.
+ * Pigment, Tnormal, Finish, Texture & Warps stuff.
  *
  *****************************************************************************/
+
+typedef struct Density_file_Struct DENSITY_FILE;
+typedef struct Density_file_Data_Struct DENSITY_FILE_DATA;
+
+struct Density_file_Struct
+{
+  int Interpolation;
+  DENSITY_FILE_DATA *Data;
+};
+
+struct Density_file_Data_Struct
+{
+  int References;
+  char *Name;
+  int Sx, Sy, Sz;
+  unsigned char ***Density;
+};
+
 
 #define TPATTERN_FIELDS       \
   unsigned short Type, Wave_Type, Flags; \
   int References;             \
   SNGL Frequency, Phase;      \
+  SNGL Exponent;              \
   WARP *Warps;                \
   TPATTERN *Next;             \
   BLEND_MAP *Blend_Map;       \
   union {                     \
+   DENSITY_FILE *Density_File; \
    IMAGE *Image;              \
    VECTOR Gradient;           \
    SNGL Agate_Turb_Scale;     \
@@ -987,7 +1100,6 @@ struct Texture_Struct
   PIGMENT *Pigment;
   TNORMAL *Tnormal;
   FINISH *Finish;
-  HALO *Halo;                                   /* zss 10/03/95 */
   TEXTURE *Materials;
   int Num_Of_Mats;
 
@@ -995,32 +1107,13 @@ struct Texture_Struct
 
 struct Finish_Struct
 {
-  SNGL Diffuse, Brilliance, Index_Of_Refraction;
-  SNGL Refraction, Specular, Roughness, Phong, Phong_Size;
+  SNGL Diffuse, Brilliance;
+  SNGL Specular, Roughness;
+  SNGL Phong, Phong_Size;
   SNGL Irid, Irid_Film_Thickness, Irid_Turb;
-  SNGL Crand, Metallic, Caustics;
-  SNGL Fade_Distance, Fade_Power;
-  RGB Ambient, Reflection;
-};
-
-struct Halo_Struct
-{
-  char Type, Flags;
-  char Dust_Type;
-  char Mapping_Type;          /* Geometry of density distributions        */
-  char Rendering_Type;        /* Type of rendering algorithm to be used   */
-  TURB *Turb;                 /* Turbulence transformation                */
-  BLEND_MAP *Blend_Map;       /* Color map to be used                     */
-  TRANSFORM *Trans;           /* Local transformation to be used          */
-  TRANSFORM *Container_Trans; /* Transformation applied to container only */
-  DBL Max_Value, Exponent;    /* Parameters of density functions          */
-  DBL Eccentricity;           /* Eccentricity of Heyney-Greenstein fn.    */
-  DBL Samples;                /* Number of samples to be used             */
-  DBL Jitter;                 /* Amount of jitter                         */
-  int AA_Level;               /* Max. level of subdivision                */
-  DBL AA_Threshold;           /* Threshold to kick in supersampling       */
-  HALO *Next_Halo;            /* Next halo description of this texture    */
-  DBL Frequency, Phase;
+  SNGL Crand, Metallic;
+  SNGL Temp_Caustics, Temp_IOR, Temp_Refract, Reflect_Exp;
+  RGB  Ambient, Reflection;
 };
 
 #define WARP_FIELDS unsigned short Warp_Type; WARP *Next_Warp;
@@ -1039,6 +1132,14 @@ struct Turb_Struct
 };
 
 #define Destroy_Finish(x) if ((x)!=NULL) POV_FREE(x)
+
+typedef struct Material_Struct MATERIAL;
+
+struct Material_Struct
+{
+   TEXTURE *Texture;
+   INTERIOR *Interior;
+};
 
 
 
@@ -1062,16 +1163,16 @@ struct Turb_Struct
 
 typedef struct Method_Struct METHODS;
 
-typedef int (*ALL_INTERSECTIONS_METHOD)PARAMS((OBJECT *, RAY *, ISTACK *));
-typedef int (*INSIDE_METHOD)PARAMS((VECTOR , OBJECT *));
-typedef void (*NORMAL_METHOD)PARAMS((VECTOR, OBJECT *, INTERSECTION *));
-typedef void *(*COPY_METHOD)PARAMS((OBJECT *));
-typedef void (*TRANSLATE_METHOD)PARAMS((OBJECT *, VECTOR, TRANSFORM *));
-typedef void (*ROTATE_METHOD)PARAMS((OBJECT *, VECTOR, TRANSFORM *));
-typedef void (*SCALE_METHOD)PARAMS((OBJECT *, VECTOR, TRANSFORM *));
-typedef void (*TRANSFORM_METHOD)PARAMS((OBJECT *, TRANSFORM *));
-typedef void (*INVERT_METHOD)PARAMS((OBJECT *));
-typedef void (*DESTROY_METHOD)PARAMS((OBJECT *));
+typedef int (*ALL_INTERSECTIONS_METHOD)(OBJECT *, RAY *, ISTACK *);
+typedef int (*INSIDE_METHOD)(VECTOR , OBJECT *);
+typedef void (*NORMAL_METHOD)(VECTOR, OBJECT *, INTERSECTION *);
+typedef void *(*COPY_METHOD)(OBJECT *);
+typedef void (*TRANSLATE_METHOD)(OBJECT *, VECTOR, TRANSFORM *);
+typedef void (*ROTATE_METHOD)(OBJECT *, VECTOR, TRANSFORM *);
+typedef void (*SCALE_METHOD)(OBJECT *, VECTOR, TRANSFORM *);
+typedef void (*TRANSFORM_METHOD)(OBJECT *, TRANSFORM *);
+typedef void (*INVERT_METHOD)(OBJECT *);
+typedef void (*DESTROY_METHOD)(OBJECT *);
 
 /* These fields are common to all objects. */
 
@@ -1080,10 +1181,11 @@ typedef void (*DESTROY_METHOD)PARAMS((OBJECT *));
   int Type;             \
   OBJECT *Sibling;      \
   TEXTURE *Texture;     \
+  INTERIOR *Interior;       \
   OBJECT *Bound;        \
   OBJECT *Clip;         \
   BBOX BBox;            \
-  unsigned short Flags;
+  unsigned long Flags;
 
 /* These fields are common to all compound objects */
 
@@ -1092,13 +1194,14 @@ typedef void (*DESTROY_METHOD)PARAMS((OBJECT *));
   OBJECT *Children;
 
 #define INIT_OBJECT_FIELDS(o,t,m) \
-  o->Type    = t;                 \
-  o->Methods = m;                 \
-  o->Sibling = NULL;              \
-  o->Texture = NULL;              \
-  o->Bound   = NULL;              \
-  o->Clip    = NULL;              \
-  o->Flags   = 0;                 \
+  o->Type     = t;                \
+  o->Methods  = m;                \
+  o->Sibling  = NULL;             \
+  o->Texture  = NULL;             \
+  o->Bound    = NULL;             \
+  o->Clip     = NULL;             \
+  o->Interior = NULL;             \
+  o->Flags    = 0;                \
   Make_BBox(o->BBox, -BOUND_HUGE/2.0, -BOUND_HUGE/2.0, -BOUND_HUGE/2.0, \
     BOUND_HUGE, BOUND_HUGE, BOUND_HUGE);
 
@@ -1239,10 +1342,8 @@ struct Ray_Struct
 {
   VECTOR Initial;
   VECTOR Direction;
-  int Containing_Index;
-  TEXTURE *Containing_Textures[MAX_CONTAINING_OBJECTS];
-  OBJECT  *Containing_Objects[MAX_CONTAINING_OBJECTS];
-  DBL Containing_IORs[MAX_CONTAINING_OBJECTS];
+  int Index;
+  INTERIOR *Interiors[MAX_CONTAINING_OBJECTS];
 };
 
 
@@ -1251,6 +1352,7 @@ struct Ray_Struct
  * Frame tracking information
  *
  *****************************************************************************/
+
 typedef enum
 {
   FT_SINGLE_FRAME,
@@ -1293,6 +1395,8 @@ typedef struct Chunk_Header_Struct CHUNK_HEADER;
 typedef struct Data_File_Struct DATA_FILE;
 typedef struct complex_block complex;
 typedef struct file_handle_struct FILE_HANDLE;
+typedef int TOKEN;
+typedef struct Reserved_Word_Struct RESERVED_WORD;
 
 struct Reserved_Word_Struct
 {
@@ -1300,26 +1404,14 @@ struct Reserved_Word_Struct
   char *Token_Name;
 };
 
-/* Here's where you dump the information on the current token (fm. PARSE.C) */
+typedef struct Sym_Table_Entry SYM_ENTRY;
 
-struct Token_Struct
+struct Sym_Table_Entry 
 {
-  TOKEN Token_Id;
-  TOKEN Function_Id;
-  int Token_Line_No;
-  char *Token_String;
-  DBL Token_Float;
-  TOKEN Begin_Id;
-  int Constant_Index;
-  int Unget_Token, End_Of_File;
-  char *Filename, *Constant_Data;
-};
-
-struct Constant_Struct
-{
-  int Identifier_Number;
-  CONSTANT Constant_Type;
-  char *Constant_Data;
+  SYM_ENTRY *next;
+  char *Token_Name;
+  void *Data;
+  TOKEN Token_Number;
 };
 
 struct Chunk_Header_Struct
@@ -1331,8 +1423,8 @@ struct Chunk_Header_Struct
 struct Data_File_Struct
 {
   FILE *File;
+  int Line_Number,R_Flag;
   char *Filename;
-  int Line_Number;
 };
 
 struct complex_block
@@ -1353,14 +1445,14 @@ struct file_handle_struct
   char *buffer;
   FILE *file;
   int file_type;  /* What format the output file is */
-  int  (*Open_File_p) PARAMS((struct file_handle_struct *handle,
-    char *name, int *width, int *height, int buffer_size, int mode));
-  void (*Write_Line_p) PARAMS((struct file_handle_struct *handle,
-    COLOUR *line_data, int line_number));
-  int (*Read_Line_p) PARAMS((struct file_handle_struct *handle,
-    COLOUR *line_data, int *line_number));
-  void (*Read_Image_p) PARAMS((IMAGE *Image, char *filename));
-  void (*Close_File_p) PARAMS((struct file_handle_struct *handle));
+  int  (*Open_File_p) (struct file_handle_struct *handle,
+    char *name, int *width, int *height, int buffer_size, int mode);
+  void (*Write_Line_p) (struct file_handle_struct *handle,
+    COLOUR *line_data, int line_number);
+  int (*Read_Line_p) (struct file_handle_struct *handle,
+    COLOUR *line_data, int *line_number);
+  void (*Read_Image_p) (IMAGE *Image, char *filename);
+  void (*Close_File_p) (struct file_handle_struct *handle);
 };
 
 #define Open_File(h,n,wd,ht,sz,m) ((*((h)->Open_File_p)) (h,n,wd,ht,sz,m))

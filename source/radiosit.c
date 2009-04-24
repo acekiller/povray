@@ -6,16 +6,16 @@
 *  This file was written by Jim McElhiney.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -116,10 +116,10 @@ FILE *ot_fd = NULL;
 * Static functions
 ******************************************************************************/
 
-static long ra_reuse PARAMS((VECTOR IPoint, VECTOR Normal, COLOUR Illuminance));
-static long ra_average_near PARAMS((OT_BLOCK *block, void *void_info));
-static void ra_gather PARAMS((VECTOR IPoint, VECTOR Normal, COLOUR Illuminance, DBL Weight));
-static void VUnpack PARAMS((VECTOR dest_vec, BYTE_XYZ *pack));
+static long ra_reuse (VECTOR IPoint, VECTOR Normal, COLOUR Illuminance);
+static long ra_average_near (OT_BLOCK *block, void *void_info);
+static void ra_gather (VECTOR IPoint, VECTOR Normal, COLOUR Illuminance, DBL Weight);
+static void VUnpack (VECTOR dest_vec, BYTE_XYZ *pack);
 
 
 
@@ -148,11 +148,9 @@ static void VUnpack PARAMS((VECTOR dest_vec, BYTE_XYZ *pack));
 *   --- 1994 : Creation.
 *
 ******************************************************************************/
-
-int Compute_Ambient(IPoint, S_Normal, Ambient_Colour, Weight)
-VECTOR IPoint, S_Normal;
-COLOUR Ambient_Colour;   /* the colour to be calculated */
-DBL Weight;              /* maximum possible contribution to pixel colour */
+/* the colour to be calculated */
+/* maximum possible contribution to pixel colour */
+int Compute_Ambient(VECTOR IPoint, VECTOR  S_Normal, COLOUR Ambient_Colour, DBL Weight)
 {
   int retval, reuse;
   DBL grey, save_bound;
@@ -227,9 +225,7 @@ DBL Weight;              /* maximum possible contribution to pixel colour */
 *
 ******************************************************************************/
 
-static long ra_reuse(IPoint, S_Normal, Illuminance)
-VECTOR IPoint, S_Normal;
-COLOUR Illuminance;             /* return value */
+static long ra_reuse/* return value */(VECTOR IPoint, VECTOR  S_Normal, COLOUR Illuminance)
 {
   long i;
   WT_AVG gather;
@@ -322,9 +318,7 @@ COLOUR Illuminance;             /* return value */
 *
 ******************************************************************************/
 
-static long ra_average_near(block, void_info)
-OT_BLOCK *block;
-void *void_info;
+static long ra_average_near(OT_BLOCK *block, void *void_info)
 {
   long ind, i;
   WT_AVG *info = (WT_AVG *) void_info;
@@ -544,10 +538,7 @@ void *void_info;
 *
 ******************************************************************************/
 
-static void ra_gather(IPoint, S_Normal, Illuminance, Weight)
-VECTOR IPoint, S_Normal;
-COLOUR Illuminance;
-DBL Weight;
+static void ra_gather(VECTOR IPoint, VECTOR  S_Normal, COLOUR Illuminance, DBL Weight)
 {
   extern FRAME Frame;
   long i, hit, Current_Radiosity_Count;
@@ -849,9 +840,7 @@ DBL Weight;
 *   --- Jan 1996 : Creation.
 *
 ******************************************************************************/
-static void VUnpack(dest_vec, pack_vec)
-VECTOR dest_vec;
-BYTE_XYZ * pack_vec;
+static void VUnpack(VECTOR dest_vec, BYTE_XYZ * pack_vec)
 {
   dest_vec[X] = ((double)pack_vec->x * (1./ 255.))*2.-1.;
   dest_vec[Y] = ((double)pack_vec->y * (1./ 255.))*2.-1.;
@@ -929,7 +918,7 @@ Initialize_Radiosity_Code()
     if ( ((opts.Options & CONTINUE_TRACE) && opts.Radiosity_File_ReadOnContinue)  ||
          opts.Radiosity_File_AlwaysReadAtStart )
     {
-      fd = fopen(rad_cache_filename, READ_FILE_STRING);   /* "myname.rca" */
+      fd = fopen(rad_cache_filename, READ_BINFILE_STRING);   /* "myname.rca" */
       if ( fd != NULL) {
         used_existing_file = ot_read_file(fd);
         retval &= used_existing_file;
@@ -949,7 +938,7 @@ Initialize_Radiosity_Code()
          But, if we are also using what's there, then it must be good, so
          we just append to it.
       */
-      modes = used_existing_file ? APPEND_FILE_STRING : WRITE_FILE_STRING;
+      modes = used_existing_file ? APPEND_BINFILE_STRING : WRITE_BINFILE_STRING;
       ot_fd = fopen(rad_cache_filename, modes);
       retval &= (ot_fd != NULL);
     }
@@ -1022,7 +1011,7 @@ Deinitialize_Radiosity_Code()
   if (!(opts.Radiosity_File_KeepAlways || (Stop_Flag && opts.Radiosity_File_KeepOnAbort)) &&  
       !opts.Radiosity_File_SaveWhileRendering && ot_root != NULL )
   {
-    fd = fopen(rad_cache_filename, WRITE_FILE_STRING);
+    fd = fopen(rad_cache_filename, WRITE_BINFILE_STRING);
 
     if ( fd != NULL ) {
       retval &= ot_save_tree(ot_root, fd);

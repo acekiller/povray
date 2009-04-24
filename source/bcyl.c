@@ -5,16 +5,16 @@
 *  cylinders used by lathe and sor objects.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -45,9 +45,9 @@
 * Static functions
 ******************************************************************************/
 
-static int  intersect_thick_cylinder PARAMS((BCYL *BCyl, BCYL_ENTRY *Entry, DBL *dist));
-static void insert_hit PARAMS((BCYL_INT *Element, BCYL_INT *intervals, int *cnt));
-static void intersect_bound_elements PARAMS((BCYL *BCyl, VECTOR P, VECTOR D));
+static int  intersect_thick_cylinder (BCYL *BCyl, BCYL_ENTRY *Entry, DBL *dist);
+static void insert_hit (BCYL_INT *Element, BCYL_INT *intervals, int *cnt);
+static void intersect_bound_elements (BCYL *BCyl, VECTOR P, VECTOR D);
 
 
 /*****************************************************************************
@@ -91,10 +91,7 @@ static void intersect_bound_elements PARAMS((BCYL *BCyl, VECTOR P, VECTOR D));
 *
 ******************************************************************************/
 
-static int intersect_thick_cylinder(BCyl, Entry, dist)
-BCYL *BCyl;
-BCYL_ENTRY *Entry;
-DBL *dist;
+static int intersect_thick_cylinder(BCYL *BCyl, BCYL_ENTRY *Entry, DBL *dist)
 {
   int i, j, n;
   DBL k, r, h;
@@ -224,9 +221,7 @@ DBL *dist;
 *
 ******************************************************************************/
 
-static void intersect_bound_elements(BCyl, P, D)
-BCYL *BCyl;
-VECTOR P, D;
+static void intersect_bound_elements(BCYL *BCyl, VECTOR P, VECTOR  D)
 {
   int i;
   DBL a, b, bb, b2, c, d, k;
@@ -330,9 +325,7 @@ VECTOR P, D;
 *
 ******************************************************************************/
 
-static void insert_hit(element, intervals, cnt)
-BCYL_INT *element, *intervals;
-int *cnt;
+static void insert_hit(BCYL_INT *element, BCYL_INT  *intervals, int *cnt)
 {
   int k;
 
@@ -386,9 +379,7 @@ int *cnt;
 *
 ******************************************************************************/
 
-int Intersect_BCyl(BCyl, P, D)
-BCYL *BCyl;
-VECTOR P, D;
+int Intersect_BCyl(BCYL *BCyl, VECTOR P, VECTOR  D)
 {
   int i, cnt;
   DBL dist[8];
@@ -414,6 +405,9 @@ VECTOR P, D;
 
     switch (intersect_thick_cylinder(BCyl, Entry, dist))
     {
+      case 0:
+        break;
+
       case 2:
 
         if (dist[0] > EPSILON)
@@ -534,9 +528,7 @@ VECTOR P, D;
 *
 ******************************************************************************/
 
-BCYL *Create_BCyl(number, tmp_r1, tmp_r2, tmp_h1, tmp_h2)
-int number;
-DBL *tmp_r1, *tmp_r2, *tmp_h1, *tmp_h2;
+BCYL *Create_BCyl(int number, DBL *tmp_r1, DBL  *tmp_r2, DBL  *tmp_h1, DBL  *tmp_h2)
 {
   int i, j, nr, nh;
   int *tmp_r1_index;
@@ -722,8 +714,7 @@ DBL *tmp_r1, *tmp_r2, *tmp_h1, *tmp_h2;
 *
 ******************************************************************************/
 
-void Destroy_BCyl(BCyl)
-BCYL *BCyl;
+void Destroy_BCyl(BCYL *BCyl)
 {
   POV_FREE(BCyl->entry);
 

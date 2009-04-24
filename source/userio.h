@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for userio.c
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -69,23 +69,22 @@ extern STREAM_INFO Stream_Info[MAX_STREAMS];
 * Global functions
 ******************************************************************************/
 
-void POV_Std_Banner PARAMS((char *s));
-void POV_Std_Warning PARAMS((char *s));
-void POV_Std_Render_Info PARAMS((char *s));
-void POV_Std_Status_Info PARAMS((char *s));
-void POV_Std_Fatal PARAMS((char *s));
-void POV_Std_Statistics PARAMS((char *s));
-void POV_Std_Debug_Info PARAMS((char *s));
-void POV_Std_Display_Init PARAMS((int w, int h));
-void POV_Std_Display_Close PARAMS((void));
-void POV_Std_Display_Finished PARAMS((void));
-void POV_Std_Display_Plot PARAMS((int x, int y,
-  unsigned int r, unsigned int g, unsigned int b, unsigned int a));
-void POV_Std_Display_Plot_Rect PARAMS((int x1, int x2, int y1, int y2, 
-  unsigned int r, unsigned int g, unsigned int b, unsigned int a));
+void POV_Std_Banner (char *s);
+void POV_Std_Warning (char *s);
+void POV_Std_Render_Info (char *s);
+void POV_Std_Status_Info (char *s);
+void POV_Std_Fatal (char *s);
+void POV_Std_Statistics (char *s);
+void POV_Std_Debug_Info (char *s);
+void POV_Std_Display_Init (int w, int h);
+void POV_Std_Display_Close (void);
+void POV_Std_Display_Finished (void);
+void POV_Std_Display_Plot (int x, int y, unsigned int r, unsigned int g, unsigned int b, unsigned int a);
+void POV_Std_Display_Plot_Rect (int x1, int y1, int x2, int y2, unsigned int r, unsigned int g, unsigned int b, unsigned int a);
+void POV_Std_Display_Plot_Box (int x1,int y1,int x2,int y2, unsigned int r,unsigned int g,unsigned int b,unsigned int a);
 
-void Init_Text_Streams PARAMS((void));
-void Open_Text_Streams PARAMS((void));
-void Destroy_Text_Streams PARAMS((void));
+void Init_Text_Streams (void);
+void Open_Text_Streams (void);
+void Destroy_Text_Streams (void);
 
 #endif /* USERIO_H */

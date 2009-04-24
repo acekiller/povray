@@ -5,16 +5,16 @@
 *  parse the parameters on the command line.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -138,7 +138,6 @@ DBL tparse, trender, tparse_total, trender_total;
 /* Variable used by vector macros. */
 
 DBL VTemp;
-
 volatile int Stop_Flag;
 
 /* Flag if close_all() was already called. */
@@ -147,27 +146,28 @@ static int closed_flag;
 int pre_init_flag=0;
 
 char *Option_String_Ptr;      
+DBL Clock_Delta;
 
 /*****************************************************************************
 * Static functions
 ******************************************************************************/
 
-static void init_vars PARAMS((void));
-static void destroy_libraries PARAMS((void));
-static void fix_up_rendering_window PARAMS((void));
-static void fix_up_animation_values PARAMS((void));
-static void fix_up_scene_name PARAMS((void));
-static void set_output_file_handle PARAMS((void));
-static void setup_output_file_name PARAMS((void));
-static void open_output_file PARAMS((void));
-static void FrameRender PARAMS((void));
-static void init_statistics PARAMS((COUNTER *));
-static void sum_statistics PARAMS((COUNTER *, COUNTER *));
-static void variable_store PARAMS((int Flag));
-static int Has_Extension PARAMS((char *name));
-static unsigned closest_power_of_2 PARAMS((unsigned theNumber));
-static void init_shellouts PARAMS((void));
-static void destroy_shellouts PARAMS((void));
+static void init_vars (void);
+static void destroy_libraries (void);
+static void fix_up_rendering_window (void);
+static void fix_up_animation_values (void);
+static void fix_up_scene_name (void);
+static void set_output_file_handle (void);
+static void setup_output_file_name (void);
+static void open_output_file (void);
+static void FrameRender (void);
+static void init_statistics (COUNTER *);
+static void sum_statistics (COUNTER *, COUNTER *);
+static void variable_store (int Flag);
+static int Has_Extension (char *name);
+static unsigned closest_power_of_2 (unsigned theNumber);
+static void init_shellouts (void);
+static void destroy_shellouts (void);
 
 
 /*****************************************************************************
@@ -205,12 +205,10 @@ static void destroy_shellouts PARAMS((void));
 #endif
 #else
 #ifdef ALTMAIN
-  MAIN_RETURN_TYPE alt_main(argc, argv)
+  MAIN_RETURN_TYPE alt_main(int argc, char **argv)
 #else
-  MAIN_RETURN_TYPE main(argc, argv)
+  MAIN_RETURN_TYPE main(int argc, char **argv)
 #endif
-int argc;
-char **argv;
 #endif            /* ...would be a lot less hassle!! :-) AAC */
 {
   register int i;
@@ -303,11 +301,13 @@ char **argv;
   {
     Diff_Frame = opts.FrameSeq.FinalFrame - opts.FrameSeq.InitialFrame;
   }
-  
+
+  Clock_Delta = ((Diff_Frame==0)?0:Diff_Clock/Diff_Frame);
+
   /* END SECTION */
 
   /* Execute the first shell-out command */
-  Pre_Scene_Result=POV_SHELLOUT(PRE_SCENE_SHL);
+  Pre_Scene_Result=(POV_SHELLOUT_CAST)POV_SHELLOUT(PRE_SCENE_SHL);
 
   /* Loop over each frame */
   
@@ -321,13 +321,13 @@ char **argv;
             opts.FrameSeq.FrameNumber <= opts.FrameSeq.FinalFrame;
 
             opts.FrameSeq.FrameNumber++,
-            opts.FrameSeq.Clock_Value += ((Diff_Frame==0)?1:Diff_Clock/Diff_Frame))
+            opts.FrameSeq.Clock_Value += Clock_Delta)
        {
          setup_output_file_name();
 
          /* Execute a shell-out command before tracing */
 
-         Frame_Result=POV_SHELLOUT(PRE_FRAME_SHL);
+         Frame_Result=(POV_SHELLOUT_CAST)POV_SHELLOUT(PRE_FRAME_SHL);
            
          if (Frame_Result == ALL_SKIP_RET)
          {
@@ -340,7 +340,7 @@ char **argv;
 
            /* Execute a shell-out command after tracing */
 
-           Frame_Result = POV_SHELLOUT(POST_FRAME_SHL);
+           Frame_Result = (POV_SHELLOUT_CAST)POV_SHELLOUT(POST_FRAME_SHL);
            
            if ((Frame_Result==SKIP_ONCE_RET) || (Frame_Result==ALL_SKIP_RET))
            {
@@ -434,14 +434,6 @@ static void FrameRender()
     if (Experimental_Flag & EF_RADIOS) 
     {
        Warning(0.0," radiosity");
-    }
-    if (Experimental_Flag & EF_HALOS)
-    {
-       Warning(0.0," halos");
-    }
-    if (Experimental_Flag & EF_ATMOS)
-    {
-       Warning(0.0," atmosphere");
     }
     Warning(0.0,".\nThe design and implementation of these features is likely to\n");
     Warning(0.0,"change in future versions of POV-Ray.  Full backward compatibility\n");
@@ -1331,7 +1323,7 @@ static void init_vars()
   Root_Object = NULL;
   free_istack = NULL;
   opts.JitterScale = 1.0;
-  opts.Language_Version = 3.0;
+  opts.Language_Version = 3.1;
   opts.Last_Column = -1;
   opts.Last_Column_Percent = 1.0;
   opts.Last_Line = -1;
@@ -1341,7 +1333,6 @@ static void init_vars()
   opts.Library_Paths[0] = NULL;
   opts.Library_Path_Index = 0;
   Max_Intersections = 64; /*128*/
-  Max_Symbols = Max_Constants = 1024;
   Number_Of_Files = 0;
   Number_of_istacks = 0;
 
@@ -1457,8 +1448,7 @@ static void init_vars()
 *
 ******************************************************************************/
 
-static void init_statistics(pstats)
-COUNTER *pstats;
+static void init_statistics(COUNTER *pstats)
 {
   int i;
 
@@ -1492,9 +1482,7 @@ COUNTER *pstats;
 *
 ******************************************************************************/
 
-static void sum_statistics(ptotalstats, pstats)
-COUNTER *ptotalstats;
-COUNTER *pstats;
+static void sum_statistics(COUNTER *ptotalstats, COUNTER *pstats)
 {
   int i;
   COUNTER tmp;
@@ -1536,8 +1524,7 @@ COUNTER *pstats;
 *
 ******************************************************************************/
 
-static void variable_store(Flag)
-int Flag;
+static void variable_store(int Flag)
 {
   static int STORE_First_Line;
 
@@ -1703,10 +1690,7 @@ void close_all()
 *
 ******************************************************************************/
 
-void POV_Std_Split_Time(time_dif, hrs, mins, secs)
-DBL time_dif;
-unsigned long *hrs, *mins;
-DBL *secs;
+void POV_Std_Split_Time(DBL time_dif, unsigned long *hrs, unsigned long *mins, DBL *secs)
 {
   *hrs = (unsigned long)(time_dif / 3600.0);
 
@@ -1745,8 +1729,7 @@ DBL *secs;
 *
 ******************************************************************************/
 
-int pov_stricmp (s1, s2)
-char *s1, *s2;
+int pov_stricmp (char *s1, char  *s2)
 {
   char c1, c2;
 
@@ -1814,8 +1797,7 @@ char *s1, *s2;
 *
 ******************************************************************************/
 
-FILE *Locate_File (filename, mode, ext1, ext2, err_flag)
-char *filename, *mode, *ext1, *ext2; int err_flag;
+FILE *Locate_File (char *filename, char  *mode, char  *ext1, char  *ext2, char  *buffer, int err_flag)
 {
   int i,l1,l2;
   char pathname[FILE_NAME_LENGTH];
@@ -1848,6 +1830,7 @@ char *filename, *mode, *ext1, *ext2; int err_flag;
   {
      if ((f = fopen(file1, mode)) != NULL)
      {
+       POV_GET_FULL_PATH(f,file1,buffer);
        return(f);
      }
   }
@@ -1855,11 +1838,13 @@ char *filename, *mode, *ext1, *ext2; int err_flag;
   {
      if ((f = fopen(file2, mode)) != NULL)
      {
+       POV_GET_FULL_PATH(f,file2,buffer);
        return(f);
      }
   }
   if ((f = fopen(filename, mode)) != NULL)
   {
+     POV_GET_FULL_PATH(f,filename,buffer);
      return(f);
   }
 
@@ -1876,6 +1861,7 @@ char *filename, *mode, *ext1, *ext2; int err_flag;
        strcat(pathname, file1);
        if ((f = fopen(pathname, mode)) != NULL)
        {
+          POV_GET_FULL_PATH(f,pathname,buffer);
           return(f);
        }
     }
@@ -1886,6 +1872,7 @@ char *filename, *mode, *ext1, *ext2; int err_flag;
        strcat(pathname, file2);
        if ((f = fopen(pathname, mode)) != NULL)
        {
+          POV_GET_FULL_PATH(f,pathname,buffer);
           return(f);
        }
     }
@@ -1893,6 +1880,7 @@ char *filename, *mode, *ext1, *ext2; int err_flag;
     strcat(pathname, filename);
     if ((f = fopen(pathname, mode)) != NULL)
     {
+      POV_GET_FULL_PATH(f,pathname,buffer);
       return(f);
     }
   }
@@ -1930,8 +1918,7 @@ char *filename, *mode, *ext1, *ext2; int err_flag;
 *
 ******************************************************************************/
 
-static int Has_Extension (name)
-char *name;
+static int Has_Extension (char *name)
 {
    char *p;
 
@@ -1979,8 +1966,7 @@ char *name;
 *
 ******************************************************************************/
 
-SHELLRET pov_shellout (Type)
-SHELLTYPE Type;
+SHELLRET pov_shellout (SHELLTYPE Type)
 {
   char real_command[POV_MAX_CMD_LENGTH];
   int i, j, l = 0;
@@ -2088,11 +2074,11 @@ SHELLTYPE Type;
 
   real_command[j]='\0';
 
-  Return_Code=POV_SYSTEM(real_command);
+  Return_Code=(POV_SHELLOUT_CAST)POV_SYSTEM(real_command);
 
   if (opts.Shellouts[Type].Inverse)
   {
-    Return_Code=!Return_Code;
+    Return_Code=(POV_SHELLOUT_CAST)(!((int)Return_Code));
   }
 
   if (Return_Code)
@@ -2154,7 +2140,7 @@ static void init_shellouts()
 {
   int i;
 
-  opts.Shellouts=POV_MALLOC(sizeof(SHELLDATA)*MAX_SHL,"shellout data");
+  opts.Shellouts=(SHELLDATA *)POV_MALLOC(sizeof(SHELLDATA)*MAX_SHL,"shellout data");
 
   for (i=0; i < MAX_SHL; i++)
   {
@@ -2234,8 +2220,7 @@ static void destroy_shellouts()
 *
 ******************************************************************************/
 
-static unsigned closest_power_of_2(theNumber)
-unsigned theNumber;
+static unsigned closest_power_of_2(unsigned theNumber)
 {
   int PowerOf2Counter;
 
@@ -2307,7 +2292,7 @@ void pre_init_povray()
   }
       
   /* Initialize memory. */
-  mem_init();
+  POV_MEM_INIT();
 
   /* Initialize streams. In USERIO.C */
   Init_Text_Streams();
@@ -2319,10 +2304,7 @@ void pre_init_povray()
   pre_init_flag=1234;
 }
 
-void POV_Split_Path(s,p,f)
-char *s;
-char *p;
-char *f;
+void POV_Split_Path(char *s,char *p,char *f)
 {
 char *l;
 

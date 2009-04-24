@@ -6,16 +6,16 @@
 *  This module was written by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -81,17 +81,17 @@ static DBL VIEW_DY2 = 0.0;
 * Static functions
 ******************************************************************************/
 
-static void calc_points PARAMS((int Axis, OBJECT *Object, int *Number, VECTOR *Points, VECTOR Origin));
+static void calc_points (int Axis, OBJECT *Object, int *Number, VECTOR *Points, VECTOR Origin);
 
-static int bbox_invisible PARAMS((int Axis, BBOX *BBox, VECTOR Origin));
+static int bbox_invisible (int Axis, BBOX *BBox, VECTOR Origin);
 
-static void project_rectangle PARAMS((PROJECT *Project, VECTOR P1, VECTOR P2, VECTOR P3, VECTOR P4, int *visible));
-static void project_triangle PARAMS((PROJECT *Project, VECTOR P1, VECTOR P2, VECTOR P3, int *visible));
-static void project_bbox PARAMS((PROJECT *Project, VECTOR *P, int *visible));
-static void project_object PARAMS((PROJECT *Project, OBJECT *Object, int Axis, VECTOR Origin));
+static void project_rectangle (PROJECT *Project, VECTOR P1, VECTOR P2, VECTOR P3, VECTOR P4, int *visible);
+static void project_triangle (PROJECT *Project, VECTOR P1, VECTOR P2, VECTOR P3, int *visible);
+static void project_bbox (PROJECT *Project, VECTOR *P, int *visible);
+static void project_object (PROJECT *Project, OBJECT *Object, int Axis, VECTOR Origin);
 
-static void project_bounding_slab PARAMS((int Axis, VECTOR Origin,
-  PROJECT *Project, PROJECT_TREE_NODE **Entry, BBOX_TREE *Node));
+static void project_bounding_slab (int Axis, VECTOR Origin,
+  PROJECT *Project, PROJECT_TREE_NODE **Entry, BBOX_TREE *Node);
 
 
 
@@ -131,11 +131,7 @@ static void project_bounding_slab PARAMS((int Axis, VECTOR Origin,
 *
 ******************************************************************************/
 
-static void calc_points(Axis, Object, Number, Points, Origin)
-int Axis;
-OBJECT *Object;
-int *Number;
-VECTOR *Points, Origin;
+static void calc_points(int Axis, OBJECT *Object, int *Number, VECTOR *Points, VECTOR  Origin)
 {
   register int i;
   DBL Direction;
@@ -264,10 +260,7 @@ VECTOR *Points, Origin;
 *
 ******************************************************************************/
 
-static int bbox_invisible(Axis, BBox, Origin)
-int Axis;
-BBOX *BBox;
-VECTOR Origin;
+static int bbox_invisible(int Axis, BBOX *BBox, VECTOR Origin)
 {
   DBL x1, y1, z1, x2, y2, z2, x, y, z;
 
@@ -501,10 +494,7 @@ VECTOR Origin;
 *
 ******************************************************************************/
 
-static void project_rectangle(Project, P1, P2, P3, P4, visible)
-PROJECT *Project;
-VECTOR P1, P2, P3, P4;
-int *visible;
+static void project_rectangle(PROJECT *Project, VECTOR P1, VECTOR  P2, VECTOR  P3, VECTOR  P4, int *visible)
 {
   VECTOR Points[MAX_CLIP_POINTS];
   int i, number;
@@ -585,10 +575,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_triangle(Project, P1, P2, P3, visible)
-PROJECT *Project;
-VECTOR P1, P2, P3;
-int *visible;
+static void project_triangle(PROJECT *Project, VECTOR P1, VECTOR  P2, VECTOR  P3, int *visible)
 {
   VECTOR Points[MAX_CLIP_POINTS];
   int i, number;
@@ -726,10 +713,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_bbox(Project, P, visible)
-PROJECT *Project;
-VECTOR *P;
-int *visible;
+static void project_bbox(PROJECT *Project, VECTOR *P, int *visible)
 {
   int i, x, y;
 
@@ -860,11 +844,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_object(Project, Object, Axis, Origin)
-PROJECT *Project;
-OBJECT *Object;
-int Axis;
-VECTOR Origin;
+static void project_object(PROJECT *Project, OBJECT *Object, int Axis, VECTOR Origin)
 {
   int visible, Number;
   VECTOR Points[8];
@@ -952,12 +932,7 @@ VECTOR Origin;
 *
 ******************************************************************************/
 
-static void project_bounding_slab(Axis, Origin, Project, Tree, Node)
-int Axis;
-VECTOR Origin;
-PROJECT *Project;
-PROJECT_TREE_NODE **Tree;
-BBOX_TREE *Node;
+static void project_bounding_slab(int Axis, VECTOR Origin, PROJECT *Project, PROJECT_TREE_NODE **Tree, BBOX_TREE *Node)
 {
   short int i;
   PROJECT Temp;
@@ -1241,12 +1216,7 @@ void Destroy_Light_Buffers()
 *
 ******************************************************************************/
 
-int Intersect_Light_Tree(Ray, Tree, x, y, Best_Intersection, Best_Object)
-RAY *Ray;
-PROJECT_TREE_NODE *Tree;
-int x, y;
-INTERSECTION *Best_Intersection;
-OBJECT **Best_Object;
+int Intersect_Light_Tree(RAY *Ray, PROJECT_TREE_NODE *Tree, int x, int  y, INTERSECTION *Best_Intersection, OBJECT **Best_Object)
 {
   INTERSECTION New_Intersection;
   unsigned short i;

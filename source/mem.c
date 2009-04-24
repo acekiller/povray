@@ -5,16 +5,16 @@
 *  providing memory tracing, statistics, and garbage collection options.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -264,9 +264,9 @@ struct MemStats_Struct
 static MEMSTATS mem_stats;
 
 /* local prototypes */
-static void mem_stats_init PARAMS((void));
-static void mem_stats_alloc PARAMS((size_t nbytes, char *file, int line));
-static void mem_stats_free PARAMS((size_t nbytes));
+static void mem_stats_init (void);
+static void mem_stats_alloc (size_t nbytes, char *file, int line);
+static void mem_stats_free (size_t nbytes);
 
 #endif
 
@@ -289,8 +289,7 @@ void mem_init()
 #if defined(MEM_TAG)
 /****************************************************************************/
 /* return TRUE if pointer is non-null and has a valid tag */
-static int mem_check_tag(node)
-MEMNODE *node;
+static int mem_check_tag(MEMNODE *node)
 {
   int isOK = FALSE;
 
@@ -304,11 +303,7 @@ MEMNODE *node;
 
 
 /****************************************************************************/
-void *pov_malloc(size, file, line, msg)
-size_t size;
-char *file;
-int line;
-char *msg;
+void *pov_malloc(size_t size, char *file, int line, char *msg)
 {
   void *block;
   size_t totalsize;
@@ -359,12 +354,7 @@ char *msg;
 
 
 /****************************************************************************/
-void *pov_calloc(nitems, size, file, line, msg)
-size_t nitems;
-size_t size;
-char *file;
-int line;
-char *msg;
+void *pov_calloc(size_t nitems, size_t size, char *file, int line, char *msg)
 {
   void *block;
   size_t actsize;
@@ -419,12 +409,7 @@ char *msg;
 
 
 /****************************************************************************/
-void *pov_realloc(ptr, size, file, line, msg)
-void *ptr;
-size_t size;
-char *file;
-int line;
-char *msg;
+void *pov_realloc(void *ptr, size_t size, char *file, int line, char *msg)
 {
   void *block;
 #if defined(MEM_STATS)
@@ -513,10 +498,7 @@ char *msg;
 
 
 /****************************************************************************/
-void pov_free(ptr, file, line)
-void *ptr;
-char *file;
-int line;
+void pov_free(void *ptr, char *file, int line)
 {
   void *block;
 
@@ -577,8 +559,7 @@ void mem_mark()
 
 /****************************************************************************/
 /* Releases all unfree'd memory from current memory pool */
-void mem_release(LogFile)
-int LogFile;
+void mem_release(int LogFile)
 {
 #if defined(MEM_RECLAIM)
   FILE *f = NULL;
@@ -592,7 +573,7 @@ int LogFile;
   if (LogFile)
   {
     if (p != NULL && (p->poolno == poolno))
-      f = fopen(MEM_LOG_FNAME, APPEND_FILE_STRING);
+      f = fopen(MEM_LOG_FNAME, APPEND_TXTFILE_STRING);
   }
 #endif /* MEM_TRACE */
 
@@ -649,8 +630,7 @@ int LogFile;
 
 /****************************************************************************/
 /* Released all unfree'd memory from all pools */
-void mem_release_all(LogFile)
-int LogFile;
+void mem_release_all(int LogFile)
 {
 #if defined(MEM_RECLAIM)
   FILE *f = NULL;
@@ -666,7 +646,7 @@ int LogFile;
   if (LogFile)
   {
     if (p != NULL)
-      f = fopen(MEM_LOG_FNAME, APPEND_FILE_STRING);
+      f = fopen(MEM_LOG_FNAME, APPEND_TXTFILE_STRING);
   }
 #endif
 
@@ -725,8 +705,7 @@ int LogFile;
 /****************************************************************************/
 #if defined(MEM_RECLAIM)
 /* Adds a new node to the 'allocated' list */
-static void add_node(node)
-MEMNODE *node;
+static void add_node(MEMNODE *node)
 {
 
 #if defined(MEM_TAG)
@@ -756,8 +735,7 @@ MEMNODE *node;
 
 /****************************************************************************/
 /* Detatches a node from the 'allocated' list but doesn't free it */
-static void remove_node(node)
-MEMNODE *node;
+static void remove_node(MEMNODE *node)
 {
 
 #if defined(MEM_TAG)
@@ -791,16 +769,26 @@ MEMNODE *node;
 
 
 /****************************************************************************/
+/* A strdup routine that uses POV_MALLOC                                    */
+/****************************************************************************/
+char *pov_strdup(char *s)
+{
+  char *New;
+  
+  New=(char *)POV_MALLOC(strlen(s)+1,s);
+  strcpy(New,s);
+  return (New);
+}
+
+/****************************************************************************/
 /* A memmove routine for those systems that don't have one                  */
 /****************************************************************************/
 
-void *pov_memmove (dest, src, length)
-void *dest, *src;
-size_t length;
+void *pov_memmove (void *dest, void  *src, size_t length)
 {
-  char *csrc = (char *)src;
-  char *cdest= (char *)dest;
-
+  char *csrc =(char *)src;
+  char *cdest=(char *)dest;
+  
   if (csrc < cdest && csrc + length >= cdest)
   {
     size_t size = cdest - csrc;
@@ -826,7 +814,7 @@ size_t length;
 
     while (length > 0)
     {
-      memcpy(new_dest, csrc, size);
+      memcpy(new_dest, csrc, length);
 
       new_dest += size;
       csrc += size;
@@ -870,10 +858,7 @@ static void mem_stats_init()
 
 /****************************************************************************/
 /* update appropriate fields when an allocation takes place                 */
-static void mem_stats_alloc(nbytes, file, line)
-size_t nbytes;
-char *file;
-int line;
+static void mem_stats_alloc(size_t nbytes, char *file, int line)
 {
   /* update the fields */
   if ((mem_stats.smallest_alloc<0) || (nbytes<mem_stats.smallest_alloc))
@@ -909,8 +894,7 @@ int line;
 
 /****************************************************************************/
 /* update appropriate fields when a free takes place                        */
-static void mem_stats_free(nbytes)
-size_t nbytes;
+static void mem_stats_free(size_t nbytes)
 {
   /* update the fields */
   mem_stats.current_mem_usage -= nbytes;

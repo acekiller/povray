@@ -4,16 +4,16 @@
 *  This module implements primitives for triangles and smooth triangles.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -46,26 +46,26 @@
 * Static functions
 ******************************************************************************/
 
-static void find_triangle_dominant_axis PARAMS((TRIANGLE *Triangle));
-static void compute_smooth_triangle  PARAMS((SMOOTH_TRIANGLE *Triangle));
-static int Intersect_Triangle  PARAMS((RAY *Ray, TRIANGLE *Triangle, DBL *Depth));
-static int All_Triangle_Intersections  PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_Triangle  PARAMS((VECTOR IPoint, OBJECT *Object));
-static void Triangle_Normal  PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Triangle  PARAMS((OBJECT *Object));
-static void Translate_Triangle  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Triangle  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Triangle  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Triangle  PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Triangle  PARAMS((OBJECT *Object));
-static void Smooth_Triangle_Normal  PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Smooth_Triangle PARAMS((OBJECT *Object));
-static void Translate_Smooth_Triangle  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Smooth_Triangle  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Smooth_Triangle  PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Smooth_Triangle  PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Smooth_Triangle  PARAMS((OBJECT *Object));
-static void Destroy_Triangle  PARAMS((OBJECT *Object));
+static void find_triangle_dominant_axis (TRIANGLE *Triangle);
+static int compute_smooth_triangle  (SMOOTH_TRIANGLE *Triangle);
+static int Intersect_Triangle  (RAY *Ray, TRIANGLE *Triangle, DBL *Depth);
+static int All_Triangle_Intersections  (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_Triangle  (VECTOR IPoint, OBJECT *Object);
+static void Triangle_Normal  (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static TRIANGLE *Copy_Triangle  (OBJECT *Object);
+static void Translate_Triangle  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Triangle  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Triangle  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Triangle  (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Triangle  (OBJECT *Object);
+static void Smooth_Triangle_Normal  (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static SMOOTH_TRIANGLE *Copy_Smooth_Triangle (OBJECT *Object);
+static void Translate_Smooth_Triangle  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Smooth_Triangle  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Smooth_Triangle  (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Smooth_Triangle  (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Smooth_Triangle  (OBJECT *Object);
+static void Destroy_Triangle  (OBJECT *Object);
 
 
 
@@ -77,7 +77,7 @@ METHODS Triangle_Methods =
 {
   All_Triangle_Intersections,
   Inside_Triangle, Triangle_Normal,
-  Copy_Triangle,
+  (COPY_METHOD)Copy_Triangle,
   Translate_Triangle, Rotate_Triangle,
   Scale_Triangle, Transform_Triangle, Invert_Triangle, Destroy_Triangle
 };
@@ -86,7 +86,7 @@ METHODS Smooth_Triangle_Methods =
 {
   All_Triangle_Intersections,
   Inside_Triangle, Smooth_Triangle_Normal,
-  Copy_Smooth_Triangle,
+  (COPY_METHOD)Copy_Smooth_Triangle,
   Translate_Smooth_Triangle, Rotate_Smooth_Triangle,
   Scale_Smooth_Triangle, Transform_Smooth_Triangle,
   Invert_Smooth_Triangle, Destroy_Triangle
@@ -119,8 +119,7 @@ METHODS Smooth_Triangle_Methods =
 *
 ******************************************************************************/
 
-static void find_triangle_dominant_axis(Triangle)
-TRIANGLE *Triangle;
+static void find_triangle_dominant_axis(TRIANGLE *Triangle)
 {
   DBL x, y, z;
 
@@ -159,8 +158,7 @@ TRIANGLE *Triangle;
 *
 ******************************************************************************/
 
-static void compute_smooth_triangle(Triangle)
-SMOOTH_TRIANGLE *Triangle;
+static int compute_smooth_triangle(SMOOTH_TRIANGLE *Triangle)
 {
   VECTOR P3MinusP2, VTemp1, VTemp2;
   DBL x, y, z, uDenominator, Proj;
@@ -190,6 +188,19 @@ SMOOTH_TRIANGLE *Triangle;
   VDot(uDenominator, VTemp2, Triangle->Perp);
 
   VInverseScaleEq(Triangle->Perp, -uDenominator);
+  
+  /* Degenerate if smooth normals are more than 90 from actual normal
+     or its inverse. */
+  VDot(x,Triangle->Normal_Vector,Triangle->N1);
+  VDot(y,Triangle->Normal_Vector,Triangle->N2);
+  VDot(z,Triangle->Normal_Vector,Triangle->N3);
+  if ( ((x<0.0) && (y<0.0) && (z<0.0)) ||
+       ((x>0.0) && (y>0.0) && (z>0.0)) )
+  {
+    return(TRUE);
+  }
+  Set_Flag(Triangle, DEGENERATE_FLAG);
+  return(FALSE);
 }
 
 
@@ -220,11 +231,9 @@ SMOOTH_TRIANGLE *Triangle;
 *
 ******************************************************************************/
 
-int Compute_Triangle(Triangle,Smooth)
-TRIANGLE *Triangle;
-int Smooth;
+int Compute_Triangle(TRIANGLE *Triangle,int Smooth)
 {
-  int swap;
+  int swap,degn;
   VECTOR V1, V2, Temp;
   DBL Length;
 
@@ -302,17 +311,19 @@ int Smooth;
       Assign_Vector(((SMOOTH_TRIANGLE *)Triangle)->N1, Temp);
     }
   }
+  
+  degn=TRUE;
 
   if (Smooth)
   {
-    compute_smooth_triangle((SMOOTH_TRIANGLE *)Triangle);
+    degn=compute_smooth_triangle((SMOOTH_TRIANGLE *)Triangle);
   }
 
   /* Build the bounding information from the vertices. */
 
   Compute_Triangle_BBox(Triangle);
 
-  return(TRUE);
+  return(degn);
 }
 
 
@@ -343,10 +354,7 @@ int Smooth;
 *
 ******************************************************************************/
 
-static int All_Triangle_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Triangle_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   DBL Depth;
   VECTOR IPoint;
@@ -394,10 +402,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Intersect_Triangle(Ray, Triangle, Depth)
-RAY *Ray;
-TRIANGLE *Triangle;
-DBL *Depth;
+static int Intersect_Triangle(RAY *Ray, TRIANGLE *Triangle, DBL *Depth)
 {
   DBL NormalDotOrigin, NormalDotDirection;
   DBL s, t;
@@ -540,9 +545,7 @@ DBL *Depth;
 *
 ******************************************************************************/
 
-static int Inside_Triangle(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Triangle(VECTOR IPoint, OBJECT *Object)
 {
   return(FALSE);
 }
@@ -575,10 +578,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Triangle_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Triangle_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   Assign_Vector(Result, ((TRIANGLE *)Object)->Normal_Vector);
 }
@@ -649,10 +649,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Smooth_Triangle_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Smooth_Triangle_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   int Axis;
   DBL u, v;
@@ -711,10 +708,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Triangle(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Triangle(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   TRIANGLE *Triangle = (TRIANGLE *)Object;
   VECTOR Translation;
@@ -761,10 +755,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Triangle(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Triangle(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   if (!Test_Flag(Object, DEGENERATE_FLAG))
   {
@@ -800,10 +791,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Triangle(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Triangle(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   DBL Length;
   TRIANGLE *Triangle = (TRIANGLE *)Object;
@@ -856,9 +844,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Triangle(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Triangle(OBJECT *Object, TRANSFORM *Trans)
 {
   TRIANGLE *Triangle = (TRIANGLE *)Object;
 
@@ -901,8 +887,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Triangle(Object)
-OBJECT *Object;
+static void Invert_Triangle(OBJECT *Object)
 {
 }
 
@@ -986,8 +971,7 @@ TRIANGLE *Create_Triangle()
 *
 ******************************************************************************/
 
-static void *Copy_Triangle(Object)
-OBJECT *Object;
+static TRIANGLE *Copy_Triangle(OBJECT *Object)
 {
   TRIANGLE *New;
 
@@ -1026,8 +1010,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Triangle(Object)
-OBJECT *Object;
+static void Destroy_Triangle(OBJECT *Object)
 {
   POV_FREE (Object);
 }
@@ -1060,10 +1043,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Translate_Smooth_Triangle(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Smooth_Triangle(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   SMOOTH_TRIANGLE *Triangle = (SMOOTH_TRIANGLE *)Object;
   VECTOR Translation;
@@ -1110,10 +1090,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Smooth_Triangle(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Smooth_Triangle(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   if (!Test_Flag(Object, DEGENERATE_FLAG))
   {
@@ -1149,10 +1126,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Smooth_Triangle(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Smooth_Triangle(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   DBL Length;
   SMOOTH_TRIANGLE *Triangle = (SMOOTH_TRIANGLE *)Object;
@@ -1203,9 +1177,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Smooth_Triangle(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Smooth_Triangle(OBJECT *Object, TRANSFORM *Trans)
 {
   SMOOTH_TRIANGLE *Triangle = (SMOOTH_TRIANGLE *)Object;
 
@@ -1251,8 +1223,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Smooth_Triangle(Object)
-OBJECT *Object;
+static void Invert_Smooth_Triangle(OBJECT *Object)
 {
 }
 
@@ -1339,8 +1310,7 @@ SMOOTH_TRIANGLE *Create_Smooth_Triangle()
 *
 ******************************************************************************/
 
-static void *Copy_Smooth_Triangle(Object)
-OBJECT *Object;
+static SMOOTH_TRIANGLE *Copy_Smooth_Triangle(OBJECT *Object)
 {
   SMOOTH_TRIANGLE *New;
 
@@ -1383,8 +1353,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Triangle_BBox(Triangle)
-TRIANGLE *Triangle;
+void Compute_Triangle_BBox(TRIANGLE *Triangle)
 {
   VECTOR Min, Max, Epsilon;
 

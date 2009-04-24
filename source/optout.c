@@ -4,16 +4,16 @@
 *  This module contains functions for credit, usage, options and stats.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -194,10 +194,10 @@ char *Contributing_Authors[] =
 * Static functions
 ******************************************************************************/
 
-static void rinfo_on PARAMS((char *string, unsigned value));
-static void add_numbers PARAMS((char *result, char *c1, char *c2));
-static void counter_to_string PARAMS((COUNTER *counter, char *string, int len));
-static void print_intersection_stats PARAMS((char *text, COUNTER *tests, COUNTER *succeeded));
+static void rinfo_on (char *string, unsigned value);
+static void add_numbers (char *result, char *c1, char *c2);
+static void counter_to_string (COUNTER *counter, char *string, int len);
+static void print_intersection_stats (char *text, COUNTER *tests, COUNTER *succeeded);
 
 
 
@@ -227,8 +227,7 @@ static void print_intersection_stats PARAMS((char *text, COUNTER *tests, COUNTER
 *
 ******************************************************************************/
 
-static void add_numbers(result, c1, c2)
-char *result, *c1, *c2;
+static void add_numbers(char *result, char  *c1, char  *c2)
 {
   int i;
   char carry, x;
@@ -282,10 +281,7 @@ char *result, *c1, *c2;
 *
 ******************************************************************************/
 
-static void counter_to_string(counter, string, len)
-COUNTER *counter;
-char *string;
-int len;
+static void counter_to_string(COUNTER *counter, char *string, int len)
 {
   char n[NUMBER_LENGTH+1];
   int i, j;
@@ -404,9 +400,7 @@ int len;
 *
 ******************************************************************************/
 
-static void print_intersection_stats(text, tests, succeeded)
-char *text;
-COUNTER *tests, *succeeded;
+static void print_intersection_stats(char *text, COUNTER *tests, COUNTER  *succeeded)
 {
   DBL t, s, p;
 
@@ -452,9 +446,7 @@ COUNTER *tests, *succeeded;
 *
 ******************************************************************************/
 
-static void rinfo_on(string, value)
-char *string;
-unsigned value;
+static void rinfo_on(char *string, unsigned value)
 {
   if (value)
   {
@@ -500,7 +492,7 @@ void Print_Credits()
   Banner ("  %s\n", DISTRIBUTION_MESSAGE_1);
   Banner ("  %s\n", DISTRIBUTION_MESSAGE_2);
   Banner ("  %s\n", DISTRIBUTION_MESSAGE_3);
-  Banner ("Copyright 1997 POV-Ray Team(tm)\n");
+  Banner ("Copyright 1999 POV-Ray Team(tm)\n");
 }
 
 
@@ -578,7 +570,6 @@ void Print_Help_Screens()
     Usage(n, FALSE);
   }
 
-  Terminate_POV(0);
 #else
   int n;
 
@@ -587,6 +578,7 @@ void Print_Help_Screens()
     Usage(n, (n == MAX_HELP_PAGE));
   }
 #endif
+  Terminate_POV(0);
 }
 
 
@@ -622,8 +614,7 @@ void Print_Help_Screens()
 *
 ******************************************************************************/
 
-void Usage(n, f)
-int n, f;
+void Usage(int n, int  f)
 {
   switch (n)
   {
@@ -1192,8 +1183,7 @@ void Print_Options()
 *
 ******************************************************************************/
 
-void Print_Stats(pstats)
-  COUNTER *pstats;
+void Print_Stats(COUNTER *pstats)
 {
   unsigned long hours, minutes;
   DBL seconds, taverage, ttotal;
@@ -1353,24 +1343,15 @@ void Print_Stats(pstats)
 
   Statistics ("----------------------------------------------------------------------------\n");
 
-  /* Print halo samples. */
+  /* Print media samples. */
 
-  if (!Test_Zero_Counter(pstats[Halo_Rays_Traced]))
+  if (!Test_Zero_Counter(pstats[Media_Intervals]))
   {
-    counter_to_string(&pstats[Halo_Samples], s1, OUTPUT_LENGTH);
-    counter_to_string(&pstats[Halo_Supersamples], s2, OUTPUT_LENGTH);
+    counter_to_string(&pstats[Media_Intervals], s1, OUTPUT_LENGTH);
+    counter_to_string(&pstats[Media_Samples], s2, OUTPUT_LENGTH);
 
-    Statistics ("Halo Samples:       %s   Supersamples:    %s\n", s1, s2);
-  }
-
-  /* Print atmosphere samples. */
-
-  if (!Test_Zero_Counter(pstats[Atmosphere_Samples]))
-  {
-    counter_to_string(&pstats[Atmosphere_Samples], s1, OUTPUT_LENGTH);
-    counter_to_string(&pstats[Atmosphere_Supersamples], s2, OUTPUT_LENGTH);
-
-    Statistics ("Atmosphere Samples: %s   Supersamples:    %s\n", s1, s2);
+    Statistics ("Media Intervals:    %s   Media Samples:   %s (%4.2f)\n", s1, s2,
+      DBL_Counter(pstats[Media_Samples]) / DBL_Counter(pstats[Media_Intervals]));
   }
 
   if (!Test_Zero_Counter(pstats[Shadow_Ray_Tests]))
@@ -1385,7 +1366,16 @@ void Print_Stats(pstats)
   {
     counter_to_string(&pstats[Reflected_Rays_Traced], s1, OUTPUT_LENGTH);
 
-    Statistics ("Reflected Rays:     %s\n", s1);
+    Statistics ("Reflected Rays:     %s", s1);
+
+    if (!Test_Zero_Counter(pstats[Internal_Reflected_Rays_Traced]))
+    {
+      counter_to_string(&pstats[Internal_Reflected_Rays_Traced], s1, OUTPUT_LENGTH);
+
+      Statistics ("   Total Internal:  %s", s1);
+    }
+
+    Statistics ("\n");
   }
 
   if (!Test_Zero_Counter(pstats[Refracted_Rays_Traced]))

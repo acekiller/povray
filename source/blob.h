@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for BLOB.C.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -124,22 +124,22 @@ extern METHODS Blob_Methods;
 * Global functions
 ******************************************************************************/
 
-void Set_Blob_Solver PARAMS((OBJECT *obj, int Sturm_Flag));
-void Init_Blob_Queue PARAMS((void));
-void BlobDelete PARAMS((OBJECT *obj));
-BLOB *Create_Blob PARAMS((void));
-void Make_Blob PARAMS((BLOB *blob, DBL threshold, BLOB_LIST *bloblist, int npoints));
-BLOB_LIST *Create_Blob_List_Element PARAMS((void));
-void Create_Blob_Element_Texture_List PARAMS((BLOB *Blob, BLOB_LIST *BlobList, int npoints));
-void Determine_Blob_Textures PARAMS((BLOB *Blob, VECTOR P, int *Count, TEXTURE **Textures, DBL *Weights));
-void Test_Blob_Opacity PARAMS((BLOB *Blob));
+void Set_Blob_Solver (OBJECT *obj, int Sturm_Flag);
+void Init_Blob_Queue (void);
+void BlobDelete (OBJECT *obj);
+BLOB *Create_Blob (void);
+void Make_Blob (BLOB *blob, DBL threshold, BLOB_LIST *bloblist, int npoints);
+BLOB_LIST *Create_Blob_List_Element (void);
+void Create_Blob_Element_Texture_List (BLOB *Blob, BLOB_LIST *BlobList, int npoints);
+void Determine_Blob_Textures (BLOB *Blob, VECTOR P, int *Count, TEXTURE **Textures, DBL *Weights);
+void Test_Blob_Opacity (BLOB *Blob);
 
-void Translate_Blob_Element PARAMS((BLOB_ELEMENT *Element, VECTOR Vector));
-void Rotate_Blob_Element PARAMS((BLOB_ELEMENT *Element, VECTOR Vector));
-void Scale_Blob_Element PARAMS((BLOB_ELEMENT *Element, VECTOR Vector));
-void Invert_Blob_Element PARAMS((BLOB_ELEMENT *Element));
-void Transform_Blob_Element PARAMS((BLOB_ELEMENT *Element, TRANSFORM *Trans));
-void Destroy_Blob_Queue PARAMS((void));
+void Translate_Blob_Element (BLOB_ELEMENT *Element, VECTOR Vector);
+void Rotate_Blob_Element (BLOB_ELEMENT *Element, VECTOR Vector);
+void Scale_Blob_Element (BLOB_ELEMENT *Element, VECTOR Vector);
+void Invert_Blob_Element (BLOB_ELEMENT *Element);
+void Transform_Blob_Element (BLOB_ELEMENT *Element, TRANSFORM *Trans);
+void Destroy_Blob_Queue (void);
 
 
 

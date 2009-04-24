@@ -4,16 +4,16 @@
 *  This module contains the code to read and write the PPM file format.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -21,6 +21,8 @@
 *
 * Original patch copyright 1994 Tim Rowley
 * Updated for POV 3.0 by Chris Cason, Jan '95.
+*
+* Modifications by Hans-Detlev Fink, January 1999, used with permission.
 *
 *****************************************************************************/
 
@@ -66,13 +68,10 @@ static int PPM_Line_Number;
 * Static functions
 ******************************************************************************/
 
-static int Open_PPM_File PARAMS ((FILE_HANDLE *handle, char *name, int *width,
-                              int *height, int buffer_size, int mode));
-static void Write_PPM_Line PARAMS ((FILE_HANDLE *handle, COLOUR *line_data,
-                                    int line_number));
-static int Read_PPM_Line PARAMS((FILE_HANDLE *handle, COLOUR *line_data,
-                                 int *line_number));
-static void Close_PPM_File PARAMS((FILE_HANDLE *handle));
+static int Open_PPM_File (FILE_HANDLE *handle, char *name, int *width, int *height, int buffer_size, int mode);
+static void Write_PPM_Line (FILE_HANDLE *handle, COLOUR *line_data, int line_number);
+static int Read_PPM_Line (FILE_HANDLE *handle, COLOUR *line_data, int *line_number);
+static void Close_PPM_File (FILE_HANDLE *handle);
 
 /*****************************************************************************
 *
@@ -129,13 +128,7 @@ FILE_HANDLE *Get_PPM_File_Handle()
 *
 ******************************************************************************/
 
-static int Open_PPM_File(handle, name, width, height, buffer_size, mode)
-FILE_HANDLE *handle;
-char *name;
-int *width;
-int *height;
-int buffer_size;
-int mode;
+static int Open_PPM_File(FILE_HANDLE *handle, char *name, int *width, int *height, int buffer_size, int mode)
 {
   char type;
   int input;
@@ -151,7 +144,7 @@ int mode;
 
       /* We can't resume from stdout. */
       if (opts.Options & TO_STDOUT  || 
-          (handle->file = fopen(name, READ_FILE_STRING)) == NULL)
+          (handle->file = fopen(name, READ_BINFILE_STRING)) == NULL)
       {
         Status_Info("\n");
         return(0);
@@ -159,7 +152,7 @@ int mode;
 
       if (buffer_size != 0)
       {
-        handle->buffer = POV_MALLOC((size_t)buffer_size, "PPM file buffer") ;
+        handle->buffer = (char *)POV_MALLOC((size_t)buffer_size, "PPM file buffer") ;
         setvbuf(handle->file, handle->buffer, _IOFBF, buffer_size);
       }
 
@@ -199,7 +192,7 @@ int mode;
       }
       else
       {
-        if ((handle->file = fopen(name, WRITE_FILE_STRING)) == NULL)
+        if ((handle->file = fopen(name, WRITE_BINFILE_STRING)) == NULL)
         {
           return(0);
         }
@@ -207,7 +200,7 @@ int mode;
 
       if (buffer_size != 0)
       {
-        handle->buffer = POV_MALLOC((size_t)buffer_size, "PPM file buffer") ;
+        handle->buffer = (char *)POV_MALLOC((size_t)buffer_size, "PPM file buffer") ;
         setvbuf(handle->file, handle->buffer, _IOFBF, buffer_size);
       }
 
@@ -255,7 +248,7 @@ int mode;
       }
       else
       {
-        if ((handle->file = fopen(name, APPEND_FILE_STRING)) == NULL)
+        if ((handle->file = fopen(name, APPEND_BINFILE_STRING)) == NULL)
         {
           return(0);
         }
@@ -263,7 +256,7 @@ int mode;
 
       if (buffer_size != 0)
       {
-        handle->buffer = POV_MALLOC((size_t)buffer_size, "PPM file buffer") ;
+        handle->buffer = (char *)POV_MALLOC((size_t)buffer_size, "PPM file buffer") ;
         setvbuf(handle->file, handle->buffer, _IOFBF, buffer_size);
       }
 
@@ -293,10 +286,7 @@ int mode;
 *
 ******************************************************************************/
 
-static void Write_PPM_Line(handle, line_data, line_number)
-FILE_HANDLE *handle;
-COLOUR *line_data;
-int line_number;
+static void Write_PPM_Line(FILE_HANDLE *handle, COLOUR *line_data, int line_number)
 {
   unsigned int gray;
   register int x;
@@ -337,7 +327,7 @@ int line_number;
 
     if (!(opts.Options & TO_STDOUT))
     {
-      handle->file = freopen(handle->filename,APPEND_FILE_STRING,handle->file);
+      handle->file = freopen(handle->filename,APPEND_BINFILE_STRING,handle->file);
     }
   }
 }
@@ -360,10 +350,7 @@ int line_number;
 *
 ******************************************************************************/
 
-static int Read_PPM_Line(handle, line_data, line_number)
-FILE_HANDLE *handle;
-COLOUR *line_data;
-int *line_number;
+static int Read_PPM_Line(FILE_HANDLE *handle, COLOUR *line_data, int *line_number)
 {
   int data, i;
 
@@ -421,8 +408,7 @@ int *line_number;
 *
 ******************************************************************************/
 
-static void Close_PPM_File(handle)
-FILE_HANDLE *handle;
+static void Close_PPM_File(FILE_HANDLE *handle)
 {
   if (handle->file)
   {
@@ -461,9 +447,7 @@ FILE_HANDLE *handle;
 *
 ******************************************************************************/
 
-void Read_PPM_Image(Image, name)
-IMAGE *Image;
-char *name;
+void Read_PPM_Image(IMAGE *Image, char *name)
 {
   char type;
   int width, height;
@@ -475,14 +459,16 @@ char *name;
   IMAGE_LINE *line_data;
   FILE *infile;
 
-  if ((infile = Locate_File(name, READ_FILE_STRING, ".ppm", ".PPM",TRUE)) == NULL)
+  if ((infile = Locate_File(name, READ_BINFILE_STRING, ".ppm", ".PPM",NULL,TRUE)) == NULL)
   {
     Error("Error opening PPM image %s.\n", name);
+    return;	/* -hdf99- */
   }
 
   if (fscanf(infile, "P%c\n", &type) != 1 || (type != '3' && type != '6'))
   {
     Error ("File is not in PPM format.\n", name);
+    return;	/* -hdf99- */
   }
 
   /* Ignore any comments */

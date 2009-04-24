@@ -6,20 +6,22 @@
 *  This module was written by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modifications by Thomas Willhalm, March 1999, used with permission
 *
 *****************************************************************************/
 
@@ -93,35 +95,32 @@ static PROJECT_TREE_NODE *Root_Vista;
 * Static functions
 ******************************************************************************/
 
-static void init_view_coordinates PARAMS((void));
+static void init_view_coordinates (void);
 
-static void project_raw_rectangle PARAMS((PROJECT *Project, VECTOR P1, VECTOR P2, VECTOR P3, VECTOR P4, int *visible));
-static void project_raw_triangle PARAMS((PROJECT *Project, VECTOR P1, VECTOR P2, VECTOR P3, int *visible));
+static void project_raw_rectangle (PROJECT *Project, VECTOR P1, VECTOR P2, VECTOR P3, VECTOR P4, int *visible);
+static void project_raw_triangle (PROJECT *Project, VECTOR P1, VECTOR P2, VECTOR P3, int *visible);
 
-static void project_bbox PARAMS((PROJECT *Project, VECTOR *P, int *visible));
-static void project_bounds PARAMS((PROJECT *Project, BBOX *BBox, int *visible));
+static void project_bbox (PROJECT *Project, VECTOR *P, int *visible);
+static void project_bounds (PROJECT *Project, BBOX *BBox, int *visible);
 
-static void get_perspective_projection PARAMS((OBJECT *Object, PROJECT *Project, int infinite));
-static void get_orthographic_projection PARAMS((OBJECT *Object, PROJECT *Project, int infinite));
+static void get_perspective_projection (OBJECT *Object, PROJECT *Project, int infinite);
+static void get_orthographic_projection (OBJECT *Object, PROJECT *Project, int infinite);
 
-static void project_object PARAMS((OBJECT *Object, PROJECT *Project));
+static void project_object (OBJECT *Object, PROJECT *Project);
 
-static void project_box PARAMS((PROJECT *Project, OBJECT *Object, int *visible));
-static void project_hfield PARAMS((PROJECT *Project, OBJECT *Object, int *visible));
-static void project_triangle PARAMS((PROJECT *Project, OBJECT *Object, int *visible));
-static void project_smooth_triangle PARAMS((PROJECT *Project, OBJECT *Object, int *visible));
+static void project_box (PROJECT *Project, OBJECT *Object, int *visible);
+static void project_hfield (PROJECT *Project, OBJECT *Object, int *visible);
+static void project_triangle (PROJECT *Project, OBJECT *Object, int *visible);
+static void project_smooth_triangle (PROJECT *Project, OBJECT *Object, int *visible);
 
-static void transform_point PARAMS((VECTOR P));
+static void transform_point (VECTOR P);
 
-static void project_bounding_slab PARAMS((PROJECT *Project, PROJECT_TREE_NODE **Tree, BBOX_TREE *Node));
+static void project_bounding_slab (PROJECT *Project, PROJECT_TREE_NODE **Tree, BBOX_TREE *Node);
 
-static int intersect_vista_tree PARAMS((RAY *Ray, PROJECT_TREE_NODE *Tree, int x, INTERSECTION *Best_Intersection));
+static int intersect_vista_tree (RAY *Ray, PROJECT_TREE_NODE *Tree, int x, INTERSECTION *Best_Intersection);
 
-static void draw_projection PARAMS((PROJECT *Project, int color, int *BigRed, int *BigBlue));
-static void draw_vista PARAMS((PROJECT_TREE_NODE *Tree, int *BigRed, int *BigBlue));
-
-static void POV_Std_Display_Plot_Box PARAMS((int x1,int y1,int x2,int y2,
- unsigned int r,unsigned int g,unsigned int b,unsigned int a));
+static void draw_projection (PROJECT *Project, int color, int *BigRed, int *BigBlue);
+static void draw_vista (PROJECT_TREE_NODE *Tree, int *BigRed, int *BigBlue);
 
 /*****************************************************************************
 *
@@ -151,8 +150,7 @@ static void POV_Std_Display_Plot_Box PARAMS((int x1,int y1,int x2,int y2,
 *
 ******************************************************************************/
 
-void Prune_Vista_Tree(y)
-int y;
+void Prune_Vista_Tree(int y)
 {
   unsigned short i;
   PROJECT_TREE_NODE *Node, *Sib;
@@ -235,7 +233,7 @@ int y;
           /* Add sibling to list */
 
           /* Reallocate queue if it's too small. */
-          
+
           Reinitialize_VLBuffer_Code();
 
           Node_Queue->Queue[(Node_Queue->QSize)++] = Sib;
@@ -285,11 +283,7 @@ int y;
 *
 ******************************************************************************/
 
-void Trace_Primary_Ray (Ray, Colour, Weight, x)
-RAY *Ray;
-COLOUR Colour;
-DBL Weight;
-int x;
+void Trace_Primary_Ray (RAY *Ray, COLOUR Colour, DBL Weight, int x)
 {
   int i, Intersection_Found, all_hollow;
   INTERSECTION Best_Intersection;
@@ -339,11 +333,11 @@ int x;
 
   all_hollow = TRUE;
 
-  if (Ray->Containing_Index > -1)
+  if (Ray->Index > -1)
   {
-    for (i = 0; i <= Ray->Containing_Index; i++)
+    for (i = 0; i <= Ray->Index; i++)
     {
-      if (!Test_Flag(Ray->Containing_Objects[i], HOLLOW_FLAG))
+      if (!Ray->Interiors[i]->hollow)
       {
         all_hollow = FALSE;
 
@@ -353,8 +347,7 @@ int x;
   }
 
   /* Apply finite atmospheric effects. */
-
-  if (all_hollow)
+  if (all_hollow && (opts.Quality_Flags & Q_VOLUME))
   {
     Do_Finite_Atmosphere(Ray, &Best_Intersection, Colour, FALSE);
   }
@@ -378,7 +371,7 @@ int x;
 * OUTPUT
 *
 *   Best_Intersection
-*   
+*
 * RETURNS
 *   
 * AUTHOR
@@ -396,15 +389,11 @@ int x;
 *
 ******************************************************************************/
 
-static int intersect_vista_tree(Ray, Tree, x, Best_Intersection)
-RAY *Ray;
-PROJECT_TREE_NODE *Tree;
-int x;
-INTERSECTION *Best_Intersection;
+static int intersect_vista_tree(RAY *Ray, PROJECT_TREE_NODE *Tree, int x, INTERSECTION *Best_Intersection)
 {
   INTERSECTION New_Intersection;
   unsigned short i;
-  unsigned size;
+  /* unsigned size; */ /* tw, mtg */
   int Found;
   RAYINFO rayinfo;
   DBL key;
@@ -560,10 +549,7 @@ INTERSECTION *Best_Intersection;
 *
 ******************************************************************************/
 
-static void project_raw_triangle (Project, P1, P2, P3, visible)
-PROJECT *Project;
-VECTOR P1, P2, P3;
-int *visible;
+static void project_raw_triangle (PROJECT *Project, VECTOR P1, VECTOR  P2, VECTOR  P3, int *visible)
 {
   VECTOR Points[MAX_CLIP_POINTS];
   int i, number;
@@ -650,10 +636,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_raw_rectangle(Project, P1, P2, P3, P4, visible)
-PROJECT *Project;
-VECTOR P1, P2, P3, P4;
-int *visible;
+static void project_raw_rectangle(PROJECT *Project, VECTOR P1, VECTOR  P2, VECTOR  P3, VECTOR  P4, int *visible)
 {
   VECTOR Points[MAX_CLIP_POINTS];
   int i, number;
@@ -731,10 +714,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_bbox(Project, P, visible)
-PROJECT *Project;
-VECTOR *P;
-int *visible;
+static void project_bbox(PROJECT *Project, VECTOR *P, int *visible)
 {
   int vis, i, x, y;
   PROJECT New;
@@ -843,10 +823,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_bounds(Project, BBox, visible)
-PROJECT *Project;
-BBOX *BBox;
-int *visible;
+static void project_bounds(PROJECT *Project, BBOX *BBox, int *visible)
 {
   int i;
   VECTOR P[8];
@@ -897,10 +874,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_box(Project, Object, visible)
-PROJECT *Project;
-OBJECT *Object;
-int *visible;
+static void project_box(PROJECT *Project, OBJECT *Object, int *visible)
 {
   int i;
   VECTOR P[8];
@@ -959,10 +933,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_hfield(Project, Object, visible)
-PROJECT *Project;
-OBJECT *Object;
-int *visible;
+static void project_hfield(PROJECT *Project, OBJECT *Object, int *visible)
 {
   int i;
   VECTOR P[8];
@@ -1023,10 +994,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_triangle(Project, Object, visible)
-PROJECT *Project;
-OBJECT *Object;
-int *visible;
+static void project_triangle(PROJECT *Project, OBJECT *Object, int *visible)
 {
   int i, vis;
   VECTOR P[3];
@@ -1095,10 +1063,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void project_smooth_triangle(Project, Object, visible)
-PROJECT *Project;
-OBJECT *Object;
-int *visible;
+static void project_smooth_triangle(PROJECT *Project, OBJECT *Object, int *visible)
 {
   int i, vis;
   VECTOR P[3];
@@ -1166,8 +1131,7 @@ int *visible;
 *
 ******************************************************************************/
 
-static void transform_point(P)
-VECTOR P;
+static void transform_point(VECTOR P)
 {
   DBL x,y,z;
 
@@ -1291,10 +1255,7 @@ static void init_view_coordinates()
 *
 ******************************************************************************/
 
-static void get_perspective_projection(Object, Project, infinite)
-OBJECT *Object;
-PROJECT *Project;
-int infinite;
+static void get_perspective_projection(OBJECT *Object, PROJECT *Project, int infinite)
 {
   int visible;
   METHODS *Methods;
@@ -1399,10 +1360,7 @@ int infinite;
 *
 ******************************************************************************/
 
-static void get_orthographic_projection(Object, Project, infinite)
-OBJECT *Object;
-PROJECT *Project;
-int infinite;
+static void get_orthographic_projection(OBJECT *Object, PROJECT *Project, int infinite)
 {
   int visible, i, x, y;
   VECTOR P[8];
@@ -1524,9 +1482,7 @@ int infinite;
 *
 ******************************************************************************/
 
-static void project_object(Object, Project)
-OBJECT *Object;
-PROJECT *Project;
+static void project_object(OBJECT *Object, PROJECT *Project)
 {
   int infinite;
 
@@ -1591,10 +1547,7 @@ PROJECT *Project;
 *
 ******************************************************************************/
 
-static void project_bounding_slab(Project, Tree, Node)
-PROJECT *Project;
-PROJECT_TREE_NODE **Tree;
-BBOX_TREE *Node;
+static void project_bounding_slab(PROJECT *Project, PROJECT_TREE_NODE **Tree, BBOX_TREE *Node)
 {
   short int i;
   PROJECT Temp;
@@ -1836,13 +1789,11 @@ void Destroy_Vista_Buffer()
 *
 ******************************************************************************/
 
-static void draw_projection(Project, color, BigRed, BigBlue)
-PROJECT *Project;
-int color, *BigRed, *BigBlue;
+static void draw_projection(PROJECT *Project, int color, int  *BigRed, int  *BigBlue)
 {
   int x1, x2, y1, y2, draw_it;
   unsigned char r, g, b, gray;
-  unsigned char a=255;
+  unsigned char a=0;
 
   gray = (opts.PaletteOption == GREY) ? 255 : 0;
 
@@ -1924,9 +1875,7 @@ int color, *BigRed, *BigBlue;
 *
 ******************************************************************************/
 
-static void draw_vista(Tree, BigRed, BigBlue)
-PROJECT_TREE_NODE *Tree;
-int *BigBlue, *BigRed;
+static void draw_vista(PROJECT_TREE_NODE *Tree, int  *BigRed, int *BigBlue)
 {
   unsigned short i;
   PROJECT_TREE_LEAF *Leaf;
@@ -2000,48 +1949,3 @@ void Draw_Vista_Buffer()
     draw_vista(Root_Vista, &BigRed, &BigBlue);
   }
 }
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   POV_Std_Display_Plot_Box
-*
-* INPUT
-*   
-* OUTPUT
-*   
-* RETURNS
-*   
-* AUTHOR
-*
-*   Chris Young
-*   
-* DESCRIPTION
-*
-*   Generic box drawing routine which may be overriden in POV_DRAW_BOX
-*   by a platform specific routine.
-*
-* CHANGES
-*
-*   Nov 1995 : Creation.
-*
-******************************************************************************/
-static void POV_Std_Display_Plot_Box(x1,y1,x2,y2,r,g,b,a)
-  int x1,y1,x2,y2;
-  unsigned int r,g,b,a;
-  {
-     int x,y;
-   
-     for (x = x1; x <= x2; x++)
-     {
-       POV_DISPLAY_PLOT(x, y1, r, g, b, a);
-       POV_DISPLAY_PLOT(x, y2, r, g, b, a);
-     }
-
-     for (y = y1; y <= y2; y++)
-     {
-       POV_DISPLAY_PLOT(x1, y, r, g, b, a);
-       POV_DISPLAY_PLOT(x2, y, r, g, b, a);
-     }
-  }

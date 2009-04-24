@@ -1,6 +1,18 @@
                  Persistence of Vision Ray Tracer
-                           Version 3.00
+                           Version 3.1e
                     Unix Specific Documentation
+
+New in version 3.1:
+   The scene description language in POV-Ray 3.1 is not entirely
+   backwards-compatible with earlier versions of the POV-Ray scene
+   description language.  The 'halo' feature in earlier versions
+   is obsolete and has been entirely replaced with a 'media' feature 
+   which works better.  Because older files making use of 'halo' 
+   will not render in POV-Ray 3.1 without substantial modification,
+   you may wish to rename executables for pre-3.1 versions of POV-Ray 
+   if you would like to be able to render such older files.  It should
+   be noted that .povrayrc as described below can only refer to one
+   version.
 
 Files:
    If this file has ^M's in it when you're reading it under Unix, then
@@ -42,33 +54,34 @@ Files:
    files actually needed to USE POV-Ray.  The documentation and example
    scene files are available in the file POVUNI_D.TGZ, which should be
    available at the same place you got this archive, and it is also in
-   both the Linux and SunOS archives (povlinux.tgz and povsunos.tgz).
+   the Linux archive (povlinux.tgz).
 
 Executables:
-   Official executables are provided for only Linux on x86 and SPARC
-   SunOS systems because there are so many possible Unix executable
-   formats.  In general, however, Unix systems come bundled with a C
-   compiler, so recompiling the source for your target system shouldn't
-   cause a problem. If you want to distribute an executable created by
-   yourself you must comply with POVLEGAL.DOC.
+   Official executables are provided for only Linux on x86 systems 
+   because there are so many possible Unix executable formats.  Since
+   the POV-Ray team does not have ready access to other platforms for
+   testing and debugging, we are unable to support other Unix platforms.
+   In general, however, Unix systems come bundled with a C compiler, so 
+   recompiling the source for your target system shouldn't cause a 
+   problem. If you want to distribute an executable created by yourself 
+   you must comply with POVLEGAL.DOC.
 
-   An official Linux (a free Unix variant) and a SunOS binary set is
-   available as povlinux.tgz and povsunos.tgz. If you can't find one
-   at the same place you got this from, and don't want to compile it
-   yourself from the Unix directory, then try one of the following
-   sites:
+   An official Linux (a free Unix variant) version is available as 
+   povlinux.tgz.  If you can't find it at the same place you got this 
+   from, and don't want to compile it yourself from the Unix directory, 
+   then try one of the following sites:
 
      - The POV-Ray FTP site, ftp.povray.org in /pub/povray/Official/Linux.
      - There are many sites around the world that mirror the povray.org
        site.  These are listed in README.MIRRORS at ftp.povray.org, and
        you should try to use the closest site for the best speed.
      - Compuserve's GRAPHDEV forum. (GO GRAPHDEV).
-     - We also have a web site with a link to the binaries. Point your
+     - We also have a web site with a link to the binary. Point your
        browser at http://www.povray.org/.
 
 File locations:
    The preferred location for installing POV-Ray for Unix is under
-   /usr/local/lib/povray3 for all of the INI, scene, and include files,
+   /usr/local/lib/povray31 for all of the INI, scene, and include files,
    and /usr/local/bin for povray, x-povray, and/or s-povray.  Each user
    will also need to have an INI file, actually called .povrayrc on
    Unix systems, to tell POV-Ray where to look for these files.
@@ -83,17 +96,21 @@ File locations:
 INI files:
    POV-Ray allows the use of files to store common configuration
    settings, such as the output format, image size, and library paths.
-   Upon startup, the Unix version of POV-Ray will try to read a file
-   called ".povrayrc" stored in the user's home directory for their
-   custom configuration information.  If the environment variable
-   POVINI is set, then POV-Ray will look at the file that POVINI is
-   pointing to instead.  If neither of these work, then POV-Ray will
-   try to read the file "povray.ini", in the current directory.  The
-   POVRAYOPT environment variable used by earlier versions of POV-Ray
+   Upon startup, the Unix version of POV-Ray will use the environment
+   variable POVINI to determine custom configuration information if \
+   that environment variable is set.  Otherwise, it will look for the 
+   file "povray.ini" in the current directory.  If neither of these works,
+   then POV-Ray will try to read a file called ".povrayrc" stored
+   in the user's home directory.  If none of these work, then POV-Ray will
+   try to read the file "povray.ini" in a default system-wide directory 
+   defined at compile time (/usr/local/lib/povray31 by default).  If it 
+   will be stored in a different location, POV-Ray should be recompiled 
+   for this option to work.  It is defined by POVLIBDIR in the makefile.  
+   The POVRAYOPT environment variable used by earlier versions of POV-Ray
    is no longer used.
 
    The default povray.ini file that is shipped with the Unix archive
-   assumes that POV-Ray will be installed under /usr/local/lib/povray3.
+   assumes that POV-Ray will be installed under /usr/local/lib/povray31.
    If you are not installing POV-Ray there, you should edit the
    Library_Path specifications in this file to point to the location
    where POV-Ray is installed.  Each user should copy this file to
@@ -189,16 +206,14 @@ File Formats:
    DEFAULT_FILE_FORMAT = 'p' or DEFAULT_FILE_FORMAT = 'n' in the
    unixconf.h file before compiling, by using +fp or +fn on the
    command-line or with "Output_File_Type = p" "Ouput_File_Type = n" in
-   your .povrayrc file.  There is more information about oputput file
+   your .povrayrc file.  There is more information about output file
    formats in the POV-Ray documentation.
 
    The documentation included with POV-Ray for Unix is in ACSII text
-   format.  The scene files for generating the images that belong with
-   the documentation are located in the docscn subdirectory.  The
-   documentation is also available separately in PostScript and HTML
-   format, including all of the images, at:
-   ftp://ftp.povray.org/pub/povray/Official/3.0-beta/
-   or wherever you got your copy of this archive.
+   format.  The documentation is also available separately in PDF, HTML, 
+   and Microsoft Word 97 document formats, including all of the images, 
+   at: ftp://ftp.povray.org/pub/povray/Official/Docs/ or wherever you got 
+   your copy of this archive.
 
    If you are generating histogram files in the CSV format (comma
    separated values), then the units of time are in tens of microseconds
@@ -228,12 +243,15 @@ Post-processing Images:
    POV-Ray tells it to pipe its output to stdout, which is piped through
    cjpeg in this example.
 
-Questions and problems with Unix versions can be directed to Andreas
-Dilger.  Please make sure you have consulted with a local Unix person
-first if you think the problem is likely to be on your end.  If you are
-installing POV-Ray in a publicly accessible location, you must read and
-comply with the 'Online or Remote Execution' conditions in POVLEGAL.DOC.
+Questions and problems with Unix versions can be directed to Mark Gordon
+Please make sure you have consulted with a local Unix person first if 
+you think the problem is likely to be on your end.  If you are installing 
+POV-Ray in a publicly accessible location, you must read and comply with 
+the 'Online or Remote Execution' conditions in POVLEGAL.DOC.
 
-Andreas Dilger
-Internet:   adilger@enel.ucalgary.ca
+Mark Gordon
+Internet:   mtgordon@mailbag.com
+
+
+
 

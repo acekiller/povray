@@ -4,16 +4,16 @@
 *  This module implements methods for managing the viewpoint.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -56,9 +56,7 @@
 *
 ******************************************************************************/
 
-void Translate_Camera(Camera, Vector)
-CAMERA *Camera;
-VECTOR Vector;
+void Translate_Camera(CAMERA *Camera, VECTOR Vector)
 {
   VAddEq(((CAMERA *)Camera)->Location, Vector);
 }
@@ -91,9 +89,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Rotate_Camera(Camera, Vector)
-CAMERA *Camera;
-VECTOR Vector;
+void Rotate_Camera(CAMERA *Camera, VECTOR Vector)
 {
   TRANSFORM Trans;
   
@@ -130,9 +126,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Scale_Camera(Camera, Vector)
-CAMERA *Camera;
-VECTOR Vector;
+void Scale_Camera(CAMERA *Camera, VECTOR Vector)
 {
   TRANSFORM Trans;
   
@@ -169,9 +163,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Transform_Camera(Camera, Trans)
-CAMERA *Camera;
-TRANSFORM *Trans;
+void Transform_Camera(CAMERA *Camera, TRANSFORM *Trans)
 {
   MTransPoint(Camera->Location, Camera->Location, Trans);
   
@@ -272,8 +264,7 @@ CAMERA *Create_Camera()
 *
 ******************************************************************************/
 
-CAMERA *Copy_Camera(Old)
-CAMERA *Old;
+CAMERA *Copy_Camera(CAMERA *Old)
 {
   CAMERA *New;
 
@@ -319,8 +310,7 @@ CAMERA *Old;
 *
 ******************************************************************************/
 
-void Destroy_Camera(Camera)
-CAMERA *Camera;
+void Destroy_Camera(CAMERA *Camera)
 {
   if (Camera != NULL)
   {

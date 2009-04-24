@@ -13,16 +13,16 @@
 *    from David Buck and Drew Wells.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -76,31 +76,31 @@
 * Static functions
 ******************************************************************************/
 
-static DBL normalize PARAMS((VECTOR A, VECTOR B));
+static DBL normalize (VECTOR A, VECTOR B);
 
-static DBL stretch PARAMS((DBL x));
+static DBL stretch (DBL x);
 
-static void smooth_height_field PARAMS((HFIELD *HField, int xsize, int zsize));
+static void smooth_height_field (HFIELD *HField, int xsize, int zsize);
 
-static int intersect_pixel PARAMS((int x,int z,RAY *Ray,HFIELD *HField,DBL height1,DBL height2));
+static int intersect_pixel (int x,int z,RAY *Ray,HFIELD *HField,DBL height1,DBL height2);
 
-static int add_single_normal PARAMS((HF_VAL **data, int xsize, int zsize,
-  int x0, int z0,int x1, int z1,int x2, int z2,VECTOR N));
+static int add_single_normal (HF_VAL **data, int xsize, int zsize,
+  int x0, int z0,int x1, int z1,int x2, int z2,VECTOR N);
 
-static int  All_HField_Intersections PARAMS((OBJECT *Object,RAY *Ray,ISTACK *Depth_Stack));
-static int  Inside_HField PARAMS((VECTOR IPoint,OBJECT *Object));
-static void HField_Normal PARAMS((VECTOR Result,OBJECT *Object,INTERSECTION *Inter));
-static void Translate_HField PARAMS((OBJECT *Object,VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_HField PARAMS((OBJECT *Object,VECTOR Vector, TRANSFORM *Trans));
-static void Scale_HField PARAMS((OBJECT *Object,VECTOR Vector, TRANSFORM *Trans));
-static void Invert_HField PARAMS((OBJECT *Object));
-static void Transform_HField PARAMS((OBJECT *Object,TRANSFORM *Trans));
-static void *Copy_HField PARAMS((OBJECT *Object));
-static void Destroy_HField PARAMS((OBJECT *Object));
+static int  All_HField_Intersections (OBJECT *Object,RAY *Ray,ISTACK *Depth_Stack);
+static int  Inside_HField (VECTOR IPoint,OBJECT *Object);
+static void HField_Normal (VECTOR Result,OBJECT *Object,INTERSECTION *Inter);
+static void Translate_HField (OBJECT *Object,VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_HField (OBJECT *Object,VECTOR Vector, TRANSFORM *Trans);
+static void Scale_HField (OBJECT *Object,VECTOR Vector, TRANSFORM *Trans);
+static void Invert_HField (OBJECT *Object);
+static void Transform_HField (OBJECT *Object,TRANSFORM *Trans);
+static HFIELD *Copy_HField (OBJECT *Object);
+static void Destroy_HField (OBJECT *Object);
 
-static int dda_traversal PARAMS((RAY *Ray, HFIELD *HField, VECTOR Start, HFIELD_BLOCK *Block));
-static int block_traversal PARAMS((RAY *Ray, HFIELD *HField, VECTOR Start));
-static void build_hfield_blocks PARAMS((HFIELD *HField));
+static int dda_traversal (RAY *Ray, HFIELD *HField, VECTOR Start, HFIELD_BLOCK *Block);
+static int block_traversal (RAY *Ray, HFIELD *HField, VECTOR Start);
+static void build_hfield_blocks (HFIELD *HField);
 
 
 
@@ -112,7 +112,7 @@ METHODS HField_Methods =
 {
   All_HField_Intersections,
   Inside_HField, HField_Normal,
-  Copy_HField, Translate_HField, Rotate_HField,
+  (COPY_METHOD)Copy_HField, Translate_HField, Rotate_HField,
   Scale_HField, Transform_HField, Invert_HField, Destroy_HField
 };
 
@@ -147,10 +147,7 @@ static DBL mindist, maxdist;
 *
 ******************************************************************************/
 
-static int All_HField_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_HField_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Side1, Side2;
   VECTOR Start;
@@ -237,9 +234,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_HField (IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_HField (VECTOR IPoint, OBJECT *Object)
 {
   HFIELD *HField = (HFIELD *) Object;
   int px, pz;
@@ -335,10 +330,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void HField_Normal (Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void HField_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   HFIELD *HField = (HFIELD *) Object;
   int px,pz, i;
@@ -451,8 +443,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static DBL stretch (x)
-DBL x;
+static DBL stretch (DBL x)
 {
   if (x <= 0.5)
   {
@@ -494,8 +485,7 @@ DBL x;
 *
 ******************************************************************************/
 
-static DBL normalize(A, B)
-VECTOR A, B;
+static DBL normalize(VECTOR A, VECTOR  B)
 {
   VLength(VTemp, B);
 
@@ -539,12 +529,7 @@ VECTOR A, B;
 *
 ******************************************************************************/
 
-static int intersect_pixel(x, z, Ray, HField, height1, height2)
-int x;
-int z;
-RAY *Ray;
-HFIELD *HField;
-DBL height1, height2;
+static int intersect_pixel(int x, int z, RAY *Ray, HFIELD *HField, DBL height1, DBL  height2)
 {
   int Found;
   DBL dot, depth1, depth2;
@@ -768,10 +753,7 @@ DBL height1, height2;
 *
 ******************************************************************************/
 
-static int add_single_normal(data, xsize, zsize, x0, z0, x1, z1, x2, z2, N)
-HF_VAL **data;
-int xsize,zsize,x0,z0,x1,z1,x2,z2;
-VECTOR N;
+static int add_single_normal(HF_VAL **data, int xsize, int zsize, int x0, int z0, int x1, int z1, int x2, int z2, VECTOR N)
 {
   VECTOR v0, v1, v2, t0, t1, Nt;
 
@@ -838,10 +820,7 @@ VECTOR N;
 *
 ******************************************************************************/
 
-static void smooth_height_field(HField, xsize, zsize)
-HFIELD *HField;
-int xsize;
-int zsize;
+static void smooth_height_field(HFIELD *HField, int xsize, int zsize)
 {
   int i, j, k;
   VECTOR N;
@@ -865,7 +844,7 @@ int zsize;
 
   for (i = 0; i < zsize; i++)
   {
-    COOPERATE_1
+    COOPERATE_0
 
     for (j = 0; j < xsize; j++)
     {
@@ -921,9 +900,7 @@ int zsize;
 *
 ******************************************************************************/
 
-void Compute_HField(HField, Image)
-HFIELD *HField;
-IMAGE *Image;
+void Compute_HField(HFIELD *HField, IMAGE *Image)
 {
   int x, z, max_x, max_z;
   int temp1 = 0, temp2 = 0;
@@ -956,7 +933,7 @@ IMAGE *Image;
 
   for (z = 0; z < max_z; z++)
   {
-    COOPERATE_1
+    COOPERATE_0
     for (x = 0; x < max_x; x++)
     {
 
@@ -1064,8 +1041,7 @@ IMAGE *Image;
 *
 ******************************************************************************/
 
-static void build_hfield_blocks(HField)
-HFIELD *HField;
+static void build_hfield_blocks(HFIELD *HField)
 {
   int x, z, nx, nz, wx, wz;
   int i, j;
@@ -1214,10 +1190,7 @@ HFIELD *HField;
 *
 ******************************************************************************/
 
-static void Translate_HField (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_HField (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_HField(Object, Trans);
 }
@@ -1250,10 +1223,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_HField (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_HField (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_HField(Object, Trans);
 }
@@ -1286,10 +1256,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_HField (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_HField (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_HField(Object, Trans);
 }
@@ -1322,8 +1289,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_HField (Object)
-OBJECT *Object;
+static void Invert_HField (OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -1356,9 +1322,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Transform_HField (Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_HField (OBJECT *Object, TRANSFORM *Trans)
 {
   Compose_Transforms(((HFIELD *)Object)->Trans, Trans);
 
@@ -1465,8 +1429,7 @@ HFIELD *Create_HField()
 *
 ******************************************************************************/
 
-static void *Copy_HField(Object)
-OBJECT *Object;
+static HFIELD *Copy_HField(OBJECT *Object)
 {
   HFIELD *New;
 
@@ -1522,8 +1485,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_HField (Object)
-OBJECT *Object;
+static void Destroy_HField (OBJECT *Object)
 {
   int i;
   HFIELD *HField = (HFIELD *)Object;
@@ -1605,8 +1567,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_HField_BBox(HField)
-HFIELD *HField;
+void Compute_HField_BBox(HFIELD *HField)
 {
   Assign_BBox_Vect(HField->BBox.Lower_Left, HField->bounding_box->bounds[0]);
 
@@ -1663,11 +1624,7 @@ HFIELD *HField;
 *
 ******************************************************************************/
 
-static int dda_traversal(Ray, HField, Start, Block)
-RAY *Ray;
-HFIELD *HField;
-VECTOR Start;
-HFIELD_BLOCK *Block;
+static int dda_traversal(RAY *Ray, HFIELD *HField, VECTOR Start, HFIELD_BLOCK *Block)
 {
   int found;
   int xmin, xmax, zmin, zmax;
@@ -2076,10 +2033,7 @@ HFIELD_BLOCK *Block;
 *
 ******************************************************************************/
 
-static int block_traversal(Ray, HField, Start)
-RAY *Ray;
-HFIELD *HField;
-VECTOR Start;
+static int block_traversal(RAY *Ray, HFIELD *HField, VECTOR Start)
 {
   int xmax, zmax;
   int x, z, nx, nz, signx, signz;
@@ -2206,7 +2160,8 @@ VECTOR Start;
 
     /* Figure out the indices of the next block. */
 
-    if ((k1 < k2 - EPSILON / maxdv) && (k1 > 0.0))
+    if (dz_zero || ((!dx_zero) && (k1<k2 - EPSILON / maxdv) && (k1>0.0)))
+/*  if ((k1 < k2 - EPSILON / maxdv) && (k1 > 0.0)) */
     {
       /* Step along the x-axis. */
 
@@ -2217,7 +2172,8 @@ VECTOR Start;
     }
     else
     {
-      if ((k1 < k2 + EPSILON / maxdv) && (k1 > 0.0))
+      if (dz_zero || ((!dx_zero) && (k1<k2 + EPSILON / maxdv) && (k1>0.0)))
+/*    if ((k1 < k2 + EPSILON / maxdv) && (k1 > 0.0))  */
       {
         /* Step along both axis (very rare case). */
 

@@ -1,5 +1,5 @@
                  Persistence of Vision Ray Tracer
-                           Version 3.00
+                           Version 3.1e
                    Unix Compilation Instructions
 
 Files:
@@ -83,12 +83,15 @@ Building the source:
    #define POV_MEMMOV to pov_memmov
    in the unixconf.h file before compiling.
 
-Questions and problems with Unix versions can be directed to Andreas
-Dilger.  Please make sure you have consulted with a local Unix person
-first if you think the problem is likely to be on your end.  If you are
-installing POV-Ray in a publicly accessible location, you must read and
-comply with the 'Online or Remote Execution' conditions in POVLEGAL.DOC.
+Questions and problems with Unix versions can be directed to Mark Gordon.
+Please make sure you have consulted with a local Unix person first if you 
+think the problem is likely to be on your end.  If you are installing 
+POV-Ray in a publicly accessible location, you must read and comply with
+the 'Online or Remote Execution' conditions in POVLEGAL.DOC.
 
-Andreas Dilger
-Internet:   adilger@enel.ucalgary.ca
+Mark Gordon
+Internet:   mtgordon@mailbag.com
+
+
+
 

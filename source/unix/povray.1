@@ -1,9 +1,9 @@
-.TH POV\-Ray 1 "6 April 1996" "POV\-Team" "Version 3.0" \" -*- nroff -*-
-.\" man page written by Andreas Dilger
+.TH POV\-Ray 1 "4 March 1999" "POV\-Team" "Version 3.1e" \" -*- nroff -*-
+.\" man page written by Andreas Dilger, updated by Mark Gordon
 .\"
 
 .SH NAME
-povray \- POV\-Ray \- Persistence of Vision Ray Tracer v3.0
+povray \- POV\-Ray \- Persistence of Vision Ray Tracer v3.1e
 .SH SYNOPSIS
 \fBpovray\fP [\fB+i\fP \fIinput_file\fP] [\fB+o\fP \fIoutput_file\fP]
 [\fB+/\-option\fP ...] [\fIINI_file\fP ...]
@@ -11,9 +11,9 @@ povray \- POV\-Ray \- Persistence of Vision Ray Tracer v3.0
 .SH DESCRIPTION
 \fBPOV\-Ray\fP is a free, full\-featured ray tracer, written and maintained
 by a team of volunteers on the CompuServe GO GRAPHDEV Forum and on the
-Internet.  On the Unix platform \fBPOV\-Ray\fP can be either a text\-mode
-only program, or can optionally have preview capabilities using the
-\fIX Window System\fP.  Under Linux, \fBPOV\-Ray\fP can optionally use the
+Internet.  On the Unix platform \fBPOV\-Ray\fP can be either a text\-mode 
+only program, or can optionally have preview capabilities using the 
+\fIX Window System\fP.  Under Linux, \fBPOV\-Ray\fP can optionally use the 
 SVGA library to preview renderings.
 .LP
 This manual page only lists the basic \fBPOV\-Ray\fP and Unix specific
@@ -22,7 +22,7 @@ For a complete description of the features of \fBPOV\-Ray\fP and its scene
 description language, or for a better explanation of the meaning of the
 command\-line and INI file options, please consult the documentation
 that should accompany all versions of \fBPOV\-Ray\fP.  On some sites this
-will be installed in /usr/local/lib/povray3.  Some of the Unix specific
+will be installed in /usr/local/lib/povray31.  Some of the Unix specific
 features are:
 .IP
 Support for X Windows display automatically uses the best visual class
@@ -311,17 +311,22 @@ Currently no X resource or app\-default files are supported for the X
 Windows options.
 
 .SH FILES
-All of the Unix versions look for the file \fI.povrayrc\fP in the
-user's home directory upon startup for any initial configuration
-information, like the Library_Path settings, which gives the location
-for the standard include files.  If this file is not found, the file
-\fIpovray.ini\fP from the current directory is used, if available.
+.LP
+\fBPOV\-Ray\fP version 3.1e includes a modification which causes the 
+\fIpovray.ini\fP in the current directory to override the individual 
+setting in \fI.povrayrc\fP, \fBPOV\-Ray\fP now looks for initial 
+configuration information, like the Library_Path settings, which gives 
+the location for the standard include files, first in the environment 
+variable \fI$POVINI\fP, then in \fI./povray.ini\fP, then in 
+\fI$HOME/.povrayrc\fP, then in 
+\fI/usr/local/lib/povray31/povray.ini\fP, which directory can be changed at 
+compile\-time by modifying POVLIBDIR in the makefile.
 .LP
 POVLEGAL.DOC should be accompany all installations of \fBPOV\-Ray\fP,
 and outlines specific conditions and restrictions on the \fBPOV\-Ray\fP
 software.  A condition of POVLEGAL.DOC requires that documentation, INI,
 and scene files be available to all users of \fBPOV\-Ray\fP  They are
-often installed in /usr/local/lib/povray3, but may be in other locations
+often installed in /usr/local/lib/povray31, but may be in other locations
 on some systems.
 .LP
 The most recent version of \fBPOV\-Ray\fP and its documentation can always
@@ -332,7 +337,7 @@ http://www.povray.org/, as well as many other locations.
 X(1), kill(1)
 
 .SH COPYRIGHT
-\fBPOV\-Ray\fP is Copyright (C) 1991, 1996 the POV\-Ray Development Team.
+\fBPOV\-Ray\fP is Copyright (C) 1991, 1999 the POV\-Ray Development Team.
 Although it is distributed as freeware, it is \fBNOT PUBLIC DOMAIN\fP
 software.  \fBPOV\-Ray\fP is subject to the restrictions as defined in
 POVLEGAL.DOC.
@@ -361,9 +366,9 @@ on USENET, rather than from the authors.
 .LP
 If you have a repeatable bug in the most recent version, try to isolate
 the bug in the smallest scene file possible.  The POV\-Ray Team
-Co\-ordinator is Chris Young, and can be reached at
-76702.1655@compuserve.com.  Do not send large binary or uuencoded
-files to Chris without first asking permission to do so.
+Co\-ordinator is Chris Young, and can be reached at 
+76702.1655@compuserve.com. Do not send large binary or uuencoded 
+files to Chris without first asking permission to do so.  
 
 .SH AUTHORS
 The primary developers, in alphabetical order are:
@@ -385,3 +390,9 @@ Other authors are listed in the documentation.
 .SH ACKNOWLEDGEMENT
 \fBPOV\-Ray\fP is based on DKBTrace 2.12 by David K. Buck and
 Aaron A. Collins.
+
+
+
+
+
+

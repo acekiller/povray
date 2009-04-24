@@ -7,16 +7,16 @@
 *  4th - 6th order shapes and generously provided us these enhancements.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -70,34 +70,31 @@
 * Static functions
 ******************************************************************************/
 
-static int intersect PARAMS((RAY *Ray, int Order, DBL *Coeffs, int Sturm_Flag,
-DBL *Depths));
-static void normal0 PARAMS((VECTOR Result, int Order, DBL *Coeffs,
-VECTOR IPoint));
-static void normal1 PARAMS((VECTOR Result, int Order, DBL *Coeffs,
-VECTOR IPoint));
-static DBL inside PARAMS((VECTOR IPoint, int Order, DBL *Coeffs));
-static int intersect_linear PARAMS((RAY *ray, DBL *Coeffs, DBL *Depths));
-static int intersect_quadratic PARAMS((RAY *ray, DBL *Coeffs, DBL *Depths));
-static int factor_out PARAMS((int n, int i, int *c, int *s));
-static long binomial PARAMS((int n, int r));
-static void factor1 PARAMS((int n, int *c, int *s));
+static int intersect (RAY *Ray, int Order, DBL *Coeffs, int Sturm_Flag, DBL *Depths);
+static void normal0 (VECTOR Result, int Order, DBL *Coeffs, VECTOR IPoint);
+static void normal1 (VECTOR Result, int Order, DBL *Coeffs, VECTOR IPoint);
+static DBL inside (VECTOR IPoint, int Order, DBL *Coeffs);
+static int intersect_linear (RAY *ray, DBL *Coeffs, DBL *Depths);
+static int intersect_quadratic (RAY *ray, DBL *Coeffs, DBL *Depths);
+static int factor_out (int n, int i, int *c, int *s);
+static long binomial (int n, int r);
+static void factor1 (int n, int *c, int *s);
 
 /* unused
-static DBL evaluate_linear PARAMS((VECTOR P, DBL *a));
-static DBL evaluate_quadratic PARAMS((VECTOR P, DBL *a));
+static DBL evaluate_linear (VECTOR P, DBL *a);
+static DBL evaluate_quadratic (VECTOR P, DBL *a);
 */
 
-static int All_Poly_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_Poly PARAMS((VECTOR IPoint, OBJECT *Object));
-static void Poly_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Poly PARAMS((OBJECT *Object));
-static void Translate_Poly PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Poly PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Poly PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Poly PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Poly PARAMS((OBJECT *Object));
-static void Destroy_Poly PARAMS((OBJECT *Object));
+static int All_Poly_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_Poly (VECTOR IPoint, OBJECT *Object);
+static void Poly_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static POLY *Copy_Poly (OBJECT *Object);
+static void Translate_Poly (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Poly (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Poly (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Poly (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Poly (OBJECT *Object);
+static void Destroy_Poly (OBJECT *Object);
 
 /*****************************************************************************
 * Local variables
@@ -106,7 +103,7 @@ static void Destroy_Poly PARAMS((OBJECT *Object));
 METHODS Poly_Methods =
 {
   All_Poly_Intersections,
-  Inside_Poly, Poly_Normal, Copy_Poly,
+  Inside_Poly, Poly_Normal, (COPY_METHOD)Copy_Poly,
   Translate_Poly, Rotate_Poly,
   Scale_Poly, Transform_Poly, Invert_Poly, Destroy_Poly
 };
@@ -165,10 +162,7 @@ static DBL eqn_v[3][MAX_ORDER+1], eqn_vt[3][MAX_ORDER+1];
 *
 ******************************************************************************/
 
-static int All_Poly_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Poly_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   POLY *Poly = (POLY *) Object;
   DBL Depths[MAX_ORDER], len;
@@ -280,9 +274,7 @@ ISTACK *Depth_Stack;
 /* For speedup of low order polynomials, expand out the terms
    involved in evaluating the poly. */
 /* unused
-static DBL evaluate_linear(P, a)
-VECTOR P;
-DBL *a;
+static DBL evaluate_linear(VECTOR P, DBL *a)
 {
   return(a[0] * P[X]) + (a[1] * P[Y]) + (a[2] * P[Z]) + a[3];
 }
@@ -317,9 +309,7 @@ DBL *a;
 ******************************************************************************/
 
 /*
-static DBL evaluate_quadratic(P, a)
-VECTOR P;
-DBL *a;
+static DBL evaluate_quadratic(VECTOR P, DBL *a)
 {
   DBL x, y, z;
 
@@ -361,8 +351,7 @@ DBL *a;
 *
 ******************************************************************************/
 
-static int factor_out(n, i, c, s)
-int n, i, *c, *s;
+static int factor_out(int n, int  i, int  *c, int  *s)
 {
   while (!(n % i))
   {
@@ -402,8 +391,7 @@ int n, i, *c, *s;
 *
 ******************************************************************************/
 
-static void factor1(n, c, s)
-int n, *c, *s;
+static void factor1(int n, int  *c, int  *s)
 {
   int i,k;
 
@@ -458,8 +446,7 @@ int n, *c, *s;
 *
 ******************************************************************************/
 
-static long binomial(n, r)
-int n, r;
+static long binomial(int n, int  r)
 {
   int h,i,j,k,l;
   unsigned long result;
@@ -555,10 +542,7 @@ l1:;
 *
 ******************************************************************************/
 
-static DBL inside(IPoint, Order, Coeffs)
-VECTOR  IPoint;
-int Order;
-DBL *Coeffs;
+static DBL inside(VECTOR IPoint, int Order, DBL *Coeffs)
 {
   DBL x[MAX_ORDER+1], y[MAX_ORDER+1];
   DBL z[MAX_ORDER+1], c, Result;
@@ -624,10 +608,7 @@ DBL *Coeffs;
 *
 ******************************************************************************/
 
-static int intersect(ray, Order, Coeffs, Sturm_Flag, Depths)
-RAY *ray;
-int Order, Sturm_Flag;
-DBL *Coeffs, *Depths;
+static int intersect(RAY *ray, int Order, DBL *Coeffs, int  Sturm_Flag, DBL  *Depths)
 {
   DBL eqn[MAX_ORDER+1];
   DBL t[3][MAX_ORDER+1];
@@ -774,9 +755,7 @@ DBL *Coeffs, *Depths;
 *
 ******************************************************************************/
 
-static int intersect_linear(ray, Coeffs, Depths)
-RAY *ray;
-DBL *Coeffs, *Depths;
+static int intersect_linear(RAY *ray, DBL *Coeffs, DBL  *Depths)
 {
   DBL t0, t1, *a = Coeffs;
 
@@ -823,9 +802,7 @@ DBL *Coeffs, *Depths;
 *
 ******************************************************************************/
 
-static int intersect_quadratic(ray, Coeffs, Depths)
-RAY *ray;
-DBL *Coeffs, *Depths;
+static int intersect_quadratic(RAY *ray, DBL *Coeffs, DBL  *Depths)
 {
   DBL x, y, z, x2, y2, z2;
   DBL xx, yy, zz, xx2, yy2, zz2;
@@ -922,12 +899,8 @@ DBL *Coeffs, *Depths;
 *
 ******************************************************************************/
 
-static void normal0(Result, Order, Coeffs, IPoint)
-VECTOR Result;
-int Order;
-DBL *Coeffs;
-VECTOR IPoint;
- {
+static void normal0(VECTOR Result, int Order, DBL *Coeffs, VECTOR IPoint)
+{
   int i, j, k, term;
   DBL val, *a, x[MAX_ORDER+1], y[MAX_ORDER+1], z[MAX_ORDER+1];
 
@@ -1010,11 +983,7 @@ VECTOR IPoint;
 *
 ******************************************************************************/
 
-static void normal1(Result, Order, Coeffs, IPoint)
-VECTOR Result;
-int Order;
-DBL *Coeffs;
-VECTOR IPoint;
+static void normal1(VECTOR Result, int Order, DBL *Coeffs, VECTOR IPoint)
 {
   DBL *a, x, y, z, x2, y2, z2, x3, y3, z3;
 
@@ -1109,9 +1078,7 @@ VECTOR IPoint;
 *
 ******************************************************************************/
 
-static int Inside_Poly (IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Poly (VECTOR IPoint, OBJECT *Object)
 {
   VECTOR  New_Point;
   DBL Result;
@@ -1160,10 +1127,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Poly_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Poly_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   DBL val;
   VECTOR  New_Point;
@@ -1230,10 +1194,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Poly (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Poly (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Poly(Object, Trans);
 }
@@ -1266,10 +1227,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Poly (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Poly (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Poly(Object, Trans);
 }
@@ -1302,10 +1260,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Poly (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Poly (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Poly(Object, Trans);
 }
@@ -1338,9 +1293,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Poly(Object,Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Poly(OBJECT *Object,TRANSFORM *Trans)
 {
   Compose_Transforms(((POLY *)Object)->Trans, Trans);
 
@@ -1375,8 +1328,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Poly(Object)
-OBJECT *Object;
+static void Invert_Poly(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -1409,8 +1361,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-POLY *Create_Poly(Order)
-int Order;
+POLY *Create_Poly(int Order)
 {
   POLY *New;
   int i;
@@ -1461,8 +1412,7 @@ int Order;
 *
 ******************************************************************************/
 
-static void *Copy_Poly(Object)
-OBJECT *Object;
+static POLY *Copy_Poly(OBJECT *Object)
 {
   POLY *New;
   int i;
@@ -1514,8 +1464,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Poly(Object)
-OBJECT *Object;
+static void Destroy_Poly(OBJECT *Object)
 {
   Destroy_Transform (((POLY *)Object)->Trans);
 
@@ -1556,8 +1505,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Poly_BBox(Poly)
-POLY *Poly;
+void Compute_Poly_BBox(POLY *Poly)
 {
   Make_BBox(Poly->BBox, -BOUND_HUGE/2, -BOUND_HUGE/2, -BOUND_HUGE/2, BOUND_HUGE, BOUND_HUGE, BOUND_HUGE);
 

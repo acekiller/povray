@@ -5,20 +5,22 @@
 *  format.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modifications by Hans-Detlev Fink, January 1999, used with permission.
 *
 *****************************************************************************/
 
@@ -83,16 +85,12 @@ static unsigned char idbuf[256];
 * Static functions
 ******************************************************************************/
 
-static void convert_targa_color PARAMS((IMAGE_COLOUR *, unsigned, unsigned char *));
-static int Open_Targa_File PARAMS((FILE_HANDLE *handle, char *name, int *width, 
-                                   int *height, int buffer_size, int mode));
-static void Write_Targa_Line PARAMS((FILE_HANDLE *handle, COLOUR *line_data,
-                                     int line_number));
-static int Read_Targa_Line PARAMS((FILE_HANDLE *handle, COLOUR *line_data,
-                                   int *line_number));
-static void Close_Targa_File PARAMS((FILE_HANDLE *handle));
-static void Write_Targa_Pixel PARAMS((FILE_HANDLE *handle, DBL b, DBL g, DBL r,
-                                      DBL f));
+static void convert_targa_color (IMAGE_COLOUR *, unsigned, unsigned char *);
+static int Open_Targa_File (FILE_HANDLE *handle, char *name, int *width, int *height, int buffer_size, int mode);
+static void Write_Targa_Line (FILE_HANDLE *handle, COLOUR *line_data, int line_number);
+static int Read_Targa_Line (FILE_HANDLE *handle, COLOUR *line_data, int *line_number);
+static void Close_Targa_File (FILE_HANDLE *handle);
+static void Write_Targa_Pixel (FILE_HANDLE *handle, DBL b, DBL g, DBL r, DBL f);
 
 
 
@@ -170,13 +168,7 @@ FILE_HANDLE *Get_Targa_File_Handle()
 *
 ******************************************************************************/
 
-static int Open_Targa_File (handle, name, width, height, buffer_size, mode)
-FILE_HANDLE *handle;
-char *name;
-int *width;
-int *height;
-int buffer_size;
-int mode;
+static int Open_Targa_File (FILE_HANDLE *handle, char *name, int *width, int *height, int buffer_size, int mode)
 {
   unsigned char tgaheader[18];
 
@@ -184,14 +176,14 @@ int mode;
   handle->filename = name;
 
   Targa_Line_Number = 0;
-
+  
   switch (mode)
   {
     case READ_MODE:
 
       /* We can't resume from stdout. */
       if (opts.Options & TO_STDOUT ||
-          (handle->file = fopen(name, READ_FILE_STRING)) == NULL)
+          (handle->file = fopen(name, READ_BINFILE_STRING)) == NULL)
       {
         Status_Info("\n");
         return(0);
@@ -242,14 +234,14 @@ int mode;
         buffer_size = 0;
         handle->file = stdout;
       }
-      else if ((handle->file = fopen (name, WRITE_FILE_STRING)) == NULL)
+      else if ((handle->file = fopen (name, WRITE_BINFILE_STRING)) == NULL)
       {
         return(0);
       }
 
       if (buffer_size != 0)
       {
-        handle->buffer = POV_MALLOC((size_t)buffer_size, "TGA file buffer");
+        handle->buffer = (char *)POV_MALLOC((size_t)buffer_size, "TGA file buffer");
         setvbuf (handle->file, handle->buffer, _IOFBF, buffer_size);
       }
 
@@ -324,13 +316,13 @@ int mode;
         buffer_size = 0;
         handle->file = stdout;
       }
-      else if ((handle->file = fopen (name, APPEND_FILE_STRING)) == NULL)
+      else if ((handle->file = fopen (name, APPEND_BINFILE_STRING)) == NULL)
       {
         return(0);
       }
       else if (buffer_size != 0)
       {
-        handle->buffer = POV_MALLOC((size_t)buffer_size, "TGA file buffer");
+        handle->buffer = (char *)POV_MALLOC((size_t)buffer_size, "TGA file buffer");
         setvbuf (handle->file, handle->buffer, _IOFBF, buffer_size);
       }
 
@@ -376,9 +368,7 @@ int mode;
 *
 ******************************************************************************/
 
-static void Write_Targa_Pixel (handle, b, g, r, f)
-FILE_HANDLE *handle;
-DBL r, g, b, f;
+static void Write_Targa_Pixel (FILE_HANDLE *handle, DBL  b, DBL  g, DBL r, DBL  f)
 {
   unsigned int gray;
 
@@ -442,10 +432,7 @@ DBL r, g, b, f;
 *
 ******************************************************************************/
 
-static void Write_Targa_Line (handle, line_data, line_number)
-FILE_HANDLE *handle;
-COLOUR *line_data;
-int line_number;
+static void Write_Targa_Line (FILE_HANDLE *handle, COLOUR *line_data, int line_number)
 {
   register int x;
   int ptype, cnt, llen, startx;
@@ -585,7 +572,7 @@ int line_number;
 
     if (!(opts.Options & TO_STDOUT))
     {
-      handle->file = freopen(handle->filename, APPEND_FILE_STRING, handle->file);
+      handle->file = freopen(handle->filename, APPEND_BINFILE_STRING, handle->file);
     }
   }
 }
@@ -618,10 +605,7 @@ int line_number;
 *
 ******************************************************************************/
 
-static int Read_Targa_Line (handle, line_data, line_number)
-FILE_HANDLE *handle;
-COLOUR *line_data;
-int *line_number;
+static int Read_Targa_Line (FILE_HANDLE *handle, COLOUR *line_data, int *line_number)
 {
   int x, data, cnt;
   DBL rdata, gdata, bdata, fdata;
@@ -859,8 +843,7 @@ int *line_number;
 *
 ******************************************************************************/
 
-static void Close_Targa_File (handle)
-FILE_HANDLE *handle;
+static void Close_Targa_File (FILE_HANDLE *handle)
 {
   if (handle->file)
   {
@@ -907,10 +890,7 @@ FILE_HANDLE *handle;
 *
 ******************************************************************************/
 
-static void convert_targa_color(tcolor, pixelsize, bytes)
-IMAGE_COLOUR *tcolor;
-unsigned pixelsize;
-unsigned char *bytes;
+static void convert_targa_color(IMAGE_COLOUR *tcolor, unsigned pixelsize, unsigned char  *bytes)
 {
   switch (pixelsize)
   {
@@ -990,9 +970,7 @@ unsigned char *bytes;
 *
 ******************************************************************************/
 
-void Read_Targa_Image(Image, name)
-IMAGE *Image;
-char *name;
+void Read_Targa_Image(IMAGE *Image, char *name)
 {
   int h;
   int temp;
@@ -1006,14 +984,16 @@ char *name;
 
   /* Start by trying to open the file */
 
-  if ((filep = Locate_File(name, READ_FILE_STRING,".tga",".TGA",TRUE)) == NULL)
+  if ((filep = Locate_File(name, READ_BINFILE_STRING,".tga",".TGA",NULL,TRUE)) == NULL)
   {
     Error ("Error opening TGA image.\n");
+    return;	/* -hdf99- */
   }
 
   if (fread(tgaheader, 18, 1, filep) != 1)
   {
     Error ("Error reading header of TGA image.\n");
+    return;	/* -hdf99- */
   }
 
   /* Decipher the header information */

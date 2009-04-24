@@ -5,20 +5,23 @@
 *  reflection, refraction, etc.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+* 
+* Modifications by Robert G. Smith & Andreas Dilger, March 1999, used with
+* permission
 *
 *****************************************************************************/
 
@@ -28,10 +31,11 @@
 #include "blob.h"
 #include "bbox.h"
 #include "colour.h"
-#include "halos.h"
 #include "image.h"
+#include "interior.h"
 #include "lbuffer.h"
 #include "lighting.h"
+#include "media.h"
 #include "mesh.h"
 #include "normal.h"
 #include "objects.h"
@@ -103,72 +107,71 @@ static int Number_Of_Textures_And_Weights;
 * Static functions
 ******************************************************************************/
 
-static void block_area_light PARAMS((LIGHT_SOURCE *Light_Source,
+static void block_area_light (LIGHT_SOURCE *Light_Source,
   DBL *Light_Source_Depth, RAY *Light_Source_Ray, RAY *Eye_Ray,
-  VECTOR IPoint, COLOUR Light_Colour, int u1, int v1, int u2, int v2, int Level));
+  VECTOR IPoint, COLOUR Light_Colour, int u1, int v1, int u2, int v2, int Level);
 
-static void block_point_light PARAMS((LIGHT_SOURCE *Light_Source,
-  DBL *Light_Source_Depth, RAY *Light_Source_Ray, COLOUR Light_Colour));
+static void block_point_light (LIGHT_SOURCE *Light_Source,
+  DBL *Light_Source_Depth, RAY *Light_Source_Ray, COLOUR Light_Colour);
 
-static void block_point_light_LBuffer PARAMS((LIGHT_SOURCE *Light_Source,
-  DBL *Light_Source_Depth, RAY *Light_Source_Ray, COLOUR Light_Colour));
+static void block_point_light_LBuffer (LIGHT_SOURCE *Light_Source,
+  DBL *Light_Source_Depth, RAY *Light_Source_Ray, COLOUR Light_Colour);
 
-static void do_light PARAMS((LIGHT_SOURCE *Light_Source,
+static void do_light (LIGHT_SOURCE *Light_Source,
   DBL *Light_Source_Depth, RAY *Light_Source_Ray, RAY *Eye_Ray, VECTOR IPoint,
-  COLOUR Light_Colour));
+  COLOUR Light_Colour);
 
-static int do_blocking PARAMS((INTERSECTION *Local_Intersection,
-  RAY *Light_Source_Ray, COLOUR Light_Colour, ISTACK *Local_Stack));
+static int do_blocking (INTERSECTION *Local_Intersection,
+  RAY *Light_Source_Ray, COLOUR Light_Colour, ISTACK *Local_Stack);
 
-static void do_phong PARAMS((FINISH *Finish, RAY *Light_Source_Ray,
+static void do_phong (FINISH *Finish, RAY *Light_Source_Ray,
   VECTOR Eye, VECTOR Layer_Normal, COLOUR Colour, COLOUR Light_Colour,
-  COLOUR Layer_Texture_Colour));
+  COLOUR Layer_Texture_Colour);
 
-static void do_specular PARAMS((FINISH *Finish, RAY *Light_Source_Ray,
+static void do_specular (FINISH *Finish, RAY *Light_Source_Ray,
   VECTOR REye, VECTOR Layer_Normal, COLOUR Colour, COLOUR Light_Colour,
-  COLOUR Layer_Pigment_Colour));
+  COLOUR Layer_Pigment_Colour);
 
-static void do_diffuse PARAMS((FINISH *Finish, RAY *Light_Source_Ray,
+static void do_diffuse (FINISH *Finish, RAY *Light_Source_Ray,
   VECTOR Layer_Normal, COLOUR Colour, COLOUR Light_Colour,
-  COLOUR Layer_Pigment_Colour, DBL Attenuation));
+  COLOUR Layer_Pigment_Colour, DBL Attenuation);
 
-static void do_irid PARAMS((FINISH *Finish, RAY *Light_Source_Ray,
-  VECTOR Layer_Normal, VECTOR IPoint, COLOUR Colour));
+static void do_irid (FINISH *Finish, RAY *Light_Source_Ray,
+  VECTOR Layer_Normal, VECTOR IPoint, COLOUR Colour);
 
-static void Diffuse PARAMS((FINISH *Finish, VECTOR IPoint, RAY *Eye, VECTOR Layer_Normal,
-  COLOUR Layer_Pigment_Colour, COLOUR Colour,DBL Attenuation, OBJECT *Object));
+static void Diffuse (FINISH *Finish, VECTOR IPoint, RAY *Eye, VECTOR Layer_Normal,
+  COLOUR Layer_Pigment_Colour, COLOUR Colour,DBL Attenuation, OBJECT *Object);
 
-static void Reflect PARAMS((RGB Reflection, VECTOR IPoint, RAY *Ray, VECTOR Layer_Normal, COLOUR Colour, DBL Weight));
+static void Reflect (VECTOR, RAY*, VECTOR, VECTOR, COLOUR, DBL);
 
-static void Refract PARAMS((OBJECT *Object, TEXTURE *Texture, VECTOR IPoint,
-  RAY *Ray, VECTOR Layer_Normal, COLOUR Colour, DBL Weight));
+static int Refract (INTERIOR*, VECTOR, RAY*, VECTOR, VECTOR, COLOUR, DBL);
 
-static void filter_shadow_ray PARAMS((INTERSECTION *Ray_Intersection,
-  RAY *Light_Source_Ray, COLOUR Colour));
+static void filter_shadow_ray (INTERSECTION *Ray_Intersection,
+  RAY *Light_Source_Ray, COLOUR Colour);
 
-static int create_texture_list PARAMS((INTERSECTION *Ray_Intersection));
+static int create_texture_list (INTERSECTION *Ray_Intersection);
 
-static void do_texture_map PARAMS((COLOUR Result_Colour,
+static void do_texture_map (COLOUR Result_Colour,
   TEXTURE *Texture, VECTOR IPoint, VECTOR Raw_Normal, RAY *Ray, DBL Weight,
-  INTERSECTION *Ray_Intersection, int Shadow_Flag));
+  INTERSECTION *Ray_Intersection, int Shadow_Flag);
 
-static void average_textures PARAMS((COLOUR Result_Colour,
+static void average_textures (COLOUR Result_Colour,
   TEXTURE *Texture, VECTOR IPoint, VECTOR Raw_Normal, RAY *Ray, DBL Weight,
-  INTERSECTION *Ray_Intersection, int Shadow_Flag));
+  INTERSECTION *Ray_Intersection, int Shadow_Flag);
 
-static void compute_lighted_texture PARAMS((COLOUR Result_Colour,
+static void compute_lighted_texture (COLOUR Result_Colour,
   TEXTURE *Texture, VECTOR IPoint, VECTOR Raw_Normal, RAY *Ray, DBL Weight,
-  INTERSECTION *Ray_Intersection));
+  INTERSECTION *Ray_Intersection);
 
-static void compute_shadow_texture PARAMS((COLOUR Filter_Colour,
+static void compute_shadow_texture (COLOUR Filter_Colour,
   TEXTURE *Texture, VECTOR IPoint, VECTOR Raw_Normal, RAY *Ray,
-  INTERSECTION *Ray_Intersection));
+  INTERSECTION *Ray_Intersection);
 
-static void block_light_source PARAMS((LIGHT_SOURCE *Light,
-  DBL Depth, RAY *Light_Source_Ray, RAY *Eye_Ray, VECTOR P, COLOUR Colour));
+static void block_light_source (LIGHT_SOURCE *Light,
+  DBL Depth, RAY *Light_Source_Ray, RAY *Eye_Ray, VECTOR P, COLOUR Colour);
 
-static void do_light_ray_atmosphere PARAMS((RAY *Light_Source_Ray,
-  INTERSECTION *Ray_Intersection, TEXTURE *Texture, COLOUR Colour, int Valid_Object));
+static void do_light_ray_atmosphere (RAY *Light_Source_Ray,
+  INTERSECTION *Ray_Intersection, COLOUR Colour, int Valid_Object);
 
 
 
@@ -267,10 +270,7 @@ void Initialize_Lighting_Code()
 *
 ******************************************************************************/
 
-void Reinitialize_Lighting_Code(Number_Of_Entries, Textures, Weights)
-int Number_Of_Entries;
-TEXTURE ***Textures;
-DBL **Weights;
+void Reinitialize_Lighting_Code(int Number_Of_Entries, TEXTURE ***Textures, DBL **Weights)
 {
   if (Number_Of_Entries > Number_Of_Textures_And_Weights)
   {
@@ -393,15 +393,12 @@ void Deinitialize_Lighting_Code()
 *
 ******************************************************************************/
 
-void Determine_Apparent_Colour(Ray_Intersection, Colour, Ray, Weight)
-INTERSECTION *Ray_Intersection;
-COLOUR Colour;
-RAY *Ray;
-DBL Weight;
+void Determine_Apparent_Colour(INTERSECTION *Ray_Intersection, COLOUR Colour, RAY *Ray, DBL Weight)
 {
   int i, Texture_Count;
   size_t savelights_size, save_tw_size;
   DBL *save_Weights = NULL;
+  DBL Normal_Direction;
   COLOUR C1;
   VECTOR Raw_Normal;
   VECTOR IPoint;
@@ -434,6 +431,15 @@ DBL Weight;
   /* Get the normal to the surface */
 
   Normal(Raw_Normal, Ray_Intersection->Object, Ray_Intersection);
+
+  /* If the surface normal points away, flip its direction. */
+
+  VDot(Normal_Direction, Raw_Normal, Ray->Direction);
+
+  if (Normal_Direction > 0.0)
+  {
+     VScaleEq(Raw_Normal, -1.0);
+  }
 
   /*
    * Save texture and weight lists.
@@ -548,12 +554,7 @@ DBL Weight;
 *
 ******************************************************************************/
 
-int Test_Shadow(Light, Depth, Light_Source_Ray, Eye_Ray, P, Colour)
-LIGHT_SOURCE *Light;
-DBL *Depth;
-RAY *Light_Source_Ray, *Eye_Ray;
-VECTOR P;
-COLOUR Colour;
+int Test_Shadow(LIGHT_SOURCE *Light, DBL *Depth, RAY *Light_Source_Ray, RAY  *Eye_Ray, VECTOR P, COLOUR Colour)
 {
   do_light(Light, Depth, Light_Source_Ray, Eye_Ray, P, Colour);
 
@@ -628,11 +629,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static void block_point_light_LBuffer(Light_Source, Light_Source_Depth, Light_Source_Ray, Light_Colour)
-LIGHT_SOURCE *Light_Source;
-DBL *Light_Source_Depth;
-RAY *Light_Source_Ray;
-COLOUR Light_Colour;
+static void block_point_light_LBuffer(LIGHT_SOURCE *Light_Source, DBL *Light_Source_Depth, RAY *Light_Source_Ray, COLOUR Light_Colour)
 {
   int Quit_Looking, Not_Found_Shadow, Cache_Me;
   int u, v, axis;
@@ -856,11 +853,7 @@ COLOUR Light_Colour;
 *
 ******************************************************************************/
 
-static void block_point_light (Light_Source, Light_Source_Depth, Light_Source_Ray, Light_Colour)
-LIGHT_SOURCE *Light_Source;
-DBL *Light_Source_Depth;
-RAY *Light_Source_Ray;
-COLOUR Light_Colour;
+static void block_point_light (LIGHT_SOURCE *Light_Source, DBL *Light_Source_Depth, RAY *Light_Source_Ray, COLOUR Light_Colour)
 {
   OBJECT *Blocking_Object;
   int Quit_Looking, Not_Found_Shadow, Cache_Me, Maybe_Found;
@@ -1082,14 +1075,8 @@ COLOUR Light_Colour;
 *
 ******************************************************************************/
 
-static void block_area_light (Light_Source, Light_Source_Depth,
-  Light_Source_Ray, Eye_Ray, IPoint, Light_Colour, u1, v1, u2, v2, Level)
-LIGHT_SOURCE *Light_Source;
-DBL *Light_Source_Depth;
-RAY *Light_Source_Ray, *Eye_Ray;
-VECTOR IPoint;
-COLOUR Light_Colour;
-int u1, v1, u2, v2, Level;
+static void block_area_light (LIGHT_SOURCE *Light_Source, DBL *Light_Source_Depth,
+  RAY *Light_Source_Ray, RAY  *Eye_Ray, VECTOR IPoint, COLOUR Light_Colour, int u1, int  v1, int  u2, int  v2, int  Level)
 {
   COLOUR Sample_Colour[4], Dummy_Colour;
   VECTOR Center_Save, NewAxis1, NewAxis2;
@@ -1307,12 +1294,7 @@ int u1, v1, u2, v2, Level;
 *
 ******************************************************************************/
 
-static void do_light(Light_Source, Light_Source_Depth, Light_Source_Ray, Eye_Ray, IPoint, Light_Colour)
-LIGHT_SOURCE *Light_Source;
-DBL *Light_Source_Depth;
-RAY *Light_Source_Ray, *Eye_Ray;
-VECTOR IPoint;
-COLOUR Light_Colour;
+static void do_light(LIGHT_SOURCE *Light_Source, DBL *Light_Source_Depth, RAY *Light_Source_Ray, RAY  *Eye_Ray, VECTOR IPoint, COLOUR Light_Colour)
 {
   DBL Attenuation;
 
@@ -1386,12 +1368,7 @@ COLOUR Light_Colour;
 *
 ******************************************************************************/
 
-static void do_diffuse(Finish, Light_Source_Ray, Layer_Normal, Colour, Light_Colour, Layer_Pigment_Colour, Attenuation)
-FINISH *Finish;
-RAY *Light_Source_Ray;
-VECTOR Layer_Normal;
-COLOUR Colour, Light_Colour, Layer_Pigment_Colour;
-DBL Attenuation;
+static void do_diffuse(FINISH *Finish, RAY *Light_Source_Ray, VECTOR Layer_Normal, COLOUR Colour, COLOUR  Light_Colour, COLOUR  Layer_Pigment_Colour, DBL Attenuation)
 {
   DBL Cos_Angle_Of_Incidence, Intensity;
 
@@ -1463,11 +1440,7 @@ DBL Attenuation;
 *
 ******************************************************************************/
 
-static void do_irid(Finish, Light_Source_Ray, Layer_Normal, IPoint, Colour)
-FINISH *Finish;
-RAY *Light_Source_Ray;
-VECTOR Layer_Normal, IPoint;
-COLOUR Colour;
+static void do_irid(FINISH *Finish, RAY *Light_Source_Ray, VECTOR Layer_Normal, VECTOR  IPoint, COLOUR Colour)
 {
   DBL rwl, gwl, bwl;
   DBL Cos_Angle_Of_Incidence, interference;
@@ -1566,11 +1539,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static void do_phong(Finish, Light_Source_Ray, Eye, Layer_Normal, Colour, Light_Colour, Layer_Pigment_Colour)
-FINISH *Finish;
-RAY *Light_Source_Ray;
-VECTOR Layer_Normal, Eye;
-COLOUR Colour, Light_Colour, Layer_Pigment_Colour;
+static void do_phong(FINISH *Finish, RAY *Light_Source_Ray, VECTOR  Eye, VECTOR Layer_Normal, COLOUR Colour, COLOUR  Light_Colour, COLOUR  Layer_Pigment_Colour)
 {
   DBL Cos_Angle_Of_Incidence, Intensity;
   VECTOR Reflect_Direction;
@@ -1587,7 +1556,10 @@ COLOUR Colour, Light_Colour, Layer_Pigment_Colour;
 
   if (Cos_Angle_Of_Incidence > 0.0)
   {
-    Intensity = Finish->Phong * pow(Cos_Angle_Of_Incidence, Finish->Phong_Size);
+    if ((Finish->Phong_Size < 60) || (Cos_Angle_Of_Incidence > .0008)) /* rgs */
+      Intensity = Finish->Phong * pow(Cos_Angle_Of_Incidence, Finish->Phong_Size);
+    else
+      Intensity = 0.0; /* ad */
 
     if (Finish->Metallic > 0.0)
     {
@@ -1662,11 +1634,7 @@ COLOUR Colour, Light_Colour, Layer_Pigment_Colour;
 *
 ******************************************************************************/
 
-static void do_specular(Finish, Light_Source_Ray, REye, Layer_Normal, Colour, Light_Colour, Layer_Pigment_Colour)
-FINISH *Finish;
-RAY *Light_Source_Ray;
-VECTOR Layer_Normal, REye;
-COLOUR Colour, Light_Colour, Layer_Pigment_Colour;
+static void do_specular(FINISH *Finish, RAY *Light_Source_Ray, VECTOR  REye, VECTOR Layer_Normal, COLOUR Colour, COLOUR  Light_Colour, COLOUR  Layer_Pigment_Colour)
 {
   DBL Cos_Angle_Of_Incidence, Intensity, Halfway_Length;
   VECTOR Halfway;
@@ -1745,14 +1713,7 @@ COLOUR Colour, Light_Colour, Layer_Pigment_Colour;
 *
 ******************************************************************************/
 
-static void Diffuse (Finish, IPoint, Eye, Layer_Normal, Layer_Pigment_Colour, Colour, Attenuation, Object)
-FINISH *Finish;
-VECTOR IPoint, Layer_Normal;
-COLOUR Layer_Pigment_Colour;
-COLOUR Colour;
-RAY    *Eye;
-DBL    Attenuation;
-OBJECT *Object;
+static void Diffuse (FINISH *Finish, VECTOR IPoint, RAY *Eye, VECTOR  Layer_Normal, COLOUR Layer_Pigment_Colour, COLOUR Colour, DBL Attenuation, OBJECT *Object)
 {
   int i;
   DBL Light_Source_Depth, Cos_Shadow_Angle;
@@ -1836,7 +1797,7 @@ OBJECT *Object;
         do_diffuse(Finish,&Light_Source_Ray,Layer_Normal,Colour,Light_Colour,Layer_Pigment_Colour, Attenuation);
       }
 
-      if (Light_Source->Light_Type!=FILL_LIGHT_SOURCE)
+      if (Light_Source->Light_Type != FILL_LIGHT_SOURCE)
       {
         if (Finish->Phong > 0.0)
         {
@@ -1871,58 +1832,77 @@ OBJECT *Object;
 * OUTPUT
 *   
 * RETURNS
-*   
+*
 * AUTHOR
 *
 *   POV-Ray Team
-*   
+*
 * DESCRIPTION
 *
-*   -
+*   Trace a ray along the direction of the reflected light and
+*   return light internsity coming from that direction.
 *
 * CHANGES
 *
-*   -
+*   JUN 1997 : Changed to return color coming along the reflected ray. [DB]
 *
 ******************************************************************************/
 
-static void Reflect (Reflection, IPoint, Ray, Layer_Normal, Colour, Weight)
-RGB Reflection;
-VECTOR IPoint;
-RAY *Ray;
-VECTOR Layer_Normal;
-COLOUR Colour;
-DBL Weight;
+static void Reflect(VECTOR IPoint, RAY *Ray, VECTOR Normal, VECTOR Raw_Normal, COLOUR Colour, DBL Weight)
 {
-  RAY New_Ray;
-  COLOUR Temp_Colour;
-  register DBL Normal_Component;
+  DBL n;
+  RAY NRay;
 
   Increase_Counter(stats[Reflected_Rays_Traced]);
 
-  VDot(Normal_Component, Ray->Direction, Layer_Normal);
+  /* Get direction of reflected ray. */
 
-  Normal_Component *= -2.0;
+  VDot(n,Ray->Direction, Normal);
+  n *= -2.0;
+  VAddScaled(NRay.Direction, Ray->Direction, n, Normal);
 
-  VLinComb2(New_Ray.Direction, Normal_Component, Layer_Normal, 1.0, Ray->Direction);
+  /* Nathan Kopp & CEY 1998 - Reflection bugfix
+    if the new ray is going the opposet direction as raw normal, we
+    need to fix it.
+    */
 
-  Assign_Vector(New_Ray.Initial, IPoint);
+  VDot(n, NRay.Direction, Raw_Normal);
 
-  Copy_Ray_Containers (&New_Ray, Ray);
+  if (n < 0.0)
+  {
+    /* It needs fixing.  Which kind? */
+
+    VDot(n,NRay.Direction,Normal);
+
+    if (n < 0.0)
+    {
+      /* reflected inside rear virtual surface. Reflect Ray using Raw_Normal */
+      VDot(n,Ray->Direction,Raw_Normal);
+      n *= -2.0;
+      VAddScaled(NRay.Direction, Ray->Direction, n,Raw_Normal);
+    }
+    else
+    {
+      /* Double reflect NRay using Raw_Normal */
+      VDot(n,NRay.Direction,Raw_Normal);
+      n *= -2.0;
+      VAddScaledEq(NRay.Direction, n, Raw_Normal);
+    }
+  }
+  VNormalizeEq(NRay.Direction);
+  /* NK & CEY ---- */
+
+  Assign_Vector(NRay.Initial, IPoint);
+
+  Copy_Ray_Containers(&NRay, Ray);
 
   /* Trace reflected ray. */
 
   Trace_Level++;
 
-  Make_Colour (Temp_Colour, 0.0, 0.0, 0.0);
-
-  Trace (&New_Ray, Temp_Colour, Weight);
+  Trace(&NRay, Colour, Weight);
 
   Trace_Level--;
-
-  Colour[RED]   += Reflection[RED]   * Temp_Colour[RED];
-  Colour[GREEN] += Reflection[GREEN] * Temp_Colour[GREEN];
-  Colour[BLUE]  += Reflection[BLUE]  * Temp_Colour[BLUE];
 }
 
 
@@ -1934,197 +1914,162 @@ DBL Weight;
 *   Refract
 *
 * INPUT
-*   
+*
+*   Interior - interior of the current object containing the ior to use
+*   IPoint   - current intersection point (here the new ray starts)
+*   Ray      - current incoming ray that will be refracted, transmitted
+*              or reflected (due to total internal reflection)
+*   Normal   - surface normal at the current intersection point
+*   Colour   - current color emitted back along the ray
+*   Weight   - current weight used by the adaptive tree depth control
+*
 * OUTPUT
-*   
+*
+*   Colour   - current color including the light due to refraction,
+*              transmission or total internal reflection
+*
 * RETURNS
+*
+*   int - TRUE, if total internal reflection occured
 *
 * AUTHOR
 *
 *   POV-Ray Team
-*   
+*
 * DESCRIPTION
 *
-*   -
+*   Trace a transmitted ray (either refracted or reflected due to total
+*   internal reflection) and return the light intesity coming from the
+*   direction of the transmitted ray.
 *
 * CHANGES
 *
 *   Aug 1995 : Modified to correctly handle the contained texture
-*              list in the transmitonly case. [DB]
+*              list in the transmit only case. [DB]
+*
+*   Jun 1997 : Rewritten to use interior structure. [DB]
 *
 ******************************************************************************/
 
-static void Refract (Object, Texture, IPoint, Ray, Top_Normal, Colour, Weight)
-OBJECT *Object;
-TEXTURE *Texture;
-VECTOR IPoint;
-RAY *Ray;
-VECTOR Top_Normal;
-COLOUR Colour;
-DBL Weight;
+static int Refract(INTERIOR *Interior, VECTOR IPoint, RAY *Ray, VECTOR Normal, VECTOR Raw_Normal, COLOUR Colour, DBL Weight)
 {
-  int texture_nr;
-  register DBL Normal_Component, Temp_IOR;
-  DBL temp, ior;
+  int nr;
+  DBL n, t, ior;
   VECTOR Local_Normal;
-  RGB Reflection;
-  COLOUR Temp_Colour;
-  RAY New_Ray;
+  RAY NRay;
 
-  /* Do we have to bend the ray? */
+  /* Set up new ray. */
 
-  if (Top_Normal == NULL)
+  Copy_Ray_Containers(&NRay, Ray);
+
+  Assign_Vector(NRay.Initial, IPoint);
+
+  /* Get ratio of iors depending on the interiors the ray is traversing. */
+
+  if (Ray->Index == -1)
   {
-    /* Only transmit the ray. */
+    /* The ray is entering from the atmosphere. */
 
-    Assign_Vector(New_Ray.Initial, IPoint);
-    Assign_Vector(New_Ray.Direction, Ray->Direction);
+    Ray_Enter(&NRay, Interior);
 
-    Copy_Ray_Containers (&New_Ray, Ray);
+    ior = Frame.Atmosphere_IOR / Interior->IOR;
+  }
+  else
+  {
+    /* The ray is currently inside an object. */
 
-    /* Handle contained textures. */
-
-    if (Ray->Containing_Index == -1)
+    if ((nr = Interior_In_Ray_Container(&NRay, Interior)) >= 0)
     {
-      /* The ray is entering from the atmosphere */
+      /* The ray is leaving the current object. */
 
-      Ray_Enter (&New_Ray, Texture, Object);
-    }
-    else
-    {
-      /* The ray is currently inside an object */
+      Ray_Exit(&NRay, nr);
 
-      if ((texture_nr = Texture_In_Ray_Container(&New_Ray, Texture)) >= 0)
+      if (NRay.Index == -1)
       {
-        /* The ray is leaving the current object */
+        /* The ray is leaving into the atmosphere. */
 
-        Ray_Exit (&New_Ray, texture_nr);
+        ior = Interior->IOR / Frame.Atmosphere_IOR;
       }
       else
       {
-        /* The ray is entering a new object */
+        /* The ray is leaving into another object. */
 
-        Ray_Enter (&New_Ray, Texture, Object);
+        ior = Interior->IOR / NRay.Interiors[NRay.Index]->IOR;
       }
     }
+    else
+    {
+      /* The ray is entering a new object. */
 
-    /* Trace transmitted ray. */
+      ior = NRay.Interiors[NRay.Index]->IOR / Interior->IOR;
 
-    Trace_Level++;
+      Ray_Enter(&NRay, Interior);
+
+    }
+  }
+
+  /* Do the two mediums traversed have the sampe indices of refraction? */
+
+  if (fabs(ior - 1.0) < EPSILON)
+  {
+    /* Only transmit the ray. */
+
+    Assign_Vector(NRay.Direction, Ray->Direction);
+
+    /* Trace a transmitted ray. */
 
     Increase_Counter(stats[Transmitted_Rays_Traced]);
-
-    Make_Colour (Temp_Colour, 0.0, 0.0, 0.0);
-
-    Trace (&New_Ray, Temp_Colour, Weight);
-
-    Trace_Level--;
-
-    VAddEq(Colour, Temp_Colour);
   }
   else
   {
     /* Refract the ray. */
 
-    Increase_Counter(stats[Refracted_Rays_Traced]);
+    VDot(n, Ray->Direction, Normal);
 
-    VDot (Normal_Component, Ray->Direction, Top_Normal);
-
-    if (Normal_Component <= 0.0)
+    if (n <= 0.0)
     {
-      Assign_Vector(Local_Normal, Top_Normal);
+      Assign_Vector(Local_Normal, Normal);
 
-      Normal_Component *= -1.0;
+      n = -n;
     }
     else
     {
-      VScale (Local_Normal, Top_Normal, -1.0);
-    }
-
-    Copy_Ray_Containers (&New_Ray, Ray);
-
-    /* Handle contained textures. */
-
-    if (Ray->Containing_Index == -1)
-    {
-      /* The ray is entering from the atmosphere */
-
-      Ray_Enter (&New_Ray, Texture, Object);
-
-      ior = Frame.Atmosphere_IOR / Texture->Finish->Index_Of_Refraction;
-    }
-    else
-    {
-      /* The ray is currently inside an object */
-
-      if ((texture_nr = Texture_In_Ray_Container(&New_Ray, Texture)) >= 0)
-      {
-        /* The ray is leaving the current object */
-
-        Ray_Exit (&New_Ray, texture_nr);
-
-        if (New_Ray.Containing_Index == -1)
-        {
-          /* The ray is leaving into the atmosphere */
-
-          Temp_IOR = Frame.Atmosphere_IOR;
-        }
-        else
-        {
-          /* The ray is leaving into another object */
-
-          Temp_IOR = New_Ray.Containing_IORs[New_Ray.Containing_Index];
-        }
-
-        ior = Texture->Finish->Index_Of_Refraction / Temp_IOR;
-      }
-      else
-      {
-        /* The ray is entering a new object */
-
-        Temp_IOR = New_Ray.Containing_IORs[New_Ray.Containing_Index];
-
-        Ray_Enter (&New_Ray, Texture, Object);
-
-        ior = Temp_IOR / Texture->Finish->Index_Of_Refraction;
-      }
+      Local_Normal[X] = -Normal[X];
+      Local_Normal[Y] = -Normal[Y];
+      Local_Normal[Z] = -Normal[Z];
     }
 
     /* Compute refrated ray direction using Heckbert's method. */
 
-    temp = 1.0 + Sqr(ior) * (Sqr(Normal_Component) - 1.0);
+    t = 1.0 + Sqr(ior) * (Sqr(n) - 1.0);
 
-    if (temp < 0.0)
+    if (t < 0.0)
     {
       /* Total internal reflection occures. */
 
-      Reflection[RED]  = 1.0 - Texture->Finish->Reflection[RED];
-      Reflection[GREEN]= 1.0 - Texture->Finish->Reflection[GREEN];
-      Reflection[BLUE] = 1.0 - Texture->Finish->Reflection[BLUE];
+      Increase_Counter(stats[Internal_Reflected_Rays_Traced]);
 
-      Reflect (Reflection, IPoint, Ray, Top_Normal, Colour, Weight);
+      Reflect(IPoint, Ray, Normal, Raw_Normal, Colour, Weight);
 
-      return;
+      return(1);
     }
 
-    temp = ior * Normal_Component - sqrt(temp);
+    t = ior * n - sqrt(t);
 
-    VLinComb2(New_Ray.Direction, ior, Ray->Direction, temp, Local_Normal);
+    VLinComb2(NRay.Direction, ior, Ray->Direction, t, Local_Normal);
 
-    Assign_Vector(New_Ray.Initial,IPoint);
+    /* Trace a refracted ray. */
 
-    /* Trace refracted ray. */
-
-    Trace_Level++;
-
-    Make_Colour (Temp_Colour, 0.0, 0.0, 0.0);
-
-    Trace (&New_Ray, Temp_Colour, Weight);
-
-    Trace_Level--;
-
-    VAddScaledEq(Colour, Texture->Finish->Refraction, Temp_Colour);
+    Increase_Counter(stats[Refracted_Rays_Traced]);
   }
+
+  Trace_Level++;
+
+  Trace(&NRay, Colour, Weight);
+
+  Trace_Level--;
+
+  return(0);
 }
 
 
@@ -2144,7 +2089,7 @@ DBL Weight;
 * AUTHOR
 *
 *   Chris Young based on Dieter Bayer code
-*   
+*
 * DESCRIPTION
 *
 *   Get the list of textures used by current object and the list of
@@ -2159,8 +2104,7 @@ DBL Weight;
 *
 ******************************************************************************/
 
-static int create_texture_list(Ray_Intersection)
-INTERSECTION *Ray_Intersection;
+static int create_texture_list(INTERSECTION *Ray_Intersection)
 {
   int Texture_Count;
   BLOB *Blob;
@@ -2262,15 +2206,8 @@ INTERSECTION *Ray_Intersection;
 *
 ******************************************************************************/
 
-static void do_texture_map(Result_Colour, Texture, IPoint, Raw_Normal,
-  Ray, Weight, Ray_Intersection, Shadow_Flag)
-COLOUR Result_Colour;
-TEXTURE *Texture;
-VECTOR IPoint, Raw_Normal;
-RAY *Ray;
-DBL Weight;
-INTERSECTION *Ray_Intersection;
-int Shadow_Flag;
+static void do_texture_map(COLOUR Result_Colour, TEXTURE *Texture, VECTOR IPoint, VECTOR  Raw_Normal,
+  RAY *Ray, DBL Weight, INTERSECTION *Ray_Intersection, int Shadow_Flag)
 {
   BLEND_MAP *Blend_Map = Texture->Blend_Map;
   BLEND_MAP_ENTRY *Prev, *Cur;
@@ -2362,11 +2299,11 @@ int Shadow_Flag;
 *   Raw_Normal       - non-purturbed surface normal
 *   Ray              - needed for reflection and highlighs
 *   Weight           - ADC control value
-*   Ray_Intersection - current intersection (need object type and depth)
+*   Intersection - current intersection (need object type and depth)
 *
 * OUTPUT
 *
-*   Result_Colour    - illuminated color of IPoint
+*   ResCol    - illuminated color of IPoint
 *
 * RETURNS
 *
@@ -2390,42 +2327,46 @@ int Shadow_Flag;
 *   Aug 1995 : Added code for distance based attenuation in translucent
 *              objects and halos. [DB]
 *
+*   Oct 1996 : Replaced halo code by participating media code. [DB]
+*
 ******************************************************************************/
 
-static void compute_lighted_texture(Result_Colour, Texture, IPoint, Raw_Normal, Ray, Weight, Ray_Intersection)
-COLOUR Result_Colour;
-TEXTURE *Texture;
-VECTOR IPoint, Raw_Normal;
-RAY *Ray;
-DBL Weight;
-INTERSECTION *Ray_Intersection;
+static void compute_lighted_texture(COLOUR ResCol, TEXTURE *Texture, VECTOR IPoint, VECTOR  Raw_Normal, RAY *Ray, DBL Weight, INTERSECTION *Intersection)
 {
   int i, radiosity_done, radiosity_needed;
   int layer_number;
-  int calc_halo;
+  int inside_hollow_object;
   int one_colour_found, colour_found;
   DBL w1, w2;
-  DBL Normal_Direction, New_Weight, Temp_Weight;
-  DBL Attenuation, Transparency, Max_Radiosity_Contribution;
-  VECTOR Layer_Normal, Top_Normal;
-  COLOUR Layer_Pigment_Colour, Refracted_Colour, Filter_Colour;
-  COLOUR Temp_Colour, Gathered_Ambient_Colour, Temp;
-  FINISH *Finish;
-  HALO *Halo;
+  DBL Normal_Direction, New_Weight, TempWeight;
+  DBL Att, Trans, Max_Radiosity_Contribution;
+  VECTOR LayNormal, TopNormal;
+  COLOUR LayCol, RflCol, RfrCol, FilCol;
+  COLOUR TmpCol, AmbCol, Tmp;
+  INTERIOR *Interior;
+  IMEDIA **TmpMedia, **MediaList;
   TEXTURE *Layer;
 
+#define MAX_LAYERS 20
+
+  int    TIR_occured;
+  DBL    ListWeight[MAX_LAYERS];
+  SNGL   ListReflEx[MAX_LAYERS];
+  VECTOR ListNormal[MAX_LAYERS];
+  COLOUR ListReflec[MAX_LAYERS];
+
   /*
-   * Result_Colour builds up the apparent visible color of the point.
+   * ResCol builds up the apparent visible color of the point.
    * Only RGB components are significant.  You can't "see" transparency --
    * you see the color of whatever is behind the transparent surface.
    * This color includes the visible appearence of what is behind the
    * transparency so only RGB is needed.
    */
 
-  Make_ColourA(Result_Colour, 0.0, 0.0, 0.0, 0.0, 0.0);
+  Make_ColourA(ResCol, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   /*
-   * Filter_Colour serves two purposes.  It accumulates the filter properties
+   * FilCol serves two purposes.  It accumulates the filter properties
    * of a multi-layer texture so that if a ray makes it all the way through
    * all layers, the color of object behind is filtered by this object.
    * It also is used to attenuate how much of an underlayer you
@@ -2437,17 +2378,17 @@ INTERSECTION *Ray_Intersection;
    * filter the light from any objects behind this object. [CY 1/95]
    */
 
-  Make_ColourA(Filter_Colour, 1.0, 1.0, 1.0, 1.0, 1.0);
+  Make_ColourA(FilCol, 1.0, 1.0, 1.0, 1.0, 1.0);
 
-  Transparency = 1.0;
+  Trans = 1.0;
 
-  /* add in radiosity (stochastic interreflection-based ambient light) if desired */
+  /* Add in radiosity (stochastic interreflection-based ambient light) if desired */
 
   radiosity_done = FALSE;
 
   /* Note that there is no gathering of filter or transparency */
 
-  Make_ColourA(Gathered_Ambient_Colour, 1., 1., 1., 0., 0.);
+  Make_ColourA(AmbCol, 1., 1., 1., 0., 0.);
 
   if ((opts.Options & RADIOSITY) &&
       (Trace_Level == Radiosity_Trace_Level) &&
@@ -2460,15 +2401,6 @@ INTERSECTION *Ray_Intersection;
      * for the code inside the loop, which is first-time-through.
      */
 
-    /* If the surface normal points away, flip its direction. */
-
-    VDot(Normal_Direction, Raw_Normal, Ray->Direction);
-
-    if (Normal_Direction > 0.0)
-    {
-      VScaleEq(Raw_Normal, -1.0);
-    }
-
     radiosity_needed = 1;
   }
   else
@@ -2477,44 +2409,37 @@ INTERSECTION *Ray_Intersection;
   }
 
   /*
-   * Loop through the layers and compute the ambient, diffuse, reflection
-   * and highlights from these textures.
+   * Loop through the layers and compute the ambient, diffuse,
+   * phong and specular for these textures.
    */
 
   one_colour_found = FALSE;
 
-  for (layer_number = 1, Layer = Texture;
-      (Layer != NULL) && (Transparency > BLACK_LEVEL);
+  for (layer_number = 0, Layer = Texture;
+      (Layer != NULL) && (Trans > BLACK_LEVEL);
       layer_number++, Layer = (TEXTURE *)Layer->Next)
   {
-    Assign_Vector(Layer_Normal, Raw_Normal);
+    /* Get perturbed surface normal. */
+
+    Assign_Vector(LayNormal, Raw_Normal);
 
     if ((opts.Quality_Flags & Q_NORMAL) && (Layer->Tnormal != NULL))
     {
-      Perturb_Normal(Layer_Normal, Layer->Tnormal, IPoint);
-    }
-
-    /* If the surface normal points away, flip its direction. */
-
-    VDot(Normal_Direction, Layer_Normal, Ray->Direction);
-
-    if (Normal_Direction > 0.0)
-    {
-      VScaleEq(Layer_Normal, -1.0);
+      Perturb_Normal(LayNormal, Layer->Tnormal, IPoint);
     }
 
     /* Store top layer normal.*/
 
-    if (layer_number == 1)
+    if (!layer_number)
     {
-      Assign_Vector(Top_Normal,Layer_Normal);
+      Assign_Vector(TopNormal, LayNormal);
     }
 
     /* Get surface colour. */
 
-    New_Weight = Weight * Transparency;
+    New_Weight = Weight * Trans;
 
-    colour_found = Compute_Pigment (Layer_Pigment_Colour, Layer->Pigment, IPoint);
+    colour_found = Compute_Pigment (LayCol, Layer->Pigment, IPoint);
 
     /*
      * If a valid color was returned set one_colour_found to TRUE.
@@ -2536,18 +2461,18 @@ INTERSECTION *Ray_Intersection;
 
     if (opts.Quality_Flags & Q_FULL_AMBIENT)
     {
-      /* Only use top layer and kill transparency if low quality */
+      /* Only use top layer and kill transparency if low quality. */
 
-      Assign_Colour(Result_Colour, Layer_Pigment_Colour);
+      Assign_Colour(ResCol, LayCol);
 
-      Result_Colour[FILTER] =
-      Result_Colour[TRANSM] = 0.0;
+      ResCol[FILTER] =
+      ResCol[TRANSM] = 0.0;
     }
     else
     {
-      Make_Colour (Temp_Colour, 0.0, 0.0, 0.0);
+      Make_Colour (TmpCol, 0.0, 0.0, 0.0);
 
-      Attenuation = Transparency * (1.0 - min(1.0, Layer_Pigment_Colour[FILTER] + Layer_Pigment_Colour[TRANSM]));
+      Att = Trans * (1.0 - min(1.0, LayCol[FILTER] + LayCol[TRANSM]));
 
       /* if radiosity calculation needed, but not yet done, do it now */
 
@@ -2555,30 +2480,21 @@ INTERSECTION *Ray_Intersection;
       {
         /* This check eliminates radiosity calculations on "luminous" objects with ambient=1 */
 
-        if ((Layer->Finish->Ambient[RED]   != 1.0) ||
-            (Layer->Finish->Ambient[GREEN] != 1.0) ||
-            (Layer->Finish->Ambient[BLUE]  != 1.0))
+        if ((Layer->Finish->Ambient[0] != 1.0) ||
+            (Layer->Finish->Ambient[1] != 1.0) ||
+            (Layer->Finish->Ambient[2] != 1.0))
         {
           /* calculate max possible contribution of radiosity, to see if calculating it is worthwhile */
 
-          Temp[RED]   = Attenuation * Layer_Pigment_Colour[RED] *
-                        Layer->Finish->Ambient[RED] *
-                        Frame.Ambient_Light[RED];
+          Tmp[0] = Att * LayCol[0] * Layer->Finish->Ambient[0] * Frame.Ambient_Light[0];
+          Tmp[1] = Att * LayCol[1] * Layer->Finish->Ambient[1] * Frame.Ambient_Light[1];
+          Tmp[2] = Att * LayCol[2] * Layer->Finish->Ambient[2] * Frame.Ambient_Light[2];
 
-          Temp[GREEN] = Attenuation * Layer_Pigment_Colour[GREEN] *
-                        Layer->Finish->Ambient[GREEN] *
-                        Frame.Ambient_Light[GREEN];
-
-          Temp[BLUE]  = Attenuation * Layer_Pigment_Colour[BLUE] *
-                        Layer->Finish->Ambient[BLUE] *
-                        Frame.Ambient_Light[BLUE];
-
-          Max_Radiosity_Contribution = Temp[RED] *.287 + Temp[GREEN] *.589 + Temp[BLUE] * .114;
+          Max_Radiosity_Contribution = Tmp[0] *.287 + Tmp[1] *.589 + Tmp[2] * .114;
 
           if (Max_Radiosity_Contribution > BLACK_LEVEL * 3.0)
           {
-            (void)Compute_Ambient(Ray_Intersection->IPoint, Raw_Normal,
-              Gathered_Ambient_Colour, Weight * Max_Radiosity_Contribution);
+            (void)Compute_Ambient(Intersection->IPoint, Raw_Normal, AmbCol, Weight * Max_Radiosity_Contribution);
 
             radiosity_done = TRUE;
           }
@@ -2587,170 +2503,200 @@ INTERSECTION *Ray_Intersection;
 
       /* Add ambient contribution. */
 
-      Temp_Colour[RED]   += Attenuation *
-                            Layer_Pigment_Colour[RED] *
-                            Layer->Finish->Ambient[RED] *
-                            Frame.Ambient_Light[RED] *
-                            Gathered_Ambient_Colour[RED];
-
-      Temp_Colour[GREEN] += Attenuation *
-                            Layer_Pigment_Colour[GREEN] *
-                            Layer->Finish->Ambient[GREEN] *
-                            Frame.Ambient_Light[GREEN] *
-                            Gathered_Ambient_Colour[GREEN];
-
-      Temp_Colour[BLUE]  += Attenuation *
-                            Layer_Pigment_Colour[BLUE] *
-                            Layer->Finish->Ambient[BLUE] *
-                            Frame.Ambient_Light[BLUE] *
-                            Gathered_Ambient_Colour[BLUE];
+      TmpCol[0] += Att * LayCol[0] * Layer->Finish->Ambient[0] * Frame.Ambient_Light[0] * AmbCol[0];
+      TmpCol[1] += Att * LayCol[1] * Layer->Finish->Ambient[1] * Frame.Ambient_Light[1] * AmbCol[1];
+      TmpCol[2] += Att * LayCol[2] * Layer->Finish->Ambient[2] * Frame.Ambient_Light[2] * AmbCol[2];
 
 
       /* Add diffuse, phong, specular, and iridescence contribution. */
 
-      Diffuse (Layer->Finish, Ray_Intersection->IPoint, Ray,
-        Layer_Normal, Layer_Pigment_Colour, Temp_Colour, Attenuation,
-        Ray_Intersection->Object);
+      Diffuse(Layer->Finish, Intersection->IPoint, Ray, LayNormal, LayCol, TmpCol, Att, Intersection->Object);
 
-      VAddEq(Result_Colour, Temp_Colour);
+      VAddEq(ResCol, TmpCol);
 
-      /* Do reflection. */
+      /* Store vital information for later reflection. */
 
-      if (opts.Quality_Flags & Q_REFLECT)
+      if (layer_number == MAX_LAYERS)
       {
-        if ((Layer->Finish->Reflection[RED]   != 0.0) ||
-            (Layer->Finish->Reflection[GREEN] != 0.0) ||
-            (Layer->Finish->Reflection[BLUE]  != 0.0))
-        {
-          Temp_Weight = New_Weight * max3(Layer->Finish->Reflection[RED], Layer->Finish->Reflection[GREEN], Layer->Finish->Reflection[BLUE]);
-
-          Reflect(Layer->Finish->Reflection, Ray_Intersection->IPoint, Ray,
-            Layer_Normal, Result_Colour, Temp_Weight);
-        }
+        Error("Too many texture layers.");
       }
+
+      ListReflEx[layer_number] = Layer->Finish->Reflect_Exp;
+
+      ListWeight[layer_number] = New_Weight;
+
+      Assign_Vector(ListNormal[layer_number], LayNormal);
+
+      ListReflec[layer_number][0]=Layer->Finish->Reflection[0];
+      ListReflec[layer_number][1]=Layer->Finish->Reflection[1];
+      ListReflec[layer_number][2]=Layer->Finish->Reflection[2];
     }
 
-    /*
-     * End of former Compute_Reflected_Colour code.
-     */
+    /* Get new filter color. */
 
     if (colour_found)
     {
-      Filter_Colour[RED]    *= Layer_Pigment_Colour[RED];
-      Filter_Colour[GREEN]  *= Layer_Pigment_Colour[GREEN];
-      Filter_Colour[BLUE]   *= Layer_Pigment_Colour[BLUE];
-      Filter_Colour[FILTER] *= Layer_Pigment_Colour[FILTER];
-      Filter_Colour[TRANSM] *= Layer_Pigment_Colour[TRANSM];
+      FilCol[0] *= LayCol[0];
+      FilCol[1] *= LayCol[1];
+      FilCol[2] *= LayCol[2];
+      FilCol[3] *= LayCol[3];
+      FilCol[4] *= LayCol[4];
     }
 
-    Transparency = min(1.0, fabs(Filter_Colour[FILTER]) + fabs(Filter_Colour[TRANSM]));
+    /* Get new remaining translucency. */
+
+    Trans = min(1.0, fabs(FilCol[FILTER]) + fabs(FilCol[TRANSM]));
   }
 
   /*
-   * Now see if any transparency remains.  If it does, then fire a transmitted
-   * ray and add it's contribution to the total Result_Colour after
-   * filtering it by Filter_Colour.
+   * Calculate transmitted component.
+   *
+   * If the surface is translucent a transmitted ray is traced
+   * and its contribution is added to the total ResCol after
+   * filtering it by FilCol.
    */
 
-  Finish = Texture->Finish;
+  TIR_occured = FALSE;
 
-  if ((Transparency > BLACK_LEVEL) && (opts.Quality_Flags & Q_REFRACT))
+  if (((Interior = Intersection->Object->Interior) != NULL) && (Trans > BLACK_LEVEL) && (opts.Quality_Flags & Q_REFRACT))
   {
-    Make_Colour(Refracted_Colour, 0.0, 0.0, 0.0);
-
-    w1 = fabs(Filter_Colour[FILTER]) * max3(Filter_Colour[RED], Filter_Colour[GREEN], Filter_Colour[BLUE]);
-    w2 = fabs(Filter_Colour[TRANSM]);
+    w1 = fabs(FilCol[FILTER]) * max3(FilCol[0], FilCol[1], FilCol[2]);
+    w2 = fabs(FilCol[TRANSM]);
 
     New_Weight = Weight * max(w1, w2);
 
-    /*
-     * WARNING: The Refract() routine must be passed the un-transformed
-     * IPoint from Ray_Intersection->IPoint so that the Ray->Initial for
-     * transmitted rays is properly set.  It should not be a TPoint from
-     * some transformed or turbulated texture_map pattern.
-     */
+    /* Trace refracted ray. */
 
-    if (Finish->Refraction > 0.0)
-    {
-      Refract (Ray_Intersection->Object, Texture, Ray_Intersection->IPoint, Ray, Top_Normal, Refracted_Colour, New_Weight);
-    }
-    else
-    {
-      Refract (Ray_Intersection->Object, Texture, Ray_Intersection->IPoint, Ray, NULL, Refracted_Colour, New_Weight);
-    }
+    TIR_occured = Refract(Interior, Intersection->IPoint, Ray, TopNormal, Raw_Normal, RfrCol, New_Weight);
 
     /* Get distance based attenuation. */
 
-    Attenuation = 1.0;
+    Att = Interior->Old_Refract;
 
-    if (Ray->Containing_Index > -1)
+    if ((Interior != NULL) && Interior_In_Ray_Container(Ray, Interior) >= 0)
     {
-      /* Attenuate light due to light source distance. */
-
-      if (Texture_In_Ray_Container(Ray, Texture) >= 0)
+      if (fabs(Interior->Fade_Distance) > EPSILON)
       {
-        if ((Finish->Fade_Power > 0.0) && (fabs(Finish->Fade_Distance) > EPSILON))
-        {
-          Attenuation = 1.0 / (1.0 + pow(Ray_Intersection->Depth / Finish->Fade_Distance, Finish->Fade_Power));
-        }
+        Att /= (1.0 + pow(Intersection->Depth / Interior->Fade_Distance, Interior->Fade_Power));
       }
     }
 
-    if (one_colour_found)
+    /* If total internal reflection occured the transmitted light is not filtered. */
+
+    if (TIR_occured)
     {
-      Result_Colour[RED]  += Attenuation * Refracted_Colour[RED]   *
-        (Filter_Colour[RED]   * Filter_Colour[FILTER] + Filter_Colour[TRANSM]);
-
-      Result_Colour[GREEN]+= Attenuation * Refracted_Colour[GREEN] *
-        (Filter_Colour[GREEN] * Filter_Colour[FILTER] + Filter_Colour[TRANSM]);
-
-      Result_Colour[BLUE] += Attenuation * Refracted_Colour[BLUE]  *
-        (Filter_Colour[BLUE]  * Filter_Colour[FILTER] + Filter_Colour[TRANSM]);
+      ResCol[0] += Att * RfrCol[0];
+      ResCol[1] += Att * RfrCol[1];
+      ResCol[2] += Att * RfrCol[2];
     }
     else
     {
-      Result_Colour[RED]  += Attenuation * Refracted_Colour[RED];
-      Result_Colour[GREEN]+= Attenuation * Refracted_Colour[GREEN];
-      Result_Colour[BLUE] += Attenuation * Refracted_Colour[BLUE];
+      if (one_colour_found)
+      {
+        ResCol[0] += Att * RfrCol[0] * (FilCol[0] * FilCol[FILTER] + FilCol[TRANSM]);
+        ResCol[1] += Att * RfrCol[1] * (FilCol[1] * FilCol[FILTER] + FilCol[TRANSM]);
+        ResCol[2] += Att * RfrCol[2] * (FilCol[2] * FilCol[FILTER] + FilCol[TRANSM]);
+      }
+      else
+      {
+        ResCol[0] += Att * RfrCol[0];
+        ResCol[1] += Att * RfrCol[1];
+        ResCol[2] += Att * RfrCol[2];
+      }
     }
 
     /* We need to know the transmittance value for the alpha channel. [DB] */
 
-    Result_Colour[TRANSM] = Attenuation * Filter_Colour[TRANSM];
+    ResCol[TRANSM] = Att * FilCol[TRANSM];
   }
 
-  /* Calculate halo effects. */
+  /*
+   * Calculate reflected component.
+   *
+   * If total internal reflection occured all reflections using
+   * TopNormal are skipped.
+   */
 
-  if ((opts.Quality_Flags & Q_VOLUME) && (Ray->Containing_Index > -1))
+  if (opts.Quality_Flags & Q_REFLECT)
   {
-    calc_halo = TRUE;
+    for (i = 0; i < layer_number; i++)
+    {
+      if ((!TIR_occured) ||
+          (fabs(TopNormal[0]-ListNormal[i][0]) > EPSILON) ||
+          (fabs(TopNormal[1]-ListNormal[i][1]) > EPSILON) ||
+          (fabs(TopNormal[2]-ListNormal[i][2]) > EPSILON))
+      {
+        if ((ListReflec[i][0] != 0.0) ||
+            (ListReflec[i][1] != 0.0) ||
+            (ListReflec[i][2] != 0.0))
+        {
+          TempWeight = ListWeight[i] * max3(ListReflec[i][0], ListReflec[i][1], ListReflec[i][2]);
+
+          Reflect(Intersection->IPoint, Ray, ListNormal[i], Raw_Normal, RflCol, TempWeight);
+          
+          if (ListReflEx[i] != 1.0)
+          {
+            ResCol[0] += ListReflec[i][0] * pow(RflCol[0],ListReflEx[i]);
+            ResCol[1] += ListReflec[i][1] * pow(RflCol[1],ListReflEx[i]);
+            ResCol[2] += ListReflec[i][2] * pow(RflCol[2],ListReflEx[i]);
+          }
+          else
+          {
+            ResCol[0] += ListReflec[i][0] * RflCol[0];
+            ResCol[1] += ListReflec[i][1] * RflCol[1];
+            ResCol[2] += ListReflec[i][2] * RflCol[2];
+          }
+        }
+      }
+    }
+  }
+
+  /*
+   * Calculate participating media effects.
+   */
+
+  if ((opts.Quality_Flags & Q_VOLUME) && (Ray->Index > -1))
+  {
+    inside_hollow_object = TRUE;
 
     /* Test for any solid object. */
 
-    for (i = 0; i <= Ray->Containing_Index; i++)
+    for (i = 0; i <= Ray->Index; i++)
     {
-      if (!Test_Flag(Ray->Containing_Objects[i], HOLLOW_FLAG))
+      if (!Ray->Interiors[i]->hollow)
       {
-        calc_halo = FALSE;
+        inside_hollow_object = FALSE;
 
         break;
       }
     }
 
-    /* Calculate effects of all halos we're currently in. */
+    /* Calculate effects of all media we're currently in. */
 
-    if (calc_halo)
+    if (inside_hollow_object)
     {
-      for (i = 0; i <= Ray->Containing_Index; i++)
+      MediaList = (IMEDIA **)POV_MALLOC((Ray->Index+2)*sizeof(IMEDIA *), "temp media list");
+
+      TmpMedia = MediaList;
+
+      for (i = 0; i <= Ray->Index; i++)
       {
-        if ((Halo = Ray->Containing_Textures[i]->Halo) != NULL)
+        if (Ray->Interiors[i]->hollow)
         {
-          if (Halo->Type != HALO_NO_HALO)
+          if (Ray->Interiors[i]->IMedia != NULL)
           {
-            Do_Halo(Halo, Ray, Ray_Intersection, Result_Colour, FALSE);
+            *TmpMedia = Ray->Interiors[i]->IMedia;
+
+            TmpMedia++;
           }
         }
       }
+
+      *TmpMedia = NULL;
+
+      Simulate_Media(MediaList, Ray, Intersection, ResCol, FALSE);
+
+      POV_FREE(MediaList);
     }
   }
 }
@@ -2791,24 +2737,19 @@ INTERSECTION *Ray_Intersection;
 *
 *   Aug 1995 : Caustic code moved here from filter_shadow_ray. [CEY]
 *
+*   Oct 1996 : Replaced halo code by participating media code. [DB]
+*
 ******************************************************************************/
 
-static void compute_shadow_texture (Filter_Colour, Texture, IPoint, Raw_Normal, Ray, Ray_Intersection)
-COLOUR Filter_Colour;
-TEXTURE *Texture;
-VECTOR IPoint;
-VECTOR Raw_Normal;
-RAY *Ray;
-INTERSECTION *Ray_Intersection;
+static void compute_shadow_texture (COLOUR Filter_Colour, TEXTURE *Texture, VECTOR IPoint, VECTOR Raw_Normal, RAY *Ray, INTERSECTION *Ray_Intersection)
 {
-  int i, calc_halo, colour_found, one_colour_found;
+  int i, inside_hollow_object, colour_found, one_colour_found;
   DBL Caustics, dot, k, Refraction;
   VECTOR Layer_Normal;
   COLOUR Layer_Pigment_Colour;
-  COLOUR Halo_Colour;
-  FINISH *Finish;
-  HALO *Halo;
+  IMEDIA **Media_List, **Tmp;
   TEXTURE *Layer;
+  INTERIOR *Interior = Ray_Intersection->Object->Interior;
 
   Make_ColourA(Filter_Colour, 1.0, 1.0, 1.0, 1.0, 1.0);
 
@@ -2823,50 +2764,17 @@ INTERSECTION *Ray_Intersection;
     if (colour_found)
     {
       one_colour_found = TRUE;
-    }
 
-    Refraction = (DBL)((Layer->Finish->Refraction > 0.0) ? Layer->Finish->Refraction : 1.0);
-
-    /* Get distance based attenuation. */
-
-    if (Ray->Containing_Index > -1)
-    {
-      /* Get finish of texture we're currently in. */
-
-      if ((Finish = Ray->Containing_Textures[Ray->Containing_Index]->Finish)!=NULL)
-      {
-         /* Attenuate light due to light source distance. */
-
-         if (Texture_In_Ray_Container(Ray, Texture) >= 0)
-         {
-           if ((Finish->Fade_Power > 0.0) && (fabs(Finish->Fade_Distance) > EPSILON))
-           {
-             Refraction *= 1.0 / (1.0 + pow(Ray_Intersection->Depth / Finish->Fade_Distance, Finish->Fade_Power));
-           }
-         }
-      }
-    }
-
-    if (colour_found)
-    {
-      Filter_Colour[RED]    *= Refraction * Layer_Pigment_Colour[RED];
-      Filter_Colour[GREEN]  *= Refraction * Layer_Pigment_Colour[GREEN];
-      Filter_Colour[BLUE]   *= Refraction * Layer_Pigment_Colour[BLUE];
-      Filter_Colour[FILTER] *= Refraction * Layer_Pigment_Colour[FILTER];
-      Filter_Colour[TRANSM] *= Refraction * Layer_Pigment_Colour[TRANSM];
-    }
-    else
-    {
-      Filter_Colour[RED]    *= Refraction;
-      Filter_Colour[GREEN]  *= Refraction;
-      Filter_Colour[BLUE]   *= Refraction;
-      Filter_Colour[FILTER] *= Refraction;
-      Filter_Colour[TRANSM] *= Refraction;
+      Filter_Colour[RED]    *= Layer_Pigment_Colour[RED];
+      Filter_Colour[GREEN]  *= Layer_Pigment_Colour[GREEN];
+      Filter_Colour[BLUE]   *= Layer_Pigment_Colour[BLUE];
+      Filter_Colour[FILTER] *= Layer_Pigment_Colour[FILTER];
+      Filter_Colour[TRANSM] *= Layer_Pigment_Colour[TRANSM];
     }
 
     /* Get normal for faked caustics. (Will rewrite later to cache) */
 
-    if ((Caustics = Layer->Finish->Caustics) != 0.0)
+    if ((Interior != NULL) && ((Caustics = Interior->Caustics) != 0.0))
     {
       Assign_Vector(Layer_Normal, Raw_Normal);
 
@@ -2886,6 +2794,33 @@ INTERSECTION *Ray_Intersection;
     }
   }
 
+  /* Get distance based attenuation. */
+
+  if (Interior != NULL)
+  {
+    Refraction = 1.0;
+
+    if (Interior_In_Ray_Container(Ray, Interior) >= 0)
+    {
+      if ((Interior->Fade_Power > 0.0) && (fabs(Interior->Fade_Distance) > EPSILON))
+      {
+        Refraction /= 1.0 + pow(Ray_Intersection->Depth / Interior->Fade_Distance, Interior->Fade_Power);
+      }
+    }
+  }
+  else
+  {
+    Refraction = 0.0;
+  }
+
+  /* Get distance based attenuation. */
+
+  Filter_Colour[RED]    *= Refraction;
+  Filter_Colour[GREEN]  *= Refraction;
+  Filter_Colour[BLUE]   *= Refraction;
+  Filter_Colour[FILTER] *= Refraction;
+  Filter_Colour[TRANSM] *= Refraction;
+
   /*
    * If no valid color was found we set the filtering channel
    * to zero to make sure that no light amplification occures.
@@ -2898,38 +2833,50 @@ INTERSECTION *Ray_Intersection;
     Filter_Colour[FILTER] = 0.0;
   }
 
-  /* Calculate halo. */
+  /* Calculate participating media effects. */
 
-  if ((opts.Quality_Flags & Q_VOLUME) && (Ray->Containing_Index > -1))
+  if ((opts.Quality_Flags & Q_VOLUME) && (Ray->Index > -1))
   {
-    calc_halo = TRUE;
+    inside_hollow_object = TRUE;
 
     /* Test for any solid object. */
 
-    for (i = 0; i <= Ray->Containing_Index; i++)
+    for (i = 0; i <= Ray->Index; i++)
     {
-      if (!Test_Flag(Ray->Containing_Objects[i], HOLLOW_FLAG))
+      if (!Ray->Interiors[i]->hollow)
       {
-        calc_halo = FALSE;
+        inside_hollow_object = FALSE;
 
         break;
       }
     }
 
-    /* Calculate effects of all halos we're currently in. */
+    /* Calculate effects of all participating media we're currently in. */
 
-    if (calc_halo)
+    if (inside_hollow_object)
     {
-      for (i = 0; i <= Ray->Containing_Index; i++)
+      Media_List = (IMEDIA **)POV_MALLOC((Ray->Index+2)*sizeof(IMEDIA *), "temp media list");
+
+      Tmp = Media_List;
+
+      for (i = 0; i <= Ray->Index; i++)
       {
-        if ((Halo = Ray->Containing_Textures[i]->Halo) != NULL)
+        if (Ray->Interiors[i]->hollow)
         {
-          if (Halo->Type != HALO_NO_HALO)
+          if (Ray->Interiors[i]->IMedia != NULL)
           {
-            Do_Halo(Halo, Ray, Ray_Intersection, Halo_Colour, TRUE);
+            *Tmp = Ray->Interiors[i]->IMedia;
+
+            Tmp++;
           }
         }
       }
+
+      *Tmp = NULL;
+
+      Simulate_Media(Media_List, Ray, Ray_Intersection, Filter_Colour, TRUE);
+
+      POV_FREE(Media_List);
     }
   }
 }
@@ -2969,16 +2916,16 @@ INTERSECTION *Ray_Intersection;
 *
 ******************************************************************************/
 
-static void filter_shadow_ray(Ray_Intersection, Light_Source_Ray, Colour)
-INTERSECTION *Ray_Intersection;
-RAY *Light_Source_Ray;
-COLOUR Colour;
+static void filter_shadow_ray(INTERSECTION *Ray_Intersection, RAY *Light_Source_Ray, COLOUR Colour)
 {
   int i, Texture_Count;
   VECTOR IPoint;
   VECTOR Raw_Normal;
   COLOUR FC1, Temp_Colour;
   TEXTURE *Texture = NULL;  /* To remove uninitialized use warning [AED] */
+  size_t save_tw_size;
+  DBL *save_Weights = NULL;
+  TEXTURE **save_Textures = NULL;
 
   Assign_Vector(IPoint, Ray_Intersection->IPoint);
 
@@ -2999,6 +2946,23 @@ COLOUR Colour;
   /* Get the normal to the surface */
 
   Normal(Raw_Normal, Ray_Intersection->Object, Ray_Intersection);
+
+  /*
+   * Save texture and weight lists.
+   */
+
+  save_tw_size = (size_t)Number_Of_Textures_And_Weights;
+
+  if (save_tw_size > 0)
+  {
+    save_Weights = (DBL *)POV_MALLOC(save_tw_size * sizeof(DBL), "Weight list stack");
+
+    memcpy(save_Weights, Weight_List, save_tw_size * sizeof(DBL));
+
+    save_Textures = (TEXTURE **)POV_MALLOC(save_tw_size * sizeof(TEXTURE *), "Weight list stack");
+
+    memcpy(save_Textures, Texture_List, save_tw_size * sizeof(TEXTURE *));
+  }
 
   /* Get texture list and weights. */
 
@@ -3026,6 +2990,16 @@ COLOUR Colour;
     Temp_Colour[TRANSM]  += Weight_List[i] * FC1[TRANSM];
   }
 
+  /* Restore the weight and texture list. */
+
+  if (save_tw_size > 0)
+  {
+    memcpy(Weight_List, save_Weights, save_tw_size * sizeof(DBL));
+    memcpy(Texture_List, save_Textures, save_tw_size * sizeof(TEXTURE *));
+
+    POV_FREE(save_Weights);
+    POV_FREE(save_Textures);
+  }
   if (fabs(Temp_Colour[FILTER]) + fabs(Temp_Colour[TRANSM]) < BLACK_LEVEL)
   {
     Make_Colour(Colour, 0.0, 0.0, 0.0);
@@ -3039,7 +3013,7 @@ COLOUR Colour;
 
   /* Get atmospheric attenuation. */
 
-  do_light_ray_atmosphere(Light_Source_Ray, Ray_Intersection, Texture, Colour, TRUE);
+  do_light_ray_atmosphere(Light_Source_Ray, Ray_Intersection, Colour, TRUE);
 }
 
 
@@ -3070,11 +3044,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static int do_blocking(Local_Intersection, Light_Source_Ray, Light_Colour, Local_Stack)
-INTERSECTION *Local_Intersection;
-RAY *Light_Source_Ray;
-COLOUR Light_Colour;
-ISTACK *Local_Stack;
+static int do_blocking(INTERSECTION *Local_Intersection, RAY *Light_Source_Ray, COLOUR Light_Colour, ISTACK *Local_Stack)
 {
   Increase_Counter(stats[Shadow_Rays_Succeeded]);
 
@@ -3134,12 +3104,7 @@ ISTACK *Local_Stack;
 *
 ******************************************************************************/
 
-static void block_light_source(Light, Depth, Light_Source_Ray, Eye_Ray, P, Colour)
-LIGHT_SOURCE *Light;
-DBL Depth;
-RAY *Light_Source_Ray, *Eye_Ray;
-VECTOR P;
-COLOUR Colour;
+static void block_light_source(LIGHT_SOURCE *Light, DBL Depth, RAY *Light_Source_Ray, RAY  *Eye_Ray, VECTOR P, COLOUR Colour)
 {
   DBL New_Depth;
   INTERSECTION Intersection;
@@ -3175,12 +3140,12 @@ COLOUR Colour;
    */
 
   if ((New_Depth > SHADOW_TOLERANCE) &&
-      (Light->Atmosphere_Interaction) &&
-      (Light->Atmospheric_Attenuation))
+      (Light->Media_Interaction) &&
+      (Light->Media_Attenuation))
   {
     Intersection.Depth = New_Depth;
 
-    do_light_ray_atmosphere(&New_Ray, &Intersection, NULL, Colour, FALSE);
+    do_light_ray_atmosphere(&New_Ray, &Intersection, Colour, FALSE);
   }
 }
 
@@ -3212,15 +3177,8 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static void average_textures (Result_Colour, Texture, IPoint, Raw_Normal,
-  Ray, Weight, Ray_Intersection, Shadow_Flag)
-COLOUR Result_Colour;
-TEXTURE *Texture;
-VECTOR IPoint, Raw_Normal;
-RAY *Ray;
-DBL Weight;
-INTERSECTION *Ray_Intersection;
-int Shadow_Flag;
+static void average_textures (COLOUR Result_Colour, TEXTURE *Texture, VECTOR IPoint, VECTOR  Raw_Normal,
+  RAY *Ray, DBL Weight, INTERSECTION *Ray_Intersection, int Shadow_Flag)
 {
    int i;
    COLOUR LC;
@@ -3287,14 +3245,9 @@ int Shadow_Flag;
 *
 ******************************************************************************/
 
-static void do_light_ray_atmosphere(Light_Source_Ray, Ray_Intersection, Texture, Colour, Valid_Object)
-RAY *Light_Source_Ray;
-INTERSECTION *Ray_Intersection;
-TEXTURE *Texture;
-COLOUR Colour;
-int Valid_Object;
+static void do_light_ray_atmosphere(RAY *Light_Source_Ray, INTERSECTION *Ray_Intersection, COLOUR Colour, int Valid_Object)
 {
-  int texture_nr;
+  int interior_nr;
   int i, all_hollow;
 
   /* Why are we here? */
@@ -3306,9 +3259,9 @@ int Valid_Object;
 
   all_hollow = TRUE;
 
-  for (i = 0; i <= Light_Source_Ray->Containing_Index; i++)
+  for (i = 0; i <= Light_Source_Ray->Index; i++)
   {
-    if (!Test_Flag(Light_Source_Ray->Containing_Objects[i], HOLLOW_FLAG))
+    if (!Light_Source_Ray->Interiors[i]->hollow)
     {
       all_hollow = FALSE;
 
@@ -3318,7 +3271,7 @@ int Valid_Object;
 
   /* Apply atmospheric effects inside and/or outside any object. */
 
-  if (all_hollow || (Valid_Object && Test_Flag(Ray_Intersection->Object, HOLLOW_FLAG)))
+  if ((opts.Quality_Flags & Q_VOLUME) && (all_hollow || (Valid_Object && Ray_Intersection->Object->Interior != NULL)))
   {
     Do_Finite_Atmosphere(Light_Source_Ray, Ray_Intersection, Colour, TRUE);
   }
@@ -3327,27 +3280,27 @@ int Valid_Object;
 
   if (Valid_Object)
   {
-    if (Light_Source_Ray->Containing_Index == -1)
+    if (Light_Source_Ray->Index == -1)
     {
       /* The ray is entering from the atmosphere */
 
-      Ray_Enter(Light_Source_Ray, Texture, Ray_Intersection->Object);
+      Ray_Enter(Light_Source_Ray, Ray_Intersection->Object->Interior);
     }
     else
     {
       /* The ray is currently inside an object */
 
-      if ((texture_nr = Texture_In_Ray_Container(Light_Source_Ray, Texture)) >= 0)
+      if ((interior_nr = Interior_In_Ray_Container(Light_Source_Ray, Ray_Intersection->Object->Interior)) >= 0)
       {
         /* The ray is leaving the current object */
 
-        Ray_Exit(Light_Source_Ray, texture_nr);
+        Ray_Exit(Light_Source_Ray, interior_nr);
       }
       else
       {
         /* The ray is entering a new object */
 
-        Ray_Enter(Light_Source_Ray, Texture, Ray_Intersection->Object);
+        Ray_Enter(Light_Source_Ray, Ray_Intersection->Object->Interior);
       }
     }
   }

@@ -5,16 +5,16 @@
 *  functions for easy modification and testing. Create new textures here.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that patterns may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -93,9 +93,7 @@
 *
 ******************************************************************************/
 
-DBL pattern1 (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+DBL pattern1 (VECTOR EPoint, TPATTERN *TPat)
 {
   DBL value;
   /* YOUR NAME HERE */
@@ -136,9 +134,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-DBL pattern2 (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+DBL pattern2 (VECTOR EPoint, TPATTERN *TPat)
 {
   DBL value;
   /* YOUR NAME HERE */
@@ -179,9 +175,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-DBL pattern3 (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+DBL pattern3 (VECTOR EPoint, TPATTERN *TPat)
 {
   DBL value;
   /* YOUR NAME HERE */
@@ -224,10 +218,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-void bumpy1 (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+void bumpy1 (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   /* YOUR NAME HERE */
   EPoint=EPoint;
@@ -268,10 +259,7 @@ VECTOR normal;
 *
 ******************************************************************************/
 
-void bumpy2 (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+void bumpy2 (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   /* YOUR NAME HERE */
   EPoint=EPoint;
@@ -312,10 +300,7 @@ VECTOR normal;
 *
 ******************************************************************************/
 
-void bumpy3 (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+void bumpy3 (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   /* YOUR NAME HERE */
   EPoint=EPoint;

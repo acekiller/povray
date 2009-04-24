@@ -4,20 +4,22 @@
 *  This module parses textures and atmosphere effects.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modifications by Thomas Willhalm, March 1999, used with permission.
 *
 *****************************************************************************/
 
@@ -29,11 +31,11 @@
 #include "colour.h"
 #include "express.h"
 #include "gif.h"
-#include "halos.h"
 #include "iff.h"
 #include "image.h"
 #include "matrices.h" 
-#include "normal.h"   
+#include "media.h"
+#include "normal.h"
 #include "pigment.h"  
 #include "povray.h"
 #include "pgm.h"
@@ -70,16 +72,17 @@ TEXTURE *Default_Texture;
 * Static functions
 ******************************************************************************/
 
-static void Parse_Bump_Map PARAMS((TNORMAL *Tnormal));
-static void Parse_Image_Map PARAMS((PIGMENT *Pigment));
-static void Parse_Pattern PARAMS((TPATTERN *New, int TPat_Type));
-static TEXTURE *Parse_Vers1_Texture PARAMS((void));
-static TEXTURE *Parse_Tiles PARAMS((void));
-static TEXTURE *Parse_Material_Map PARAMS((void));
-static void Parse_Texture_Transform PARAMS((TEXTURE *Texture));
-static TURB *Check_Turb PARAMS((WARP **Warps_Ptr));
-static void Parse_Warp PARAMS((WARP **Warp_Ptr));
-static void Check_BH_Parameters PARAMS((BLACK_HOLE *bh));
+static void Parse_Bump_Map (TNORMAL *Tnormal);
+static void Parse_Image_Map (PIGMENT *Pigment);
+static void Parse_Pattern (TPATTERN *New, int TPat_Type);
+static TEXTURE *Parse_Vers1_Texture (void);
+static TEXTURE *Parse_Tiles (void);
+static TEXTURE *Parse_Material_Map (void);
+static void Parse_Texture_Transform (TEXTURE *Texture);
+static TURB *Check_Turb (WARP **Warps_Ptr);
+static void Parse_Warp (WARP **Warp_Ptr);
+static void Check_BH_Parameters (BLACK_HOLE *bh);
+static void Warn_Interior (char *s);
 
 
 
@@ -103,9 +106,8 @@ static void Check_BH_Parameters PARAMS((BLACK_HOLE *bh));
 *
 ******************************************************************************/
 
-IMAGE *Parse_Image (Legal)
-  int Legal;
-  {
+IMAGE *Parse_Image (int Legal)
+{
    IMAGE *Image;
    VECTOR Local_Vector;
    char *Name;
@@ -118,13 +120,8 @@ IMAGE *Parse_Image (Legal)
      {
       EXPECT
         CASE_VECTOR
-          Warn(1.5, "Should use map_type keyword and/or eliminate orientation.");
-          Have_Vector = FALSE;
-          Parse_Vector_Float (Local_Vector);
-          if (Have_Vector)
-            Assign_Vector(Image->Gradient,Local_Vector);
-          else
-            Image->Map_Type = (int)Local_Vector[X];
+          Warn(1.5, "Old style orientation vector or map type not supported.  Ignoring value.");
+          Parse_Vector (Local_Vector);
         END_CASE
 
         OTHERWISE
@@ -231,9 +228,8 @@ IMAGE *Parse_Image (Legal)
 *
 ******************************************************************************/
 
-static void Parse_Image_Map (Pigment)
-PIGMENT *Pigment;
-  {
+static void Parse_Image_Map (PIGMENT *Pigment)
+{
    int reg;
    IMAGE *Image;
    
@@ -370,9 +366,8 @@ PIGMENT *Pigment;
 *
 ******************************************************************************/
 
-static void Parse_Bump_Map (Tnormal)
-TNORMAL *Tnormal;
-  {
+static void Parse_Bump_Map (TNORMAL *Tnormal)
+{
    IMAGE *Image;
 
    Parse_Begin();
@@ -438,13 +433,12 @@ TNORMAL *Tnormal;
 *
 ******************************************************************************/
 
-void Parse_Pigment (Pigment_Ptr)
-  PIGMENT **Pigment_Ptr;
-  {
+void Parse_Pigment (PIGMENT **Pigment_Ptr)
+{
    EXPECT            /* Look for [pigment_id] */
      CASE (PIGMENT_ID_TOKEN)
        Destroy_Pigment(*Pigment_Ptr);
-       *Pigment_Ptr = Copy_Pigment ((PIGMENT *) Token.Constant_Data);
+       *Pigment_Ptr = Copy_Pigment ((PIGMENT *) Token.Data);
        EXIT
      END_CASE
 
@@ -484,10 +478,8 @@ void Parse_Pigment (Pigment_Ptr)
 *
 ******************************************************************************/
 
-static void Parse_Pattern (New, TPat_Type)
-  TPATTERN *New;
-  int TPat_Type;
-  {
+static void Parse_Pattern (TPATTERN *New, int TPat_Type)
+{
    VECTOR Local_Vector;
    COLOUR Local_Colour;
    MATRIX Local_Matrix;
@@ -495,10 +487,16 @@ static void Parse_Pattern (New, TPat_Type)
    TURB *Local_Turb;
    unsigned short Old_Type=New->Type;
    IMAGE *Old_Image = NULL;
+   DENSITY_FILE *Old_Density_File = NULL;
 
    if (Old_Type==BITMAP_PATTERN)
    {
      Old_Image=New->Vals.Image;
+   }
+
+   if (Old_Type==DENSITY_FILE_PATTERN)
+   {
+     Old_Density_File=New->Vals.Density_File;
    }
 
    EXPECT
@@ -538,48 +536,6 @@ static void Parse_Pattern (New, TPat_Type)
 
      CASE (ONION_TOKEN)
        New->Type = ONION_PATTERN;
-       EXIT
-     END_CASE
-
-     CASE (PATTERN1_TOKEN)
-       New->Type = PATTERN1_PATTERN;
-       EXIT
-     END_CASE
-
-     CASE (PATTERN2_TOKEN)
-       New->Type = PATTERN2_PATTERN;
-       EXIT
-     END_CASE
-
-     CASE (PATTERN3_TOKEN)
-       New->Type = PATTERN3_PATTERN;
-       EXIT
-     END_CASE
-
-     CASE (BUMPY1_TOKEN)
-       if (TPat_Type != NORMAL_TYPE)
-       {
-         Only_In("bumpy1","normal");
-       }
-       New->Type = BUMPY1_PATTERN;
-       EXIT
-     END_CASE
-
-     CASE (BUMPY2_TOKEN)
-       if (TPat_Type != NORMAL_TYPE)
-       {
-         Only_In("bumpy2","normal");
-       }
-       New->Type = BUMPY2_PATTERN;
-       EXIT
-     END_CASE
-
-     CASE (BUMPY3_TOKEN)
-       if (TPat_Type != NORMAL_TYPE)
-       {
-         Only_In("bumpy3","normal");
-       }
-       New->Type = BUMPY3_PATTERN;
        EXIT
      END_CASE
 
@@ -625,9 +581,9 @@ static void Parse_Pattern (New, TPat_Type)
      END_CASE
 
      CASE_COLOUR
-       if (TPat_Type != PIGMENT_TYPE)
+       if ((TPat_Type != PIGMENT_TYPE) && (TPat_Type != DENSITY_TYPE))
        {
-         Only_In("color","pigment");
+         Only_In("color","pigment or density");
        }
        New->Type = PLAIN_PATTERN;
        Parse_Colour (((PIGMENT *)New)->Colour);
@@ -735,6 +691,39 @@ static void Parse_Pattern (New, TPat_Type)
        EXIT
      END_CASE
 
+     CASE (PLANAR_TOKEN)
+       New->Type = PLANAR_PATTERN;
+       EXIT
+     END_CASE
+
+     CASE (BOXED_TOKEN)
+       New->Type = BOXED_PATTERN;
+       EXIT
+     END_CASE
+
+     CASE (SPHERICAL_TOKEN)
+       New->Type = SPHERICAL_PATTERN;
+       EXIT
+     END_CASE
+
+     CASE (CYLINDRICAL_TOKEN)
+       New->Type = CYLINDRICAL_PATTERN;
+       EXIT
+     END_CASE
+
+     CASE (DENSITY_FILE_TOKEN)
+       if (Old_Type==DENSITY_FILE_PATTERN) 
+       {
+         Destroy_Density_File(Old_Density_File);
+       }   
+       New->Type = DENSITY_FILE_PATTERN;
+       New->Vals.Density_File = Create_Density_File();
+       GET(DF3_TOKEN);
+       New->Vals.Density_File->Data->Name = Parse_String();
+       Read_Density_File(New->Vals.Density_File);
+       EXIT
+     END_CASE
+
      OTHERWISE
        UNGET
        EXIT
@@ -746,6 +735,11 @@ static void Parse_Pattern (New, TPat_Type)
      Destroy_Image(Old_Image);
    }   
 
+   if ((Old_Type==DENSITY_FILE_PATTERN) && (New->Type!=DENSITY_FILE_PATTERN))
+   {
+     Destroy_Density_File(Old_Density_File);
+   }   
+
    if (TPat_Type == NORMAL_TYPE) 
     {
      Parse_Comma();
@@ -755,11 +749,11 @@ static void Parse_Pattern (New, TPat_Type)
    EXPECT         /* Look for pattern_modifier */
      CASE (TURBULENCE_TOKEN)
        Local_Turb=Check_Turb(&(New->Warps));
-       Parse_Vector_Float(Local_Turb->Turbulence);
+       Parse_Vector(Local_Turb->Turbulence);
      END_CASE
 
      CASE (COLOUR_MAP_TOKEN)
-       if (TPat_Type != PIGMENT_TYPE)
+       if ((TPat_Type != PIGMENT_TYPE) && (TPat_Type != DENSITY_TYPE))
        {
          Only_In("color_map","pigment");
        }
@@ -767,8 +761,11 @@ static void Parse_Pattern (New, TPat_Type)
            New->Type == BRICK_PATTERN ||
            New->Type == HEXAGON_PATTERN ||
            New->Type == PLAIN_PATTERN ||
+           New->Type == AVERAGE_PATTERN ||
            New->Type == BITMAP_PATTERN)
-         Warn(1.5, "Cannot use color map with this pigment type.");
+       {
+         Error("Cannot use color_map with this pattern type.");
+       }
        Destroy_Blend_Map(New->Blend_Map);
        New->Blend_Map = Parse_Colour_Map ();
      END_CASE
@@ -786,6 +783,21 @@ static void Parse_Pattern (New, TPat_Type)
          Not_With ("pigment_map","this pigment type");
        Destroy_Blend_Map(New->Blend_Map);
        New->Blend_Map = Parse_Blend_Map (PIGMENT_TYPE,New->Type);
+     END_CASE
+
+     CASE (DENSITY_MAP_TOKEN)
+       if (TPat_Type != DENSITY_TYPE)
+       {
+         Only_In("density_map","density");
+       }
+       if (New->Type == CHECKER_PATTERN ||
+           New->Type == BRICK_PATTERN ||
+           New->Type == HEXAGON_PATTERN ||
+           New->Type == PLAIN_PATTERN ||
+           New->Type == BITMAP_PATTERN)
+         Not_With ("density_map","this density type");
+       Destroy_Blend_Map(New->Blend_Map);
+       New->Blend_Map = Parse_Blend_Map (DENSITY_TYPE,New->Type);
      END_CASE
 
      CASE (SLOPE_MAP_TOKEN)
@@ -908,6 +920,15 @@ static void Parse_Pattern (New, TPat_Type)
        New->Wave_Type = SCALLOP_WAVE;
      END_CASE
 
+     CASE (CUBIC_WAVE_TOKEN)
+       New->Wave_Type = CUBIC_WAVE;
+     END_CASE
+
+     CASE (POLY_WAVE_TOKEN)
+       New->Wave_Type = POLY_WAVE;
+       New->Exponent  = Allow_Float(New->Exponent);
+     END_CASE
+
      CASE (PHASE_TOKEN)
        New->Phase = Parse_Float();
      END_CASE
@@ -937,6 +958,12 @@ static void Parse_Pattern (New, TPat_Type)
        New->Vals.Brick.Mortar = Parse_Float()-Small_Tolerance*2.0;
      END_CASE
 
+     CASE (INTERPOLATE_TOKEN)
+       if (New->Type != DENSITY_FILE_PATTERN)
+          Not_With ("interpolate","non-density_file");
+       New->Vals.Density_File->Interpolation = (int)Parse_Float();
+     END_CASE
+
      CASE (WARP_TOKEN)
        Parse_Warp(&(New->Warps));
      END_CASE
@@ -964,7 +991,7 @@ static void Parse_Pattern (New, TPat_Type)
 
      CASE (TRANSFORM_TOKEN)
        GET(TRANSFORM_ID_TOKEN)
-       Transform_Tpattern (New, (TRANSFORM *)Token.Constant_Data);
+       Transform_Tpattern (New, (TRANSFORM *)Token.Data);
      END_CASE
 
      OTHERWISE
@@ -972,6 +999,11 @@ static void Parse_Pattern (New, TPat_Type)
        EXIT
      END_CASE
    END_EXPECT
+   
+   if ((New->Type==AVERAGE_PATTERN) && (New->Blend_Map==NULL))
+   {
+      Error("Average must have map.");
+   }
 
    if ((TPat_Type==TEXTURE_TYPE) && (New->Type!=PLAIN_PATTERN) &&
        (New->Blend_Map==NULL))
@@ -1002,13 +1034,12 @@ static void Parse_Pattern (New, TPat_Type)
 *
 ******************************************************************************/
 
-void Parse_Tnormal (Tnormal_Ptr)
-  TNORMAL **Tnormal_Ptr;
-  {
+void Parse_Tnormal (TNORMAL **Tnormal_Ptr)
+{
    EXPECT            /* Look for [tnormal_id] */
      CASE (TNORMAL_ID_TOKEN)
        Destroy_Tnormal(*Tnormal_Ptr);
-       *Tnormal_Ptr = Copy_Tnormal ((TNORMAL *) Token.Constant_Data);
+       *Tnormal_Ptr = Copy_Tnormal ((TNORMAL *) Token.Data);
        EXIT
      END_CASE
 
@@ -1019,10 +1050,12 @@ void Parse_Tnormal (Tnormal_Ptr)
    END_EXPECT    /* End [tnormal_id] */
 
    if (*Tnormal_Ptr == NULL)
+   { /* tw */
      if ((Default_Texture->Tnormal) != NULL)
        *Tnormal_Ptr = Copy_Tnormal ((Default_Texture->Tnormal));
      else
        *Tnormal_Ptr = Create_Tnormal ();
+   } /* tw */
 
    Parse_Pattern((TPATTERN *)*Tnormal_Ptr,NORMAL_TYPE);
   }
@@ -1049,9 +1082,8 @@ void Parse_Tnormal (Tnormal_Ptr)
 *
 ******************************************************************************/
 
-void Parse_Finish (Finish_Ptr)
-  FINISH **Finish_Ptr;
-  {
+void Parse_Finish (FINISH **Finish_Ptr)
+{
    COLOUR Temp_Colour;
    FINISH *New;
    VECTOR Local_Vector;
@@ -1061,7 +1093,7 @@ void Parse_Finish (Finish_Ptr)
    EXPECT        /* Look for zero or one finish_id */
      CASE (FINISH_ID_TOKEN)
        Destroy_Finish(*Finish_Ptr);
-       *Finish_Ptr = Copy_Finish ((FINISH *) Token.Constant_Data);
+       *Finish_Ptr = Copy_Finish ((FINISH *) Token.Data);
        EXIT
      END_CASE
 
@@ -1096,12 +1128,8 @@ void Parse_Finish (Finish_Ptr)
        New->Reflection[BLUE]  = Temp_Colour[BLUE];
      END_CASE
 
-     CASE (REFRACTION_TOKEN)
-       New->Refraction = Parse_Float ();
-     END_CASE
-
-     CASE (IOR_TOKEN)
-       New->Index_Of_Refraction = Parse_Float ();
+     CASE (REFLECTION_EXPONENT_TOKEN)
+       New->Reflect_Exp = 1.0 / Parse_Float ();
      END_CASE
 
      CASE (PHONG_TOKEN)
@@ -1139,10 +1167,6 @@ void Parse_Finish (Finish_Ptr)
        END_EXPECT
      END_CASE
 
-     CASE (CAUSTICS_TOKEN)
-       New->Caustics = Parse_Float() * 45.0;
-     END_CASE
-
      CASE (CRAND_TOKEN)
        New->Crand = Parse_Float();
      END_CASE
@@ -1157,7 +1181,7 @@ void Parse_Finish (Finish_Ptr)
          END_CASE
 
          CASE (TURBULENCE_TOKEN)                /* DMF */
-           Parse_Vector_Float(Local_Vector);
+           Parse_Vector(Local_Vector);
            New->Irid_Turb = Local_Vector[X];
          END_CASE
 
@@ -1168,19 +1192,27 @@ void Parse_Finish (Finish_Ptr)
        END_EXPECT
        Parse_End();
      END_CASE
-
-     CASE (FADE_DISTANCE_TOKEN)
-       New->Fade_Distance = Parse_Float();
+     
+     CASE (IOR_TOKEN)
+       New->Temp_IOR = Parse_Float();
+       Warn_Interior("Index of refraction value");
      END_CASE
 
-     CASE (FADE_POWER_TOKEN)
-       New->Fade_Power = Parse_Float();
+     CASE (CAUSTICS_TOKEN)
+       New->Temp_Caustics = Parse_Float();
+       Warn_Interior("Caustics value");
+     END_CASE
+
+     CASE (REFRACTION_TOKEN)
+       New->Temp_Refract = Parse_Float();
+       Warn_Interior("Refraction value unnecessary to turn on refraction.\nTo attenuate, the fade_power and fade_distance keywords ");
      END_CASE
 
      OTHERWISE
        UNGET
        EXIT
      END_CASE
+     
    END_EXPECT    /* End of finish_body */
 
    EXPECT        /* Look for finish_mods */
@@ -1196,315 +1228,6 @@ void Parse_Finish (Finish_Ptr)
 
    Parse_End ();
   }
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   Parse_Halo
-*
-* INPUT
-*
-* OUTPUT
-*
-* RETURNS
-*
-* AUTHOR
-*
-*   Zsolt Szalavari
-*
-* DESCRIPTION
-*
-* CHANGES
-*
-*   Aug 1995 : Added and modified. [DB]
-*
-******************************************************************************/
-
-void Parse_Halo (Halo_Ptr)
-HALO **Halo_Ptr;
-{
-  int add_new_halo, new_color_map, i;
-  SNGL *w;
-  VECTOR Local_Vector;
-  MATRIX Local_Matrix;
-  TRANSFORM Local_Trans;
-  HALO *New, *Next_Halo;
-
-  Experimental_Flag |= EF_HALOS;
-
-  add_new_halo = TRUE;
-
-  new_color_map = FALSE;
-
-  Next_Halo = *Halo_Ptr;
-
-  Parse_Begin();
-
-  /* Look for [halo_id] */
-
-  EXPECT
-    CASE (HALO_ID_TOKEN)
-      add_new_halo = FALSE;
-      EXIT
-    END_CASE
-
-    OTHERWISE
-      UNGET
-      EXIT
-    END_CASE
-  END_EXPECT
-
-  if (add_new_halo)
-  {
-    if ((Default_Texture->Halo) != NULL)
-    {
-      New = Copy_Halo((Default_Texture->Halo));
-    }
-    else
-    {
-      New = Create_Halo();
-    }
-  }
-  else
-  {
-    New = Copy_Halo((HALO *)Token.Constant_Data);
-  }
-
-  EXPECT
-    /* Look for halo rendering type. */
-
-    CASE (ATTENUATING_TOKEN)
-      New->Rendering_Type = HALO_ATTENUATING;
-    END_CASE
-
-    CASE (EMITTING_TOKEN)
-      New->Rendering_Type = HALO_EMITTING;
-    END_CASE
-
-    CASE (GLOWING_TOKEN)
-      New->Rendering_Type = HALO_GLOWING;
-    END_CASE
-
-    CASE (DUST_TOKEN)
-      New->Rendering_Type = HALO_DUST;
-    END_CASE
-
-    CASE (VOLUME_RENDERED_TOKEN)
-      New->Rendering_Type = HALO_VOLUME_RENDERED;
-    END_CASE
-
-    CASE (VOL_WITH_LIGHT_TOKEN)
-      New->Rendering_Type = HALO_VOL_REND_WITH_LIGHT;
-    END_CASE
-
-    /* Look for halo density function. */
-
-    CASE (CONSTANT_TOKEN)
-      New->Type = HALO_CONSTANT;
-    END_CASE
-
-    CASE (LINEAR_TOKEN)
-      New->Type = HALO_LINEAR;
-    END_CASE
-
-    CASE (CUBIC_TOKEN)
-      New->Type = HALO_CUBIC;
-    END_CASE
-
-    CASE (POLY_TOKEN)
-      New->Type = HALO_POLY;
-    END_CASE
-
-    CASE (VOLUME_OBJECT_TOKEN)
-      New->Type = HALO_VOLUME_OBJECT;
-    END_CASE
-
-    /* Look for halo mapping type. */
-
-    CASE (PLANAR_MAPPING_TOKEN)
-      New->Mapping_Type = HALO_PLANAR_MAP;
-    END_CASE
-
-    CASE (SPHERICAL_MAPPING_TOKEN)
-      New->Mapping_Type = HALO_SPHERICAL_MAP;
-    END_CASE
-
-    CASE (CYLINDRICAL_MAPPING_TOKEN)
-      New->Mapping_Type = HALO_CYLINDRICAL_MAP;
-    END_CASE
-
-    CASE (BOX_MAPPING_TOKEN)
-      New->Mapping_Type = HALO_BOX_MAP;
-    END_CASE
-
-    /* Look for halo sampling stuff. */
-
-    CASE (SAMPLES_TOKEN)
-      New->Samples = Parse_Float();
-    END_CASE
-
-    CASE (AA_LEVEL_TOKEN)
-      if ((New->AA_Level = (int)Parse_Float()) < 0)
-      {
-        Error("Illegal anti-aliasing level value in halo.\n");
-      }
-    END_CASE
-
-    CASE (AA_THRESHOLD_TOKEN)
-      New->AA_Threshold = Parse_Float();
-    END_CASE
-
-    CASE (JITTER_TOKEN)
-      New->Jitter = Parse_Float();
-    END_CASE
-
-    /* Look for other identifiers. */
-
-    CASE (DUST_TYPE_TOKEN)
-      New->Dust_Type = (char)Parse_Float();
-      if ((New->Dust_Type < 1) || (New->Dust_Type > SCATTERING_TYPES))
-      {
-        Warn(0.0, "Unknown halo dust type.");
-      }
-    END_CASE
-
-    CASE (MAX_VALUE_TOKEN)
-      New->Max_Value = Parse_Float();
-    END_CASE
-
-    CASE (EXPONENT_TOKEN)
-      New->Exponent = Parse_Float();
-    END_CASE
-
-    CASE (ECCENTRICITY_TOKEN)
-      New->Eccentricity = Parse_Float();
-    END_CASE
-
-    CASE (COLOUR_MAP_TOKEN)
-      Destroy_Blend_Map(New->Blend_Map);
-      New->Blend_Map = Parse_Colour_Map();
-      new_color_map = TRUE;
-    END_CASE
-
-    CASE (TRANSLATE_TOKEN)
-      Parse_Vector (Local_Vector);
-      Compute_Translation_Transform(&Local_Trans, Local_Vector);
-      Translate_One_Halo (New, &Local_Trans);
-     END_CASE
-
-    CASE (ROTATE_TOKEN)
-      Parse_Vector (Local_Vector);
-      Compute_Rotation_Transform(&Local_Trans, Local_Vector);
-      Rotate_One_Halo (New, &Local_Trans);
-     END_CASE
-
-    CASE (SCALE_TOKEN)
-      Parse_Scale_Vector (Local_Vector);
-      Compute_Scaling_Transform(&Local_Trans, Local_Vector);
-      Scale_One_Halo (New, &Local_Trans);
-    END_CASE
-
-     CASE (MATRIX_TOKEN)
-       Parse_Matrix(Local_Matrix);
-       Compute_Matrix_Transform(&Local_Trans, Local_Matrix);
-       Transform_One_Halo (New, &Local_Trans);
-     END_CASE
-
-    CASE (TRANSFORM_TOKEN)
-      GET(TRANSFORM_ID_TOKEN)
-      Transform_One_Halo (New, (TRANSFORM *)Token.Constant_Data);
-    END_CASE
-
-    CASE (TURBULENCE_TOKEN)
-      if (New->Turb == NULL)
-      {
-        New->Turb=(TURB *)Create_Warp(CLASSIC_TURB_WARP);
-      }
-      Parse_Vector_Float(New->Turb->Turbulence);
-    END_CASE
-
-    CASE (OCTAVES_TOKEN)
-      if (New->Turb == NULL)
-      {
-        New->Turb=(TURB *)Create_Warp(CLASSIC_TURB_WARP);
-      }
-      New->Turb->Octaves = (int)Parse_Float();
-      if(New->Turb->Octaves < 1)
-        New->Turb->Octaves = 1;
-      if(New->Turb->Octaves > 10)
-         New->Turb->Octaves = 10;
-    END_CASE
-
-    CASE (OMEGA_TOKEN)
-      if (New->Turb == NULL)
-      {
-        New->Turb=(TURB *)Create_Warp(CLASSIC_TURB_WARP);
-      }
-      New->Turb->Omega = Parse_Float();
-    END_CASE
-
-    CASE (LAMBDA_TOKEN)
-      if (New->Turb == NULL)
-      {
-        New->Turb=(TURB *)Create_Warp(CLASSIC_TURB_WARP);
-      }
-      New->Turb->Lambda = Parse_Float();
-    END_CASE
-
-    CASE (FREQUENCY_TOKEN)
-      New->Frequency = Parse_Float();
-    END_CASE
-
-    CASE (PHASE_TOKEN)
-      New->Phase = Parse_Float();
-    END_CASE
-
-    OTHERWISE
-      UNGET
-      EXIT
-    END_CASE
-  END_EXPECT
-
-  if (Not_In_Default && (New->Type == HALO_NO_HALO))
-  {
-    Warn(3.0, "Halo type unspecified.");
-  }
-
-  Parse_End();
-
-  if (New->Blend_Map == NULL)
-  {
-    Error("No color map specified with halo.\n");
-  }
-  else
-  {
-    if (new_color_map)
-    {
-      /* Convert differential translucencies to differential opacities. */
-
-      for (i = 0; i < New->Blend_Map->Number_Of_Entries; i++)
-      {
-        w = &(New->Blend_Map->Blend_Map_Entries[i].Vals.Colour[TRANSM]);
-
-        *w = 1.0 - *w;
-      }
-    }
-  }
-
-  /* Link halo to exisiting halos. */
-
-/*
-  if (add_new_halo)
-*/
-  {
-    New->Next_Halo = Next_Halo;
-  }
-
-  *Halo_Ptr = New;
-}
 
 
 
@@ -1529,7 +1252,7 @@ HALO **Halo_Ptr;
 ******************************************************************************/
 
 TEXTURE *Parse_Texture ()
-  {
+{
    VECTOR Local_Vector;
    MATRIX Local_Matrix;
    TRANSFORM Local_Trans;
@@ -1545,7 +1268,7 @@ TEXTURE *Parse_Texture ()
 
    EXPECT               /* First allow a texture identifier */
      CASE (TEXTURE_ID_TOKEN)
-       Texture = Copy_Textures((TEXTURE *) Token.Constant_Data);
+       Texture = Copy_Textures((TEXTURE *) Token.Data);
        Modified_Pnf = TRUE;
        EXIT
      END_CASE
@@ -1572,28 +1295,21 @@ TEXTURE *Parse_Texture ()
        CASE (PIGMENT_ID_TOKEN)
          Warn_State(Token.Token_Id, PIGMENT_TOKEN);
          Destroy_Pigment(Texture->Pigment);
-         Texture->Pigment = Copy_Pigment ((PIGMENT *) Token.Constant_Data);
+         Texture->Pigment = Copy_Pigment ((PIGMENT *) Token.Data);
          Modified_Pnf = TRUE;
        END_CASE
 
        CASE (TNORMAL_ID_TOKEN)
          Warn_State(Token.Token_Id, TNORMAL_TOKEN);
          Destroy_Tnormal(Texture->Tnormal);
-         Texture->Tnormal = Copy_Tnormal ((TNORMAL *) Token.Constant_Data);
+         Texture->Tnormal = Copy_Tnormal ((TNORMAL *) Token.Data);
          Modified_Pnf = TRUE;
        END_CASE
 
        CASE (FINISH_ID_TOKEN)
          Warn_State(Token.Token_Id, FINISH_TOKEN);
          Destroy_Finish(Texture->Finish);
-         Texture->Finish = Copy_Finish ((FINISH *) Token.Constant_Data);
-         Modified_Pnf = TRUE;
-       END_CASE
-
-       CASE (HALO_ID_TOKEN)
-         Warn_State(Token.Token_Id, HALO_TOKEN);
-         Destroy_Halo(Texture->Halo);
-         Texture->Halo = Copy_Halo ((HALO *) Token.Constant_Data);
+         Texture->Finish = Copy_Finish ((FINISH *) Token.Data);
          Modified_Pnf = TRUE;
        END_CASE
 
@@ -1628,29 +1344,24 @@ TEXTURE *Parse_Texture ()
          Modified_Pnf = TRUE;
        END_CASE
 
-       CASE (HALO_TOKEN)
-         Parse_Halo(&(Texture->Halo));
-         Modified_Pnf = TRUE;
-       END_CASE
-
        CASE (TRANSLATE_TOKEN)
          Parse_Vector (Local_Vector);
          Compute_Translation_Transform(&Local_Trans, Local_Vector);
-         Translate_Textures (Texture, &Local_Trans);
+         Transform_Textures (Texture, &Local_Trans);
          Modified_Pnf = TRUE;
        END_CASE
 
        CASE (ROTATE_TOKEN)
          Parse_Vector (Local_Vector);
          Compute_Rotation_Transform(&Local_Trans, Local_Vector);
-         Rotate_Textures (Texture, &Local_Trans);
+         Transform_Textures (Texture, &Local_Trans);
          Modified_Pnf = TRUE;
        END_CASE
 
        CASE (SCALE_TOKEN)
          Parse_Scale_Vector (Local_Vector);
          Compute_Scaling_Transform(&Local_Trans, Local_Vector);
-         Scale_Textures (Texture, &Local_Trans);
+         Transform_Textures (Texture, &Local_Trans);
          Modified_Pnf = TRUE;
        END_CASE
 
@@ -1663,7 +1374,7 @@ TEXTURE *Parse_Texture ()
 
        CASE (TRANSFORM_TOKEN)
          GET(TRANSFORM_ID_TOKEN)
-         Transform_Textures (Texture, (TRANSFORM *)Token.Constant_Data);
+         Transform_Textures (Texture, (TRANSFORM *)Token.Data);
          Modified_Pnf = TRUE;
        END_CASE
 
@@ -1711,25 +1422,13 @@ TEXTURE *Parse_Texture ()
 
          OTHERWISE
            UNGET;
+           Destroy_Pigment(Texture->Pigment);
+           Destroy_Tnormal(Texture->Tnormal);
+           Destroy_Finish(Texture->Finish);
+           Texture->Pigment = NULL;
+           Texture->Tnormal = NULL;
+           Texture->Finish  = NULL;
            Parse_Pattern((TPATTERN *)Texture,TEXTURE_TYPE);
-           /* If it was a patterned texture_map the destroy its
-              p, n, f & h.  If not, it must be a totally empty
-              default texture.  Allow it to be transformed. */
-           if (Texture->Type != PLAIN_PATTERN)
-           {
-             Destroy_Pigment(Texture->Pigment);
-             Destroy_Tnormal(Texture->Tnormal);
-             Destroy_Finish(Texture->Finish);
-             Destroy_Halo(Texture->Halo);
-             Texture->Pigment = NULL;
-             Texture->Tnormal = NULL;
-             Texture->Finish  = NULL;
-             Texture->Halo    = NULL;
-           }
-           else
-           {
-             Parse_Texture_Transform(Texture);
-           }
            EXIT
          END_CASE
       END_EXPECT
@@ -1771,11 +1470,9 @@ static TEXTURE *Parse_Tiles()
   Destroy_Pigment(Texture->Pigment);
   Destroy_Tnormal(Texture->Tnormal);
   Destroy_Finish(Texture->Finish);
-  Destroy_Halo(Texture->Halo);
   Texture->Pigment = NULL;
   Texture->Tnormal = NULL;
   Texture->Finish  = NULL;
-  Texture->Halo    = NULL;
   Texture->Type = CHECKER_PATTERN;
 
   Texture->Blend_Map = Create_Blend_Map();
@@ -1857,11 +1554,9 @@ static TEXTURE *Parse_Material_Map()
   Destroy_Pigment(Texture->Pigment);
   Destroy_Tnormal(Texture->Tnormal);
   Destroy_Finish(Texture->Finish);
-  Destroy_Halo(Texture->Halo);
   Texture->Pigment = NULL;
   Texture->Tnormal = NULL;
   Texture->Finish  = NULL;
-  Texture->Halo    = NULL;
   Texture->Type = BITMAP_PATTERN;
 
   Texture->Vals.Image = Parse_Image(MATERIAL_FILE);
@@ -1958,7 +1653,7 @@ static TEXTURE *Parse_Vers1_Texture ()
      END_CASE
 
      CASE (TEXTURE_ID_TOKEN)
-       Texture = Copy_Textures((TEXTURE *) Token.Constant_Data);
+       Texture = Copy_Textures((TEXTURE *) Token.Data);
        EXIT
      END_CASE
 
@@ -1975,17 +1670,17 @@ static TEXTURE *Parse_Vers1_Texture ()
        EXPECT   /* Look for [pnf_ids] */
          CASE (PIGMENT_ID_TOKEN)
            Destroy_Pigment(Texture->Pigment);
-           Texture->Pigment = Copy_Pigment ((PIGMENT *) Token.Constant_Data);
+           Texture->Pigment = Copy_Pigment ((PIGMENT *) Token.Data);
          END_CASE
 
          CASE (TNORMAL_ID_TOKEN)
            Destroy_Tnormal(Texture->Tnormal);
-           Texture->Tnormal = Copy_Tnormal ((TNORMAL *) Token.Constant_Data);
+           Texture->Tnormal = Copy_Tnormal ((TNORMAL *) Token.Data);
          END_CASE
 
          CASE (FINISH_ID_TOKEN)
            Destroy_Finish(Texture->Finish);
-           Texture->Finish = Copy_Finish ((FINISH *) Token.Constant_Data);
+           Texture->Finish = Copy_Finish ((FINISH *) Token.Data);
          END_CASE
 
          OTHERWISE
@@ -1997,7 +1692,6 @@ static TEXTURE *Parse_Vers1_Texture ()
        Pigment = Texture->Pigment;
        Tnormal = Texture->Tnormal;
        Finish  = Texture->Finish;
-  /*     Halo    = Texture->Halo;*/
 
        EXPECT
          CASE (PIGMENT_TOKEN)
@@ -2058,21 +1752,6 @@ NOTE: Do not add new keywords to this section.  Use 1.0 syntax only.
            Pigment->Type = ONION_PATTERN;
          END_CASE
 
-         CASE (PATTERN1_TOKEN)
-           Warn_State(Token.Token_Id, PIGMENT_TOKEN);
-           Pigment->Type = PATTERN1_PATTERN;
-         END_CASE
-
-         CASE (PATTERN2_TOKEN)
-           Warn_State(Token.Token_Id, PIGMENT_TOKEN);
-           Pigment->Type = PATTERN2_PATTERN;
-         END_CASE
-
-         CASE (PATTERN3_TOKEN)
-           Warn_State(Token.Token_Id, PIGMENT_TOKEN);
-           Pigment->Type = PATTERN3_PATTERN;
-         END_CASE
-
          CASE (SPOTTED_TOKEN)
            Warn_State(Token.Token_Id, PIGMENT_TOKEN);
            Pigment->Type = SPOTTED_PATTERN;
@@ -2120,7 +1799,7 @@ NOTE: Do not add new keywords to this section.  Use 1.0 syntax only.
 
          CASE (TURBULENCE_TOKEN)
            Local_Turb=Check_Turb(&(Pigment->Warps));
-           Parse_Vector_Float(Local_Turb->Turbulence);
+           Parse_Vector(Local_Turb->Turbulence);
          END_CASE
 
          CASE (COLOUR_MAP_TOKEN)
@@ -2170,27 +1849,6 @@ NOTE: Do not add new keywords to this section.  Use 1.0 syntax only.
            Warn_State(Token.Token_Id, TNORMAL_TOKEN);
            ADD_TNORMAL
            Tnormal->Type = BUMPS_PATTERN;
-           Tnormal->Amount = Parse_Float ();
-         END_CASE
-
-         CASE (BUMPY1_TOKEN)
-           Warn_State(Token.Token_Id, TNORMAL_TOKEN);
-           ADD_TNORMAL
-           Tnormal->Type = BUMPY1_PATTERN;
-           Tnormal->Amount = Parse_Float ();
-         END_CASE
-
-         CASE (BUMPY2_TOKEN)
-           Warn_State(Token.Token_Id, TNORMAL_TOKEN);
-           ADD_TNORMAL
-           Tnormal->Type = BUMPY2_PATTERN;
-           Tnormal->Amount = Parse_Float ();
-         END_CASE
-
-         CASE (BUMPY3_TOKEN)
-           Warn_State(Token.Token_Id, TNORMAL_TOKEN);
-           ADD_TNORMAL
-           Tnormal->Type = BUMPY3_PATTERN;
            Tnormal->Amount = Parse_Float ();
          END_CASE
 
@@ -2277,16 +1935,6 @@ NOTE: Do not add new keywords to this section.  Use 1.0 syntax only.
            Finish->Reflection[BLUE]  = Parse_Float ();
          END_CASE
 
-         CASE (REFRACTION_TOKEN)
-           Warn_State(Token.Token_Id, FINISH_TOKEN);
-           Finish->Refraction = Parse_Float ();
-         END_CASE
-
-         CASE (IOR_TOKEN)
-           Warn_State(Token.Token_Id, FINISH_TOKEN);
-           Finish->Index_Of_Refraction = Parse_Float ();
-         END_CASE
-
          CASE (PHONG_TOKEN)
            Warn_State(Token.Token_Id, FINISH_TOKEN);
            Finish->Phong = Parse_Float ();
@@ -2326,22 +1974,34 @@ NOTE: Do not add new keywords to this section.  Use 1.0 syntax only.
            Warn(1.5, "Should use crand keyword in finish statement.");
          END_CASE
 
+         CASE (IOR_TOKEN)
+           Warn_State(Token.Token_Id, INTERIOR_TOKEN);
+           Finish->Temp_IOR = Parse_Float();
+           Warn_Interior("Index of refraction value");
+         END_CASE
+
+         CASE (REFRACTION_TOKEN)
+           Warn_State(Token.Token_Id, INTERIOR_TOKEN);
+           Finish->Temp_Refract = Parse_Float();
+           Warn_Interior("Refraction value unnecessary to turn on refraction.\nTo attenuate, the fade_power and fade_distance keywords ");
+         END_CASE
+
          CASE (TRANSLATE_TOKEN)
            Parse_Vector (Local_Vector);
            Compute_Translation_Transform(&Local_Trans, Local_Vector);
-           Translate_Textures (Texture, &Local_Trans);
+           Transform_Textures (Texture, &Local_Trans);
          END_CASE
 
          CASE (ROTATE_TOKEN)
            Parse_Vector (Local_Vector);
            Compute_Rotation_Transform(&Local_Trans, Local_Vector);
-           Rotate_Textures (Texture, &Local_Trans);
+           Transform_Textures (Texture, &Local_Trans);
          END_CASE
 
          CASE (SCALE_TOKEN)
            Parse_Scale_Vector (Local_Vector);
            Compute_Scaling_Transform(&Local_Trans, Local_Vector);
-           Scale_Textures (Texture, &Local_Trans);
+           Transform_Textures (Texture, &Local_Trans);
          END_CASE
 
          CASE (MATRIX_TOKEN)
@@ -2352,23 +2012,23 @@ NOTE: Do not add new keywords to this section.  Use 1.0 syntax only.
 
          CASE (TRANSFORM_TOKEN)
            GET(TRANSFORM_ID_TOKEN)
-           Transform_Textures (Texture, (TRANSFORM *)Token.Constant_Data);
+           Transform_Textures (Texture, (TRANSFORM *)Token.Data);
          END_CASE
 
          CASE (TEXTURE_ID_TOKEN)
            Warn(0.0, "Texture identifier overwriting previous values.");
            Destroy_Textures(Texture);
-           Texture = Copy_Textures((TEXTURE *) Token.Constant_Data);
+           Texture = Copy_Textures((TEXTURE *) Token.Data);
            Pigment = Texture->Pigment;
            Tnormal = Texture->Tnormal;
            Finish  = Texture->Finish;
-  /*         Halo    = Texture->Halo;*/
          END_CASE
 
          OTHERWISE
            UNGET
            EXIT
          END_CASE
+
 /***********************************************************************/
 
        END_EXPECT
@@ -2406,8 +2066,7 @@ NOTE: Do not add new keywords to this section.  Use 1.0 syntax only.
 *
 ******************************************************************************/
 
-static void Parse_Texture_Transform (Texture)
-TEXTURE *Texture;
+static void Parse_Texture_Transform (TEXTURE *Texture)
 {
    VECTOR Local_Vector;
    MATRIX Local_Matrix;
@@ -2417,19 +2076,19 @@ TEXTURE *Texture;
      CASE (TRANSLATE_TOKEN)
        Parse_Vector (Local_Vector);
        Compute_Translation_Transform(&Local_Trans, Local_Vector);
-       Translate_Textures (Texture, &Local_Trans);
+       Transform_Textures (Texture, &Local_Trans);
      END_CASE
 
      CASE (ROTATE_TOKEN)
        Parse_Vector (Local_Vector);
        Compute_Rotation_Transform(&Local_Trans, Local_Vector);
-       Rotate_Textures (Texture, &Local_Trans);
+       Transform_Textures (Texture, &Local_Trans);
      END_CASE
 
      CASE (SCALE_TOKEN)
        Parse_Scale_Vector (Local_Vector);
        Compute_Scaling_Transform(&Local_Trans, Local_Vector);
-       Scale_Textures (Texture, &Local_Trans);
+       Transform_Textures (Texture, &Local_Trans);
      END_CASE
 
      CASE (MATRIX_TOKEN)
@@ -2440,7 +2099,7 @@ TEXTURE *Texture;
 
      CASE (TRANSFORM_TOKEN)
        GET(TRANSFORM_ID_TOKEN)
-       Transform_Textures (Texture, (TRANSFORM *)Token.Constant_Data);
+       Transform_Textures (Texture, (TRANSFORM *)Token.Data);
      END_CASE
 
      OTHERWISE
@@ -2455,12 +2114,12 @@ TEXTURE *Texture;
 *
 * FUNCTION
 *
-*   Parse_Atmosphere
+*   Parse_Media
 *
 * INPUT
 *
 * OUTPUT
-*   
+*
 * RETURNS
 *   
 * AUTHOR
@@ -2473,76 +2132,145 @@ TEXTURE *Texture;
 *
 * CHANGES
 *
-*   Nov 1994 : Creation.
+*   Dec 1996 : Creation.
 *
 ******************************************************************************/
 
-ATMOSPHERE *Parse_Atmosphere()
+void Parse_Media(IMEDIA **Media_Ptr)
 {
-  ATMOSPHERE *Atmosphere;
+  IMEDIA *IMedia, *Next_Media;
+  TRANSFORM Local_Trans;
+  VECTOR Local_Vector;
+  MATRIX Local_Matrix;
 
-  Experimental_Flag |= EF_ATMOS;
+  Next_Media = *Media_Ptr;
 
   Parse_Begin();
 
   EXPECT
-    CASE(ATMOSPHERE_ID_TOKEN)
-      Atmosphere = Copy_Atmosphere((ATMOSPHERE *)Token.Constant_Data);
+    CASE(MEDIA_ID_TOKEN)
+      IMedia = Copy_Media((IMEDIA *)Token.Data);
       EXIT
     END_CASE
 
     OTHERWISE
       UNGET
-        Atmosphere = Create_Atmosphere();
+        IMedia = Create_Media();
       EXIT
     END_CASE
   END_EXPECT
 
   EXPECT
-    CASE (TYPE_TOKEN)
-      Atmosphere->Type = (int)Parse_Float();
-      if ((Atmosphere->Type < 1) || (Atmosphere->Type > SCATTERING_TYPES))
+    CASE (INTERVALS_TOKEN)
+      if ((IMedia->Intervals = (int)Parse_Float()) < 1)
       {
-        Warn(0.0, "Unknown atmospheric scattering type.");
+        Error("At least one interval is needed in media.\n");
       }
-    END_CASE
-
-    CASE (DISTANCE_TOKEN)
-      Atmosphere->Distance = Parse_Float();
     END_CASE
 
     CASE (SAMPLES_TOKEN)
-      if ((Atmosphere->Samples = (int)Parse_Float()) < 1)
+      IMedia->Min_Samples = (int)Parse_Float();
+      Parse_Comma();
+      IMedia->Max_Samples = (int)Parse_Float();
+      if (IMedia->Min_Samples < 1)
       {
-        Error("Illegal samples value in atmosphere.\n");
+        Error("At least one sample per interval is needed in media.\n");
       }
+      if (IMedia->Max_Samples < IMedia->Min_Samples)
+      {
+        Error("Maximum number of samples per interval smaller than minimum number.\n");
+      }
+    END_CASE
+
+    CASE (ABSORPTION_TOKEN)
+      Parse_Colour(IMedia->Absorption);
+    END_CASE
+
+    CASE (EMISSION_TOKEN)
+      Parse_Colour(IMedia->Emission);
     END_CASE
 
     CASE (SCATTERING_TOKEN)
-      Atmosphere->Scattering = Parse_Float();
+      Parse_Begin();
+      IMedia->Type = (int)Parse_Float();
+      if ((IMedia->Type < 1) || (IMedia->Type > SCATTERING_TYPES))
+      {
+        Warn(0.0, "Unknown atmospheric scattering type.");
+      }
+      Parse_Comma();
+      Parse_Colour(IMedia->Scattering);
+
+      EXPECT
+        CASE (ECCENTRICITY_TOKEN)
+          if (IMedia->Type != HENYEY_GREENSTEIN_SCATTERING)
+          {
+             Error("Eccentricity cannot be used with this scattering type.");
+          }
+          IMedia->Eccentricity = Parse_Float();
+        END_CASE
+
+        CASE (EXTINCTION_TOKEN)
+          IMedia->sc_ext = Parse_Float();
+        END_CASE
+
+        OTHERWISE
+          UNGET
+          EXIT
+        END_CASE
+      END_EXPECT
+
+      Parse_End();
     END_CASE
 
-    CASE (AA_LEVEL_TOKEN)
-      if ((Atmosphere->AA_Level = (int)Parse_Float()) < 0)
+    CASE (CONFIDENCE_TOKEN)
+      IMedia->Confidence = Parse_Float();
+      if ((IMedia->Confidence <= 0.0) || (IMedia->Confidence >= 1.0))
       {
-        Error("Illegal level value in atmosphere.\n");
+        Error("Illegal confidence value in media.\n");
       }
     END_CASE
 
-    CASE (AA_THRESHOLD_TOKEN)
-      Atmosphere->AA_Threshold = Parse_Float();
+    CASE (VARIANCE_TOKEN)
+      IMedia->Variance = Parse_Float();
     END_CASE
 
-    CASE (JITTER_TOKEN)
-      Atmosphere->Jitter = Parse_Float();
+    CASE (RATIO_TOKEN)
+      IMedia->Ratio = Parse_Float();
     END_CASE
 
-    CASE (ECCENTRICITY_TOKEN)
-      Atmosphere->Eccentricity = Parse_Float();
+    CASE (DENSITY_TOKEN)
+      Parse_Begin();
+      Parse_Media_Density_Pattern(&(IMedia->Density));
+      Parse_End();
     END_CASE
 
-    CASE_COLOUR
-      Parse_Colour(Atmosphere->Colour);
+    CASE (TRANSLATE_TOKEN)
+      Parse_Vector (Local_Vector);
+      Compute_Translation_Transform(&Local_Trans, Local_Vector);
+      Transform_Density (IMedia->Density, &Local_Trans);
+    END_CASE
+
+    CASE (ROTATE_TOKEN)
+      Parse_Vector (Local_Vector);
+      Compute_Rotation_Transform(&Local_Trans, Local_Vector);
+      Transform_Density (IMedia->Density, &Local_Trans);
+    END_CASE
+
+    CASE (SCALE_TOKEN)
+      Parse_Scale_Vector (Local_Vector);
+      Compute_Scaling_Transform(&Local_Trans, Local_Vector);
+      Transform_Density (IMedia->Density, &Local_Trans);
+    END_CASE
+
+    CASE (MATRIX_TOKEN)
+      Parse_Matrix(Local_Matrix);
+      Compute_Matrix_Transform(&Local_Trans, Local_Matrix);
+      Transform_Density (IMedia->Density, &Local_Trans);
+    END_CASE
+
+    CASE (TRANSFORM_TOKEN)
+      GET(TRANSFORM_ID_TOKEN)
+      Transform_Density (IMedia->Density, &Local_Trans);
     END_CASE
 
     OTHERWISE
@@ -2553,8 +2281,156 @@ ATMOSPHERE *Parse_Atmosphere()
 
   Parse_End();
 
-  return(Atmosphere);
+  IMedia->Next_Media = Next_Media;
+
+  *Media_Ptr = IMedia;
 }
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Parse_Interior
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*   
+* AUTHOR
+*
+*   Dieter Bayer
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   Jan 1997 : Creation.
+*
+******************************************************************************/
+
+void Parse_Interior(INTERIOR **Interior_Ptr)
+{
+  INTERIOR *Interior;
+
+  Parse_Begin();
+
+  EXPECT
+    CASE(INTERIOR_ID_TOKEN)
+      Destroy_Interior(*Interior_Ptr);
+      *Interior_Ptr = Copy_Interior((INTERIOR *)Token.Data);
+      EXIT
+    END_CASE
+
+    OTHERWISE
+      UNGET
+      EXIT
+    END_CASE
+  END_EXPECT
+
+  if(*Interior_Ptr == NULL)
+  {
+     *Interior_Ptr = Create_Interior();
+  }
+
+  Interior = *Interior_Ptr;
+
+  EXPECT
+    CASE (IOR_TOKEN)
+      Interior->IOR = Parse_Float();
+    END_CASE
+
+    CASE (CAUSTICS_TOKEN)
+      Interior->Caustics = Parse_Float() * 45.0;
+    END_CASE
+
+    CASE (FADE_DISTANCE_TOKEN)
+      Interior->Fade_Distance = Parse_Float();
+    END_CASE
+
+    CASE (FADE_POWER_TOKEN)
+      Interior->Fade_Power = Parse_Float();
+    END_CASE
+
+    CASE (MEDIA_TOKEN)
+      Parse_Media((IMEDIA **)(&Interior->IMedia));
+    END_CASE
+
+    CASE (REFRACTION_TOKEN)
+      Interior->Old_Refract = Parse_Float();
+      Warn_Interior("Refraction value unnecessary to turn on refraction.\nTo attenuate, the fade_power and fade_distance keywords ");
+    END_CASE
+
+    OTHERWISE
+      UNGET
+      EXIT
+    END_CASE
+  END_EXPECT
+
+  Parse_End();
+
+  Init_Interior(Interior);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Parse_Media_Density_Pattern
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   Dez 1996 : Creation.
+*
+******************************************************************************/
+
+void Parse_Media_Density_Pattern(PIGMENT **Density_Ptr)
+{
+  PIGMENT *New;
+
+  EXPECT
+    CASE (DENSITY_ID_TOKEN)
+      New = Copy_Pigment ((PIGMENT *) Token.Data);
+      EXIT
+    END_CASE
+
+    OTHERWISE
+      New = Create_Pigment();
+      UNGET
+      EXIT
+    END_CASE
+  END_EXPECT
+   
+  Parse_Pattern((TPATTERN *)New,DENSITY_TYPE);
+
+  New->Next = (TPATTERN *)(*Density_Ptr);
+  *Density_Ptr = New;
+}
+
+
+
+
 
 
 
@@ -2589,7 +2465,7 @@ FOG *Parse_Fog()
 
   EXPECT
     CASE(FOG_ID_TOKEN)
-      Fog = Copy_Fog ((FOG *) Token.Constant_Data);
+      Fog = Copy_Fog ((FOG *) Token.Data);
       EXIT
     END_CASE
 
@@ -2643,7 +2519,7 @@ FOG *Parse_Fog()
       {
         Fog->Turb=(TURB *)Create_Warp(CLASSIC_TURB_WARP);
       }
-      Parse_Vector_Float(Fog->Turb->Turbulence);
+      Parse_Vector(Fog->Turb->Turbulence);
     END_CASE
 
     CASE (OCTAVES_TOKEN)
@@ -2703,7 +2579,7 @@ FOG *Parse_Fog()
 
     CASE (TRANSFORM_TOKEN)
       GET(TRANSFORM_ID_TOKEN)
-      MTransDirection(Fog->Up, Fog->Up, (TRANSFORM *)Token.Constant_Data);
+      MTransDirection(Fog->Up, Fog->Up, (TRANSFORM *)Token.Data);
     END_CASE
 
     OTHERWISE
@@ -2765,7 +2641,7 @@ RAINBOW *Parse_Rainbow()
 
   EXPECT
     CASE(RAINBOW_ID_TOKEN)
-      Rainbow = Copy_Rainbow ((RAINBOW *) Token.Constant_Data);
+      Rainbow = Copy_Rainbow ((RAINBOW *) Token.Data);
       EXIT
     END_CASE
 
@@ -2940,7 +2816,7 @@ SKYSPHERE *Parse_Skysphere()
 
   EXPECT
     CASE(SKYSPHERE_ID_TOKEN)
-      Skysphere = Copy_Skysphere((SKYSPHERE *)Token.Constant_Data);
+      Skysphere = Copy_Skysphere((SKYSPHERE *)Token.Data);
       EXIT
     END_CASE
 
@@ -2954,7 +2830,7 @@ SKYSPHERE *Parse_Skysphere()
   EXPECT
     CASE (PIGMENT_TOKEN)
       Skysphere->Count++;
-      Skysphere->Pigments = POV_REALLOC(Skysphere->Pigments, Skysphere->Count*sizeof(SKYSPHERE *), "sky-sphere pigment");
+      Skysphere->Pigments = (PIGMENT **)POV_REALLOC(Skysphere->Pigments, Skysphere->Count*sizeof(SKYSPHERE *), "sky-sphere pigment");
       Skysphere->Pigments[Skysphere->Count-1] = Create_Pigment();
       Parse_Begin();
       Parse_Pigment(&(Skysphere->Pigments[Skysphere->Count-1]));
@@ -2984,7 +2860,7 @@ SKYSPHERE *Parse_Skysphere()
 
     CASE (TRANSFORM_TOKEN)
       GET(TRANSFORM_ID_TOKEN)
-      Transform_Skysphere(Skysphere, (TRANSFORM *)Token.Constant_Data);
+      Transform_Skysphere(Skysphere, (TRANSFORM *)Token.Data);
     END_CASE
 
     OTHERWISE
@@ -3017,8 +2893,7 @@ SKYSPHERE *Parse_Skysphere()
 *
 ******************************************************************************/
 
-static void Check_BH_Parameters (bh)
-BLACK_HOLE *bh;
+static void Check_BH_Parameters (BLACK_HOLE *bh)
 {
   if (bh->Repeat == FALSE) return ;
 
@@ -3089,7 +2964,7 @@ BLACK_HOLE *bh;
 *   
 * RETURNS
 *
-*   A pointer to the last warp in the chain which is guaranteed
+*   A pointer to the last warp in the chain which is guarenteed
 *   to be a classic turb.
 *   
 * AUTHOR
@@ -3109,8 +2984,7 @@ BLACK_HOLE *bh;
 *
 ******************************************************************************/
 
-static TURB *Check_Turb (Warps_Ptr)
-WARP **Warps_Ptr;
+static TURB *Check_Turb (WARP **Warps_Ptr)
 {
   WARP *Temp=*Warps_Ptr;
   
@@ -3156,8 +3030,7 @@ WARP **Warps_Ptr;
 *
 ******************************************************************************/
 
-static void Parse_Warp (Warp_Ptr)
-WARP **Warp_Ptr;
+static void Parse_Warp (WARP **Warp_Ptr)
 {
   WARP *New = NULL;
   TURB *Turb;
@@ -3205,15 +3078,19 @@ WARP **Warp_Ptr;
       if (Local_Vector[X]!=0.0) 
         Repeat->Axis=X;
       if (Local_Vector[Y]!=0.0)
+      { /* tw */
         if (Repeat->Axis < X)
           Repeat->Axis=Y;
         else 
           Error("Can only repeat along 1 axis.");
+      } /* tw */
       if (Local_Vector[Z]!=0.0)
+      { /* tw */
         if (Repeat->Axis < X)
           Repeat->Axis=Z;
         else
           Error("Can only repeat along 1 axis.");
+      } /* tw */
       if (Repeat->Axis < X)
         Error("No axis specified in repeat.");
       Repeat->Width=Local_Vector[Repeat->Axis];
@@ -3289,10 +3166,6 @@ WARP **Warp_Ptr;
       EXIT
     END_CASE
       
-    CASE(SPIRAL_TOKEN)
-      Error("Spiral warp not yet implemented.");
-    END_CASE
-
     OTHERWISE
       Parse_Error_Str ("warp type");
     END_CASE
@@ -3305,6 +3178,95 @@ WARP **Warp_Ptr;
   
   New->Next_Warp=*Warp_Ptr;
   *Warp_Ptr=New;
+
+  Parse_End();
+}
+
+
+static void Warn_Interior(char *s)
+{
+  Warn(0.0,s);
+  Warning(0.0,"should be specified in 'interior{...}' statement.\n");
+  Warn_Compat(0);
+}
+
+void Parse_Material(MATERIAL *Material)
+{
+  MATERIAL *Temp;
+  TEXTURE *Texture;
+  VECTOR Local_Vector;
+  MATRIX Local_Matrix;
+  TRANSFORM Local_Trans;
+  
+  Parse_Begin();
+
+  EXPECT
+    CASE(MATERIAL_ID_TOKEN)
+      Temp = (MATERIAL *)Token.Data;
+      Texture = Copy_Textures(Temp->Texture);
+      Link_Textures(&(Material->Texture),Texture);
+      Destroy_Interior(Material->Interior);
+      Material->Interior = Copy_Interior(Temp->Interior);
+      EXIT
+    END_CASE
+
+    OTHERWISE
+      UNGET
+      EXIT
+    END_CASE
+  END_EXPECT
+
+  EXPECT
+    CASE (TEXTURE_TOKEN)
+      Parse_Begin ();
+      Texture = Parse_Texture ();
+      Parse_End ();
+      Link_Textures(&(Material->Texture),Texture);
+    END_CASE
+
+    CASE (INTERIOR_TOKEN)
+      Parse_Interior((INTERIOR **)(&(Material->Interior)));
+    END_CASE
+
+    CASE (TRANSLATE_TOKEN)
+      Parse_Vector (Local_Vector);
+      Compute_Translation_Transform(&Local_Trans, Local_Vector);
+      Transform_Textures (Material->Texture, &Local_Trans);
+      Transform_Interior (Material->Interior,&Local_Trans);
+    END_CASE
+
+    CASE (ROTATE_TOKEN)
+      Parse_Vector (Local_Vector);
+      Compute_Rotation_Transform(&Local_Trans, Local_Vector);
+      Transform_Textures (Material->Texture, &Local_Trans);
+      Transform_Interior (Material->Interior,&Local_Trans);
+    END_CASE
+
+    CASE (SCALE_TOKEN)
+      Parse_Scale_Vector (Local_Vector);
+      Compute_Scaling_Transform(&Local_Trans, Local_Vector);
+      Transform_Textures (Material->Texture, &Local_Trans);
+      Transform_Interior (Material->Interior,&Local_Trans);
+    END_CASE
+
+    CASE (MATRIX_TOKEN)
+      Parse_Matrix(Local_Matrix);
+      Compute_Matrix_Transform(&Local_Trans, Local_Matrix);
+      Transform_Textures (Material->Texture, &Local_Trans);
+      Transform_Interior (Material->Interior,&Local_Trans);
+    END_CASE
+
+    CASE (TRANSFORM_TOKEN)
+      GET(TRANSFORM_ID_TOKEN)
+      Transform_Textures (Material->Texture, (TRANSFORM *)Token.Data);
+      Transform_Interior (Material->Interior,(TRANSFORM *)Token.Data);
+    END_CASE
+
+    OTHERWISE
+      UNGET
+      EXIT
+    END_CASE
+  END_EXPECT
 
   Parse_End();
 }

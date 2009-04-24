@@ -6,16 +6,16 @@
 *  cones and generously provided us these enhancements.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -68,17 +68,17 @@ struct Cone_Intersection_Structure
 * Static functions
 ******************************************************************************/
 
-static int intersect_cone PARAMS((RAY *Ray, CONE *Cone, CONE_INT *Depths));
-static void Destroy_Cone PARAMS((OBJECT *Object));
-static int All_Cone_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_Cone PARAMS((VECTOR point, OBJECT *Object));
-static void Cone_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Cone PARAMS((OBJECT *Object));
-static void Translate_Cone PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Cone PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Cone PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Cone PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Cone PARAMS((OBJECT *Object));
+static int intersect_cone (RAY *Ray, CONE *Cone, CONE_INT *Depths);
+static void Destroy_Cone (OBJECT *Object);
+static int All_Cone_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_Cone (VECTOR point, OBJECT *Object);
+static void Cone_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static CONE *Copy_Cone (OBJECT *Object);
+static void Translate_Cone (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Cone (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Cone (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Cone (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Cone (OBJECT *Object);
 
 
 /*****************************************************************************
@@ -89,7 +89,7 @@ static METHODS Cone_Methods =
 {
   All_Cone_Intersections,
   Inside_Cone, Cone_Normal,
-  Copy_Cone, Translate_Cone, Rotate_Cone, Scale_Cone, Transform_Cone,
+  (COPY_METHOD)Copy_Cone, Translate_Cone, Rotate_Cone, Scale_Cone, Transform_Cone,
   Invert_Cone, Destroy_Cone
 };
 
@@ -121,10 +121,7 @@ static METHODS Cone_Methods =
 *
 ******************************************************************************/
 
-static int All_Cone_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Cone_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Intersection_Found, cnt, i;
   VECTOR IPoint;
@@ -178,10 +175,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int intersect_cone(Ray, Cone, Intersection)
-RAY *Ray;
-CONE *Cone;
-CONE_INT *Intersection;
+static int intersect_cone(RAY *Ray, CONE *Cone, CONE_INT *Intersection)
 {
   int i = 0;
   DBL a, b, c, z, t1, t2, len;
@@ -360,9 +354,7 @@ CONE_INT *Intersection;
 *
 ******************************************************************************/
 
-static int Inside_Cone(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Cone(VECTOR IPoint, OBJECT *Object)
 {
   CONE *Cone = (CONE *)Object;
   DBL w2, z2, offset = (Test_Flag(Cone, CLOSED_FLAG) ? -EPSILON : EPSILON);
@@ -438,10 +430,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Cone_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Cone_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   CONE *Cone = (CONE *)Object;
 
@@ -514,10 +503,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Cone(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Cone(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Cone(Object, Trans);
 }
@@ -550,10 +536,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Cone(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Cone(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Cone(Object, Trans);
 }
@@ -586,10 +569,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Cone(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Cone(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Cone(Object, Trans);
 }
@@ -622,9 +602,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Cone(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Cone(OBJECT *Object, TRANSFORM *Trans)
 {
   CONE *Cone = (CONE *)Object;
 
@@ -661,8 +639,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Cone(Object)
-OBJECT *Object;
+static void Invert_Cone(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -752,8 +729,7 @@ CONE *Create_Cone()
 *
 ******************************************************************************/
 
-static void *Copy_Cone(Object)
-OBJECT *Object;
+static CONE *Copy_Cone(OBJECT *Object)
 {
   CONE *New;
 
@@ -855,8 +831,7 @@ CONE *Create_Cylinder()
 *
 ******************************************************************************/
 
-void Compute_Cone_Data(Object)
-OBJECT *Object;
+void Compute_Cone_Data(OBJECT *Object)
 {
   DBL tlen, len, tmpf;
   VECTOR tmpv, axis, origin;
@@ -950,8 +925,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Cylinder_Data(Object)
-OBJECT *Object;
+void Compute_Cylinder_Data(OBJECT *Object)
 {
   DBL tmpf;
   VECTOR axis;
@@ -1008,8 +982,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Cone(Object)
-OBJECT *Object;
+static void Destroy_Cone(OBJECT *Object)
 {
   Destroy_Transform(((CONE *)Object)->Trans);
 
@@ -1048,8 +1021,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Cone_BBox(Cone)
-CONE *Cone;
+void Compute_Cone_BBox(CONE *Cone)
 {
   Make_BBox(Cone->BBox, -1.0, -1.0, 0.0, 2.0, 2.0, 1.0);
 

@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for OPTIN.C.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -146,13 +146,13 @@ extern struct Reserved_Word_Struct Option_Variable [] ;
 * Global functions
 ******************************************************************************/
 
-char *get_ini_value PARAMS((int op, int libind));
-void parse_switch PARAMS((char *Option_String));
-void process_variable PARAMS((TOKEN variable,char *value));
-void Do_Stream_Option PARAMS((int i, char *value));
-void Do_Return_Option PARAMS((SHELLTYPE Type, char *value));
-int parse_ini_file PARAMS((char *File_Name));
-void parse_option_line PARAMS((char *Option_Line));
-void Write_INI_File PARAMS((void));
+char *get_ini_value (int op, int libind);
+void parse_switch (char *Option_String);
+void process_variable (TOKEN variable,char *value);
+void Do_Stream_Option (int i, char *value);
+void Do_Return_Option (SHELLTYPE Type, char *value);
+int parse_ini_file (char *File_Name);
+void parse_option_line (char *Option_Line);
+void Write_INI_File (void);
 
 #endif

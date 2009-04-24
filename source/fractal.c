@@ -6,16 +6,16 @@
 *  This file was written by Pascal Massimino.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -57,17 +57,17 @@
 * Static functions
 ******************************************************************************/
 
-static int All_Fractal_Intersections PARAMS((OBJECT * Object, RAY * Ray, ISTACK * Depth_Stack));
-static int Inside_Fractal PARAMS((VECTOR IPoint, OBJECT * Object));
-static void Fractal_Normal PARAMS((VECTOR Result, OBJECT * Object, INTERSECTION * Intersect));
-static void *Copy_Fractal PARAMS((OBJECT * Object));
-static void Translate_Fractal PARAMS((OBJECT * Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Fractal PARAMS((OBJECT * Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Fractal PARAMS((OBJECT * Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Fractal PARAMS((OBJECT * Object, TRANSFORM * Trans));
-static void Invert_Fractal PARAMS((OBJECT * Object));
-static void Destroy_Fractal PARAMS((OBJECT * Object));
-static void Compute_Fractal_BBox PARAMS((FRACTAL * Fractal));
+static int All_Fractal_Intersections (OBJECT * Object, RAY * Ray, ISTACK * Depth_Stack);
+static int Inside_Fractal (VECTOR IPoint, OBJECT * Object);
+static void Fractal_Normal (VECTOR Result, OBJECT * Object, INTERSECTION * Intersect);
+static FRACTAL *Copy_Fractal (OBJECT * Object);
+static void Translate_Fractal (OBJECT * Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Fractal (OBJECT * Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Fractal (OBJECT * Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Fractal (OBJECT * Object, TRANSFORM * Trans);
+static void Invert_Fractal (OBJECT * Object);
+static void Destroy_Fractal (OBJECT * Object);
+static void Compute_Fractal_BBox (FRACTAL * Fractal);
 
 /*****************************************************************************
 * Local variables
@@ -77,7 +77,7 @@ static METHODS Fractal_Methods =
 {
   All_Fractal_Intersections,
   Inside_Fractal, Fractal_Normal,
-  Copy_Fractal,
+  (COPY_METHOD)Copy_Fractal,
   Translate_Fractal, Rotate_Fractal,
   Scale_Fractal, Transform_Fractal, Invert_Fractal,
   Destroy_Fractal
@@ -133,10 +133,7 @@ static COMPLEX_FUNCTION_METHOD Complex_Function_List[] =
 *
 ******************************************************************************/
 
-static int All_Fractal_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Fractal_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Intersection_Found;
   int Last = 0;
@@ -376,9 +373,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_Fractal(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Fractal(VECTOR IPoint, OBJECT *Object)
 {
   FRACTAL *Fractal = (FRACTAL *) Object;
   int Result;
@@ -429,10 +424,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Fractal_Normal(Result, Object, Intersect)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Intersect;
+static void Fractal_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Intersect)
 {
   Assign_Vector(Result, Intersect->INormal);
 }
@@ -461,10 +453,7 @@ INTERSECTION *Intersect;
 *
 ******************************************************************************/
 
-static void Translate_Fractal(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Fractal(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Fractal(Object, Trans);
 }
@@ -493,10 +482,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Fractal(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Fractal(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Fractal(Object, Trans);
 }
@@ -525,10 +511,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Fractal(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Fractal(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Fractal(Object, Trans);
 }
@@ -558,9 +541,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Fractal(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Fractal(OBJECT *Object, TRANSFORM *Trans)
 {
   FRACTAL *Fractal = (FRACTAL *) Object;
 
@@ -598,8 +579,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Fractal(Object)
-OBJECT *Object;
+static void Invert_Fractal(OBJECT *Object)
 {
   ((FRACTAL *) Object)->Inverted ^= TRUE;
 }
@@ -629,8 +609,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Compute_Fractal_BBox(Fractal)
-FRACTAL *Fractal;
+static void Compute_Fractal_BBox(FRACTAL *Fractal)
 {
   DBL R;
 
@@ -769,8 +748,7 @@ FRACTAL *Create_Fractal()
 *
 ******************************************************************************/
 
-static void *Copy_Fractal(Object)
-OBJECT *Object;
+static FRACTAL *Copy_Fractal(OBJECT *Object)
 {
   FRACTAL *New;
 
@@ -807,8 +785,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Fractal(Object)
-OBJECT *Object;
+static void Destroy_Fractal(OBJECT *Object)
 {
   Destroy_Transform(((FRACTAL *) Object)->Trans);
   POV_FREE(Object);
@@ -838,8 +815,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void SetUp_Fractal(Fractal)
-FRACTAL *Fractal;
+void SetUp_Fractal(FRACTAL *Fractal)
 {
   switch (Fractal->Algebra)
   {
@@ -956,8 +932,7 @@ FRACTAL *Fractal;
 *
 ******************************************************************************/
 
-void Allocate_Iteration_Stack(n)
-int n;
+void Allocate_Iteration_Stack(int n)
 {
   if (n > Allocated_Iteration_Stack_Length)
   {

@@ -5,16 +5,16 @@
 *  a texture pattern is evaluated.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -72,13 +72,10 @@
 *
 ******************************************************************************/
 
-void Warp_EPoint (TPoint, EPoint, TPat)
-VECTOR TPoint;
-VECTOR EPoint;
-TPATTERN *TPat;
+void Warp_EPoint (VECTOR TPoint, VECTOR EPoint, TPATTERN *TPat)
 {
    VECTOR PTurbulence,RP;
-   int Axis,i;
+   int Axis,i,temp_rand;
    int blockX = 0, blockY = 0, blockZ = 0 ;
    SNGL BlkNum;
    DBL  Length;
@@ -126,12 +123,19 @@ TPATTERN *TPat;
           Assign_Vector(RP,TPoint);
           Axis=Repeat->Axis;
           BlkNum=floor(TPoint[Axis]/Repeat->Width);
+          
+          RP[Axis]=TPoint[Axis]-BlkNum*Repeat->Width;
+          
           if (((int)BlkNum) & 1)
           {          
              VEvaluateEq(RP,Repeat->Flip);
+             if ( Repeat->Flip[Axis] < 0 ) 
+             {
+                RP[Axis] = Repeat->Width+RP[Axis];
+             }
           }
+
           VAddScaledEq(RP,BlkNum,Repeat->Offset);
-          RP[Axis]=TPoint[Axis]-BlkNum*Repeat->Width;
           Assign_Vector(TPoint,RP);
           break;
 
@@ -160,10 +164,14 @@ TPATTERN *TPat;
             {
               /* if the position is uncertain calculate the new one first */
               /* this will allow the same numbers to be returned by frand */
+              
+              temp_rand = POV_GET_OLD_RAND(); /*protect seed*/
+  
               POV_SRAND (Hash3d (blockX, blockY, blockZ)) ;
               Center [X] += FRAND () * Black_Hole->Uncertainty_Vector [X] ;
               Center [Y] += FRAND () * Black_Hole->Uncertainty_Vector [Y] ;
               Center [Z] += FRAND () * Black_Hole->Uncertainty_Vector [Z] ;
+              POV_SRAND (temp_rand) ;  /*restore*/
             }
 
             Center [X] += Black_Hole->Repeat_Vector [X] * blockX ;
@@ -213,7 +221,6 @@ TPATTERN *TPat;
           }
           break;
           
-        case SPIRAL_WARP:
         default:
           Error("Warp type %d not yet implemented",Warp->Warp_Type);
       }
@@ -249,13 +256,11 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-WARP *Create_Warp (Warp_Type)
-int Warp_Type;
+WARP *Create_Warp (int Warp_Type)
 {
  WARP *New;
  TURB *TNew;
  REPEAT *RNew;
- SPIRAL *SNew;
  TRANS *TRNew;
  BLACK_HOLE *BNew;
    
@@ -266,7 +271,7 @@ int Warp_Type;
    case CLASSIC_TURB_WARP:
    case EXTRA_TURB_WARP:
      
-     TNew = POV_MALLOC(sizeof(TURB),"turbulence struct");
+     TNew = (TURB *)POV_MALLOC(sizeof(TURB),"turbulence struct");
 
      Make_Vector(TNew->Turbulence,0.0,0.0,0.0);
 
@@ -280,7 +285,7 @@ int Warp_Type;
      
    case REPEAT_WARP:
 
-     RNew = POV_MALLOC(sizeof(REPEAT),"repeat warp");
+     RNew = (REPEAT *)POV_MALLOC(sizeof(REPEAT),"repeat warp");
 
      RNew->Axis = -1;
      RNew->Width = 0.0;
@@ -293,7 +298,7 @@ int Warp_Type;
      break;
 
    case BLACK_HOLE_WARP:
-     BNew = POV_MALLOC (sizeof (BLACK_HOLE), "black hole warp") ;
+     BNew = (BLACK_HOLE *)POV_MALLOC (sizeof (BLACK_HOLE), "black hole warp") ;
      Make_Vector (BNew->Center, 0.0, 0.0, 0.0) ;
      Make_Vector (BNew->Repeat_Vector, 0.0, 0.0, 0.0) ;
      Make_Vector (BNew->Uncertainty_Vector, 0.0, 0.0, 0.0) ;
@@ -309,22 +314,9 @@ int Warp_Type;
      New = (WARP *) BNew ;
      break ;
 
-   case SPIRAL_WARP:
-
-     SNew = POV_MALLOC(sizeof(SPIRAL),"spiral warp");
-
-     Make_Vector(SNew->Center,0.0,0.0,0.0);
-
-     SNew->Strength = 1.0;
-     SNew->Phase = 0.0;
-
-     New = (WARP *)SNew;
-
-     break;
-
    case TRANSFORM_WARP:
 
-     TRNew = POV_MALLOC(sizeof(TRANS),"pattern transform");
+     TRNew = (TRANS *)POV_MALLOC(sizeof(TRANS),"pattern transform");
 
      MIdentity (TRNew->Trans.matrix);
      MIdentity (TRNew->Trans.inverse);
@@ -364,8 +356,7 @@ int Warp_Type;
 *
 ******************************************************************************/
 
-void Destroy_Warps (Warps)
-WARP *Warps;
+void Destroy_Warps (WARP *Warps)
 {
  WARP *Temp1 = Warps;
  WARP *Temp2;
@@ -400,8 +391,7 @@ WARP *Warps;
 *
 ******************************************************************************/
 
-WARP *Copy_Warps (Old)
-WARP *Old;
+WARP *Copy_Warps (WARP *Old)
 {
   WARP *New;
 
@@ -422,10 +412,6 @@ WARP *Old;
      
        case BLACK_HOLE_WARP:
          memcpy(New,Old,sizeof(BLACK_HOLE));
-         break;
-     
-       case SPIRAL_WARP:
-         memcpy(New,Old,sizeof(SPIRAL));
          break;
      
        case TRANSFORM_WARP:

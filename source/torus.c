@@ -6,16 +6,16 @@
 *  This module was written by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -63,17 +63,17 @@
 * Static functions
 ******************************************************************************/
 
-static int intersect_torus PARAMS((RAY *Ray, TORUS *Torus, DBL *Depth));
-static int   All_Torus_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int   Inside_Torus PARAMS((VECTOR point, OBJECT *Object));
-static void  Torus_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void  *Copy_Torus PARAMS((OBJECT *Object));
-static void  Translate_Torus PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Rotate_Torus PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Scale_Torus PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Transform_Torus PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void  Invert_Torus PARAMS((OBJECT *Object));
-static void  Destroy_Torus PARAMS((OBJECT *Object));
+static int intersect_torus (RAY *Ray, TORUS *Torus, DBL *Depth);
+static int   All_Torus_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int   Inside_Torus (VECTOR point, OBJECT *Object);
+static void  Torus_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static TORUS *Copy_Torus (OBJECT *Object);
+static void  Translate_Torus (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Rotate_Torus (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Scale_Torus (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Transform_Torus (OBJECT *Object, TRANSFORM *Trans);
+static void  Invert_Torus (OBJECT *Object);
+static void  Destroy_Torus (OBJECT *Object);
 
 
 
@@ -84,7 +84,7 @@ static void  Destroy_Torus PARAMS((OBJECT *Object));
 static METHODS Torus_Methods =
 {
   All_Torus_Intersections, Inside_Torus, Torus_Normal,
-  Copy_Torus, Translate_Torus, Rotate_Torus,
+  (COPY_METHOD)Copy_Torus, Translate_Torus, Rotate_Torus,
   Scale_Torus, Transform_Torus, Invert_Torus, Destroy_Torus
 };
 
@@ -123,10 +123,7 @@ static METHODS Torus_Methods =
 *
 ******************************************************************************/
 
-static int All_Torus_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Torus_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int i, max_i, Found;
   DBL Depth[4];
@@ -193,10 +190,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int intersect_torus(Ray, Torus, Depth)
-RAY *Ray;
-TORUS *Torus;
-DBL *Depth;
+static int intersect_torus(RAY *Ray, TORUS *Torus, DBL *Depth)
 {
   int i, n;
   DBL len, R2, Py2, Dy2, PDy2, k1, k2;
@@ -302,9 +296,7 @@ DBL *Depth;
 *
 ******************************************************************************/
 
-static int Inside_Torus(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Torus(VECTOR IPoint, OBJECT *Object)
 {
   DBL r, r2;
   VECTOR P;
@@ -362,10 +354,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Torus_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Torus_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   DBL dist;
   VECTOR P, N, M;
@@ -432,10 +421,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Torus(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Torus(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Torus(Object, Trans);
 }
@@ -473,10 +459,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Torus(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Torus(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Torus(Object, Trans);
 }
@@ -514,10 +497,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Torus(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Torus(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Torus(Object, Trans);
 }
@@ -555,9 +535,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Torus(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Torus(OBJECT *Object, TRANSFORM *Trans)
 {
   Compose_Transforms(((TORUS *)Object)->Trans, Trans);
 
@@ -596,8 +574,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Torus(Object)
-OBJECT *Object;
+static void Invert_Torus(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -682,8 +659,7 @@ TORUS *Create_Torus()
 *
 ******************************************************************************/
 
-static void *Copy_Torus(Object)
-OBJECT *Object;
+static TORUS *Copy_Torus(OBJECT *Object)
 {
   TORUS *New, *Torus = (TORUS *)Object;
 
@@ -734,8 +710,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Torus (Object)
-OBJECT *Object;
+static void Destroy_Torus (OBJECT *Object)
 {
   Destroy_Transform(((TORUS *)Object)->Trans);
 
@@ -774,8 +749,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Torus_BBox(Torus)
-TORUS *Torus;
+void Compute_Torus_BBox(TORUS *Torus)
 {
   DBL r1, r2;
 
@@ -825,9 +799,7 @@ TORUS *Torus;
 *
 ******************************************************************************/
 
-int Test_Thick_Cylinder(P, D, h1, h2, r1, r2)
-VECTOR P, D;
-DBL h1, h2, r1, r2;
+int Test_Thick_Cylinder(VECTOR P, VECTOR  D, DBL h1, DBL  h2, DBL  r1, DBL  r2)
 {
   DBL a, b, c, d;
   DBL u, v, k, r, h;

@@ -4,16 +4,16 @@
 *  This module implements the sphere primitive.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -43,16 +43,16 @@
 /*****************************************************************************
 * Static functions
 ******************************************************************************/
-static int All_Sphere_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int All_Ellipsoid_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_Sphere PARAMS((VECTOR IPoint, OBJECT *Object));
-static int Inside_Ellipsoid PARAMS((VECTOR IPoint, OBJECT *Object));
-static void Sphere_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void Ellipsoid_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void Translate_Sphere PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Sphere PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Sphere PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Invert_Sphere PARAMS((OBJECT *Object));
+static int All_Sphere_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int All_Ellipsoid_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_Sphere (VECTOR IPoint, OBJECT *Object);
+static int Inside_Ellipsoid (VECTOR IPoint, OBJECT *Object);
+static void Sphere_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static void Ellipsoid_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static void Translate_Sphere (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Sphere (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Sphere (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Invert_Sphere (OBJECT *Object);
 
 
 
@@ -64,7 +64,7 @@ static METHODS Sphere_Methods =
 {
   All_Sphere_Intersections,
   Inside_Sphere, Sphere_Normal,
-  Copy_Sphere,
+  (COPY_METHOD)Copy_Sphere,
   Translate_Sphere, Rotate_Sphere,
   Scale_Sphere, Transform_Sphere, Invert_Sphere,
   Destroy_Sphere
@@ -76,7 +76,7 @@ static METHODS Ellipsoid_Methods =
 {
   All_Ellipsoid_Intersections,
   Inside_Ellipsoid, Ellipsoid_Normal,
-  Copy_Sphere,
+  (COPY_METHOD)Copy_Sphere,
   Translate_Sphere, Rotate_Sphere,
   Scale_Sphere, Transform_Sphere, Invert_Sphere,
   Destroy_Sphere
@@ -110,10 +110,7 @@ static METHODS Ellipsoid_Methods =
 *
 ******************************************************************************/
 
-static int All_Sphere_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Sphere_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   register int Intersection_Found;
   DBL Depth1, Depth2;
@@ -180,10 +177,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int All_Ellipsoid_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Ellipsoid_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   register int Intersection_Found;
   DBL Depth1, Depth2, len;
@@ -269,11 +263,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-int Intersect_Sphere(Ray, Center, Radius2, Depth1, Depth2)
-RAY *Ray;
-VECTOR Center;
-DBL Radius2;
-DBL *Depth1, *Depth2;
+int Intersect_Sphere(RAY *Ray, VECTOR Center, DBL Radius2, DBL *Depth1, DBL  *Depth2)
 {
   DBL OCSquared, t_Closest_Approach, Half_Chord, t_Half_Chord_Squared;
   VECTOR Origin_To_Center;
@@ -336,9 +326,7 @@ DBL *Depth1, *Depth2;
 *
 ******************************************************************************/
 
-static int Inside_Sphere(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Sphere(VECTOR IPoint, OBJECT *Object)
 {
   DBL OCSquared;
   VECTOR Origin_To_Center;
@@ -385,9 +373,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static int Inside_Ellipsoid(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Ellipsoid(VECTOR IPoint, OBJECT *Object)
 {
   DBL OCSquared;
   VECTOR Origin_To_Center, New_Point;
@@ -438,10 +424,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Sphere_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Sphere_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   VSub(Result, Inter->IPoint, ((SPHERE *)Object)->Center);
 
@@ -476,10 +459,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Ellipsoid_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Ellipsoid_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   VECTOR New_Point;
 
@@ -522,8 +502,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-void *Copy_Sphere(Object)
-OBJECT *Object;
+SPHERE *Copy_Sphere(OBJECT *Object)
 {
   SPHERE *New;
 
@@ -564,10 +543,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Translate_Sphere(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Sphere(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   SPHERE *Sphere = (SPHERE *) Object;
 
@@ -611,10 +587,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Sphere(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Sphere(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   SPHERE *Sphere = (SPHERE *) Object;
 
@@ -658,10 +631,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Sphere(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Sphere(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   SPHERE *Sphere = (SPHERE *) Object;
 
@@ -717,8 +687,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Sphere(Object)
-OBJECT *Object;
+static void Invert_Sphere(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -796,9 +765,7 @@ SPHERE *Create_Sphere()
 *
 ******************************************************************************/
 
-void Transform_Sphere(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+void Transform_Sphere(OBJECT *Object, TRANSFORM *Trans)
 {
   SPHERE *Sphere = (SPHERE *)Object;
 
@@ -842,8 +809,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-void Destroy_Sphere(Object)
-OBJECT *Object;
+void Destroy_Sphere(OBJECT *Object)
 {
   Destroy_Transform(((SPHERE *)Object)->Trans);
 
@@ -882,8 +848,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Sphere_BBox(Sphere)
-SPHERE *Sphere;
+void Compute_Sphere_BBox(SPHERE *Sphere)
 {
   Make_BBox(Sphere->BBox, Sphere->Center[X] - Sphere->Radius, Sphere->Center[Y] - Sphere->Radius,  Sphere->Center[Z] - Sphere->Radius,
     2.0 * Sphere->Radius, 2.0 * Sphere->Radius, 2.0 * Sphere->Radius);

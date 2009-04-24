@@ -4,16 +4,16 @@
 *  This module contains all functions for atmospheric effects.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -25,6 +25,7 @@
 #include "vector.h"
 #include "povproto.h"
 #include "atmosph.h"
+#include "chi2.h"
 #include "colour.h"
 #include "povray.h"
 #include "texture.h"
@@ -32,7 +33,9 @@
 #include "objects.h"
 #include "lighting.h"
 #include "matrices.h"
+#include "media.h"
 #include "texture.h"
+#include "ray.h"
 
 
 
@@ -48,56 +51,20 @@
 * Local typedefs
 ******************************************************************************/
 
-typedef struct Light_List_Struct LIGHT_LIST;
-
-struct Light_List_Struct
-{
-  int active;
-  DBL t1, t2;
-  LIGHT_SOURCE *Light;
-};
-
-
-
 /*****************************************************************************
 * Local variables
 ******************************************************************************/
-
-/*
- * Atmosphere stuff.
- */
-
-/* List of active lights. */
-
-static LIGHT_LIST *Light_List;
-
-/* Min. and max. intersetcion depths with light source areas. */
-
-static DBL *tmin, *tmax;
-
-
 
 /*****************************************************************************
 * Static functions
 ******************************************************************************/
 
-static DBL constant_fog PARAMS((RAY *Ray, DBL Depth, DBL Width, FOG *Fog, COLOUR Colour));
-static DBL ground_fog PARAMS((RAY *Ray, DBL Depth, DBL Width, FOG *Fog, COLOUR Colour));
+static DBL constant_fog (RAY *Ray, DBL Depth, DBL Width, FOG *Fog, COLOUR Colour);
+static DBL ground_fog (RAY *Ray, DBL Depth, DBL Width, FOG *Fog, COLOUR Colour);
 
-static void supersample_atmosphere PARAMS((LIGHT_LIST *Light_List,
-  int level, RAY *Ray, ATMOSPHERE *Atmosphere,
-  DBL d1, COLOUR C1, DBL d3, COLOUR C3));
-
-static void sample_atmosphere PARAMS((LIGHT_LIST *Light_List, DBL dist,
-  RAY *Ray, ATMOSPHERE *Atmosphere, COLOUR Col));
-
-static int intersect_spotlight PARAMS((RAY *Ray, LIGHT_SOURCE *Light, DBL *d1, DBL *d2));
-static int intersect_cylinderlight PARAMS((RAY *Ray, LIGHT_SOURCE *Light, DBL *d1, DBL *d2));
-
-static void do_atmospheric_scattering PARAMS((RAY *Ray, INTERSECTION *Intersection, COLOUR Colour, int Light_Ray_Flag));
-static void do_fog PARAMS((RAY *Ray, INTERSECTION *Intersection, COLOUR Colour, int Light_Ray_Flag));
-static void do_rainbow PARAMS((RAY *Ray, INTERSECTION *Intersection, COLOUR Colour));
-static void do_skysphere PARAMS((RAY *Ray, COLOUR Colour));
+static void do_fog (RAY *Ray, INTERSECTION *Intersection, COLOUR Colour, int Light_Ray_Flag);
+static void do_rainbow (RAY *Ray, INTERSECTION *Intersection, COLOUR Colour);
+static void do_skysphere (RAY *Ray, COLOUR Colour);
 
 
 
@@ -129,23 +96,6 @@ static void do_skysphere PARAMS((RAY *Ray, COLOUR Colour));
 
 void Initialize_Atmosphere_Code()
 {
-  Light_List = NULL;
-
-  tmin = NULL;
-  tmax = NULL;
-
-  /* Allocate memory for atmosphere. */
-
-  if ((Frame.Atmosphere != NULL) && 
-      (fabs(Frame.Atmosphere->Distance) > EPSILON) &&
-      (Frame.Number_Of_Light_Sources > 0))
-  {
-    Light_List = (LIGHT_LIST *)POV_MALLOC(Frame.Number_Of_Light_Sources * sizeof(LIGHT_LIST), "atmosphere sampling lists");
-
-    tmin = (DBL *)POV_MALLOC(Frame.Number_Of_Light_Sources * sizeof(DBL), "atmosphere sampling lists");
-
-    tmax = (DBL *)POV_MALLOC(Frame.Number_Of_Light_Sources * sizeof(DBL), "atmosphere sampling lists");
-  }
 }
 
 
@@ -178,19 +128,6 @@ void Initialize_Atmosphere_Code()
 
 void Deinitialize_Atmosphere_Code()
 {
-  /* Free memory used by atmosphere. */
-
-  if (Light_List != NULL)
-  {
-    POV_FREE(Light_List);
-    POV_FREE(tmin);
-    POV_FREE(tmax);
-  }
-
-  Light_List = NULL;
-
-  tmin = NULL;
-  tmax = NULL;
 }
 
 
@@ -227,9 +164,7 @@ void Deinitialize_Atmosphere_Code()
 *
 ******************************************************************************/
 
-void Do_Infinite_Atmosphere(Ray, Colour)
-RAY *Ray;
-COLOUR Colour;
+void Do_Infinite_Atmosphere(RAY *Ray, COLOUR Colour)
 {
   /* Set background color. */
 
@@ -277,581 +212,21 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-void Do_Finite_Atmosphere(Ray, Intersection, Colour, Light_Ray_Flag)
-RAY *Ray;
-INTERSECTION *Intersection;
-COLOUR Colour;
-int Light_Ray_Flag;
+void Do_Finite_Atmosphere(RAY *Ray, INTERSECTION *Intersection, COLOUR Colour, int Light_Ray_Flag)
 {
+  IMEDIA *Media_List[2];
+
   if (!Light_Ray_Flag)
   {
     do_rainbow(Ray, Intersection, Colour);
   }
 
-  do_atmospheric_scattering(Ray, Intersection, Colour, Light_Ray_Flag);
+  Media_List[0] = Frame.Atmosphere;
+  Media_List[1] = NULL;
+
+  Simulate_Media(Media_List, Ray, Intersection, Colour, Light_Ray_Flag);
 
   do_fog(Ray, Intersection, Colour, Light_Ray_Flag);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   do_atmospheric_scattering
-*
-* INPUT
-*
-*   Ray            - Current ray
-*   Intersection   - Current intersection
-*   Light_Ray_Flag - TRUE if ray is a light source ray
-*
-* OUTPUT
-*
-*   Colour         - Color of the current ray
-*
-* RETURNS
-*
-* AUTHOR
-*
-*   Dieter Bayer
-*
-* DESCRIPTION
-*
-*   Simulate atmospheric scattering using volume sampling.
-*
-*   Ideas for the atmospheric scattering were taken from:
-*
-*     - M. Inakage, "An Illumination Model for Atmospheric Environments", ..
-*
-*     - Nishita, T., Miyawaki, Y. and Nakamae, E., "A Shading Model for
-*       Atmospheric Scattering Considering Luminous Intensity Distribution
-*       of Light Sources", Computer Graphics, 21, 4, 1987, 303-310
-*
-* CHANGES
-*
-*   Nov 1994 : Creation.
-*
-*   Jan 1995 : Added support of cylindrical light sources. [DB]
-*
-*   Jun 1995 : Added code for alpha channel support. [DB]
-*
-******************************************************************************/
-
-static void do_atmospheric_scattering(Ray, Intersection, Colour, Light_Ray_Flag)
-RAY *Ray;
-INTERSECTION *Intersection;
-COLOUR Colour;
-int Light_Ray_Flag;
-{
-  int i, j;
-  int active, interval, intervals, insert;
-  DBL k, jdist, t1, t2, f, fi;
-  DBL dist, dist_prev;
-  DBL step;
-  COLOUR Col_total, Col, Col_prev, Max_Colour, C1, C2;
-  LIGHT_SOURCE *Light;
-  ATMOSPHERE *Atmosphere;
-
-  /* Why are we here? */
-
-  if (((Atmosphere = Frame.Atmosphere) == NULL) || 
-      (Frame.Atmosphere->Distance == 0.0) ||
-      (Frame.Number_Of_Light_Sources == 0))
-  {
-    return;
-  }
-
-  /*
-   * If we have a light source ray we only have to attenuate
-   * the light source color due to the distance traveled.
-   */
-
-  if (Light_Ray_Flag)
-  {
-    k = exp(-Intersection->Depth / Atmosphere->Distance);
-
-    /* Check for minimum transmittance. */
-
-    if (k < Atmosphere->Colour[TRANSM])
-    {
-      k = Atmosphere->Colour[TRANSM];
-    }
-
-    VScaleEq(Colour, k);
-
-    return;
-  }
-
-  /* Init light list and sampling intervals. */
-
-  for (i = 0; i < Frame.Number_Of_Light_Sources; i++)
-  {
-    Light_List[i].active = FALSE;
-    Light_List[i].t1     = 0.0;
-    Light_List[i].t2     = Max_Distance;
-    Light_List[i].Light  = NULL;
-
-    tmin[i] =  BOUND_HUGE;
-    tmax[i] = -BOUND_HUGE;
-  }
-
-  /* Get depths for all light sources and disconnected sampling intervals. */
-
-  active = 0;
-
-  intervals = 0;
-
-  t1 = t2 = 0.0;
-
-  Make_Colour(Max_Colour, 0.0, 0.0, 0.0);
-
-  for (i = 0, Light = Frame.Light_Sources; Light != NULL; Light = Light->Next_Light_Source, i++)
-  {
-    insert = FALSE;
-
-    Light_List[i].Light = Light;
-
-    if (!Light->Atmosphere_Interaction)
-    {
-      continue;
-    }
-
-    switch (Light->Light_Type)
-    {
-      case CYLINDER_SOURCE:
-
-        if (intersect_cylinderlight(Ray, Light, &t1, &t2))
-        {
-          if ((t1 < Intersection->Depth) && (t2 > Small_Tolerance))
-          {
-            insert = TRUE;
-          }
-        }
-
-        break;
-
-      case POINT_SOURCE:
-
-        t1 = 0.0;
-        t2 = Intersection->Depth;
-
-        insert = TRUE;
-
-        break;
-
-      case SPOT_SOURCE:
-
-        if (intersect_spotlight(Ray, Light, &t1, &t2))
-        {
-          if ((t1 < Intersection->Depth) && (t2 > Small_Tolerance))
-          {
-            insert = TRUE;
-          }
-        }
-
-        break;
-    }
-
-    /* Insert distances into sampling interval list. */
-
-    if (insert)
-    {
-      /* Add light color to maximum color. */
-
-      VAddEq(Max_Colour, Light->Colour);
-
-      /* Number of active light sources. */
-
-      active ++;
-
-      /* Insert light source intersections into light list. */
-
-      t1 = max(t1, 0.0);
-      t2 = min(t2, Intersection->Depth);
-
-      Light_List[i].active = TRUE;
-      Light_List[i].t1 = t1;
-      Light_List[i].t2 = t2;
-
-      /* Test if there's an overlapping interval. */
-
-      for (j = 0; j < intervals; j++)
-      {
-        if (!((t2 < tmin[j]) || (t1 > tmax[j])))
-        {
-          /* The intervals are overlapping. */
-
-          break;
-        }
-      }
-
-      if (j >= intervals)
-      {
-        j = intervals;
-
-        intervals++;
-      }
-
-      /* Adjust interval. */
-
-      tmin[j] = min(tmin[j], t1);
-      tmax[j] = max(tmax[j], t2);
-    }
-  }
-
-  /* Initialize maximum color. */
-
-  Max_Colour[RED]   = (Max_Colour[RED]   > EPSILON) ? 1.0 : 0.0;
-  Max_Colour[GREEN] = (Max_Colour[GREEN] > EPSILON) ? 1.0 : 0.0;
-  Max_Colour[BLUE]  = (Max_Colour[BLUE]  > EPSILON) ? 1.0 : 0.0;
-
-  /*
-   * If there are no active lights, we can skip ahead because no
-   * light from any light source will reach the viewer.
-   */
-
-  Make_Colour(Col_total, 0.0, 0.0, 0.0);
-
-  if (active > 0)
-  {
-    for (interval = 0; interval < intervals; interval++)
-    {
-      /* Get sampling step distance. */
-
-      step = min((tmax[interval] - tmin[interval]), Atmosphere->Distance) / (DBL)Atmosphere->Samples;
-
-      /* Set up distance. */
-
-      dist = dist_prev = 0.0;
-
-      /* Sample along the ray. */
-
-      Make_Colour(Col, 0.0, 0.0, 0.0);
-
-      for (i = 0; dist < tmax[interval]; i++)
-      {
-        /* Step to next sample point. */
-
-        dist = tmin[interval] + ((DBL)i + 0.5) * step;
-
-        /* Get distance of current sampling point. */
-
-        jdist = dist + Atmosphere->Jitter * step * (FRAND() - 0.5);
-
-        /* If we're behind the intersection point we can quit. */
-
-        if (jdist >= Intersection->Depth)
-        {
-          break;
-        }
-
-        sample_atmosphere(Light_List, jdist, Ray, Atmosphere, Col);
-
-        /* Add previous result to the total color. */
-
-        if (i)
-        {
-          /* Do the current and previous colours differ too much? */
-
-          if ((Atmosphere->AA_Level > 0) && (Colour_Distance(Col, Col_prev) >= Atmosphere->AA_Threshold))
-          {
-            /* Supersample between current and previous point. */
-
-            supersample_atmosphere(Light_List, 1, Ray, Atmosphere, dist_prev, Col_prev, dist, Col);
-
-            Col[RED]   = Col_prev[RED]   = 0.5 * (Col[RED]   + Col_prev[RED]);
-            Col[GREEN] = Col_prev[GREEN] = 0.5 * (Col[GREEN] + Col_prev[GREEN]);
-            Col[BLUE]  = Col_prev[BLUE]  = 0.5 * (Col[BLUE]  + Col_prev[BLUE]);
-          }
-
-          /* Get attenuation due to distance from view point. */
-
-          k = step * exp(-dist_prev / Atmosphere->Distance);
-
-          /* If the contribution is too small we can stop. */
-
-          if (k < BLACK_LEVEL)
-          {
-            break;
-          }
-
-          Col_total[RED]   += k * Col_prev[RED];
-          Col_total[GREEN] += k * Col_prev[GREEN];
-          Col_total[BLUE]  += k * Col_prev[BLUE];
-
-          /* If the total color is larger than max. value we can stop now. */
-
-          if ((Col_total[RED]   >= Max_Colour[RED])   &&
-              (Col_total[GREEN] >= Max_Colour[GREEN]) &&
-              (Col_total[BLUE]  >= Max_Colour[BLUE]))
-          {
-            break;
-          }
-        }
-
-        dist_prev = dist;
-
-        Assign_Colour(Col_prev, Col);
-      }
-
-      /* Add last result to the total color. */
-
-      /* Get attenuation due to distance from view point. */
-
-      k = step * exp(-dist / Atmosphere->Distance);
-
-      Col_total[RED]   += k * Col_prev[RED];
-      Col_total[GREEN] += k * Col_prev[GREEN];
-      Col_total[BLUE]  += k * Col_prev[BLUE];
-
-      /* If the total color is white already we can stop now. */
-
-      if ((Col_total[RED] >= 1.0) && (Col_total[GREEN] >= 1.0) && (Col_total[BLUE] >= 1.0))
-      {
-        break;
-      }
-    }
-  }
-
-  /* Add attenuated background color. */
-
-  k = exp(-Intersection->Depth / Atmosphere->Distance);
-
-  /* Check for minimum transmittance. */
-
-  if (k < Atmosphere->Colour[TRANSM])
-  {
-    k = Atmosphere->Colour[TRANSM];
-  }
-
-/*
-  ki = 1.0 - k;
-
-  VLinComb3(Colour, 1.0, Col_total, k, Colour, ki, Atmosphere->Colour);
-*/
-
-  /* Attenuate color due to atmosphere color. */
-
-  f = Atmosphere->Colour[FILTER];
-
-  fi = 1.0 - f;
-
-  C1[RED]   = Col_total[RED]   * (fi + f * Atmosphere->Colour[RED]);
-  C1[GREEN] = Col_total[GREEN] * (fi + f * Atmosphere->Colour[GREEN]);
-  C1[BLUE]  = Col_total[BLUE]  * (fi + f * Atmosphere->Colour[BLUE]);
-
-  C2[RED]   = Colour[RED]   * (fi + f * Atmosphere->Colour[RED]);
-  C2[GREEN] = Colour[GREEN] * (fi + f * Atmosphere->Colour[GREEN]);
-  C2[BLUE]  = Colour[BLUE]  * (fi + f * Atmosphere->Colour[BLUE]);
-
-  VLinComb2(Colour, 1.0, C1, k, C2);
-
-  Colour[FILTER] = k * Colour[FILTER];
-  Colour[TRANSM] = k * Colour[TRANSM];
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   supersample_atmosphere
-*
-* INPUT
-*
-*   Light_List   - array containing light source information
-*   level        - level of recursion
-*   Ray          - pointer to ray
-*   Atmosphere   - pointer to atmosphere to use
-*   d1           - distance to lower sample
-*   d3           - distance to upper sample
-*
-* OUTPUT
-*
-*   C1           - Color of lower sample
-*   C3           - Color of upper sample
-*
-* RETURNS
-*
-* AUTHOR
-*
-*   Dieter Bayer
-*
-* DESCRIPTION
-*
-*   Recursevily supersample between two points on the ray.
-*
-* CHANGES
-*
-*   Nov 1994 : Creation.
-*
-******************************************************************************/
-
-static void supersample_atmosphere(Light_List, level, Ray, Atmosphere, d1, C1, d3, C3)
-LIGHT_LIST *Light_List;
-int level;
-RAY *Ray;
-ATMOSPHERE *Atmosphere;
-DBL d1, d3;
-COLOUR C1, C3;
-{
-  DBL d2, jdist;
-  COLOUR C2;
-
-  Increase_Counter(stats[Atmosphere_Supersamples]);
-
-  /* Sample between lower and upper point. */
-
-  d2 = 0.5 * (d1 + d3);
-
-  jdist = d2 + Atmosphere->Jitter * 0.5 * (d3 - d1) * (FRAND() - 0.5);
-
-  sample_atmosphere(Light_List, jdist, Ray, Atmosphere, C2);
-
-  /* Test for further supersampling. */
-
-  if (level < Atmosphere->AA_Level)
-  {
-    if (Colour_Distance(C1, C2) >= Atmosphere->AA_Threshold)
-    {
-      /* Supersample between lower and middle point. */
-
-      supersample_atmosphere(Light_List, level+1, Ray, Atmosphere, d1, C1, d2, C2);
-    }
-
-    if (Colour_Distance(C2, C3) >= Atmosphere->AA_Threshold)
-    {
-      /* Supersample between current and higher point. */
-
-      supersample_atmosphere(Light_List, level+1, Ray, Atmosphere, d2, C2, d3, C3);
-    }
-  }
-
-  /* Add supersampled colors. */
-
-  VLinComb2(C1, 0.75, C1, 0.25, C2);
-  VLinComb2(C3, 0.25, C2, 0.75, C3);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   sample_atmosphere
-*
-* INPUT
-*
-*   Light_List   - array containing light source information
-*   dist         - distance of current sample
-*   Ray          - pointer to ray
-*   Atmosphere   - pointer to atmosphere to use
-*
-* OUTPUT
-*
-*   Col          - color of current sample
-*
-* RETURNS
-*
-* AUTHOR
-*
-*   Dieter Bayer
-*
-* DESCRIPTION
-*
-*   Calculate the color of the current atmosphere sample, i.e. the
-*   sample at distance dist, by summing the light reaching that point
-*   from all light sources.
-*
-* CHANGES
-*
-*   Nov 1994 : Creation.
-*
-******************************************************************************/
-
-static void sample_atmosphere(Light_List, dist, Ray, Atmosphere, Col)
-LIGHT_LIST *Light_List;
-DBL dist;
-RAY *Ray;
-ATMOSPHERE *Atmosphere;
-COLOUR Col;
-{
-  int i;
-  DBL alpha, len, k, g, g2;
-  VECTOR P;
-  COLOUR Light_Colour;
-  RAY Light_Ray;
-
-  Increase_Counter(stats[Atmosphere_Samples]);
-
-  /* Get current sample point. */
-
-  VEvaluateRay(P, Ray->Initial, dist, Ray->Direction);
-
-  /* Process all light sources. */
-
-  Make_Colour(Col, 0.0, 0.0, 0.0);
-
-  for (i = 0; i < Frame.Number_Of_Light_Sources; i++)
-  {
-    /* Use light only if active and within it's boundaries. */
-
-    if (Light_List[i].active && (dist >= Light_List[i].t1) && (dist <= Light_List[i].t2))
-    {
-      if (!(Test_Shadow(Light_List[i].Light, &len, &Light_Ray, Ray, P, Light_Colour)))
-      {
-        VDot(alpha, Light_Ray.Direction, Ray->Direction);
-
-        /* Get attenuation due to scattering. */
-
-        switch (Atmosphere->Type)
-        {
-          case RAYLEIGH_SCATTERING:
-
-            k = (1.0 + Sqr(alpha)) / 2.0;
-
-            break;
-
-          case MIE_HAZY_SCATTERING:
-
-            k = 0.1 * (1.0 + 0.03515625 * pow(1.0 + alpha, 8.0));
-
-            break;
-
-          case MIE_MURKY_SCATTERING:
-
-            k = 0.019607843 * (1.0 + 1.1641532e-8 * pow(1.0 + alpha, 32.0));
-
-            break;
-
-          case HENYEY_GREENSTEIN_SCATTERING:
-
-            g = Atmosphere->Eccentricity;
-
-            g2 = Sqr(g);
-
-            k = (1.0 - g2) / pow(1.0 + g2 - 2.0 * g * alpha, 1.5);
-
-            break;
-
-          case ISOTROPIC_SCATTERING:
-          default:
-
-            k = 1.0;
-
-            break;
-        }
-
-        k *= Atmosphere->Scattering;
-
-        VAddScaledEq(Col, k, Light_Colour);
-      }
-    }
-  }
 }
 
 
@@ -892,11 +267,7 @@ COLOUR Col;
 *
 ******************************************************************************/
 
-static void do_fog(Ray, Intersection, Colour, Light_Ray_Flag)
-RAY *Ray;
-INTERSECTION *Intersection;
-COLOUR Colour;
-int Light_Ray_Flag;
+static void do_fog(RAY *Ray, INTERSECTION *Intersection, COLOUR Colour, int Light_Ray_Flag)
 {
   DBL att, att_inv, width;
   COLOUR Col_Fog;
@@ -967,13 +338,11 @@ int Light_Ray_Flag;
 
   /* Add light coming from background. */
 
-  sum_col[RED]    += sum_att[RED]    * Colour[RED];
-  sum_col[GREEN]  += sum_att[GREEN]  * Colour[GREEN];
-  sum_col[BLUE]   += sum_att[BLUE]   * Colour[BLUE];
-  sum_col[FILTER] += sum_att[FILTER] * Colour[FILTER];
-  sum_col[TRANSM] += sum_att[TRANSM] * Colour[TRANSM];
-
-  Assign_Colour(Colour, sum_col);
+  Colour[RED]    = sum_col[RED]    + sum_att[RED]    * Colour[RED];
+  Colour[GREEN]  = sum_col[GREEN]  + sum_att[GREEN]  * Colour[GREEN];
+  Colour[BLUE]   = sum_col[BLUE]   + sum_att[BLUE]   * Colour[BLUE];
+  Colour[FILTER] = sum_col[FILTER] + sum_att[FILTER] * Colour[FILTER];
+  Colour[TRANSM] = sum_col[TRANSM] + sum_att[TRANSM] * Colour[TRANSM];
 }
 
 
@@ -1021,10 +390,7 @@ int Light_Ray_Flag;
 *
 ******************************************************************************/
 
-static void do_rainbow(Ray, Intersection, Colour)
-RAY *Ray;
-INTERSECTION *Intersection;
-COLOUR Colour;
+static void do_rainbow(RAY *Ray, INTERSECTION *Intersection, COLOUR Colour)
 {
   int n;
   DBL dot, k, ki, index, x, y, l, angle, fade, f;
@@ -1180,9 +546,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static void do_skysphere(Ray, Colour)
-RAY *Ray;
-COLOUR Colour;
+static void do_skysphere(RAY *Ray, COLOUR Colour)
 {
   int i;
   DBL att, trans;
@@ -1197,7 +561,7 @@ COLOUR Colour;
     return;
   }
 
-  Make_ColourA(Col, 0.0, 0.0, 0.0, 0.0, 0.0);
+  Make_Colour(Col, 0.0, 0.0, 0.0);
 
   if (((Skysphere = Frame.Skysphere) != NULL) && (Skysphere->Pigments != NULL))
   {
@@ -1278,11 +642,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static DBL constant_fog(Ray, Depth, Width, Fog, Colour)
-RAY *Ray;
-DBL Depth, Width;
-FOG *Fog;
-COLOUR Colour;
+static DBL constant_fog(RAY *Ray, DBL Depth, DBL  Width, FOG *Fog, COLOUR Colour)
 {
   DBL k;
   VECTOR P;
@@ -1359,11 +719,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static DBL ground_fog(Ray, Depth, Width, Fog, Colour)
-RAY *Ray;
-DBL Depth, Width;
-FOG *Fog;
-COLOUR Colour;
+static DBL ground_fog(RAY *Ray, DBL Depth, DBL  Width, FOG *Fog, COLOUR Colour)
 {
   DBL fog_density, delta;
   DBL start, end;
@@ -1441,429 +797,6 @@ COLOUR Colour;
   Assign_Colour(Colour, Fog->Colour);
 
   return (exp(-Width * fog_density / Fog->Distance));
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   intersect_spotlight
-*
-* INPUT
-*
-*   Ray    - current ray
-*   Light  - current light source
-*
-* OUTPUT
-*
-*   d1, d2 - intersection depths
-*
-* RETURNS
-*
-*   int - TRUE, if hit
-*
-* AUTHOR
-*
-*   Dieter Bayer
-*
-* DESCRIPTION
-*
-*   Intersect a ray with the light cone of a spotlight.
-*
-* CHANGES
-*
-*   Nov 1994 : Creation.
-*
-******************************************************************************/
-
-static int intersect_spotlight(Ray, Light, d1, d2)
-RAY *Ray;
-LIGHT_SOURCE *Light;
-DBL *d1, *d2;
-{
-  int viewpoint_is_in_cone;
-  DBL a, b, c, d, m, l, l1, l2, t, t1, t2, k1, k2, k3, k4;
-  VECTOR V1;
-
-  /* Get cone's slope. Note that cos(falloff) is stored in Falloff! */
-
-  a = acos(Light->Falloff);
-
-  /* This only works for a < 180 degrees! */
-
-  m = tan(a);
-
-  m = 1.0 + Sqr(m);
-
-  VSub(V1, Ray->Initial, Light->Center);
-
-  VDot(k1, Ray->Direction, Light->Direction);
-
-  VDot(k2, V1, Light->Direction);
-
-  VLength(l, V1);
-
-  if (l > EPSILON)
-  {
-    viewpoint_is_in_cone = (k2 / l >= Light->Falloff);
-  }
-  else
-  {
-    viewpoint_is_in_cone = FALSE;
-  }
-
-  if ((k1 <= 0.0) && (k2 < 0.0))
-  {
-    return (FALSE);
-  }
-
-  VDot(k3, V1, Ray->Direction);
-
-  VDot(k4, V1, V1);
-
-  a = 1.0 - Sqr(k1) * m;
-
-  b = k3 - k1 * k2 * m;
-
-  c = k4 - Sqr(k2) * m;
-
-  if (a != 0.0)
-  {
-    d = Sqr(b) - a * c;
-
-    if (d > EPSILON)
-    {
-      d = sqrt(d);
-
-      t1 = (-b + d) / a;
-      t2 = (-b - d) / a;
-
-      if (t1 > t2)
-      {
-        t = t1; t1 = t2; t2 = t;
-      }
-
-      l1 = k2 + t1 * k1;
-      l2 = k2 + t2 * k1;
-
-      if ((l1 <= 0.0) && (l2 <= 0.0))
-      {
-        return (FALSE);
-      }
-
-      if ((l1 <= 0.0) || (l2 <= 0.0))
-      {
-        if (l1 <= 0.0)
-        {
-          if (viewpoint_is_in_cone)
-          {
-            t1 = 0.0;
-            t2 = (t2 > 0.0) ? (t2) : (Max_Distance);
-          }
-          else
-          {
-            t1 = t2;
-            t2 = Max_Distance;
-          }
-        }
-        else
-        {
-          if (viewpoint_is_in_cone)
-          {
-            t2 = t1;
-            t1 = 0.0;
-          }
-          else
-          {
-            t2 = Max_Distance;
-          }
-        }
-      }
-
-      *d1 = t1;
-      *d2 = t2;
-
-      return (TRUE);
-    }
-    else
-    {
-      if (d > -EPSILON)
-      {
-        if (viewpoint_is_in_cone)
-        {
-          *d1 = 0.0;
-          *d2 = -b / a;
-        }
-        else
-        {
-          *d1 = -b / a;
-          *d2 = Max_Distance;
-        }
-
-        return(TRUE);
-      }
-    }
-  }
-  else
-  {
-    if (viewpoint_is_in_cone)
-    {
-      *d1 = 0.0;
-      *d2 = -c/b;
-
-      return(TRUE);
-    }
-  }
-
-  return (FALSE);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   intersect_cylinderlight
-*
-* INPUT
-*
-*   Ray    - current ray
-*   Light  - current light source
-*
-* OUTPUT
-*
-*   d1, d2 - intersection depths
-*
-* RETURNS
-*
-*   int - TRUE, if hit
-*
-* AUTHOR
-*
-*   Dieter Bayer
-*
-* DESCRIPTION
-*
-*   Intersect a ray with the light cylinder of a cylinderlight.
-*
-* CHANGES
-*
-*   Jan 1995 : Creation.
-*
-******************************************************************************/
-
-static int intersect_cylinderlight(Ray, Light, d1, d2)
-RAY *Ray;
-LIGHT_SOURCE *Light;
-DBL *d1, *d2;
-{
-  DBL a, b, c, d, l1, l2, t, t1, t2, k1, k2, k3, k4;
-  VECTOR V1;
-
-  VSub(V1, Ray->Initial, Light->Center);
-
-  VDot(k1, Ray->Direction, Light->Direction);
-
-  VDot(k2, V1, Light->Direction);
-
-  if ((k1 <= 0.0) && (k2 < 0.0))
-  {
-    return (FALSE);
-  }
-
-  a = 1.0 - Sqr(k1);
-
-  if (a != 0.0)
-  {
-    VDot(k3, V1, Ray->Direction);
-
-    VDot(k4, V1, V1);
-
-    b = k3 - k1 * k2;
-
-    c = k4 - Sqr(k2) - Sqr(Light->Falloff);
-
-    d = Sqr(b) - a * c;
-
-    if (d > EPSILON)
-    {
-      d = sqrt(d);
-
-      t1 = (-b + d) / a;
-      t2 = (-b - d) / a;
-
-      if (t1 > t2)
-      {
-        t = t1; t1 = t2; t2 = t;
-      }
-
-      l1 = k2 + t1 * k1;
-      l2 = k2 + t2 * k1;
-
-      if ((l1 <= 0.0) && (l2 <= 0.0))
-      {
-        return (FALSE);
-      }
-
-      if ((l1 <= 0.0) || (l2 <= 0.0))
-      {
-        if (l1 <= 0.0)
-        {
-          t1 = 0.0;
-        }
-        else
-        {
-          t2 = (Max_Distance - k2) / k1;
-        }
-      }
-
-      *d1 = t1;
-      *d2 = t2;
-
-      return (TRUE);
-    }
-  }
-
-  return (FALSE);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   Create_Atmosphere
-*
-* INPUT
-*
-* OUTPUT
-*
-* RETURNS
-*
-*   ATMOSPHERE * - created atmosphere
-*
-* AUTHOR
-*
-*   Dieter Bayer
-*
-* DESCRIPTION
-*
-*   Create an atmosphere.
-*
-* CHANGES
-*
-*   Dec 1994 : Creation.
-*
-******************************************************************************/
-
-ATMOSPHERE *Create_Atmosphere()
-{
-  ATMOSPHERE *New;
-
-  New = (ATMOSPHERE *)POV_MALLOC(sizeof(ATMOSPHERE), "fog");
-
-  New->Type = ISOTROPIC_SCATTERING;
-
-  New->Samples            = 100;
-  New->Distance           = 0.0;
-  New->Distance_Threshold = 0.005;
-  New->Scattering         = 1.0;
-  New->Eccentricity       = 0.0;
-
-  Make_Colour(New->Colour, 0.0, 0.0, 0.0);
-
-  New->AA_Level     = 0;
-  New->AA_Threshold = 0.3;
-  New->Jitter       = 0.0;
-
-  return (New);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   Copy_Atmosphere
-*
-* INPUT
-*
-*   Old - atmosphere to copy
-*
-* OUTPUT
-*
-* RETURNS
-*
-*   ATMOSPHERE * - new atmosphere
-*
-* AUTHOR
-*
-*   Dieter Bayer
-*
-* DESCRIPTION
-*
-*   Copy an atmosphere.
-*
-* CHANGES
-*
-*   Dec 1994 : Creation.
-*
-******************************************************************************/
-
-void *Copy_Atmosphere(Old)
-ATMOSPHERE *Old;
-{
-  ATMOSPHERE *New;
-
-  New = Create_Atmosphere();
-
-  *New = *Old;
-
-  return (New);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-*   Destroy_Atmosphere
-*
-* INPUT
-*
-*   Atmosphere - atmosphere to destroy
-*
-* OUTPUT
-*
-* RETURNS
-*
-* AUTHOR
-*
-*   Dieter Bayer
-*
-* DESCRIPTION
-*
-*   Destroy an atmosphere.
-*
-* CHANGES
-*
-*   Dec 1994 : Creation.
-*
-******************************************************************************/
-
-void Destroy_Atmosphere(Atmosphere)
-ATMOSPHERE *Atmosphere;
-{
-  if (Atmosphere != NULL)
-  {
-    POV_FREE(Atmosphere);
-  }
 }
 
 
@@ -1952,8 +885,7 @@ FOG *Create_Fog()
 *
 ******************************************************************************/
 
-void *Copy_Fog(Old)
-FOG *Old;
+FOG *Copy_Fog(FOG *Old)
 {
   FOG *New;
 
@@ -1996,8 +928,7 @@ FOG *Old;
 *
 ******************************************************************************/
 
-void Destroy_Fog(Fog)
-FOG *Fog;
+void Destroy_Fog(FOG *Fog)
 {
   if (Fog != NULL)
   {
@@ -2096,8 +1027,7 @@ RAINBOW *Create_Rainbow()
 *
 ******************************************************************************/
 
-void *Copy_Rainbow(Old)
-RAINBOW *Old;
+RAINBOW *Copy_Rainbow(RAINBOW *Old)
 {
   RAINBOW *New;
 
@@ -2138,8 +1068,7 @@ RAINBOW *Old;
 *
 ******************************************************************************/
 
-void Destroy_Rainbow(Rainbow)
-RAINBOW *Rainbow;
+void Destroy_Rainbow(RAINBOW *Rainbow)
 {
   if (Rainbow != NULL)
   {
@@ -2226,8 +1155,7 @@ SKYSPHERE *Create_Skysphere()
 *
 ******************************************************************************/
 
-void *Copy_Skysphere(Old)
-SKYSPHERE *Old;
+SKYSPHERE *Copy_Skysphere(SKYSPHERE *Old)
 {
   int i;
   SKYSPHERE *New;
@@ -2283,8 +1211,7 @@ SKYSPHERE *Old;
 *
 ******************************************************************************/
 
-void Destroy_Skysphere(Skysphere)
-SKYSPHERE *Skysphere;
+void Destroy_Skysphere(SKYSPHERE *Skysphere)
 {
   int i;
 
@@ -2335,9 +1262,7 @@ SKYSPHERE *Skysphere;
 *
 ******************************************************************************/
 
-void Rotate_Skysphere(Skysphere, Vector)
-SKYSPHERE *Skysphere;
-VECTOR Vector;
+void Rotate_Skysphere(SKYSPHERE *Skysphere, VECTOR Vector)
 {
   TRANSFORM Trans;
 
@@ -2378,9 +1303,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Scale_Skysphere(Skysphere, Vector)
-SKYSPHERE *Skysphere;
-VECTOR Vector;
+void Scale_Skysphere(SKYSPHERE *Skysphere, VECTOR Vector)
 {
   TRANSFORM Trans;
 
@@ -2421,9 +1344,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Translate_Skysphere(Skysphere, Vector)
-SKYSPHERE *Skysphere;
-VECTOR Vector;
+void Translate_Skysphere(SKYSPHERE *Skysphere, VECTOR Vector)
 {
   TRANSFORM Trans;
 
@@ -2464,9 +1385,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Transform_Skysphere(Skysphere, Trans)
-SKYSPHERE *Skysphere;
-TRANSFORM *Trans;
+void Transform_Skysphere(SKYSPHERE *Skysphere, TRANSFORM *Trans)
 {
   if (Skysphere->Trans == NULL)
   {

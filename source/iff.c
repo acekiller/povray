@@ -4,21 +4,22 @@
 *  This file implements a simple IFF format file reader.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
+* Modifications by Hans-Detlev Fink, January 1999, used with permission
 *****************************************************************************/
 
 #include "frame.h"
@@ -64,11 +65,11 @@ static CHUNK_HEADER Chunk_Header;
 * Static functions
 ******************************************************************************/
 
-static void iff_error PARAMS((void));
-static int read_byte PARAMS((FILE * f));
-static int read_word PARAMS((FILE * f));
-static long read_long PARAMS((FILE * f));
-static void Read_Chunk_Header PARAMS((FILE * f, CHUNK_HEADER * dest));
+static void iff_error (void);
+static int read_byte (FILE * f);
+static int read_word (FILE * f);
+static long read_long (FILE * f);
+static void Read_Chunk_Header (FILE * f, CHUNK_HEADER * dest);
 
 
 
@@ -127,8 +128,7 @@ static void iff_error()
 *
 ******************************************************************************/
 
-static int read_byte(f)
-FILE *f;
+static int read_byte(FILE *f)
 {
   int c;
 
@@ -166,8 +166,7 @@ FILE *f;
 *
 ******************************************************************************/
 
-static int read_word(f)
-FILE *f;
+static int read_word(FILE *f)
 {
   int result;
 
@@ -204,8 +203,7 @@ FILE *f;
 *
 ******************************************************************************/
 
-static long read_long(f)
-FILE *f;
+static long read_long(FILE *f)
 {
   int i;
   long result;
@@ -246,9 +244,7 @@ FILE *f;
 *
 ******************************************************************************/
 
-static void Read_Chunk_Header(f, dest)
-FILE *f;
-CHUNK_HEADER *dest;
+static void Read_Chunk_Header(FILE *f, CHUNK_HEADER *dest)
 {
   dest->name = read_long(f);
   dest->size = read_long(f);
@@ -280,9 +276,7 @@ CHUNK_HEADER *dest;
 *
 ******************************************************************************/
 
-void Read_Iff_Image(Image, filename)
-IMAGE *Image;
-char *filename;
+void Read_Iff_Image(IMAGE *Image, char *filename)
 {
   unsigned char **row_bytes;
   int c, i, j, k, nBytes, nPlanes = 0, compression = 0;
@@ -292,9 +286,10 @@ char *filename;
   FILE *f;
   IMAGE_LINE *line;
 
-  if ((f = Locate_File(filename, READ_FILE_STRING, ".iff", ".IFF",TRUE)) == NULL)
+  if ((f = Locate_File(filename, READ_BINFILE_STRING, ".iff", ".IFF",NULL,TRUE)) == NULL)
   {
     Error("Error opening IFF image.\n");
+    return;	/* -hdf99- */
   }
 
   Previous_Red = Previous_Green = Previous_Blue = 0;
@@ -579,9 +574,10 @@ char *filename;
 
           POV_FREE(row_bytes);
         }
-
-        fclose(f);
-
+        if (f != NULL)		/* -hdf99- */
+        {
+          fclose(f);
+        }
         return;
 
       default:

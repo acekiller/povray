@@ -1,4 +1,4 @@
-COMPILING SOURCE CODE DOCUMENTATION FOR POV-Ray 3.0
+COMPILING SOURCE CODE DOCUMENTATION FOR POV-Ray 3.1
 
 1.0   INTRODUCTION AND DISCLAIMERS
 
@@ -17,11 +17,10 @@ POVWHERE.GET for details on what to get and where to get it.
 The first question you should ask yourself before proceeding is "Do I 
 really need to compile POV-Ray at all?"  Official POV-Ray Team executable 
 versions are available for MS-Dos, Windows 3.1x/95/NT, Mac 68k, Mac Power 
-PC, Amiga, Linux for Intel x86, and SunOS.  Other unofficial compiles may 
-soon be available for other platforms.  If you do not intend to add any 
-custom or experimental features to the program, and if an executable 
-already exists for your platform then you need not compile this program 
-yourself.
+PC, Amiga, and Linux for Intel x86.  Other unofficial compiles may soon 
+be available for other platforms.  If you do not intend to add any custom 
+or experimental features to the program, and if an executable already 
+exists for your platform then you need not compile this program yourself.
 
 If you do want to proceed, you should be aware that you are very nearly on 
 your own.  This documentation and other related compiling documentation 
@@ -104,7 +103,7 @@ for your platform and compiler.
 3.0   CONFIGURING POV-Ray SOURCE
 
 Every platform has a header file "config.h" that is generally in the 
-platform specific directory but may be in the compiler specific directory.  
+platform specific directory but may be in the compiler specific directory.
 Some platforms have multiple versions of this file and you may need to copy 
 or rename it as config.h.  This file is #included in every module of POV-
 Ray.  It contains any prototypes, macros or other definitions that may be 

@@ -67,6 +67,14 @@
  */
 
 /*
+ * 98-12-05 Mark Gordon (mtgordon@mailbag.com) 
+ *  
+ * - 3.1 update to parameters in XWIN_display_plot_rect 
+ *
+ * Version 7
+ */
+
+/*
  * System and X11 includes
  */
 
@@ -1354,13 +1362,17 @@ unsigned char Red, Green, Blue, Alpha;
 *
 *    Sept 2, 1996: Reduce error to left of block by height. [AED]
 *
+* UNOFFICIAL CHANGES (Mark Gordon)
+*
+*    Dec 5, 1998: Change parameter order per Thorsten Froehlich
+*
 ******************************************************************************/
 
 #ifdef __STDC__
-void XWIN_display_plot_rect(int x1, int x2, int y1, int y2, unsigned char Red,
+void XWIN_display_plot_rect(int x1, int y1, int x2, int y2, unsigned char Red,
                 unsigned char Green, unsigned char Blue, unsigned char Alpha)
 #else
-void XWIN_display_plot_rect(x1, x2, y1, y2, Red, Green, Blue, Alpha)
+void XWIN_display_plot_rect(x1, y1, x2, y2, Red, Green, Blue, Alpha)
 int x1, x2, y1, y2;
 unsigned char Red, Green, Blue, Alpha;
 #endif

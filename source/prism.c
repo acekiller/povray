@@ -6,16 +6,16 @@
 *  This module was written by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -144,19 +144,19 @@
 * Static functions
 ******************************************************************************/
 
-static int intersect_prism PARAMS((RAY *Ray, PRISM *Prism, PRISM_INT *Intersection));
-static int in_curve PARAMS((PRISM *Prism, DBL u, DBL v));
-static int test_rectangle PARAMS((VECTOR P, VECTOR D, DBL x1, DBL y1, DBL x2, DBL y2));
-static int   All_Prism_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int   Inside_Prism PARAMS((VECTOR point, OBJECT *Object));
-static void  Prism_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void  *Copy_Prism PARAMS((OBJECT *Object));
-static void  Translate_Prism PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Rotate_Prism PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Scale_Prism PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Transform_Prism PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void  Invert_Prism PARAMS((OBJECT *Object));
-static void  Destroy_Prism PARAMS((OBJECT *Object));
+static int intersect_prism (RAY *Ray, PRISM *Prism, PRISM_INT *Intersection);
+static int in_curve (PRISM *Prism, DBL u, DBL v);
+static int test_rectangle (VECTOR P, VECTOR D, DBL x1, DBL y1, DBL x2, DBL y2);
+static int   All_Prism_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int   Inside_Prism (VECTOR point, OBJECT *Object);
+static void  Prism_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static PRISM *Copy_Prism (OBJECT *Object);
+static void  Translate_Prism (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Rotate_Prism (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Scale_Prism (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Transform_Prism (OBJECT *Object, TRANSFORM *Trans);
+static void  Invert_Prism (OBJECT *Object);
+static void  Destroy_Prism (OBJECT *Object);
 
 
 /*****************************************************************************
@@ -167,7 +167,7 @@ static METHODS Prism_Methods =
 {
   All_Prism_Intersections,
   Inside_Prism, Prism_Normal,
-  Copy_Prism,
+  (COPY_METHOD)Copy_Prism,
   Translate_Prism, Rotate_Prism,
   Scale_Prism, Transform_Prism, Invert_Prism, Destroy_Prism
 };
@@ -208,10 +208,7 @@ static METHODS Prism_Methods =
 *
 ******************************************************************************/
 
-static int All_Prism_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Prism_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int i, max_i, Found;
   PRISM_INT *Inter;
@@ -282,10 +279,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int intersect_prism(Ray, Prism, Intersection)
-RAY *Ray;
-PRISM *Prism;
-PRISM_INT *Intersection;
+static int intersect_prism(RAY *Ray, PRISM *Prism, PRISM_INT *Intersection)
 {
   int i, j, n;
   DBL k, u, v, w, h, len;
@@ -463,6 +457,7 @@ PRISM_INT *Intersection;
               break;
 
             case CUBIC_SPLINE :
+            case BEZIER_SPLINE :
 
               if (test_rectangle(P, D, Entry.x1, Entry.y1, Entry.x2, Entry.y2))
               {
@@ -536,37 +531,43 @@ PRISM_INT *Intersection;
       }
       else
       {
-        /* Intersect ray with the cap-plane. */
-
-        k = (Prism->Height2 - P[Y]) / D[Y];
-
-        if ((k > DEPTH_TOLERANCE) && (k < Max_Distance))
+        if (Test_Flag(Prism, CLOSED_FLAG))
         {
-          u = (P[X] + k * D[X]) / Prism->Height2;
-          v = (P[Z] + k * D[Z]) / Prism->Height2;
+          /* Intersect ray with the cap-plane. */
 
-          if (in_curve(Prism, u, v))
+          if (fabs(Prism->Height2) > EPSILON)
           {
-            Intersection[i].t   = CAP_HIT;
-            Intersection[i++].d = k / len;
-          }
-        }
+            k = (Prism->Height2 - P[Y]) / D[Y];
 
-        /* Intersect ray with the base-plane. */
-
-        if (Prism->Height1 > 0.0)
-        {
-          k = (Prism->Height1 - P[Y]) / D[Y];
-
-          if ((k > DEPTH_TOLERANCE) && (k < Max_Distance))
-          {
-            u = (P[X] + k * D[X]) / Prism->Height1;
-            v = (P[Z] + k * D[Z]) / Prism->Height1;
-
-            if (in_curve(Prism, u, v))
+            if ((k > DEPTH_TOLERANCE) && (k < Max_Distance))
             {
-              Intersection[i].t   = BASE_HIT;
-              Intersection[i++].d = k / len;
+              u = (P[X] + k * D[X]) / Prism->Height2;
+              v = (P[Z] + k * D[Z]) / Prism->Height2;
+
+              if (in_curve(Prism, u, v))
+              {
+                Intersection[i].t   = CAP_HIT;
+                Intersection[i++].d = k / len;
+              }
+            }
+          }
+
+          /* Intersect ray with the base-plane. */
+
+          if (fabs(Prism->Height1) > EPSILON)
+          {
+            k = (Prism->Height1 - P[Y]) / D[Y];
+
+            if ((k > DEPTH_TOLERANCE) && (k < Max_Distance))
+            {
+              u = (P[X] + k * D[X]) / Prism->Height1;
+              v = (P[Z] + k * D[Z]) / Prism->Height1;
+
+              if (in_curve(Prism, u, v))
+              {
+                Intersection[i].t   = BASE_HIT;
+                Intersection[i++].d = k / len;
+              }
             }
           }
         }
@@ -634,6 +635,7 @@ PRISM_INT *Intersection;
               break;
 
             case CUBIC_SPLINE :
+            case BEZIER_SPLINE :
 
               /* Solve cubic equation. */
 
@@ -747,9 +749,7 @@ PRISM_INT *Intersection;
 *
 ******************************************************************************/
 
-static int Inside_Prism(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Prism(VECTOR IPoint, OBJECT *Object)
 {
   VECTOR P;
   PRISM *Prism = (PRISM *)Object;
@@ -764,7 +764,7 @@ OBJECT *Object;
     {
       /* Scale x and z coordinate. */
 
-      if (P[Y] > 0.0)
+      if (fabs(P[Y]) > EPSILON)
       {
         P[X] /= P[Y];
         P[Z] /= P[Y];
@@ -816,14 +816,12 @@ OBJECT *Object;
 *
 *   May 1994 : Creation.
 *
+*   Jul 1997 : Fixed bug as reported by Darko Rozic. [DB]
+*
 ******************************************************************************/
 
-static void Prism_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Prism_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
-  DBL r;
   VECTOR P;
   PRISM_SPLINE_ENTRY Entry;
   PRISM *Prism = (PRISM *)Object;
@@ -851,13 +849,11 @@ INTERSECTION *Inter;
 
         MInvTransPoint(P, Inter->IPoint, Prism->Trans);
 
-        if (P[Y] > 0.0)
+        if (fabs(P[Y]) > EPSILON)
         {
-          r = sqrt(P[X] * P[X] + P[Z] * P[Z]);
-
-          N[X] =  Inter->d1 * (3.0 * Entry.A[Y] * Inter->d1 + 2.0 * Entry.B[Y]) + Entry.C[Y];
-          N[Y] = -r / P[Y];
+          N[X] =   Inter->d1 * (3.0 * Entry.A[Y] * Inter->d1 + 2.0 * Entry.B[Y]) + Entry.C[Y];
           N[Z] = -(Inter->d1 * (3.0 * Entry.A[X] * Inter->d1 + 2.0 * Entry.B[X]) + Entry.C[X]);
+          N[Y] = -(P[X] * N[X] + P[Z] * N[Z]) / P[Y];
         }
 
         break;
@@ -908,10 +904,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Prism(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Prism(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Prism(Object, Trans);
 }
@@ -949,10 +942,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Prism(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Prism(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Prism(Object, Trans);
 }
@@ -990,10 +980,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Prism(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Prism(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Prism(Object, Trans);
 }
@@ -1031,9 +1018,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Prism(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Prism(OBJECT *Object, TRANSFORM *Trans)
 {
   Compose_Transforms(((PRISM *)Object)->Trans, Trans);
 
@@ -1072,8 +1057,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Prism(Object)
-OBJECT *Object;
+static void Invert_Prism(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -1122,6 +1106,10 @@ PRISM *Create_Prism()
   New->x2      =
   New->y1      =
   New->y2      =
+  New->u1      =
+  New->u2      =
+  New->v1      =
+  New->v2      =
   New->Height1 =
   New->Height2 = 0.0;
 
@@ -1176,8 +1164,7 @@ PRISM *Create_Prism()
 *
 ******************************************************************************/
 
-static void *Copy_Prism(Object)
-OBJECT *Object;
+static PRISM *Copy_Prism(OBJECT *Object)
 {
   PRISM *New, *Prism = (PRISM *)Object;
 
@@ -1234,8 +1221,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Prism (Object)
-OBJECT *Object;
+static void Destroy_Prism (OBJECT *Object)
 {
   PRISM *Prism = (PRISM *)Object;
 
@@ -1285,8 +1271,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Prism_BBox(Prism)
-PRISM *Prism;
+void Compute_Prism_BBox(PRISM *Prism)
 {
   Make_BBox(Prism->BBox, Prism->x1, Prism->Height1, Prism->y1,
     Prism->x2 - Prism->x1, Prism->Height2 - Prism->Height1, Prism->y2 - Prism->y1);
@@ -1330,9 +1315,7 @@ PRISM *Prism;
 *
 ******************************************************************************/
 
-static int in_curve(Prism, u, v)
-PRISM *Prism;
-DBL u, v;
+static int in_curve(PRISM *Prism, DBL u, DBL  v)
 {
   int i, n, NC;
   DBL k, w;
@@ -1343,8 +1326,8 @@ DBL u, v;
 
   /* First test overall bounding rectangle. */
   
-  if ((u >= Prism->x1) && (u <= Prism->x2) &&
-      (v >= Prism->y1) && (v <= Prism->y2))
+  if ((u >= Prism->u1) && (u <= Prism->u2) &&
+      (v >= Prism->v1) && (v <= Prism->v2))
   {
     for (i = 0; i < Prism->Number; i++)
     {
@@ -1352,7 +1335,7 @@ DBL u, v;
 
       /* Test if current segment can be hit. */
 
-      if ((v >= Entry.y1) && (v <= Entry.y2) && (u <= Entry.x2))
+      if ((v >= Entry.v1) && (v <= Entry.v2) && (u <= Entry.u2))
       {
         x[0] = Entry.A[Y];
         x[1] = Entry.B[Y];
@@ -1410,9 +1393,7 @@ DBL u, v;
 *
 ******************************************************************************/
 
-static int test_rectangle(P, D, x1, z1, x2, z2)
-VECTOR P, D;
-DBL x1, z1, x2, z2;
+static int test_rectangle(VECTOR P, VECTOR  D, DBL x1, DBL  z1, DBL  x2, DBL  z2)
 {
   DBL dmin, dmax, tmin, tmax;
 
@@ -1554,9 +1535,7 @@ DBL x1, z1, x2, z2;
 *
 ******************************************************************************/
 
-void Compute_Prism(Prism, P)
-PRISM *Prism;
-UV_VECT *P;
+void Compute_Prism(PRISM *Prism, UV_VECT *P)
 {
   int i, n, number_of_splines;
   int i1, i2, i3;
@@ -1602,6 +1581,7 @@ UV_VECT *P;
   switch (Prism->Spline_Type)
   {
     case LINEAR_SPLINE:
+
       Assign_UV_Vect(First, P[0]);
 
       break;
@@ -1717,6 +1697,41 @@ UV_VECT *P;
 
         break;
 
+      /*************************************************************************
+      * Bezier spline.
+      **************************************************************************/
+
+      case BEZIER_SPLINE :
+
+        if (i3 >= Prism->Number)
+        {
+          Error("Too few points in prism. Prism not closed? Control points missing?\n");
+        }
+
+        /* Use Bernstein blending function interpolation. */
+
+        A[X] = P[i][X] - 3.0 * P[i1][X] + 3.0 * P[i2][X] -       P[i3][X];
+        B[X] =           3.0 * P[i1][X] - 6.0 * P[i2][X] + 3.0 * P[i3][X];
+        C[X] =           3.0 * P[i2][X] - 3.0 * P[i3][X];
+        D[X] =                                                   P[i3][X];
+
+        A[Y] = P[i][Y] - 3.0 * P[i1][Y] + 3.0 * P[i2][Y] -       P[i3][Y];
+        B[Y] =           3.0 * P[i1][Y] - 6.0 * P[i2][Y] + 3.0 * P[i3][Y];
+        C[Y] =           3.0 * P[i2][Y] - 3.0 * P[i3][Y];
+        D[Y] =                                                   P[i3][Y];
+
+        x[0] = P[i][X];
+        x[1] = P[i1][X];
+        x[2] = P[i2][X];
+        x[3] = P[i3][X];
+
+        y[0] = P[i][Y];
+        y[1] = P[i1][Y];
+        y[2] = P[i2][Y];
+        y[3] = P[i3][Y];
+
+        break;
+
       default:
 
         Error("Unknown spline type in Compute_Prism().\n");
@@ -1727,43 +1742,52 @@ UV_VECT *P;
     Assign_UV_Vect(Prism->Spline->Entry[number_of_splines].C, C);
     Assign_UV_Vect(Prism->Spline->Entry[number_of_splines].D, D);
 
-    /* Get maximum coordinates in current segment. */
-
-    c[0] = 3.0 * A[X];
-    c[1] = 2.0 * B[X];
-    c[2] = C[X];
-
-    n = Solve_Polynomial(2, c, r, FALSE, 0.0);
-
-    while (n--)
+    if ((Prism->Spline_Type == QUADRATIC_SPLINE) ||
+        (Prism->Spline_Type == CUBIC_SPLINE))
     {
-      if ((r[n] >= 0.0) && (r[n] <= 1.0))
+      /* Get maximum coordinates in current segment. */
+
+      c[0] = 3.0 * A[X];
+      c[1] = 2.0 * B[X];
+      c[2] = C[X];
+
+      n = Solve_Polynomial(2, c, r, FALSE, 0.0);
+
+      while (n--)
       {
-        x[n] = r[n] * (r[n] * (r[n] * A[X] + B[X]) + C[X]) + D[X];
+        if ((r[n] >= 0.0) && (r[n] <= 1.0))
+        {
+          x[n] = r[n] * (r[n] * (r[n] * A[X] + B[X]) + C[X]) + D[X];
+        }
       }
-    }
 
-    c[0] = 3.0 * A[Y];
-    c[1] = 2.0 * B[Y];
-    c[2] = C[Y];
+      c[0] = 3.0 * A[Y];
+      c[1] = 2.0 * B[Y];
+      c[2] = C[Y];
 
-    n = Solve_Polynomial(2, c, r, FALSE, 0.0);
+      n = Solve_Polynomial(2, c, r, FALSE, 0.0);
 
-    while (n--)
-    {
-      if ((r[n] >= 0.0) && (r[n] <= 1.0))
+      while (n--)
       {
-        y[n] = r[n] * (r[n] * (r[n] * A[Y] + B[Y]) + C[Y]) + D[Y];
+        if ((r[n] >= 0.0) && (r[n] <= 1.0))
+        {
+          y[n] = r[n] * (r[n] * (r[n] * A[Y] + B[Y]) + C[Y]) + D[Y];
+        }
       }
     }
 
     /* Set current segment's bounding rectangle. */
 
     Prism->Spline->Entry[number_of_splines].x1 = min(min(x[0], x[1]), min(x[2], x[3]));
-    Prism->Spline->Entry[number_of_splines].x2 = max(max(x[0], x[1]), max(x[2], x[3]));
 
-    Prism->Spline->Entry[number_of_splines].y1 = min(min(y[0], y[1]), min(y[2], y[3]));
-    Prism->Spline->Entry[number_of_splines].y2 = max(max(y[0], y[1]), max(y[2], y[3]));
+    Prism->Spline->Entry[number_of_splines].x2 =
+    Prism->Spline->Entry[number_of_splines].u2 = max(max(x[0], x[1]), max(x[2], x[3]));
+
+    Prism->Spline->Entry[number_of_splines].y1 =
+    Prism->Spline->Entry[number_of_splines].v1 = min(min(y[0], y[1]), min(y[2], y[3]));
+
+    Prism->Spline->Entry[number_of_splines].y2 =
+    Prism->Spline->Entry[number_of_splines].v2 = max(max(y[0], y[1]), max(y[2], y[3]));
 
     /* Keep track of overall bounding rectangle. */
 
@@ -1775,7 +1799,7 @@ UV_VECT *P;
 
     number_of_splines++;
 
-    /* Check if end of sub-prism is reached. */
+    /* Advance to next segment. */
 
     switch (Prism->Spline_Type)
     {
@@ -1824,6 +1848,11 @@ UV_VECT *P;
 
         break;
 
+      case BEZIER_SPLINE:
+
+        i += 3;
+
+        break;
     }
   }
 
@@ -1831,11 +1860,15 @@ UV_VECT *P;
 
   /* Set overall bounding rectangle. */
 
-  Prism->x1 = xmin;
-  Prism->x2 = xmax;
+  Prism->x1 =
+  Prism->u1 = xmin;
+  Prism->x2 =
+  Prism->u2 = xmax;
 
-  Prism->y1 = ymin;
-  Prism->y2 = ymax;
+  Prism->y1 =
+  Prism->v1 = ymin;
+  Prism->y2 =
+  Prism->v2 = ymax;
 
   if (Prism->Sweep_Type == CONIC_SWEEP)
   {

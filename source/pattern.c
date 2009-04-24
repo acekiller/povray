@@ -5,20 +5,23 @@
 *  used in a pigment or normal.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modifications by Hans-Detlev Fink, January 1999, used with permission
+* Modifications by Thomas Willhalm, March 1999, used with permission
 *
 *****************************************************************************/
 
@@ -33,6 +36,7 @@
 #include "povproto.h"
 #include "matrices.h"
 #include "pattern.h"
+#include "povray.h"
 #include "texture.h"
 #include "image.h"
 #include "txttest.h"
@@ -49,31 +53,37 @@
 * Static functions
 ******************************************************************************/
 
-static DBL agate PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL brick PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL checker PARAMS((VECTOR EPoint));
-static DBL crackle PARAMS((VECTOR EPoint));
-static DBL gradient PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL granite PARAMS((VECTOR EPoint));
-static DBL leopard PARAMS((VECTOR EPoint));
-static DBL mandel PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL marble PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL onion PARAMS((VECTOR EPoint));
-static DBL radial PARAMS((VECTOR EPoint));
-static DBL spiral1 PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL spiral2 PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL wood PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL hexagon PARAMS((VECTOR EPoint));
-static long PickInCube PARAMS((VECTOR tv, VECTOR p1));
+static DBL agate (VECTOR EPoint, TPATTERN *TPat);
+static DBL brick (VECTOR EPoint, TPATTERN *TPat);
+static DBL checker (VECTOR EPoint);
+static DBL crackle (VECTOR EPoint);
+static DBL gradient (VECTOR EPoint, TPATTERN *TPat);
+static DBL granite (VECTOR EPoint);
+static DBL leopard (VECTOR EPoint);
+static DBL mandel (VECTOR EPoint, TPATTERN *TPat);
+static DBL marble (VECTOR EPoint, TPATTERN *TPat);
+static DBL onion (VECTOR EPoint);
+static DBL radial (VECTOR EPoint);
+static DBL spiral1 (VECTOR EPoint, TPATTERN *TPat);
+static DBL spiral2 (VECTOR EPoint, TPATTERN *TPat);
+static DBL wood (VECTOR EPoint, TPATTERN *TPat);
+static DBL hexagon (VECTOR EPoint);
+static DBL planar_pattern (VECTOR EPoint);
+static DBL spherical (VECTOR EPoint);
+static DBL boxed (VECTOR EPoint);
+static DBL cylindrical (VECTOR EPoint);
+static DBL density_file (VECTOR EPoint, TPATTERN *TPat);
 
-static DBL ripples_pigm PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL waves_pigm  PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static DBL dents_pigm  PARAMS((VECTOR EPoint));
-static DBL wrinkles_pigm PARAMS((VECTOR EPoint));
-static DBL quilted_pigm PARAMS((VECTOR EPoint, TPATTERN *TPat));
-static TURB *Search_For_Turb PARAMS((WARP *Warps));
-/* static TURB *Copy_Turb PARAMS((TURB *Old));   Unused function [AED] */
+static long PickInCube (VECTOR tv, VECTOR p1);
 
+static DBL ripples_pigm (VECTOR EPoint, TPATTERN *TPat);
+static DBL waves_pigm  (VECTOR EPoint, TPATTERN *TPat);
+static DBL dents_pigm  (VECTOR EPoint);
+static DBL wrinkles_pigm (VECTOR EPoint);
+static DBL quilted_pigm (VECTOR EPoint, TPATTERN *TPat);
+static TURB *Search_For_Turb (WARP *Warps);
+/* static TURB *Copy_Turb (TURB *Old);   Unused function [AED] */
+static unsigned short readushort(FILE *infile);
 
 
 /*****************************************************************************
@@ -104,9 +114,7 @@ static TURB *Search_For_Turb PARAMS((WARP *Warps));
 *
 ******************************************************************************/
 
-static DBL agate (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL agate (VECTOR EPoint, TPATTERN *TPat)
 {
   register DBL noise, turb_val;
   TURB* Turb;
@@ -160,9 +168,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-static DBL brick (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL brick (VECTOR EPoint, TPATTERN *TPat)
 {
   int ibrickx, ibricky, ibrickz;
   DBL brickheight, brickwidth, brickdepth;
@@ -309,8 +315,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-static DBL checker (EPoint)
-VECTOR EPoint;
+static DBL checker (VECTOR EPoint)
 {
   int value;
 
@@ -378,8 +383,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static DBL crackle (EPoint)
-VECTOR EPoint;
+static DBL crackle (VECTOR EPoint)
 {
   int    i;
   long   thisseed;
@@ -527,9 +531,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static DBL gradient (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL gradient (VECTOR EPoint, TPATTERN *TPat)
 {
   register int i;
   register DBL temp;
@@ -586,8 +588,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-static DBL granite (EPoint)
-VECTOR EPoint;
+static DBL granite (VECTOR EPoint)
 {
   register int i;
   register DBL temp, noise = 0.0, freq = 1.0;
@@ -639,8 +640,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static DBL leopard (EPoint)
-VECTOR EPoint;
+static DBL leopard (VECTOR EPoint)
 {
   register DBL value, temp1, temp2, temp3;
 
@@ -690,9 +690,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static DBL mandel (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL mandel (VECTOR EPoint, TPATTERN *TPat)
 {
   int it_max, col;
   DBL a, b, cf, a2, b2, x, y;
@@ -752,9 +750,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-static DBL marble (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL marble (VECTOR EPoint, TPATTERN *TPat)
 {
   register DBL turb_val;
   TURB *Turb;
@@ -802,8 +798,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-static DBL onion (EPoint)
-VECTOR EPoint;
+static DBL onion (VECTOR EPoint)
 {
   /* The variable noise is not used as noise in this function */
 
@@ -854,8 +849,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static DBL radial (EPoint)
-VECTOR EPoint;
+static DBL radial (VECTOR EPoint)
 {
   register DBL value;
 
@@ -905,9 +899,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static DBL spiral1(EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL spiral1(VECTOR EPoint, TPATTERN *TPat)
 {
   DBL rad, phi, turb_val;
   DBL x = EPoint[X];
@@ -984,9 +976,7 @@ TPATTERN *TPat;
 ******************************************************************************/
 
 
-static DBL spiral2(EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL spiral2(VECTOR EPoint, TPATTERN *TPat)
 {
   DBL rad, phi, turb_val;
   DBL x = EPoint[X];
@@ -1063,9 +1053,7 @@ TPATTERN *TPat;
 ******************************************************************************/
 
 
-static DBL wood (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL wood (VECTOR EPoint, TPATTERN *TPat)
 {
   register DBL length;
   VECTOR WoodTurbulence;
@@ -1142,8 +1130,7 @@ TPATTERN *TPat;
 #define xfactor 0.5;         /* each triangle is split in half for the grid */
 #define zfactor 0.866025404; /* sqrt(3)/2 -- Height of an equilateral triangle */
 
-static DBL hexagon (EPoint)
-VECTOR EPoint;
+static DBL hexagon (VECTOR EPoint)
 {
   int xm, zm;
   int brkindx;
@@ -1297,6 +1284,52 @@ VECTOR EPoint;
   return(value);
 }
 
+/* In addition to clipping the value to 
+   lie between 0.0 to 1.0, it also fudges 1.0-value.
+ */
+
+#define CLIP_DENSITY(r) if((r)<0.0){(r)=1.0;}else{if((r)>1.0){(r)=0.0;}else{(r)=1.0-(r);}}
+
+static DBL planar_pattern (VECTOR EPoint)
+{
+  register DBL value;
+
+  value = fabs(EPoint[Y]);
+  CLIP_DENSITY(value);
+
+  return(value);
+}
+
+static DBL spherical (VECTOR EPoint)
+{
+  register DBL value;
+
+  VLength(value, EPoint);
+  CLIP_DENSITY(value);
+
+  return(value);
+}
+
+static DBL boxed (VECTOR EPoint)
+{
+  register DBL value;
+
+  value = max(fabs(EPoint[X]), max(fabs(EPoint[Y]), fabs(EPoint[Z])));
+  CLIP_DENSITY(value);
+
+  return(value);
+}
+
+static DBL cylindrical (VECTOR EPoint)
+{
+  register DBL value;
+
+  value = sqrt(Sqr(EPoint[X]) + Sqr(EPoint[Z]));
+  CLIP_DENSITY(value);
+
+  return(value);
+}
+
 
 
 /*****************************************************************************
@@ -1331,10 +1364,9 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static long PickInCube(tv, p1)
-VECTOR tv, p1;
+static long PickInCube(VECTOR tv, VECTOR  p1)
 {
-  int seed;
+  int seed, temp;
   VECTOR flo;
 
   /*
@@ -1349,11 +1381,15 @@ VECTOR tv, p1;
 
   seed = Hash3d((int)flo[X], (int)flo[Y], (int)flo[Z]);
 
+  temp = POV_GET_OLD_RAND(); /* save current seed */
+  
   POV_SRAND(seed);
 
   p1[X] = flo[X] + FRAND();
   p1[Y] = flo[Y] + FRAND();
   p1[Z] = flo[Z] + FRAND();
+
+  POV_SRAND(temp);  /* restore */
 
   return((long)seed);
 }
@@ -1388,9 +1424,7 @@ VECTOR tv, p1;
 *
 ******************************************************************************/
 
-DBL Evaluate_TPat (TPat, EPoint)
-TPATTERN *TPat;
-VECTOR EPoint;
+DBL Evaluate_TPat (TPATTERN *TPat, VECTOR EPoint)
 {
   DBL value = 0.0;
   VECTOR TPoint;
@@ -1418,9 +1452,6 @@ VECTOR EPoint;
     case RADIAL_PATTERN:   value = radial   (TPoint);         break;
     case SPIRAL1_PATTERN:  value = spiral1  (TPoint, TPat);   break;
     case SPIRAL2_PATTERN:  value = spiral2  (TPoint, TPat);   break;
-    case PATTERN1_PATTERN: value = pattern1    (TPoint, TPat);   break;
-    case PATTERN2_PATTERN: value = pattern2    (TPoint, TPat);   break;
-    case PATTERN3_PATTERN: value = pattern3    (TPoint, TPat);   break;
     case WOOD_PATTERN:     value = wood     (TPoint, TPat);   break;
 
     case WAVES_PATTERN:    value = waves_pigm    (TPoint, TPat);   break;
@@ -1428,6 +1459,14 @@ VECTOR EPoint;
     case WRINKLES_PATTERN: value = wrinkles_pigm (TPoint);   break;
     case DENTS_PATTERN:    value = dents_pigm    (TPoint);   break;
     case QUILTED_PATTERN:  value = quilted_pigm  (TPoint, TPat);   break;
+
+    case PLANAR_PATTERN:      value = planar_pattern (TPoint);      break;
+    case BOXED_PATTERN:       value = boxed          (TPoint);      break;
+    case SPHERICAL_PATTERN:   value = spherical      (TPoint);      break;
+    case CYLINDRICAL_PATTERN: value = cylindrical    (TPoint);      break;
+    case DENSITY_FILE_PATTERN:value = density_file (TPoint, TPat);  break;
+
+
     default: Error("Problem in Evaluate_TPat.");
   }
 
@@ -1460,6 +1499,14 @@ VECTOR EPoint;
       value = fabs(cycloidal(value*0.5));
       break;
 
+    case CUBIC_WAVE:
+      value = Sqr(value)*((-2.0 * value) + 3.0);
+      break;
+
+    case POLY_WAVE:
+      value = pow(value, TPat->Exponent);
+      break;
+
     default: Error("Unknown Wave Type %d.",TPat->Wave_Type);
    }
 
@@ -1485,13 +1532,13 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-void Init_TPat_Fields (Tpat)
-TPATTERN *Tpat;
+void Init_TPat_Fields (TPATTERN *Tpat)
 {
   Tpat->Type       = NO_PATTERN;
   Tpat->Wave_Type  = RAMP_WAVE;
   Tpat->Flags      = NO_FLAGS;
   Tpat->References = 1;
+  Tpat->Exponent   = 1.0;
   Tpat->Frequency  = 1.0;
   Tpat->Phase      = 0.0;
   Tpat->Warps      = NULL;
@@ -1519,8 +1566,7 @@ TPATTERN *Tpat;
 *
 ******************************************************************************/
 
-void Copy_TPat_Fields (New, Old)
-TPATTERN *New, *Old;
+void Copy_TPat_Fields (TPATTERN *New, TPATTERN  *Old)
 {
   *New = *Old;
   
@@ -1536,6 +1582,10 @@ TPATTERN *New, *Old;
   if (Old->Type == BITMAP_PATTERN)
   {
      New->Vals.Image = Copy_Image(Old->Vals.Image);
+  }
+  if (Old->Type == DENSITY_FILE_PATTERN)
+  {
+     New->Vals.Density_File = Copy_Density_File(Old->Vals.Density_File);
   }
 }
 
@@ -1559,8 +1609,7 @@ TPATTERN *New, *Old;
 *
 ******************************************************************************/
 
-void Destroy_TPat_Fields(Tpat)
-TPATTERN *Tpat;
+void Destroy_TPat_Fields(TPATTERN *Tpat)
 {
   Destroy_Warps(Tpat->Warps);
   Destroy_Blend_Map(Tpat->Blend_Map);
@@ -1571,6 +1620,11 @@ TPATTERN *Tpat;
   if (Tpat->Type == BITMAP_PATTERN)
   {
      Destroy_Image(Tpat->Vals.Image);
+  }
+
+  if (Tpat->Type == DENSITY_FILE_PATTERN)
+  {
+     Destroy_Density_File(Tpat->Vals.Density_File);
   }
 }
 
@@ -1599,7 +1653,7 @@ TURB *Create_Turb()
 {
   TURB *New;
 
-  New = POV_MALLOC(sizeof(TURB),"turbulence struct");
+  New = (TURB *)POV_MALLOC(sizeof(TURB),"turbulence struct");
 
   Make_Vector(New->Turbulence, 0.0, 0.0, 0.0);
 
@@ -1631,8 +1685,7 @@ TURB *Create_Turb()
 ******************************************************************************/
 
 #if 0   /* Unused function [AED] */
-static TURB *Copy_Turb(Old)
-TURB *Old;
+static TURB *Copy_Turb(TURB *Old)
 {
   TURB *New;
 
@@ -1674,9 +1727,7 @@ TURB *Old;
 *
 ******************************************************************************/
 
-void Translate_Tpattern(Tpattern,Vector)
-TPATTERN *Tpattern;
-VECTOR Vector;
+void Translate_Tpattern(TPATTERN *Tpattern,VECTOR Vector)
 {
   TRANSFORM Trans;
 
@@ -1712,9 +1763,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Rotate_Tpattern(Tpattern,Vector)
-TPATTERN *Tpattern;
-VECTOR Vector;
+void Rotate_Tpattern(TPATTERN *Tpattern,VECTOR Vector)
 {
   TRANSFORM Trans;
 
@@ -1750,9 +1799,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Scale_Tpattern(Tpattern,Vector)
-TPATTERN *Tpattern;
-VECTOR Vector;
+void Scale_Tpattern(TPATTERN *Tpattern,VECTOR Vector)
 {
   TRANSFORM Trans;
 
@@ -1788,9 +1835,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Transform_Tpattern(Tpattern,Trans)
-TPATTERN *Tpattern;
-TRANSFORM *Trans;
+void Transform_Tpattern(TPATTERN *Tpattern,TRANSFORM *Trans)
 {
   WARP *Temp;
 
@@ -1847,9 +1892,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static DBL ripples_pigm (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL ripples_pigm (VECTOR EPoint, TPATTERN *TPat)
 {
   register unsigned int i;
   register DBL length, index;
@@ -1905,9 +1948,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-static DBL waves_pigm (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL waves_pigm (VECTOR EPoint, TPATTERN *TPat)
 {
   register unsigned int i;
   register DBL length, index;
@@ -1964,8 +2005,7 @@ TPATTERN *TPat;
 *
 ******************************************************************************/
 
-static DBL dents_pigm (EPoint)
-VECTOR EPoint;
+static DBL dents_pigm (VECTOR EPoint)
 {
   DBL noise;
 
@@ -2006,8 +2046,7 @@ VECTOR EPoint;
 ******************************************************************************/
 
 
-static DBL wrinkles_pigm (EPoint)
-VECTOR EPoint;
+static DBL wrinkles_pigm (VECTOR EPoint)
 {
   register int i;
   DBL lambda = 2.0;
@@ -2055,9 +2094,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static DBL quilted_pigm (EPoint, TPat)
-VECTOR EPoint;
-TPATTERN *TPat;
+static DBL quilted_pigm (VECTOR EPoint, TPATTERN *TPat)
 {
   VECTOR value;
   DBL t;
@@ -2098,8 +2135,7 @@ TPATTERN *TPat;
 ******************************************************************************/
 
 #define INV_SQRT_3_4 1.154700538
-DBL quilt_cubic(t,p1,p2)
-DBL t,p1,p2;
+DBL quilt_cubic(DBL t,DBL p1,DBL p2)
 {
  DBL it=(1-t);
  DBL itsqrd=it*it;
@@ -2141,10 +2177,7 @@ DBL t,p1,p2;
 *
 ******************************************************************************/
 
-void Search_Blend_Map (value,Blend_Map,Prev,Cur)
-DBL value;
-BLEND_MAP *Blend_Map;
-BLEND_MAP_ENTRY **Prev, **Cur;
+void Search_Blend_Map (DBL value,BLEND_MAP *Blend_Map,BLEND_MAP_ENTRY **Prev,BLEND_MAP_ENTRY  **Cur)
 {
   BLEND_MAP_ENTRY *P, *C;
   int Max_Ent=Blend_Map->Number_Of_Entries-1;
@@ -2194,8 +2227,7 @@ BLEND_MAP_ENTRY **Prev, **Cur;
 *
 ******************************************************************************/
 
-static TURB *Search_For_Turb(Warps)
-WARP *Warps;
+static TURB *Search_For_Turb(WARP *Warps)
 {
   WARP* Temp=Warps;
 
@@ -2214,3 +2246,335 @@ WARP *Warps;
 
   return ((TURB *)Temp);
 }
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   density_file
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+* CHANGES
+*
+*   Dec 1996 : Creation.
+*
+******************************************************************************/
+
+static DBL density_file(VECTOR EPoint, TPATTERN *TPat)
+{
+  int x, y, z;
+  int x1, y1, z1;
+  int x2, y2, z2;
+  DBL xx, yy, zz;
+  DBL xi, yi, zi;
+  DBL f111, f112, f121, f122, f211, f212, f221, f222;
+  DBL density = 0.0;
+  DENSITY_FILE_DATA *Data;
+
+  if ((TPat->Vals.Density_File != NULL) &&
+      ((Data = TPat->Vals.Density_File->Data) != NULL))
+  {
+    if ((EPoint[X] >= 0.0) && (EPoint[X] < 1.0) &&
+        (EPoint[Y] >= 0.0) && (EPoint[Y] < 1.0) &&
+        (EPoint[Z] >= 0.0) && (EPoint[Z] < 1.0))
+    {
+      switch (TPat->Vals.Density_File->Interpolation)
+      {
+        case NO_INTERPOLATION:
+
+          x = (int)(EPoint[X] * (DBL)Data->Sx);
+          y = (int)(EPoint[Y] * (DBL)Data->Sy);
+          z = (int)(EPoint[Z] * (DBL)Data->Sz);
+
+          if ((x < 0) || (x >= Data->Sx) ||
+              (y < 0) || (y >= Data->Sy) ||
+              (z < 0) || (z >= Data->Sz))
+          {
+            density = 0.0;
+          }
+          else
+          {
+            density = (DBL)Data->Density[z][y][x] / 255.0;
+          }
+
+          break;
+
+        case TRILINEAR_INTERPOLATION:
+
+          xx = EPoint[X] * (DBL)(Data->Sx - 1);
+          yy = EPoint[Y] * (DBL)(Data->Sy - 1);
+          zz = EPoint[Z] * (DBL)(Data->Sz - 1);
+
+          x1 = (int)xx;
+          y1 = (int)yy;
+          z1 = (int)zz;
+
+          x2 = x1 + 1;
+          y2 = y1 + 1;
+          z2 = z1 + 1;
+
+          xx -= floor(xx);
+          yy -= floor(yy);
+          zz -= floor(zz);
+
+          xi = 1.0 - xx;
+          yi = 1.0 - yy;
+          zi = 1.0 - zz;
+
+          f111 = (DBL)Data->Density[z1][y1][x1] / 255.0;
+          f112 = (DBL)Data->Density[z1][y1][x2] / 255.0;
+          f121 = (DBL)Data->Density[z1][y2][x1] / 255.0;
+          f122 = (DBL)Data->Density[z1][y2][x2] / 255.0;
+          f211 = (DBL)Data->Density[z2][y1][x1] / 255.0;
+          f212 = (DBL)Data->Density[z2][y1][x2] / 255.0;
+          f221 = (DBL)Data->Density[z2][y2][x1] / 255.0;
+          f222 = (DBL)Data->Density[z2][y2][x2] / 255.0;
+
+          density = f111 * zi * yi * xi +
+                    f112 * zi * yi * xx +
+                    f121 * zi * yy * xi +
+                    f122 * zi * yy * xx +
+                    f211 * zz * yi * xi +
+                    f212 * zz * yi * xx +
+                    f221 * zz * yy * xi +
+                    f222 * zz * yy * xx;
+
+          break;
+      }
+    }
+    else
+    {
+      density = 0.0;
+    }
+
+/*
+    fprintf(stderr, "x = %3d, y = %3d, z = %3d, density = %5.4f\n", x, y, z, density);
+*/
+  }
+  return(density);
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Density_File
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+*   Create a density file structure.
+*
+* CHANGES
+*
+*   Dec 1996 : Creation.
+*
+******************************************************************************/
+
+DENSITY_FILE *Create_Density_File()
+{
+  DENSITY_FILE *New;
+
+  New = (DENSITY_FILE *)POV_MALLOC(sizeof(DENSITY_FILE), "density file");
+
+  New->Interpolation = NO_INTERPOLATION;
+
+  New->Data = (DENSITY_FILE_DATA *)POV_MALLOC(sizeof(DENSITY_FILE_DATA), "density file data");
+
+  New->Data->References = 1;
+
+  New->Data->Name = NULL;
+
+  New->Data->Sx =
+  New->Data->Sy =
+  New->Data->Sz = 0;
+
+  New->Data->Density = NULL;
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_Density_File
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+*   Copy a density file structure.
+*
+* CHANGES
+*
+*   Dec 1996 : Creation.
+*
+******************************************************************************/
+
+DENSITY_FILE *Copy_Density_File(DENSITY_FILE *Old)
+{
+  DENSITY_FILE *New;
+
+  if (Old != NULL)
+  {
+    New = (DENSITY_FILE *)POV_MALLOC(sizeof(DENSITY_FILE), "density file");
+
+    *New = *Old;
+
+    New->Data->References++;
+  }
+  else          /* tw */
+    New = NULL; /* tw */
+    
+  return(New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_Density_File
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+*   Destroy a density file structure.
+*
+* CHANGES
+*
+*   Dec 1996 : Creation.
+*
+******************************************************************************/
+
+void Destroy_Density_File(DENSITY_FILE *Density_File)
+{
+  int y, z;
+
+  if (Density_File != NULL)
+  {
+    if ((--(Density_File->Data->References)) == 0)
+    {
+      POV_FREE(Density_File->Data->Name);
+
+      for (z = 0; z < Density_File->Data->Sz; z++)
+      {
+        for (y = 0; y < Density_File->Data->Sy; y++)
+        {
+          POV_FREE(Density_File->Data->Density[z][y]);
+        }
+
+        POV_FREE(Density_File->Data->Density[z]);
+      }
+      POV_FREE(Density_File->Data->Density);
+      POV_FREE(Density_File->Data);
+    }
+
+    POV_FREE(Density_File);
+  }
+}
+
+
+void Read_Density_File(DENSITY_FILE *df)
+{
+  unsigned char ***map;
+  int y, z, sx, sy, sz;
+  FILE *file;
+
+  if (df == NULL)
+  {
+     return;
+  }
+  
+  /* Allocate and read density file. */
+
+  if ((df != NULL) && (df->Data->Name != NULL))
+  {
+    if ((file = Locate_File(df->Data->Name, READ_BINFILE_STRING, ".df3", ".DF3",NULL,TRUE)) == NULL)
+    {
+      Error("Cannot read media density file.\n");
+    }
+    
+    sx = df->Data->Sx = readushort(file);
+    sy = df->Data->Sy = readushort(file);
+    sz = df->Data->Sz = readushort(file);
+
+    map = (unsigned char ***)POV_MALLOC(sz*sizeof(unsigned char **), "media density file data");
+
+    for (z = 0; z < sz; z++)
+    {
+      map[z] = (unsigned char **)POV_MALLOC(sy*sizeof(unsigned char *), "media density file data");
+
+      for (y = 0; y < sy; y++)
+      {
+        map[z][y] = (unsigned char *)POV_MALLOC(sx*sizeof(unsigned char), "media density file data");
+
+        fread(map[z][y], sizeof(unsigned char), (size_t)sx, file);
+      }
+    }
+
+    df->Data->Density = map;
+
+    if (file != NULL)		/* -hdf99- */
+    {
+      fclose(file);
+    }
+
+  }
+}
+
+static unsigned short readushort(FILE *infile)
+{
+  int i0, i1 = 0; /* To quiet warnings */
+
+  if ((i0  = fgetc(infile)) == EOF || (i1  = fgetc(infile)) == EOF)
+  {
+    Error("Error reading density_file\n");
+  }
+
+  return (unsigned short)((((unsigned short)i0) << 8) | ((unsigned short)i1));
+}
+

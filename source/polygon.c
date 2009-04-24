@@ -6,16 +6,16 @@
 *  This module was written by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -76,19 +76,19 @@
 * Static functions
 ******************************************************************************/
 
-static int intersect_poylgon PARAMS((RAY *Ray, POLYGON *Polyg, DBL *Depth));
-static int in_polygon PARAMS((int Number, UV_VECT *Points, DBL u, DBL v));
-static int  All_Polygon_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int  Inside_Polygon PARAMS((VECTOR point, OBJECT *Object));
-static void Polygon_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Polygon PARAMS((OBJECT *Object));
-static void Translate_Polygon PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Polygon PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Polygon PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Polygon PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Polygon PARAMS((OBJECT *Object));
-static void Destroy_Polygon PARAMS((OBJECT *Object));
-static void Compute_Polygon_BBox PARAMS((POLYGON *Polyg));
+static int intersect_poylgon (RAY *Ray, POLYGON *Polyg, DBL *Depth);
+static int in_polygon (int Number, UV_VECT *Points, DBL u, DBL v);
+static int  All_Polygon_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int  Inside_Polygon (VECTOR point, OBJECT *Object);
+static void Polygon_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static POLYGON *Copy_Polygon (OBJECT *Object);
+static void Translate_Polygon (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Polygon (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Polygon (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Polygon (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Polygon (OBJECT *Object);
+static void Destroy_Polygon (OBJECT *Object);
+static void Compute_Polygon_BBox (POLYGON *Polyg);
 
 
 
@@ -100,7 +100,7 @@ static METHODS Polygon_Methods =
 {
   All_Polygon_Intersections,
   Inside_Polygon, Polygon_Normal,
-  Copy_Polygon,
+  (COPY_METHOD)Copy_Polygon,
   Translate_Polygon, Rotate_Polygon,
   Scale_Polygon, Transform_Polygon, Invert_Polygon, Destroy_Polygon
 };
@@ -141,10 +141,7 @@ static METHODS Polygon_Methods =
 *
 ******************************************************************************/
 
-static int All_Polygon_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Polygon_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   DBL Depth;
   VECTOR IPoint;
@@ -200,10 +197,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int intersect_poylgon(Ray, Polyg, Depth)
-RAY *Ray;
-POLYGON *Polyg;
-DBL *Depth;
+static int intersect_poylgon(RAY *Ray, POLYGON *Polyg, DBL *Depth)
 {
   DBL x, y, len;
   VECTOR p, d;
@@ -293,9 +287,7 @@ DBL *Depth;
 *
 ******************************************************************************/
 
-static int Inside_Polygon(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Polygon(VECTOR IPoint, OBJECT *Object)
 {
   return(FALSE);
 }
@@ -334,10 +326,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Polygon_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Polygon_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   Assign_Vector(Result, ((POLYGON *)Object)->S_Normal);
 }
@@ -375,10 +364,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Polygon(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Polygon(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Polygon(Object, Trans);
 }
@@ -416,10 +402,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Polygon(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Polygon(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Polygon(Object, Trans);
 }
@@ -457,10 +440,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Polygon(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Polygon(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Polygon(Object, Trans);
 }
@@ -499,9 +479,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Polygon(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Polygon(OBJECT *Object, TRANSFORM *Trans)
 {
   VECTOR N;
   POLYGON *Polyg = (POLYGON *)Object;
@@ -548,8 +526,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Polygon(Object)
-OBJECT *Object;
+static void Invert_Polygon(OBJECT *Object)
 {
 }
 
@@ -632,8 +609,7 @@ POLYGON *Create_Polygon()
 *
 ******************************************************************************/
 
-static void *Copy_Polygon(Object)
-OBJECT *Object;
+static POLYGON *Copy_Polygon(OBJECT *Object)
 {
   POLYGON *New, *Polyg = (POLYGON *)Object;
 
@@ -688,8 +664,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Polygon(Object)
-OBJECT *Object;
+static void Destroy_Polygon(OBJECT *Object)
 {
   POLYGON *Polyg = (POLYGON *)Object;
 
@@ -742,10 +717,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Polygon(Polyg, Number, Points)
-POLYGON *Polyg;
-int Number;
-VECTOR *Points;
+void Compute_Polygon(POLYGON *Polyg, int Number, VECTOR *Points)
 {
   int i;
   DBL x, y, z, d;
@@ -904,8 +876,7 @@ VECTOR *Points;
 *
 ******************************************************************************/
 
-static void Compute_Polygon_BBox(Polyg)
-POLYGON *Polyg;
+static void Compute_Polygon_BBox(POLYGON *Polyg)
 {
   int i;
   VECTOR p, Puv, Min, Max;
@@ -1009,10 +980,7 @@ POLYGON *Polyg;
 *
 ******************************************************************************/
 
-static int in_polygon(Number, Points, u, v)
-int Number;
-UV_VECT *Points;
-DBL u, v;
+static int in_polygon(int Number, UV_VECT *Points, DBL u, DBL  v)
 {
   register int i, yflag0, yflag1, inside_flag;
   register DBL ty, tx;

@@ -20,6 +20,8 @@
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
+* Modifications by Mike Fleetwood, February 1999
+*
 *****************************************************************************/
 
 /*
@@ -69,29 +71,26 @@ double atof(char *);
 #endif
 
 /*
- * Try to read in ONE of the default POV-Ray INI files, in the order:
- * 1) whatever POVINI is pointing to,
- * 2) the file .povrayrc in the user's home directory
- * 3) the file povray.ini in the current directory
+ * Define the default location of the POV-Ray library
  */
-#define READ_ENV_VAR \
-  if ((Option_String_Ptr = getenv("POVINI")) != NULL) \
-    if (!parse_ini_file(Option_String_Ptr)) \
-    { \
-      Warning(0.0, "Could not find '%s' as specified in POVINI environment.\n",\
-              Option_String_Ptr); \
-      Option_String_Ptr = NULL; \
-    }
+#ifndef POV_LIB_DIR
+#define POV_LIB_DIR    "/usr/local/lib/povray31"
+#endif
 
-#define PROCESS_POVRAY_INI \
-  if (Option_String_Ptr==NULL && (Option_String_Ptr = getenv("HOME"))!=NULL) { \
-    char ini_name[FILE_NAME_MAX]; \
-    strncpy(ini_name, Option_String_Ptr, FILE_NAME_MAX); \
-    strncat(ini_name, "/.povrayrc", FILE_NAME_MAX); \
-    if (parse_ini_file(ini_name) == FALSE) \
-      parse_ini_file("povray.ini"); \
-  } else \
-    parse_ini_file("povray.ini");
+/**********************************************************/
+/*
+ * Search for and process a default POV-Ray INI file.  The first file
+ * from the list below is used:
+ *     $POVINI                          Environment over-ride defaults file
+ *     ./povray.ini                     Per-directory defaults file
+ *     $HOME/.povrayrc                  User defaults file
+ *     POV_LIB_DIR/povray.ini           System wide fall-back defaults file
+ */
+#define READ_ENV_VAR           UNIX_Process_Env();
+#define PROCESS_POVRAY_INI     UNIX_Process_Povray_Ini();
+
+void UNIX_Process_Env          PARAMS((void));
+void UNIX_Process_Povray_Ini   PARAMS((void));
 
 #define TIME_ELAPSED (tstop - tstart);
 
@@ -147,4 +146,10 @@ int  UNIX_Timer_Count PARAMS((void));
 #define POV_PRE_SHUTDOWN UNIX_Abort_Handler(0);
 void UNIX_Abort_Start PARAMS((void));
 void UNIX_Abort_Handler PARAMS((int signum));
+
+#define MAIN_RETURN_TYPE       int
+#define MAIN_RETURN_STATEMENT  return 0;
+
+
+
 

@@ -4,16 +4,16 @@
 *  This module implements the code pertaining to rays.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
-*  with enhancements to POV-Ray and to port the software to platforms other 
+*  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -25,6 +25,7 @@
 #include "vector.h"
 #include "povproto.h"
 #include "povray.h"
+#include "interior.h"
 #include "ray.h"
 #include "texture.h"
 
@@ -80,10 +81,9 @@
 *
 ******************************************************************************/
 
-void Initialize_Ray_Containers(Ray)
-RAY *Ray;
+void Initialize_Ray_Containers(RAY *Ray)
 {
-  Ray->Containing_Index = - 1;
+  Ray->Index = - 1;
 }
 
 
@@ -114,18 +114,18 @@ RAY *Ray;
 *
 ******************************************************************************/
 
-void Copy_Ray_Containers(Dest_Ray, Source_Ray)
-RAY *Dest_Ray, *Source_Ray;
+void Copy_Ray_Containers(RAY *Dest_Ray, RAY  *Source_Ray)
 {
   register int i;
 
-  Dest_Ray->Containing_Index = Source_Ray->Containing_Index;
-
-  for (i = 0 ; i <= Source_Ray->Containing_Index; i++)
+  if ((Dest_Ray->Index = Source_Ray->Index) >= MAX_CONTAINING_OBJECTS)
   {
-    Dest_Ray->Containing_Textures[i] = Source_Ray->Containing_Textures[i];
-    Dest_Ray->Containing_Objects[i]  = Source_Ray->Containing_Objects[i];
-    Dest_Ray->Containing_IORs[i]     = Source_Ray->Containing_IORs[i];
+    Error("ERROR - Containing Index too high.\n");
+  }
+
+  for (i = 0 ; i <= Source_Ray->Index; i++)
+  {
+    Dest_Ray->Interiors[i] = Source_Ray->Interiors[i];
   }
 }
 
@@ -157,30 +157,16 @@ RAY *Dest_Ray, *Source_Ray;
 *
 ******************************************************************************/
 
-void Ray_Enter(Ray, texture, object)
-RAY *Ray;
-TEXTURE *texture;
-OBJECT *object;
+void Ray_Enter(RAY *Ray, INTERIOR *interior)
 {
-  register int index;
+  int index;
 
-  if ((index = ++(Ray->Containing_Index)) >= MAX_CONTAINING_OBJECTS)
+  if ((index = ++(Ray->Index)) >= MAX_CONTAINING_OBJECTS)
   {
     Error("Too many nested refracting objects.");
   }
 
-  Ray->Containing_Textures[index] = texture;
-
-  if ((texture->Type == PLAIN_PATTERN) && (texture->Finish != NULL))
-  {
-    Ray->Containing_IORs[index] = texture->Finish->Index_Of_Refraction;
-  }
-  else
-  {
-    Ray->Containing_IORs[index] = Frame.Atmosphere_IOR;
-  }
-
-  Ray->Containing_Objects[index] = object;
+  Ray->Interiors[index] = interior;
 }
 
 
@@ -211,20 +197,16 @@ OBJECT *object;
 *
 ******************************************************************************/
 
-void Ray_Exit(Ray, nr)
-RAY *Ray;
-int nr;
+void Ray_Exit(RAY *Ray, int nr)
 {
   int i;
 
-  for (i = nr; i < Ray->Containing_Index; i++)
+  for (i = nr; i < Ray->Index; i++)
   {
-    Ray->Containing_Textures[i] = Ray->Containing_Textures[i+1];
-    Ray->Containing_Objects[i]  = Ray->Containing_Objects[i+1];
-    Ray->Containing_IORs[i]     = Ray->Containing_IORs[i+1];
+    Ray->Interiors[i] = Ray->Interiors[i+1];
   }
 
-  if (--(Ray->Containing_Index) < - 1)
+  if (--(Ray->Index) < - 1)
   {
     Error("Too many exits from refractions.");
   }
@@ -236,7 +218,7 @@ int nr;
 *
 * FUNCTION
 *
-*   Texture_In_Ray_Container
+*   Interior_In_Ray_Container
 *
 * INPUT
 *
@@ -250,7 +232,7 @@ int nr;
 *
 * DESCRIPTION
 *
-*   Test if a given texture is in the container of a given ray.
+*   Test if a given interior is in the container of a given ray.
 *
 * CHANGES
 *
@@ -258,24 +240,25 @@ int nr;
 *
 ******************************************************************************/
 
-int Texture_In_Ray_Container(Ray, Texture)
-RAY *Ray;
-TEXTURE *Texture;
+int Interior_In_Ray_Container(RAY *ray, INTERIOR *interior)
 {
-  int i, found;
+  int i, found = -1;
 
-  found = -1;
-
-  for (i = 0; i <= Ray->Containing_Index; i++)
+  if (ray->Index > -1)
   {
-    if (Texture == Ray->Containing_Textures[i])
+    for (i = 0; i <= ray->Index; i++)
     {
-      found = i;
+      if (interior == ray->Interiors[i])
+      {
+        found = i;
 
-      break;
+        break;
+      }
     }
   }
 
   return(found);
 }
+
+
 

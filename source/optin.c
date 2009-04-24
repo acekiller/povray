@@ -4,16 +4,16 @@
 *  This module contains functions for ini-file/command line parsing, streams.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -31,6 +31,8 @@
 *  Written by CEY 4/94 based on existing code and INI code from CDW.
 *
 *  ---
+*
+* Modification by Thomas Willhalm, March 1999, used with permission.
 *
 *****************************************************************************/
 
@@ -195,9 +197,9 @@ static char ret_string[7]="IQUFSA";
 * static functions
 ******************************************************************************/
 
-static int matches PARAMS(( char *v1, char *v2 ));
-static int istrue PARAMS(( char *value ));
-static int isfalse PARAMS(( char *value ));
+static int matches ( char *v1, char *v2 );
+static int istrue ( char *value );
+static int isfalse ( char *value );
 
 /*****************************************************************************
 *
@@ -231,8 +233,7 @@ static int isfalse PARAMS(( char *value ));
 *
 ******************************************************************************/
 
-char *get_ini_value(op, libind)
-int op, libind;
+char *get_ini_value(int op, int  libind)
 {
   static char value[128];
 
@@ -604,8 +605,7 @@ int op, libind;
 *
 ******************************************************************************/
 
-void parse_switch (Option_String)
-char *Option_String;
+void parse_switch (char *Option_String)
 {
   int i;
   unsigned long Add_Option;
@@ -747,7 +747,7 @@ char *Option_String;
 
         case 'f':
         case 'F':
-          if(isdigit(Option_String[2]))
+          if(isdigit((int)Option_String[2])) /* tw */
             process_variable(SUBSET_END_FRAME_OP, &Option_String[2]);
           break;
 
@@ -876,7 +876,7 @@ char *Option_String;
       }
       else
       {
-        if (!isdigit (Option_String [1]))
+        if (!isdigit ((int)Option_String [1])) /* tw */
         {
           switch (Option_String [1])
           {
@@ -1266,9 +1266,7 @@ char *Option_String;
 *
 ******************************************************************************/
 
-void process_variable(variable,value)
-TOKEN variable;
-char *value;
+void process_variable(TOKEN variable,char *value)
 {
   int i;
   long longval;
@@ -1408,7 +1406,7 @@ char *value;
         Error ("Too many library directories specified.");
       for (i = 0; i < opts.Library_Path_Index; i++)
         if (strcmp(value,opts.Library_Paths[i])==0) return;
-      opts.Library_Paths[opts.Library_Path_Index] = POV_MALLOC(strlen(value)+1,
+      opts.Library_Paths[opts.Library_Path_Index] = (char *)POV_MALLOC(strlen(value)+1,
                  "library paths");
       strcpy (opts.Library_Paths [opts.Library_Path_Index], value);
       opts.Library_Path_Index++;
@@ -1416,6 +1414,7 @@ char *value;
 
     case START_COLUMN_OP:
       if (sscanf (value, DBL_FORMAT_STRING, &floatval) != SCANF_EOF)
+      { /* tw */
         if(floatval > 0.0 && floatval < 1.0)
         {
           opts.First_Column = -1;
@@ -1426,10 +1425,12 @@ char *value;
           /* The above used to have -1 but it messed up Write_INI_File.
            * Moved -1 fudge to fix_up_rendering_window 
            */
+      } /* tw */
       return;
 
     case START_ROW_OP:
       if (sscanf (value, DBL_FORMAT_STRING, &floatval) != SCANF_EOF)
+      { /* tw */
         if(floatval > 0.0 && floatval < 1.0)
         {
           opts.First_Line = -1;
@@ -1440,9 +1441,11 @@ char *value;
           /* The above used to have -1 but it messed up Write_INI_File
           * Moved -1 fudge to fix_up_rendering_window 
           */
+      } /* tw */
       return;
 
     case END_COLUMN_OP:
+      { /* tw */
       if (sscanf (value, DBL_FORMAT_STRING, &floatval) != SCANF_EOF)
         if(floatval > 0.0 && floatval <= 1.0)
         {
@@ -1451,9 +1454,11 @@ char *value;
         }
         else
           opts.Last_Column = (int) floatval;
+      } /* tw */
       return;
 
     case END_ROW_OP:
+      { /* tw */ 
       if (sscanf (value, DBL_FORMAT_STRING, &floatval) != SCANF_EOF)
         if(floatval > 0.0 && floatval <= 1.0)
         {
@@ -1462,6 +1467,7 @@ char *value;
         }
         else
           opts.Last_Line = (int) floatval;
+      } /* tw */
       return;
 
     case VERSION_OP:
@@ -1873,8 +1879,7 @@ char *value;
 *
 ******************************************************************************/
 
-static int matches(v1,v2)
-char *v1, *v2;
+static int matches(char *v1,char  *v2)
 {
   int i=0;
   int ans=TRUE;
@@ -1888,15 +1893,13 @@ char *v1, *v2;
   return(ans);
 }
 
-static int istrue(value)
-char *value;
+static int istrue(char *value)
 {
    return (matches("on",value)  || matches("true",value) || 
            matches("yes",value) || matches("1",value));
 }
 
-static int isfalse(value)
-char *value;
+static int isfalse(char *value)
 {
    return (matches("off",value)  || matches("false",value) || 
            matches("no",value)   || matches("0",value));
@@ -1958,7 +1961,7 @@ void Write_INI_File()
     strcpy(ini_name,opts.Ini_Output_File_Name);
   }
 
-  if ((ini_file = fopen(ini_name, WRITE_FILE_STRING)) == NULL)
+  if ((ini_file = fopen(ini_name, WRITE_TXTFILE_STRING)) == NULL)
   {
     Warning (0.0,"Error opening .INI output file '%s' - no file written.\n",
                     ini_name);
@@ -2017,8 +2020,7 @@ void Write_INI_File()
 *
 ******************************************************************************/
 
-int parse_ini_file(File_Name)
-char *File_Name;
+int parse_ini_file(char *File_Name)
 {
   char Option_Line[512];
   char INI_Name[FILE_NAME_LENGTH];
@@ -2056,11 +2058,11 @@ char *File_Name;
   *dest = *source;
   *(++dest)='\0';
 
-  if ((ini_file = Locate_File(INI_Name, READ_FILE_STRING,".ini",".INI",FALSE)) == NULL)
+  if ((ini_file = Locate_File(INI_Name, READ_TXTFILE_STRING,".ini",".INI",NULL,FALSE)) == NULL)
   {
     return(FALSE);
   }
-
+  
   *Current_Section='\0';
   
   Matched = (*Desired_Section == '\0');
@@ -2131,8 +2133,7 @@ char *File_Name;
 *
 ******************************************************************************/
 
-void parse_option_line(Option_Line)
-char *Option_Line;
+void parse_option_line(char *Option_Line)
 {
   char *source, *dest;
   char Option_String[512];
@@ -2333,9 +2334,7 @@ char *Option_Line;
 *
 ******************************************************************************/
 
-void Do_Stream_Option (i, value)
-int i;
-char *value;
+void Do_Stream_Option (int i, char *value)
 {
   if (value==NULL)
   {
@@ -2356,7 +2355,7 @@ char *value;
 
   if (istrue(value))
   {
-    Stream_Info[i].name = POV_MALLOC(strlen(DefaultFile[i])+1, "stream name");
+    Stream_Info[i].name = (char *)POV_MALLOC(strlen(DefaultFile[i])+1, "stream name");
 
     strcpy(Stream_Info[i].name, DefaultFile[i]);
   }
@@ -2367,7 +2366,7 @@ char *value;
       return;
     }
 
-    Stream_Info[i].name = POV_MALLOC(strlen(value)+1, "stream name");
+    Stream_Info[i].name = (char *)POV_MALLOC(strlen(value)+1, "stream name");
 
     strcpy(Stream_Info[i].name, value);
  }
@@ -2393,9 +2392,7 @@ char *value;
 *
 ******************************************************************************/
 
-void Do_Return_Option (Type, value)
-SHELLTYPE Type;
-char *value;
+void Do_Return_Option (SHELLTYPE Type, char *value)
 {
    char *s;
    
@@ -2426,6 +2423,6 @@ char *value;
    }
    else
    {
-     Shell->Ret = (SHELLRET)(s-ret_string);
+     Shell->Ret = (POV_SHELLOUT_CAST)(s-ret_string);
    }
 }

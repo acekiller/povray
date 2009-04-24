@@ -9,16 +9,16 @@
 *  Modifications and enhancements by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -90,6 +90,7 @@
 #include "povproto.h"
 #include "blob.h"
 #include "bbox.h"
+#include "bsphere.h"
 #include "lighting.h"
 #include "matrices.h"
 #include "objects.h"
@@ -127,39 +128,39 @@
 * Static functions
 ******************************************************************************/
 
-static void element_normal PARAMS((VECTOR Result, VECTOR P, BLOB_ELEMENT *Element));
-static int intersect_element PARAMS((VECTOR P, VECTOR D, BLOB_ELEMENT *Element, DBL mindist, DBL *t0, DBL *t1));
-static void insert_hit PARAMS((BLOB_ELEMENT *Element, DBL t0, DBL t1, BLOB_INTERVAL *intervals, int *cnt));
-static int determine_influences PARAMS((VECTOR P, VECTOR D, BLOB *Blob, DBL mindist, BLOB_INTERVAL *intervals));
-static DBL calculate_field_value PARAMS((BLOB *Blob, VECTOR P));
-static DBL calculate_element_field PARAMS((BLOB_ELEMENT *Element, VECTOR P));
+static void element_normal (VECTOR Result, VECTOR P, BLOB_ELEMENT *Element);
+static int intersect_element (VECTOR P, VECTOR D, BLOB_ELEMENT *Element, DBL mindist, DBL *t0, DBL *t1);
+static void insert_hit (BLOB_ELEMENT *Element, DBL t0, DBL t1, BLOB_INTERVAL *intervals, int *cnt);
+static int determine_influences (VECTOR P, VECTOR D, BLOB *Blob, DBL mindist, BLOB_INTERVAL *intervals);
+static DBL calculate_field_value (BLOB *Blob, VECTOR P);
+static DBL calculate_element_field (BLOB_ELEMENT *Element, VECTOR P);
 
-static int intersect_cylinder PARAMS((BLOB_ELEMENT *Element, VECTOR P, VECTOR D, DBL mindist, DBL *tmin, DBL *tmax));
-static int intersect_hemisphere PARAMS((BLOB_ELEMENT *Element, VECTOR P, VECTOR D, DBL mindist, DBL *tmin, DBL *tmax));
-static int intersect_sphere PARAMS((BLOB_ELEMENT *Element, VECTOR P, VECTOR D, DBL mindist, DBL *tmin, DBL *tmax));
-static int intersect_ellipsoid PARAMS((BLOB_ELEMENT *Element, VECTOR P, VECTOR D, DBL mindist, DBL *tmin, DBL *tmax));
+static int intersect_cylinder (BLOB_ELEMENT *Element, VECTOR P, VECTOR D, DBL mindist, DBL *tmin, DBL *tmax);
+static int intersect_hemisphere (BLOB_ELEMENT *Element, VECTOR P, VECTOR D, DBL mindist, DBL *tmin, DBL *tmax);
+static int intersect_sphere (BLOB_ELEMENT *Element, VECTOR P, VECTOR D, DBL mindist, DBL *tmin, DBL *tmax);
+static int intersect_ellipsoid (BLOB_ELEMENT *Element, VECTOR P, VECTOR D, DBL mindist, DBL *tmin, DBL *tmax);
 
-static void get_element_bounding_sphere PARAMS((BLOB_ELEMENT *Element, VECTOR Center, DBL *Radius2));
-static void build_bounding_hierarchy PARAMS((BLOB *Blob));
+static void get_element_bounding_sphere (BLOB_ELEMENT *Element, VECTOR Center, DBL *Radius2);
+static void build_bounding_hierarchy (BLOB *Blob);
 
-static void init_blob_element PARAMS((BLOB_ELEMENT *Element));
-static void determine_element_texture PARAMS((BLOB *Blob,
+static void init_blob_element (BLOB_ELEMENT *Element);
+static void determine_element_texture (BLOB *Blob,
   BLOB_ELEMENT *Element, TEXTURE *Texture, VECTOR P, int *Count,
-  TEXTURE **Textures, DBL *Weights));
+  TEXTURE **Textures, DBL *Weights);
 
-static void insert_node PARAMS((BSPHERE_TREE *Node, int *size));
+static void insert_node (BSPHERE_TREE *Node, int *size);
 
-static int  All_Blob_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int  Inside_Blob PARAMS((VECTOR point, OBJECT *Object));
-static void Blob_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Blob PARAMS((OBJECT *Object));
-static void Translate_Blob PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Blob PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Blob PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Invert_Blob PARAMS((OBJECT *Object));
-static void Transform_Blob PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Destroy_Blob PARAMS((OBJECT *Object));
-static void Compute_Blob_BBox PARAMS((BLOB *Blob));
+static int  All_Blob_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int  Inside_Blob (VECTOR point, OBJECT *Object);
+static void Blob_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static BLOB *Copy_Blob (OBJECT *Object);
+static void Translate_Blob (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Blob (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Blob (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Invert_Blob (OBJECT *Object);
+static void Transform_Blob (OBJECT *Object, TRANSFORM *Trans);
+static void Destroy_Blob (OBJECT *Object);
+static void Compute_Blob_BBox (BLOB *Blob);
 
 
 
@@ -171,7 +172,7 @@ METHODS Blob_Methods =
 {
   All_Blob_Intersections,
   Inside_Blob, Blob_Normal,
-  Copy_Blob,
+  (COPY_METHOD)Copy_Blob,
   Translate_Blob, Rotate_Blob, Scale_Blob, Transform_Blob,
   Invert_Blob, Destroy_Blob
 };
@@ -278,10 +279,7 @@ static unsigned Max_Queue_Size = 1024;
 *
 ******************************************************************************/
 
-static int All_Blob_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Blob_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int i, j, cnt;
   int root_count, in_flag;
@@ -557,7 +555,7 @@ ISTACK *Depth_Stack;
 
     /* Solve polynomial. */
 
-    root_count = Solve_Polynomial(4, coeffs, roots, Test_Flag(Blob, STURM_FLAG), 0.0);
+    root_count = Solve_Polynomial(4, coeffs, roots, Test_Flag(Blob, STURM_FLAG), 1.0e-11);
 
     /* See if any of the roots are valid. */
 
@@ -651,11 +649,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static void insert_hit(Element, t0, t1, intervals, cnt)
-BLOB_ELEMENT *Element;
-DBL t0, t1;
-BLOB_INTERVAL *intervals;
-int *cnt;
+static void insert_hit(BLOB_ELEMENT *Element, DBL t0, DBL  t1, BLOB_INTERVAL *intervals, int *cnt)
 {
   int k;
 
@@ -755,10 +749,7 @@ int *cnt;
 *
 ******************************************************************************/
 
-static int intersect_cylinder(Element, P, D, mindist, tmin, tmax)
-BLOB_ELEMENT *Element;
-VECTOR P, D;
-DBL mindist, *tmin, *tmax;
+static int intersect_cylinder(BLOB_ELEMENT *Element, VECTOR P, VECTOR  D, DBL mindist, DBL  *tmin, DBL  *tmax)
 {
   DBL a, b, c, d, t, u, v, w, len;
   VECTOR PP, DD;
@@ -889,10 +880,7 @@ DBL mindist, *tmin, *tmax;
 *
 ******************************************************************************/
 
-static int intersect_ellipsoid(Element, P, D, mindist, tmin, tmax)
-BLOB_ELEMENT *Element;
-VECTOR P, D;
-DBL mindist, *tmin, *tmax;
+static int intersect_ellipsoid(BLOB_ELEMENT *Element, VECTOR P, VECTOR  D, DBL mindist, DBL  *tmin, DBL  *tmax)
 {
   DBL b, d, t, len;
   VECTOR V1, PP, DD;
@@ -968,10 +956,7 @@ DBL mindist, *tmin, *tmax;
 *
 ******************************************************************************/
 
-static int intersect_hemisphere(Element, P, D, mindist, tmin, tmax)
-BLOB_ELEMENT *Element;
-VECTOR P, D;
-DBL mindist, *tmin, *tmax;
+static int intersect_hemisphere(BLOB_ELEMENT *Element, VECTOR P, VECTOR  D, DBL mindist, DBL  *tmin, DBL  *tmax)
 {
   DBL b, d, t, z1, z2, len;
   VECTOR PP, DD;
@@ -1154,10 +1139,7 @@ DBL mindist, *tmin, *tmax;
 *
 ******************************************************************************/
 
-static int intersect_sphere(Element, P, D, mindist, tmin, tmax)
-BLOB_ELEMENT *Element;
-VECTOR P, D;
-DBL mindist, *tmin, *tmax;
+static int intersect_sphere(BLOB_ELEMENT *Element, VECTOR P, VECTOR  D, DBL mindist, DBL  *tmin, DBL  *tmax)
 {
   DBL b, d, t;
   VECTOR V1;
@@ -1227,10 +1209,7 @@ DBL mindist, *tmin, *tmax;
 *
 ******************************************************************************/
 
-static int intersect_element(P, D, Element, mindist, tmin, tmax)
-VECTOR P, D;
-BLOB_ELEMENT *Element;
-DBL mindist, *tmin, *tmax;
+static int intersect_element(VECTOR P, VECTOR  D, BLOB_ELEMENT *Element, DBL mindist, DBL  *tmin, DBL  *tmax)
 {
 #ifdef BLOB_EXTRA_STATS
   Increase_Counter(stats[Blob_Element_Tests]);
@@ -1323,11 +1302,7 @@ DBL mindist, *tmin, *tmax;
 *
 ******************************************************************************/
 
-static int determine_influences(P, D, Blob, mindist, intervals)
-VECTOR P, D;
-BLOB *Blob;
-DBL mindist;
-BLOB_INTERVAL *intervals;
+static int determine_influences(VECTOR P, VECTOR  D, BLOB *Blob, DBL mindist, BLOB_INTERVAL *intervals)
 {
   int i;
   int cnt, size;
@@ -1436,9 +1411,7 @@ BLOB_INTERVAL *intervals;
 *
 ******************************************************************************/
 
-static DBL calculate_element_field(Element, P)
-BLOB_ELEMENT *Element;
-VECTOR P;
+static DBL calculate_element_field(BLOB_ELEMENT *Element, VECTOR P)
 {
   DBL rad2, density;
   VECTOR V1, PP;
@@ -1561,9 +1534,7 @@ VECTOR P;
 *
 ******************************************************************************/
 
-static DBL calculate_field_value(Blob, P)
-BLOB *Blob;
-VECTOR P;
+static DBL calculate_field_value(BLOB *Blob, VECTOR P)
 {
   int i;
   int size;
@@ -1658,9 +1629,7 @@ VECTOR P;
 *
 ******************************************************************************/
 
-static int Inside_Blob(Test_Point, Object)
-VECTOR Test_Point;
-OBJECT *Object;
+static int Inside_Blob(VECTOR Test_Point, OBJECT *Object)
 {
   VECTOR New_Point;
   BLOB *Blob = (BLOB *) Object;
@@ -1723,9 +1692,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void element_normal(Result, P, Element)
-VECTOR Result, P;
-BLOB_ELEMENT *Element;
+static void element_normal(VECTOR Result, VECTOR  P, BLOB_ELEMENT *Element)
 {
   DBL val, dist;
   VECTOR V1, PP;
@@ -1863,10 +1830,7 @@ BLOB_ELEMENT *Element;
 *
 ******************************************************************************/
 
-static void Blob_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Blob_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   int i;
   int size;
@@ -1995,10 +1959,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Blob(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Blob(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Blob(Object, Trans);
 }
@@ -2035,10 +1996,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Blob(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Blob(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Blob(Object, Trans);
 }
@@ -2075,10 +2033,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Blob(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Blob(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Blob(Object, Trans);
 }
@@ -2115,9 +2070,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Blob(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Blob(OBJECT *Object, TRANSFORM *Trans)
 {
   int i;
   BLOB *Blob = (BLOB *)Object;
@@ -2169,8 +2122,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Blob(Object)
-OBJECT *Object;
+static void Invert_Blob(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -2261,8 +2213,7 @@ BLOB *Create_Blob()
 *
 ******************************************************************************/
 
-static void *Copy_Blob(Object)
-OBJECT *Object;
+static BLOB *Copy_Blob(OBJECT *Object)
 {
   int i;
   BLOB *New, *Old = (BLOB *)Object;
@@ -2366,8 +2317,7 @@ BLOB_LIST *Create_Blob_List_Element()
 *
 ******************************************************************************/
 
-static void Destroy_Blob(Object)
-OBJECT *Object;
+static void Destroy_Blob(OBJECT *Object)
 {
   int i;
   BLOB *Blob = (BLOB *)Object;
@@ -2447,8 +2397,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Compute_Blob_BBox(Blob)
-BLOB *Blob;
+static void Compute_Blob_BBox(BLOB *Blob)
 {
   int i;
   DBL radius, radius2;
@@ -2459,16 +2408,19 @@ BLOB *Blob;
 
   for (i = 0; i < Blob->Data->Number_Of_Components; i++)
   {
-    get_element_bounding_sphere(&Blob->Data->Entry[i], Center, &radius2);
+    if (Blob->Data->Entry[i].c[2] > 0.0)
+    {
+      get_element_bounding_sphere(&Blob->Data->Entry[i], Center, &radius2);
 
-    radius = sqrt(radius2);
+      radius = sqrt(radius2);
 
-    Min[X] = min(Min[X], Center[X] - radius);
-    Min[Y] = min(Min[Y], Center[Y] - radius);
-    Min[Z] = min(Min[Z], Center[Z] - radius);
-    Max[X] = max(Max[X], Center[X] + radius);
-    Max[Y] = max(Max[Y], Center[Y] + radius);
-    Max[Z] = max(Max[Z], Center[Z] + radius);
+      Min[X] = min(Min[X], Center[X] - radius);
+      Min[Y] = min(Min[Y], Center[Y] - radius);
+      Min[Z] = min(Min[Z], Center[Z] - radius);
+      Max[X] = max(Max[X], Center[X] + radius);
+      Max[Y] = max(Max[Y], Center[Y] + radius);
+      Max[Z] = max(Max[Z], Center[Z] + radius);
+    }
   }
 
   Make_BBox_from_min_max(Blob->BBox, Min, Max);
@@ -2513,10 +2465,7 @@ BLOB *Blob;
 *
 ******************************************************************************/
 
-static void get_element_bounding_sphere(Element, Center, Radius2)
-BLOB_ELEMENT *Element;
-VECTOR Center;
-DBL *Radius2;
+static void get_element_bounding_sphere(BLOB_ELEMENT *Element, VECTOR Center, DBL *Radius2)
 {
   DBL r, r2 = 0.0;
   VECTOR C, H;
@@ -2611,8 +2560,7 @@ DBL *Radius2;
 *
 ******************************************************************************/
 
-static void init_blob_element(Element)
-BLOB_ELEMENT *Element;
+static void init_blob_element(BLOB_ELEMENT *Element)
 {
   Element->Type = 0;
 
@@ -2682,11 +2630,7 @@ BLOB_ELEMENT *Element;
 *
 ******************************************************************************/
 
-void Make_Blob(Blob, threshold, BlobList, npoints)
-BLOB *Blob;
-DBL threshold;
-BLOB_LIST *BlobList;
-int npoints;
+void Make_Blob(BLOB *Blob, DBL threshold, BLOB_LIST *BlobList, int npoints)
 {
   int i, count;
   DBL rad2, coeff;
@@ -2872,8 +2816,7 @@ int npoints;
 *
 ******************************************************************************/
 
-void Test_Blob_Opacity(Blob)
-BLOB *Blob;
+void Test_Blob_Opacity(BLOB *Blob)
 {
   int i;
 
@@ -2929,8 +2872,7 @@ BLOB *Blob;
 *
 ******************************************************************************/
 
-static void build_bounding_hierarchy(Blob)
-BLOB *Blob;
+static void build_bounding_hierarchy(BLOB *Blob)
 {
   int i, nElem, maxelements;
   BSPHERE_TREE **Elements;
@@ -2997,12 +2939,7 @@ BLOB *Blob;
 *
 ******************************************************************************/
 
-void Determine_Blob_Textures(Blob, IPoint, Count, Textures, Weights)
-BLOB *Blob;
-VECTOR IPoint;
-int *Count;
-TEXTURE **Textures;
-DBL *Weights;
+void Determine_Blob_Textures(BLOB *Blob, VECTOR IPoint, int *Count, TEXTURE **Textures, DBL *Weights)
 {
   int i;
   int size;
@@ -3129,13 +3066,7 @@ DBL *Weights;
 *
 ******************************************************************************/
 
-static void determine_element_texture(Blob, Element, Texture, P, Count, Textures, Weights)
-BLOB *Blob;
-BLOB_ELEMENT *Element;
-VECTOR P;
-int *Count;
-TEXTURE *Texture, **Textures;
-DBL *Weights;
+static void determine_element_texture(BLOB *Blob, BLOB_ELEMENT *Element, TEXTURE *Texture, VECTOR P, int *Count, TEXTURE  **Textures, DBL *Weights)
 {
   int i;
   DBL density;
@@ -3206,11 +3137,11 @@ DBL *Weights;
 *
 ******************************************************************************/
 
-void Translate_Blob_Element(Element, Vector)
-BLOB_ELEMENT *Element;
-VECTOR Vector;
+void Translate_Blob_Element(BLOB_ELEMENT *Element, VECTOR Vector)
 {
   TRANSFORM Trans;
+
+  Compute_Translation_Transform(&Trans, Vector);
 
   if (Element->Trans == NULL)
   {
@@ -3222,12 +3153,10 @@ VECTOR Vector;
   {
     /* This is one of the other components. */
 
-    Compute_Translation_Transform(&Trans, Vector);
-
     Transform_Blob_Element(Element, &Trans);
   }
 
-  Translate_Textures(Element->Texture, &Trans);
+  Transform_Textures(Element->Texture, &Trans);
 }
 
 
@@ -3263,9 +3192,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Rotate_Blob_Element(Element, Vector)
-BLOB_ELEMENT *Element;
-VECTOR Vector;
+void Rotate_Blob_Element(BLOB_ELEMENT *Element, VECTOR Vector)
 {
   TRANSFORM Trans;
 
@@ -3284,7 +3211,7 @@ VECTOR Vector;
     Transform_Blob_Element(Element, &Trans);
   }
 
-  Rotate_Textures(Element->Texture, &Trans);
+  Transform_Textures(Element->Texture, &Trans);
 }
 
 
@@ -3320,9 +3247,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Scale_Blob_Element(Element, Vector)
-BLOB_ELEMENT *Element;
-VECTOR Vector;
+void Scale_Blob_Element(BLOB_ELEMENT *Element, VECTOR Vector)
 {
   TRANSFORM Trans;
 
@@ -3338,6 +3263,8 @@ VECTOR Vector;
     }
   }
 
+  Compute_Scaling_Transform(&Trans, Vector);
+
   if (Element->Trans == NULL)
   {
     /* This is a sphere component. */
@@ -3350,12 +3277,10 @@ VECTOR Vector;
   {
     /* This is one of the other components. */
 
-    Compute_Scaling_Transform(&Trans, Vector);
-
     Transform_Blob_Element(Element, &Trans);
   }
 
-  Scale_Textures(Element->Texture, &Trans);
+  Transform_Textures(Element->Texture, &Trans);
 }
 
 
@@ -3391,9 +3316,7 @@ VECTOR Vector;
 *
 ******************************************************************************/
 
-void Transform_Blob_Element(Element, Trans)
-BLOB_ELEMENT *Element;
-TRANSFORM *Trans;
+void Transform_Blob_Element(BLOB_ELEMENT *Element, TRANSFORM *Trans)
 {
   if (Element->Trans == NULL)
   {
@@ -3441,8 +3364,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-void Invert_Blob_Element(Element)
-BLOB_ELEMENT *Element;
+void Invert_Blob_Element(BLOB_ELEMENT *Element)
 {
   Element->c[2] *= -1.0;
 }
@@ -3546,9 +3468,7 @@ void Destroy_Blob_Queue()
 *
 ******************************************************************************/
 
-static void insert_node(Node, size)
-BSPHERE_TREE *Node;
-int *size;
+static void insert_node(BSPHERE_TREE *Node, int *size)
 {
   /* Resize queue if necessary. */
 
@@ -3598,10 +3518,7 @@ int *size;
 *
 ******************************************************************************/
 
-void Create_Blob_Element_Texture_List(Blob, BlobList, npoints)
-BLOB *Blob;
-BLOB_LIST *BlobList;
-int npoints;
+void Create_Blob_Element_Texture_List(BLOB *Blob, BLOB_LIST *BlobList, int npoints)
 {
   int i, element_count, count;
   BLOB_LIST *temp;

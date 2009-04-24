@@ -6,16 +6,16 @@
 *  boxes and generously provided us these enhancements.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -60,14 +60,14 @@
 /*****************************************************************************
 * Static functions
 ******************************************************************************/
-static int  All_Box_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int  Inside_Box PARAMS((VECTOR point, OBJECT *Object));
-static void Box_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void Translate_Box PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Box PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Box PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Box PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Box PARAMS((OBJECT *Object));
+static int  All_Box_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int  Inside_Box (VECTOR point, OBJECT *Object);
+static void Box_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static void Translate_Box (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Box (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Box (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Box (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Box (OBJECT *Object);
 
 
 
@@ -79,7 +79,7 @@ METHODS Box_Methods =
 {
   All_Box_Intersections,
   Inside_Box, Box_Normal,
-  Copy_Box, Translate_Box, Rotate_Box, Scale_Box, Transform_Box,
+  (COPY_METHOD)Copy_Box, Translate_Box, Rotate_Box, Scale_Box, Transform_Box,
   Invert_Box, Destroy_Box
 };
 
@@ -111,10 +111,7 @@ METHODS Box_Methods =
 *
 ******************************************************************************/
 
-static int All_Box_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Box_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Intersection_Found;
   int Side1, Side2;
@@ -188,11 +185,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-int Intersect_Box(Ray, box, Depth1, Depth2, Side1, Side2)
-RAY *Ray;
-BOX *box;
-DBL *Depth1, *Depth2;
-int *Side1, *Side2;
+int Intersect_Box(RAY *Ray, BOX *box, DBL *Depth1, DBL  *Depth2, int *Side1, int  *Side2)
 {
   int smin = 0, smax = 0;    /* Side hit for min/max intersection. */
   DBL t, tmin, tmax;
@@ -555,9 +548,7 @@ int *Side1, *Side2;
 *
 ******************************************************************************/
 
-static int Inside_Box(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Box(VECTOR IPoint, OBJECT *Object)
 {
   VECTOR New_Point;
   BOX *box = (BOX *) Object;
@@ -623,10 +614,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Box_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Box_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   switch (Inter->i1)
   {
@@ -678,10 +666,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Box(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Box(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   if (((BOX *)Object)->Trans == NULL)
   {
@@ -725,10 +710,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Box(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Box(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Box(Object, Trans);
 }
@@ -761,10 +743,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Box(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Box(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   DBL temp;
   BOX *Box = (BOX *)Object;
@@ -834,8 +813,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Box(Object)
-OBJECT *Object;
+static void Invert_Box(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -868,9 +846,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Transform_Box(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Box(OBJECT *Object, TRANSFORM *Trans)
 {
   BOX *box = (BOX *)Object;
 
@@ -958,8 +934,7 @@ BOX *Create_Box()
 *
 ******************************************************************************/
 
-void *Copy_Box(Object)
-OBJECT *Object;
+BOX *Copy_Box(OBJECT *Object)
 {
   BOX *New;
 
@@ -1002,8 +977,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Destroy_Box(Object)
-OBJECT *Object;
+void Destroy_Box(OBJECT *Object)
 {
   Destroy_Transform(((BOX *)Object)->Trans);
 
@@ -1042,8 +1016,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Box_BBox(Box)
-BOX *Box;
+void Compute_Box_BBox(BOX *Box)
 {
   Assign_BBox_Vect(Box->BBox.Lower_Left, Box->bounds[0]);
 

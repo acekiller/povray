@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for VLBUFFER.C.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -125,14 +125,13 @@ extern PRIORITY_QUEUE *VLBuffer_Queue;
 * Global functions
 ******************************************************************************/
 
-void Clip_Polygon PARAMS((VECTOR *Points, int *PointCnt, VECTOR VX1, VECTOR VX2,
-  VECTOR VY1, VECTOR VY2, DBL DX1, DBL DX2, DBL DY1, DBL DY2));
+void Clip_Polygon (VECTOR *Points, int *PointCnt, VECTOR VX1, VECTOR VX2, VECTOR VY1, VECTOR VY2, DBL DX1, DBL DX2, DBL DY1, DBL DY2);
 
-void Initialize_VLBuffer_Code PARAMS((void));
-void Reinitialize_VLBuffer_Code PARAMS((void));
-void Deinitialize_VLBuffer_Code PARAMS((void));
+void Initialize_VLBuffer_Code (void);
+void Reinitialize_VLBuffer_Code (void);
+void Deinitialize_VLBuffer_Code (void);
 
-void Destroy_Project_Tree PARAMS((PROJECT_TREE_NODE *Node));
+void Destroy_Project_Tree (PROJECT_TREE_NODE *Node);
 
 
 

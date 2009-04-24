@@ -4,16 +4,16 @@
 *  This module implements the methods for objects and composite objects.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -25,9 +25,9 @@
 #include "povray.h"
 #include "vector.h"
 #include "povproto.h"
+#include "interior.h"
 #include "objects.h"
 #include "texture.h"
-#include "halos.h"
 
 
 
@@ -57,8 +57,8 @@ ISTACK *free_istack;
 * Static functions
 ******************************************************************************/
 
-static OBJECT *Copy_Bound_Clip PARAMS((OBJECT *Old));
-static void create_istack PARAMS((void));
+static OBJECT *Copy_Bound_Clip (OBJECT *Old);
+static void create_istack (void);
 
 
 
@@ -88,10 +88,7 @@ static void create_istack PARAMS((void));
 *
 ******************************************************************************/
 
-int Intersection (Ray_Intersection, Object, Ray)
-INTERSECTION *Ray_Intersection;
-OBJECT *Object;
-RAY *Ray;
+int Intersection (INTERSECTION *Ray_Intersection, OBJECT *Object, RAY *Ray)
 {
   ISTACK *Depth_Stack;
   INTERSECTION *Local;
@@ -161,9 +158,7 @@ RAY *Ray;
 *
 ******************************************************************************/
 
-int Inside_Object (IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+int Inside_Object (VECTOR IPoint, OBJECT *Object)
 {
   OBJECT *Sib;
 
@@ -206,9 +201,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-int Ray_In_Bound (Ray, Bounding_Object)
-RAY *Ray;
-OBJECT *Bounding_Object;
+int Ray_In_Bound (RAY *Ray, OBJECT *Bounding_Object)
 {
   OBJECT *Bound;
   INTERSECTION Local;
@@ -259,9 +252,7 @@ OBJECT *Bounding_Object;
 *
 ******************************************************************************/
 
-int Point_In_Clip (IPoint, Clip)
-VECTOR IPoint;
-OBJECT *Clip;
+int Point_In_Clip (VECTOR IPoint, OBJECT *Clip)
 {
   OBJECT *Local_Clip;
 
@@ -308,10 +299,7 @@ OBJECT *Clip;
 *
 ******************************************************************************/
 
-void Translate_Object (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+void Translate_Object (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   OBJECT *Sib;
 
@@ -322,22 +310,22 @@ TRANSFORM *Trans;
 
   for (Sib = Object->Bound; Sib != NULL; Sib = Sib->Sibling)
   {
-    Translate_Object (Sib, Vector, Trans);
+    Translate_Object(Sib, Vector, Trans);
   }
 
   if (Object->Clip != Object->Bound)
   {
     for (Sib = Object->Clip; Sib != NULL; Sib = Sib->Sibling)
     {
-      Translate_Object (Sib, Vector, Trans);
+      Translate_Object(Sib, Vector, Trans);
     }
   }
 
-  Translate_Textures (Object->Texture, Trans);
+  Transform_Textures(Object->Texture, Trans);
 
-  Translate_Halo_Container (Object->Texture, Trans);
+  Transform_Interior(Object->Interior, Trans);
 
-  Translate (Object, Vector, Trans);
+  Translate(Object, Vector, Trans);
 }
 
 
@@ -368,10 +356,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-void Rotate_Object (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+void Rotate_Object (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   OBJECT *Sib;
 
@@ -382,22 +367,22 @@ TRANSFORM *Trans;
 
   for (Sib = Object->Bound; Sib != NULL; Sib = Sib->Sibling)
   {
-    Rotate_Object (Sib, Vector, Trans);
+    Rotate_Object(Sib, Vector, Trans);
   }
 
   if (Object->Clip != Object->Bound)
   {
     for (Sib = Object->Clip; Sib != NULL; Sib = Sib->Sibling)
     {
-      Rotate_Object (Sib, Vector, Trans);
+      Rotate_Object(Sib, Vector, Trans);
     }
   }
 
-  Rotate_Textures (Object->Texture, Trans);
+  Transform_Textures(Object->Texture, Trans);
 
-  Rotate_Halo_Container (Object->Texture, Trans);
+  Transform_Interior(Object->Interior, Trans);
 
-  Rotate (Object, Vector, Trans);
+  Rotate(Object, Vector, Trans);
 }
 
 
@@ -428,10 +413,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-void Scale_Object (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+void Scale_Object (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   OBJECT *Sib;
 
@@ -442,22 +424,22 @@ TRANSFORM *Trans;
 
   for (Sib = Object->Bound; Sib != NULL; Sib = Sib->Sibling)
   {
-    Scale_Object (Sib, Vector, Trans);
+    Scale_Object(Sib, Vector, Trans);
   }
 
   if (Object->Clip != Object->Bound)
   {
     for (Sib = Object->Clip; Sib != NULL; Sib = Sib->Sibling)
     {
-      Scale_Object (Sib, Vector, Trans);
+      Scale_Object(Sib, Vector, Trans);
     }
   }
 
-  Scale_Textures (Object->Texture, Trans);
+  Transform_Textures(Object->Texture, Trans);
 
-  Scale_Halo_Container (Object->Texture, Trans);
+  Transform_Interior(Object->Interior, Trans);
 
-  Scale (Object, Vector, Trans);
+  Scale(Object, Vector, Trans);
 }
 
 
@@ -488,9 +470,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-void Transform_Object (Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+void Transform_Object (OBJECT *Object, TRANSFORM *Trans)
 {
   OBJECT *Sib;
 
@@ -501,22 +481,22 @@ TRANSFORM *Trans;
 
   for (Sib = Object->Bound; Sib != NULL; Sib = Sib->Sibling)
   {
-    Transform_Object (Sib, Trans);
+    Transform_Object(Sib, Trans);
   }
 
   if (Object->Clip != Object->Bound)
   {
     for (Sib = Object->Clip; Sib != NULL; Sib = Sib->Sibling)
     {
-      Transform_Object (Sib, Trans);
+      Transform_Object(Sib, Trans);
     }
   }
 
-  Transform_Textures (Object->Texture, Trans);
+  Transform_Textures(Object->Texture, Trans);
 
-  Transform_Halo_Container (Object->Texture, Trans);
+  Transform_Interior(Object->Interior, Trans);
 
-  Transform (Object,Trans);
+  Transform(Object,Trans);
 }
 
 
@@ -547,8 +527,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-void Invert_Object (Object)
-OBJECT *Object;
+void Invert_Object (OBJECT *Object)
 {
   if (Object == NULL)
   {
@@ -586,8 +565,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static OBJECT *Copy_Bound_Clip (Old)
-OBJECT *Old;
+static OBJECT *Copy_Bound_Clip (OBJECT *Old)
 {
   OBJECT *Current, *New, *Prev, *First;
 
@@ -641,8 +619,7 @@ OBJECT *Old;
 *
 ******************************************************************************/
 
-OBJECT *Copy_Object (Old)
-OBJECT *Old;
+OBJECT *Copy_Object (OBJECT *Old)
 {
   OBJECT *New;
 
@@ -651,7 +628,8 @@ OBJECT *Old;
     return (NULL);
   }
 
-  New = Copy (Old);
+  New = (OBJECT *)Copy(Old);
+
   COOPERATE_0
 
  /*
@@ -675,6 +653,8 @@ OBJECT *Old;
   New->Texture = Copy_Textures (Old->Texture);
 
   New->Bound   = Copy_Bound_Clip (Old->Bound);
+
+  New->Interior = Copy_Interior(Old->Interior);
 
   if (Old->Bound != Old->Clip)
   {
@@ -716,20 +696,21 @@ OBJECT *Old;
 *
 ******************************************************************************/
 
-void Destroy_Object (Object)
-OBJECT *Object;
+void Destroy_Object (OBJECT *Object)
 {
   OBJECT *Sib;
 
   while (Object != NULL)
   {
-    Destroy_Textures (Object->Texture);
+    Destroy_Textures(Object->Texture);
 
-    Destroy_Object (Object->Bound);
+    Destroy_Object(Object->Bound);
+
+    Destroy_Interior((INTERIOR *)Object->Interior);
 
     if (Object->Bound != Object->Clip)
     {
-      Destroy_Object (Object->Clip);
+      Destroy_Object(Object->Clip);
     }
 
     Sib = Object->Sibling;
@@ -906,8 +887,7 @@ ISTACK *open_istack()
 *
 ******************************************************************************/
 
-void close_istack (istk)
-ISTACK *istk;
+void close_istack (ISTACK *istk)
 {
   istk->next = free_istack;
 
@@ -942,8 +922,7 @@ ISTACK *istk;
 *
 ******************************************************************************/
 
-void incstack(istk)
-ISTACK *istk;
+void incstack(ISTACK *istk)
 {
   if (++istk->top_entry >= Max_Intersections)
   {

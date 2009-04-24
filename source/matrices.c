@@ -4,16 +4,16 @@
 *  This module contains code to manipulate 4x4 matrices.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -81,8 +81,7 @@
 *
 ******************************************************************************/
 
-void MZero (result)
-MATRIX result;
+void MZero (MATRIX result)
 {
   register int i, j;
 
@@ -126,8 +125,7 @@ MATRIX result;
 *
 ******************************************************************************/
 
-void MIdentity (result)
-MATRIX result;
+void MIdentity (MATRIX result)
 {
   register int i, j;
 
@@ -173,8 +171,7 @@ MATRIX result;
 *
 ******************************************************************************/
 
-void MTimes (result, matrix1, matrix2)
-MATRIX result, matrix1, matrix2;
+void MTimes (MATRIX result, MATRIX  matrix1, MATRIX  matrix2)
 {
   register int i, j, k;
   MATRIX temp_matrix;
@@ -205,8 +202,7 @@ MATRIX result, matrix1, matrix2;
 
 /*  AAC - These are not used, so they are commented out to save code space...
 
-void MAdd (result, matrix1, matrix2)
-MATRIX result, *matrix1, *matrix2;
+void MAdd (MATRIX result, MATRIX matrix1, MATRIX matrix2)
 {
   register int i, j;
 
@@ -215,8 +211,7 @@ MATRIX result, *matrix1, *matrix2;
      result[i][j] = (*matrix1)[i][j] + (*matrix2)[i][j];
 }
 
-void MSub (result, matrix1, matrix2)
-MATRIX result, matrix1, matrix2;
+void MSub (MATRIX result, MATRIX matrix1, MATRIX matrix2)
 {
   register int i, j;
 
@@ -225,9 +220,7 @@ MATRIX result, matrix1, matrix2;
      result[i][j] = matrix1[i][j] - matrix2[i][j];
 }
 
-void MScale (result, matrix1, amount)
-MATRIX result, matrix1;
-DBL amount;
+void MScale (MATRIX result, MATRIX matrix1, DBL amount)
 {
   register int i, j;
 
@@ -263,8 +256,7 @@ DBL amount;
 *
 ******************************************************************************/
 
-void MTranspose (result, matrix1)
-MATRIX result, matrix1;
+void MTranspose (MATRIX result, MATRIX  matrix1)
 {
   register int i, j;
   MATRIX temp_matrix;
@@ -312,9 +304,7 @@ MATRIX result, matrix1;
 *
 ******************************************************************************/
 
-void MTransPoint (result, vector, transform)
-VECTOR result, vector;
-TRANSFORM *transform;
+void MTransPoint (VECTOR result, VECTOR  vector, TRANSFORM *transform)
 {
   register int i;
   DBL answer_array[4];
@@ -360,9 +350,7 @@ TRANSFORM *transform;
 *
 ******************************************************************************/
 
-void MInvTransPoint (result, vector, transform)
-VECTOR result, vector;
-TRANSFORM *transform;
+void MInvTransPoint (VECTOR result, VECTOR  vector, TRANSFORM *transform)
 {
   register int i;
   DBL answer_array[4];
@@ -408,9 +396,7 @@ TRANSFORM *transform;
 *
 ******************************************************************************/
 
-void MTransDirection (result, vector, transform)
-VECTOR result, vector;
-TRANSFORM *transform;
+void MTransDirection (VECTOR result, VECTOR  vector, TRANSFORM *transform)
 {
   register int i;
   DBL answer_array[4];
@@ -456,9 +442,7 @@ TRANSFORM *transform;
 *
 ******************************************************************************/
 
-void MInvTransDirection (result, vector, transform)
-VECTOR result, vector;
-TRANSFORM *transform;
+void MInvTransDirection (VECTOR result, VECTOR  vector, TRANSFORM *transform)
 {
   register int i;
   DBL answer_array[4];
@@ -504,9 +488,7 @@ TRANSFORM *transform;
 *
 ******************************************************************************/
 
-void MTransNormal (result, vector, transform)
-VECTOR result, vector;
-TRANSFORM *transform;
+void MTransNormal (VECTOR result, VECTOR  vector, TRANSFORM *transform)
 {
   register int i;
   DBL answer_array[3];
@@ -552,9 +534,7 @@ TRANSFORM *transform;
 *
 ******************************************************************************/
 
-void MInvTransNormal (result, vector, transform)
-VECTOR result, vector;
-TRANSFORM *transform;
+void MInvTransNormal (VECTOR result, VECTOR  vector, TRANSFORM *transform)
 {
   register int i;
   DBL answer_array[3];
@@ -600,9 +580,7 @@ TRANSFORM *transform;
 *
 ******************************************************************************/
 
-void Compute_Scaling_Transform (result, vector)
-TRANSFORM *result;
-VECTOR vector;
+void Compute_Scaling_Transform (TRANSFORM *result, VECTOR vector)
 {
   MIdentity (result->matrix);
 
@@ -649,9 +627,7 @@ VECTOR vector;
 *
 ******************************************************************************/
 
-void Compute_Matrix_Transform (result, matrix)
-TRANSFORM *result;
-MATRIX matrix;
+void Compute_Matrix_Transform (TRANSFORM *result, MATRIX matrix)
 {
   register int i;
 
@@ -670,8 +646,7 @@ MATRIX matrix;
 
 /* AAC - This is not used, so it's commented out...
 
-void Compute_Inversion_Transform (result)
-TRANSFORM *result;
+void Compute_Inversion_Transform (TRANSFORM *result)
 {
   MIdentity (result->matrix);
 
@@ -714,9 +689,7 @@ TRANSFORM *result;
 *
 ******************************************************************************/
 
-void Compute_Translation_Transform (transform, vector)
-TRANSFORM *transform;
-VECTOR vector;
+void Compute_Translation_Transform (TRANSFORM *transform, VECTOR vector)
 {
   MIdentity (transform->matrix);
 
@@ -757,9 +730,7 @@ VECTOR vector;
 *
 ******************************************************************************/
 
-void Compute_Rotation_Transform (transform, vector)
-TRANSFORM *transform;
-VECTOR vector;
+void Compute_Rotation_Transform (TRANSFORM *transform, VECTOR vector)
 {
   register DBL cosx, cosy, cosz, sinx, siny, sinz;
   MATRIX Matrix;
@@ -814,9 +785,7 @@ VECTOR vector;
 
 /* AAC - This is not used so it's commented out...
 
-void Compute_Look_At_Transform (result, Look_At, Up, Right)
-TRANSFORM *result;
-VECTOR Look_At, Up, Right;
+void Compute_Look_At_Transform (TRANSFORM *result, VECTOR Look_At, VECTOR Up, VECTOR Right)
 {
   MIdentity (result->inverse);
 
@@ -864,8 +833,7 @@ VECTOR Look_At, Up, Right;
 *
 ******************************************************************************/
 
-void Compose_Transforms (Original_Transform, New_Transform)
-TRANSFORM *Original_Transform, *New_Transform;
+void Compose_Transforms (TRANSFORM *Original_Transform, TRANSFORM  *New_Transform)
 {
   MTimes(Original_Transform->matrix, Original_Transform->matrix,  New_Transform->matrix);
 
@@ -902,10 +870,7 @@ TRANSFORM *Original_Transform, *New_Transform;
 *
 ******************************************************************************/
 
-void Compute_Axis_Rotation_Transform (transform, V1, angle)
-TRANSFORM *transform;
-VECTOR V1;
-DBL angle;
+void Compute_Axis_Rotation_Transform (TRANSFORM *transform, VECTOR V1, DBL angle)
 {
   DBL l, cosx, sinx;
 
@@ -960,12 +925,7 @@ DBL angle;
 *
 ******************************************************************************/
 
-void Compute_Coordinate_Transform(trans, origin, up, radius, length)
-TRANSFORM *trans;
-VECTOR origin;
-VECTOR up;
-DBL radius;
-DBL length;
+void Compute_Coordinate_Transform(TRANSFORM *trans, VECTOR origin, VECTOR up, DBL radius, DBL length)
 {
   TRANSFORM trans2;
   VECTOR tmpv;
@@ -1057,8 +1017,7 @@ TRANSFORM *Create_Transform()
 *
 ******************************************************************************/
 
-TRANSFORM *Copy_Transform (Old)
-TRANSFORM *Old;
+TRANSFORM *Copy_Transform (TRANSFORM *Old)
 {
   TRANSFORM *New;
   if (Old != NULL)
@@ -1181,8 +1140,7 @@ DBL *Create_Float ()
 *
 ******************************************************************************/
 
-void MInvers(r, m)
-MATRIX r, m;
+void MInvers(MATRIX r, MATRIX  m)
 {
   DBL d00, d01, d02, d03;
   DBL d10, d11, d12, d13;
@@ -1232,5 +1190,29 @@ MATRIX r, m;
   r[3][0] = -d03/D; r[3][1] =  d13/D;  r[3][2] = -d23/D; r[3][3] =  d33/D;
 }
 
+UV_VECT *Create_UV_Vect ()
+{
+  UV_VECT *New;
 
+  New = (UV_VECT *)POV_MALLOC(sizeof (UV_VECT), "uv vector");
+
+  (*New)[0]= 0.0;
+  (*New)[1]= 0.0;
+
+  return (New);
+}
+
+VECTOR_4D *Create_Vector_4D ()
+{
+  VECTOR_4D *New;
+
+  New = (VECTOR_4D *)POV_MALLOC(sizeof (VECTOR_4D), "4d vector");
+
+  (*New)[0]= 0.0;
+  (*New)[1]= 0.0;
+  (*New)[2]= 0.0;
+  (*New)[3]= 0.0;
+
+  return (New);
+}
 

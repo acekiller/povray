@@ -4,16 +4,16 @@
 *  This module implements the code for the quadric shape primitive.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -67,19 +67,19 @@
 * Static functions
 ******************************************************************************/
 
-static int Intersect_Quadric PARAMS((RAY *Ray, QUADRIC *Quadric, DBL *Depth1, DBL *Depth2));
-static void Quadric_To_Matrix PARAMS((QUADRIC *Quadric, MATRIX Matrix));
-static void Matrix_To_Quadric PARAMS((MATRIX Matrix, QUADRIC *Quadric));
-static int All_Quadric_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_Quadric PARAMS((VECTOR IPoint, OBJECT *Object));
-static void Quadric_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Quadric PARAMS((OBJECT *Object));
-static void Translate_Quadric PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Quadric PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Quadric PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Quadric PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Quadric PARAMS((OBJECT *Object));
-static void Destroy_Quadric PARAMS((OBJECT *Object));
+static int Intersect_Quadric (RAY *Ray, QUADRIC *Quadric, DBL *Depth1, DBL *Depth2);
+static void Quadric_To_Matrix (QUADRIC *Quadric, MATRIX Matrix);
+static void Matrix_To_Quadric (MATRIX Matrix, QUADRIC *Quadric);
+static int All_Quadric_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_Quadric (VECTOR IPoint, OBJECT *Object);
+static void Quadric_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static QUADRIC *Copy_Quadric (OBJECT *Object);
+static void Translate_Quadric (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Quadric (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Quadric (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Quadric (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Quadric (OBJECT *Object);
+static void Destroy_Quadric (OBJECT *Object);
 
 /*****************************************************************************
 * Local variables
@@ -89,7 +89,7 @@ METHODS Quadric_Methods =
 {
   All_Quadric_Intersections,
   Inside_Quadric, Quadric_Normal,
-  Copy_Quadric,
+  (COPY_METHOD)Copy_Quadric,
   Translate_Quadric, Rotate_Quadric,
   Scale_Quadric, Transform_Quadric, Invert_Quadric,
   Destroy_Quadric
@@ -124,10 +124,7 @@ METHODS Quadric_Methods =
 *
 ******************************************************************************/
 
-static int All_Quadric_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Quadric_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   DBL Depth1, Depth2;
   VECTOR IPoint;
@@ -193,10 +190,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Intersect_Quadric(Ray, Quadric, Depth1, Depth2)
-RAY *Ray;
-QUADRIC *Quadric;
-DBL *Depth1, *Depth2;
+static int Intersect_Quadric(RAY *Ray, QUADRIC *Quadric, DBL *Depth1, DBL  *Depth2)
 {
   register DBL a, b, c, d;
 
@@ -277,9 +271,7 @@ DBL *Depth1, *Depth2;
 *
 ******************************************************************************/
 
-static int Inside_Quadric(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Quadric(VECTOR IPoint, OBJECT *Object)
 {
   QUADRIC *Quadric = (QUADRIC *)Object;
 
@@ -318,10 +310,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Quadric_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Quadric_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   QUADRIC *Quadric = (QUADRIC *) Object;
   DBL Len;
@@ -386,9 +375,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Transform_Quadric(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Quadric(OBJECT *Object, TRANSFORM *Trans)
 {
   QUADRIC *Quadric=(QUADRIC *)Object;
   MATRIX Quadric_Matrix, Transform_Transposed;
@@ -432,9 +419,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Quadric_To_Matrix(Quadric, Matrix)
-QUADRIC *Quadric;
-MATRIX Matrix;
+static void Quadric_To_Matrix(QUADRIC *Quadric, MATRIX Matrix)
 {
   MZero (Matrix);
 
@@ -478,9 +463,7 @@ MATRIX Matrix;
 *
 ******************************************************************************/
 
-static void Matrix_To_Quadric(Matrix, Quadric)
-MATRIX Matrix;
-QUADRIC *Quadric;
+static void Matrix_To_Quadric(MATRIX Matrix, QUADRIC *Quadric)
 {
   Quadric->Square_Terms[X] = Matrix[0][0];
   Quadric->Square_Terms[Y] = Matrix[1][1];
@@ -525,10 +508,7 @@ QUADRIC *Quadric;
 *
 ******************************************************************************/
 
-static void Translate_Quadric(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Quadric(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Quadric (Object, Trans);
 }
@@ -561,10 +541,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Quadric(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Quadric(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Quadric (Object, Trans);
 }
@@ -597,10 +574,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Quadric(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Quadric(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Quadric (Object, Trans);
 }
@@ -633,8 +607,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Quadric(Object)
-OBJECT *Object;
+static void Invert_Quadric(OBJECT *Object)
 {
   QUADRIC *Quadric = (QUADRIC *) Object;
 
@@ -719,8 +692,7 @@ QUADRIC *Create_Quadric()
 *
 ******************************************************************************/
 
-static void *Copy_Quadric(Object)
-OBJECT *Object;
+static QUADRIC *Copy_Quadric(OBJECT *Object)
 {
   QUADRIC *New;
 
@@ -759,8 +731,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Quadric(Object)
-OBJECT *Object;
+static void Destroy_Quadric(OBJECT *Object)
 {
   POV_FREE (Object);
 }
@@ -807,9 +778,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Quadric_BBox(Quadric, ClipMin, ClipMax)
-QUADRIC *Quadric;
-VECTOR ClipMin, ClipMax;
+void Compute_Quadric_BBox(QUADRIC *Quadric, VECTOR ClipMin, VECTOR  ClipMax)
 {
   DBL A, B, C, D, E, F, G, H, I, J;
   DBL a, b, c, d;
@@ -1481,16 +1450,25 @@ VECTOR ClipMin, ClipMax;
 *
 ******************************************************************************/
 
-void Compute_Plane_Min_Max(Plane, Min, Max)
-PLANE *Plane;
-VECTOR Min, Max;
+void Compute_Plane_Min_Max(PLANE *Plane, VECTOR Min, VECTOR  Max)
 {
   DBL d;
-  VECTOR N;
+  VECTOR P, N;
 
-  Assign_Vector(N, Plane->Normal_Vector);
+  if (Plane->Trans == NULL)
+  {
+    Assign_Vector(N, Plane->Normal_Vector);
 
-  d = -Plane->Distance;
+    d = -Plane->Distance;
+  }
+  else
+  {
+    MInvTransNormal(N, Plane->Normal_Vector, Plane->Trans);
+
+    MInvTransPoint(P, N, Plane->Trans);
+
+    d = -Plane->Distance - P[X] * N[X] - P[Y] * N[Y] - P[Z] * N[Z] + 1.0;
+  }
 
   Min[X] = Min[Y] = Min[Z] = -BOUND_HUGE/2;
   Max[X] = Max[Y] = Max[Z] =  BOUND_HUGE/2;

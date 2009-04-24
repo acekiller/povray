@@ -7,16 +7,16 @@
 *  Adaption to POV-Ray by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -97,27 +97,27 @@
 * Static functions
 ******************************************************************************/
 
-static int intersect_superellipsoid PARAMS((RAY *Ray, SUPERELLIPSOID *Superellipsoid, ISTACK *Depth_Stack));
-static int intersect_box PARAMS((VECTOR P, VECTOR D, DBL *dmin, DBL *dmax));
-static DBL power PARAMS((DBL x, DBL e));
-static DBL evaluate_superellipsoid PARAMS((VECTOR P, SUPERELLIPSOID *Superellipsoid));
-static int compdists PARAMS((CONST void *in_a, CONST void *in_b));
+static int intersect_superellipsoid (RAY *Ray, SUPERELLIPSOID *Superellipsoid, ISTACK *Depth_Stack);
+static int intersect_box (VECTOR P, VECTOR D, DBL *dmin, DBL *dmax);
+static DBL power (DBL x, DBL e);
+static DBL evaluate_superellipsoid (VECTOR P, SUPERELLIPSOID *Superellipsoid);
+static int compdists (CONST void *in_a, CONST void *in_b);
 
-static int find_ray_plane_points PARAMS((VECTOR P, VECTOR D, int cnt, DBL *dists, DBL mindist, DBL maxdist));
-static void solve_hit1 PARAMS((SUPERELLIPSOID *Super, DBL v0, VECTOR tP0, DBL v1, VECTOR tP1, VECTOR P));
-static int check_hit2 PARAMS((SUPERELLIPSOID *Super, VECTOR P, VECTOR D, DBL t0, VECTOR P0, DBL v0, DBL t1, DBL *t, VECTOR Q));
-static int insert_hit PARAMS((OBJECT *Object, RAY *Ray, DBL Depth, ISTACK *Depth_Stack));
+static int find_ray_plane_points (VECTOR P, VECTOR D, int cnt, DBL *dists, DBL mindist, DBL maxdist);
+static void solve_hit1 (SUPERELLIPSOID *Super, DBL v0, VECTOR tP0, DBL v1, VECTOR tP1, VECTOR P);
+static int check_hit2 (SUPERELLIPSOID *Super, VECTOR P, VECTOR D, DBL t0, VECTOR P0, DBL v0, DBL t1, DBL *t, VECTOR Q);
+static int insert_hit (OBJECT *Object, RAY *Ray, DBL Depth, ISTACK *Depth_Stack);
 
-static int   All_Superellipsoid_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int   Inside_Superellipsoid PARAMS((VECTOR point, OBJECT *Object));
-static void  Superellipsoid_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void  *Copy_Superellipsoid PARAMS((OBJECT *Object));
-static void  Translate_Superellipsoid PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Rotate_Superellipsoid PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Scale_Superellipsoid PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Transform_Superellipsoid PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void  Invert_Superellipsoid PARAMS((OBJECT *Object));
-static void  Destroy_Superellipsoid PARAMS((OBJECT *Object));
+static int   All_Superellipsoid_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int   Inside_Superellipsoid (VECTOR point, OBJECT *Object);
+static void  Superellipsoid_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static SUPERELLIPSOID *Copy_Superellipsoid (OBJECT *Object);
+static void  Translate_Superellipsoid (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Rotate_Superellipsoid (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Scale_Superellipsoid (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Transform_Superellipsoid (OBJECT *Object, TRANSFORM *Trans);
+static void  Invert_Superellipsoid (OBJECT *Object);
+static void  Destroy_Superellipsoid (OBJECT *Object);
 
 /*****************************************************************************
 * Local variables
@@ -127,7 +127,7 @@ static METHODS Superellipsoid_Methods =
 {
   All_Superellipsoid_Intersections,
   Inside_Superellipsoid, Superellipsoid_Normal,
-  Copy_Superellipsoid,
+  (COPY_METHOD)Copy_Superellipsoid,
   Translate_Superellipsoid, Rotate_Superellipsoid,
   Scale_Superellipsoid, Transform_Superellipsoid, Invert_Superellipsoid, Destroy_Superellipsoid
 };
@@ -176,10 +176,7 @@ static DBL planes[PLANECOUNT][4] =
 *
 ******************************************************************************/
 
-static int All_Superellipsoid_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Superellipsoid_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   Increase_Counter(stats[Ray_Superellipsoid_Tests]);
 
@@ -231,10 +228,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int intersect_superellipsoid(Ray, Superellipsoid, Depth_Stack)
-RAY *Ray;
-SUPERELLIPSOID *Superellipsoid;
-ISTACK *Depth_Stack;
+static int intersect_superellipsoid(RAY *Ray, SUPERELLIPSOID *Superellipsoid, ISTACK *Depth_Stack)
 {
   int i, cnt, Found = FALSE;
   DBL dists[PLANECOUNT+2];
@@ -417,9 +411,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_Superellipsoid(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Superellipsoid(VECTOR IPoint, OBJECT *Object)
 {
   DBL val;
   VECTOR P;
@@ -475,10 +467,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Superellipsoid_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Superellipsoid_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   DBL k, x, y, z;
   VECTOR P, N, E;
@@ -540,10 +529,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Superellipsoid(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Superellipsoid(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Superellipsoid(Object, Trans);
 }
@@ -581,10 +567,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Superellipsoid(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Superellipsoid(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Superellipsoid(Object, Trans);
 }
@@ -622,10 +605,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Superellipsoid(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Superellipsoid(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Superellipsoid(Object, Trans);
 }
@@ -663,9 +643,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Superellipsoid(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Superellipsoid(OBJECT *Object, TRANSFORM *Trans)
 {
   Compose_Transforms(((SUPERELLIPSOID *)Object)->Trans, Trans);
 
@@ -704,8 +682,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Superellipsoid(Object)
-OBJECT *Object;
+static void Invert_Superellipsoid(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -787,8 +764,7 @@ SUPERELLIPSOID *Create_Superellipsoid()
 *
 ******************************************************************************/
 
-static void *Copy_Superellipsoid(Object)
-OBJECT *Object;
+static SUPERELLIPSOID *Copy_Superellipsoid(OBJECT *Object)
 {
   SUPERELLIPSOID *New, *Superellipsoid = (SUPERELLIPSOID *)Object;
 
@@ -839,8 +815,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Superellipsoid(Object)
-OBJECT *Object;
+static void Destroy_Superellipsoid(OBJECT *Object)
 {
   SUPERELLIPSOID *Superellipsoid = (SUPERELLIPSOID *)Object;
 
@@ -881,8 +856,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Superellipsoid_BBox(Superellipsoid)
-SUPERELLIPSOID *Superellipsoid;
+void Compute_Superellipsoid_BBox(SUPERELLIPSOID *Superellipsoid)
 {
   Make_BBox(Superellipsoid->BBox, -1.0001, -1.0001, -1.0001, 2.0002, 2.0002, 2.0002);
 
@@ -924,9 +898,7 @@ SUPERELLIPSOID *Superellipsoid;
 *
 ******************************************************************************/
 
-static int intersect_box(P, D, dmin, dmax)
-VECTOR P, D;
-DBL *dmin, *dmax;
+static int intersect_box(VECTOR P, VECTOR  D, DBL *dmin, DBL  *dmax)
 {
   DBL tmin = 0.0, tmax = 0.0;
 
@@ -1107,9 +1079,7 @@ DBL *dmin, *dmax;
 *
 ******************************************************************************/
 
-static DBL evaluate_superellipsoid(P, Superellipsoid)
-VECTOR P;
-SUPERELLIPSOID *Superellipsoid;
+static DBL evaluate_superellipsoid(VECTOR P, SUPERELLIPSOID *Superellipsoid)
 {
   VECTOR V1;
 
@@ -1153,8 +1123,7 @@ SUPERELLIPSOID *Superellipsoid;
 *
 ******************************************************************************/
 
-static DBL power(x, e)
-DBL x, e;
+static DBL power(DBL x, DBL  e)
 {
   register int i;
   register DBL b;
@@ -1229,11 +1198,7 @@ DBL x, e;
 *
 ******************************************************************************/
 
-static int insert_hit(Object, Ray, Depth, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-DBL Depth;
-ISTACK *Depth_Stack;
+static int insert_hit(OBJECT *Object, RAY *Ray, DBL Depth, ISTACK *Depth_Stack)
 {
   VECTOR IPoint;
 
@@ -1280,9 +1245,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int compdists(in_a, in_b)
- CONST void *in_a;
- CONST void *in_b;
+static int compdists(CONST void *in_a, CONST void *in_b)
 {
   DBL a, b;
 
@@ -1334,10 +1297,7 @@ static int compdists(in_a, in_b)
 *
 ******************************************************************************/
 
-static int find_ray_plane_points(P, D, cnt, dists, mindist, maxdist)
-VECTOR P, D;
-int cnt;
-DBL *dists, mindist, maxdist;
+static int find_ray_plane_points(VECTOR P, VECTOR  D, int cnt, DBL *dists, DBL  mindist, DBL  maxdist)
 {
   int i;
   DBL t, d;
@@ -1410,10 +1370,7 @@ DBL *dists, mindist, maxdist;
 *
 ******************************************************************************/
 
-static void solve_hit1(Super, v0, tP0, v1, tP1, P)
-SUPERELLIPSOID *Super;
-DBL v0, v1;
-VECTOR tP0, tP1, P;
+static void solve_hit1(SUPERELLIPSOID *Super, DBL v0, VECTOR tP0, DBL  v1, VECTOR  tP1, VECTOR  P)
 {
   int i;
   DBL x, v2, v3;
@@ -1567,10 +1524,7 @@ VECTOR tP0, tP1, P;
 *
 ******************************************************************************/
 
-static int check_hit2(Super, P, D, t0, P0, v0, t1, t, Q)
-SUPERELLIPSOID *Super;
-DBL t0, t1, v0, *t;
-VECTOR P, D, P0, Q;
+static int check_hit2(SUPERELLIPSOID *Super, VECTOR P, VECTOR  D, DBL t0, VECTOR  P0, DBL  v0, DBL  t1, DBL  *t, VECTOR  Q)
 {
   int i;
   DBL dt0, dt1, v1, deltat, maxdelta;

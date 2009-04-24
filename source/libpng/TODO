@@ -1,23 +1,24 @@
-pngtodo.txt - list of things to do for libpng
+TODO - list of things to do for libpng:
 
-for 0.9
-   improved dithering
-   final bug fixes
-   cHRM transformation
-   better documentation
-   multi-lingual message support
-
-after 1.0
-   overlaying one image on top of another
-   optional palette creation
-   histogram creation
-   text conversion between different code types
-   support for application-defined chunk handlers
-   support for embedded PNG usage (MNG)
-   pull writer
-   better dithering
-   keep up with public chunks
-   better filter selection (counting huffman bits?  filter type inertia?)
-   C++ wrapper
-   other languages (pascal, for one)
-   comments of > 64K for DOS
+Final bug fixes.
+Fix problem with C++ and EXTERN "C".
+Better C++ wrapper/full C++ implementation?
+Keep up with public chunks.
+sPLT chunk handling.
+cHRM transformation.
+Support for application-defined chunk handlers.
+Improve setjmp/longjmp usage or remove it in favor of returning error codes.
+High-level API for reading images.
+Add "grayscale->palette" transformation and "palette->grayscale" detection.
+Color to gray transformation.
+Improved dithering.
+Multi-lingual error and warning message support.
+Complete sRGB transformation (presently it simply uses gamma=0.45455).
+Man pages for function calls.
+Better documentation.
+Better filter selection
+   (counting huffman bits/precompression?  filter inertia?  filter costs?).
+Optional palette (sPLT) creation.
+Histogram creation.
+Text conversion between different code pages (Latin-1 -> Mac and DOS).
+Improve API by hiding the info_ptr.

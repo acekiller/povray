@@ -6,16 +6,16 @@
 *  rendering glyphs and generously provided us these enhancements.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -37,6 +37,10 @@
 * Cache Format 4 glyph table index to speed up parsing, Mar 1996 [AED]
 * Fixed TTF rendering bug that leaves horizontal streaks, Nov. 1996  Kochin Chang (KochinC@aol.com)
 * Allowed Macintosh-charmap TTF files to be processed, Nov. 1996 Bob Spence/Eduard Schwan
+*
+* Modifications by Hans-Detlev Fink, January 1999, used with permission
+* Modifications by Thomas Willhalm, March 1999, used with permission
+*
 *****************************************************************************/
 
 #include "frame.h"
@@ -339,55 +343,55 @@ static FontFileInfo *TTFonts = NULL;
 ******************************************************************************/
 
 /* Byte order independent I/O routines (probably already in other routines) */
-static SHORT readSHORT PARAMS((FILE *infile, int line, char *file));
-static USHORT readUSHORT PARAMS((FILE *infile, int line, char *file));
-static LONG readLONG PARAMS((FILE *infile, int line, char *file));
-static ULONG readULONG PARAMS((FILE *infile, int line, char *file));
-static int compare_tag4 PARAMS((BYTE *ttf_tag, BYTE *known_tag));
+static SHORT readSHORT (FILE *infile, int line, char *file);
+static USHORT readUSHORT (FILE *infile, int line, char *file);
+static LONG readLONG (FILE *infile, int line, char *file);
+static ULONG readULONG (FILE *infile, int line, char *file);
+static int compare_tag4 (BYTE *ttf_tag, BYTE *known_tag);
 
 /* Internal TTF input routines */
-static FontFileInfo *ProcessFontFile PARAMS((char *fontfilename));
-static FontFileInfo *OpenFontFile PARAMS((char *filename));
-static void ProcessHeadTable PARAMS((FontFileInfo *ffile, long head_table_offset));
-static void ProcessLocaTable PARAMS((FontFileInfo *ffile, long loca_table_offset));
-static void ProcessMaxpTable PARAMS((FontFileInfo *ffile, long maxp_table_offset));
-static void ProcessKernTable PARAMS((FontFileInfo *ffile, long kern_table_offset));
-static void ProcessHheaTable PARAMS((FontFileInfo *ffile, long hhea_table_offset));
-static void ProcessHmtxTable PARAMS((FontFileInfo *ffile, long hmtx_table_offset));
-static GlyphPtr ProcessCharacter PARAMS((FontFileInfo *ffile, unsigned int search_char, unsigned int *glyph_index));
-static USHORT ProcessCharMap PARAMS((FontFileInfo *ffile, unsigned int search_char));
-static USHORT ProcessFormat0Glyph PARAMS((FontFileInfo *ffile, unsigned int search_char));
-static USHORT ProcessFormat4Glyph PARAMS((FontFileInfo *ffile, unsigned int search_char));
-static USHORT ProcessFormat6Glyph PARAMS((FontFileInfo *ffile, unsigned int search_char));
-static GlyphPtr ExtractGlyphInfo PARAMS((FontFileInfo *ffile, unsigned int *glyph_index, unsigned int c));
-static GlyphOutline *ExtractGlyphOutline PARAMS((FontFileInfo *ffile, unsigned int *glyph_index, unsigned int c));
-static GlyphPtr ConvertOutlineToGlyph PARAMS((FontFileInfo *ffile, GlyphOutline *ttglyph));
+static FontFileInfo *ProcessFontFile (char *fontfilename);
+static FontFileInfo *OpenFontFile (char *filename);
+static void ProcessHeadTable (FontFileInfo *ffile, long head_table_offset);
+static void ProcessLocaTable (FontFileInfo *ffile, long loca_table_offset);
+static void ProcessMaxpTable (FontFileInfo *ffile, long maxp_table_offset);
+static void ProcessKernTable (FontFileInfo *ffile, long kern_table_offset);
+static void ProcessHheaTable (FontFileInfo *ffile, long hhea_table_offset);
+static void ProcessHmtxTable (FontFileInfo *ffile, long hmtx_table_offset);
+static GlyphPtr ProcessCharacter (FontFileInfo *ffile, unsigned int search_char, unsigned int *glyph_index);
+static USHORT ProcessCharMap (FontFileInfo *ffile, unsigned int search_char);
+static USHORT ProcessFormat0Glyph (FontFileInfo *ffile, unsigned int search_char);
+static USHORT ProcessFormat4Glyph (FontFileInfo *ffile, unsigned int search_char);
+static USHORT ProcessFormat6Glyph (FontFileInfo *ffile, unsigned int search_char);
+static GlyphPtr ExtractGlyphInfo (FontFileInfo *ffile, unsigned int *glyph_index, unsigned int c);
+static GlyphOutline *ExtractGlyphOutline (FontFileInfo *ffile, unsigned int *glyph_index, unsigned int c);
+static GlyphPtr ConvertOutlineToGlyph (FontFileInfo *ffile, GlyphOutline *ttglyph);
 
 
 /* Glyph surface intersection routines */
-static int Inside_Glyph PARAMS((double x, double y, GlyphPtr glyph));
-static int solve_quad PARAMS((double *x, double *y, double mindist, DBL maxdist));
-static void GetZeroOneHits PARAMS((GlyphPtr glyph, VECTOR P, VECTOR D, DBL glyph_depth, double *t0, double *t1));
-static int GlyphIntersect PARAMS((OBJECT *Object, VECTOR P, VECTOR D, DBL len, GlyphPtr glyph, DBL glyph_depth, RAY *Ray, ISTACK *Depth_Stack));
+static int Inside_Glyph (double x, double y, GlyphPtr glyph);
+static int solve_quad (double *x, double *y, double mindist, DBL maxdist);
+static void GetZeroOneHits (GlyphPtr glyph, VECTOR P, VECTOR D, DBL glyph_depth, double *t0, double *t1);
+static int GlyphIntersect (OBJECT *Object, VECTOR P, VECTOR D, GlyphPtr glyph, DBL glyph_depth, RAY *Ray, ISTACK *Depth_Stack); /* tw */
 
 /* POV-Ray object intersection/creation routines */
-static TTF *Create_TTF PARAMS((void));
-static int All_TTF_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_TTF PARAMS((VECTOR IPoint, OBJECT *Object));
-static void TTF_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_TTF PARAMS((OBJECT *Object));
-static void Translate_TTF PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_TTF PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_TTF PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_TTF PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_TTF PARAMS((OBJECT *Object));
-static void Destroy_TTF PARAMS((OBJECT *Object));
+static TTF *Create_TTF (void);
+static int All_TTF_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_TTF (VECTOR IPoint, OBJECT *Object);
+static void TTF_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static TTF  *Copy_TTF (OBJECT *Object);
+static void Translate_TTF (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_TTF (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_TTF (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_TTF (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_TTF (OBJECT *Object);
+static void Destroy_TTF (OBJECT *Object);
 
 
 METHODS TTF_Methods =
 {All_TTF_Intersections,
  Inside_TTF, TTF_Normal,
- Copy_TTF, Translate_TTF, Rotate_TTF, Scale_TTF, Transform_TTF,
+ (COPY_METHOD)Copy_TTF, Translate_TTF, Rotate_TTF, Scale_TTF, Transform_TTF,
  Invert_TTF, Destroy_TTF};
 
 /*
@@ -397,10 +401,7 @@ METHODS TTF_Methods =
  * "optimize" these functions - some architectures require them the way
  * that they are written.
  */
-static SHORT readSHORT(infile, line, file)
-FILE *infile;
-int line;
-char *file;
+static SHORT readSHORT(FILE *infile, int line, char *file)
 {
   int i0, i1 = 0; /* To quiet warnings */
 
@@ -415,10 +416,7 @@ char *file;
     return (i0 << 8) | i1;
 }
 
-static USHORT readUSHORT(infile, line, file)
-FILE *infile;
-int line;
-char *file;
+static USHORT readUSHORT(FILE *infile, int line, char *file)
 {
   int i0, i1 = 0; /* To quiet warnings */
 
@@ -430,10 +428,7 @@ char *file;
   return (USHORT)((((USHORT)i0) << 8) | ((USHORT)i1));
 }
 
-static LONG readLONG(infile, line, file)
-FILE *infile;
-int line;
-char *file;
+static LONG readLONG(FILE *infile, int line, char *file)
 {
   LONG i0, i1 = 0, i2 = 0, i3 = 0; /* To quiet warnings */
 
@@ -450,10 +445,7 @@ char *file;
     return (i0 << 24) | (i1 << 16) | (i2 << 8) | i3;
 }
 
-static ULONG readULONG(infile, line, file)
-FILE *infile;
-int line;
-char *file;
+static ULONG readULONG(FILE *infile, int line, char *file)
 {
   int i0, i1 = 0, i2 = 0, i3 = 0;  /* To quiet warnings */
 
@@ -467,9 +459,7 @@ char *file;
                   (((ULONG) i2) << 8)  |  ((ULONG) i3));
 }
 
-static int compare_tag4(ttf_tag, known_tag)
-BYTE *ttf_tag;
-BYTE *known_tag;
+static int compare_tag4(BYTE *ttf_tag, BYTE *known_tag)
 {
    return (ttf_tag[0] == known_tag[0] && ttf_tag[1] == known_tag[1] &&
            ttf_tag[2] == known_tag[2] && ttf_tag[3] == known_tag[3]);
@@ -501,11 +491,7 @@ BYTE *known_tag;
 *   -
 *
 ******************************************************************************/
-void ProcessNewTTF(object, filename, text_string, depth, offset)
-OBJECT *object;
-char *filename, *text_string;
-DBL depth;
-VECTOR offset;
+void ProcessNewTTF(OBJECT *object, char *filename, char  *text_string, DBL depth, VECTOR offset)
 {
   FontFileInfo *ffile;
   int slen;
@@ -725,9 +711,13 @@ VECTOR offset;
 #endif
 
   /* Close the font file descriptor */
-  fclose(ffile->fp);
-  
-  ffile->fp = NULL;
+
+  if (ffile->fp != NULL)	/* just to be sure it exists -hdf99- */
+  {
+    fclose(ffile->fp);
+    ffile->fp = NULL;
+  }
+
 }
 
 /*****************************************************************************
@@ -757,8 +747,7 @@ VECTOR offset;
 *   Reordered table parsing to avoid lots of file seeking - Jan 1996 [AED]
 *
 ******************************************************************************/
-static FontFileInfo *ProcessFontFile(fontfilename)
-char *fontfilename;
+static FontFileInfo *ProcessFontFile(char *fontfilename)
 {
   unsigned i;
   long head_table_offset = 0;
@@ -910,11 +899,11 @@ char *fontfilename;
 *   -
 *
 ******************************************************************************/
-static FontFileInfo *OpenFontFile(filename)
-char *filename;
+static FontFileInfo *OpenFontFile(char *filename)
 {
-  int i;
+  /* int i; */ /* tw, mtg */
   FontFileInfo *fontlist;
+  char b[FILE_NAME_LENGTH];
 
   /* First look to see if we have already opened this font */
   
@@ -926,8 +915,8 @@ char *filename;
   {
     /* We have a match, use the previous information */
     if ((fontlist->fp == NULL) &&
-        (fontlist->fp = Locate_File(fontlist->filename, READ_FILE_STRING,
-                                    ".ttf", ".TTF",TRUE)) == NULL)
+        (fontlist->fp = Locate_File(fontlist->filename, READ_BINFILE_STRING,
+                                    ".ttf", ".TTF",NULL,TRUE)) == NULL)
       Error("Can't open font file.\n");
 #ifdef TTF_DEBUG
     else
@@ -941,17 +930,15 @@ char *filename;
      * information and set some defaults
      */
 
-    fontlist = POV_CALLOC(1, sizeof(FontFileInfo), "FontFileInfo");
-    i = strlen(filename) + 1;
-    fontlist->filename = POV_MALLOC(i * sizeof(unsigned char), "FontFile Name");
-
-    strcpy(fontlist->filename, filename);
+    fontlist = (FontFileInfo *)POV_CALLOC(1, sizeof(FontFileInfo), "FontFileInfo");
     
-    if ((fontlist->fp = Locate_File(fontlist->filename, READ_FILE_STRING,
-                                    ".ttf", ".TTF",TRUE)) == NULL)
+    if ((fontlist->fp = Locate_File(filename, READ_BINFILE_STRING,
+                                    ".ttf", ".TTF",b,TRUE)) == NULL)
     {
       Error("Can't open font file.\n");
     }
+    
+    fontlist->filename = POV_STRDUP(b);
     
     /*
      * We try to choose ISO 8859-1 (Latin-1) as default for now.
@@ -1033,9 +1020,7 @@ void FreeFontInfo()
 }
 
 /* Process the font header table */
-static void ProcessHeadTable(ffile, head_table_offset)
-FontFileInfo *ffile;
-long head_table_offset;
+static void ProcessHeadTable(FontFileInfo *ffile, long head_table_offset)
 {
   sfnt_FontHeader fontHeader;
 
@@ -1096,16 +1081,14 @@ long head_table_offset;
 }
 
 /* Determine the relative offsets of glyphs */
-static void ProcessLocaTable(ffile, loca_table_offset)
-FontFileInfo *ffile;
-long loca_table_offset;
+static void ProcessLocaTable(FontFileInfo *ffile, long loca_table_offset)
 {
   int i;
 
   /* Move to location of table in file */
   fseek(ffile->fp, loca_table_offset, SEEK_SET);
 
-  ffile->loca_table = POV_MALLOC((ffile->numGlyphs+1) * sizeof(ULONG), "ttf");
+  ffile->loca_table = (ULONG *)POV_MALLOC((ffile->numGlyphs+1) * sizeof(ULONG), "ttf");
 
 #ifdef TTF_DEBUG
   Debug_Info("\nlocation table:\n");
@@ -1142,9 +1125,7 @@ long loca_table_offset;
  * Necessary so that we can allocate the proper amount of storage for the glyph
  * location table.
  */
-static void ProcessMaxpTable(ffile, maxp_table_offset)
-FontFileInfo *ffile;
-long maxp_table_offset;
+static void ProcessMaxpTable(FontFileInfo *ffile, long maxp_table_offset)
 {
   /* Seek to the maxp table, skipping the 4 byte version number */
   fseek(ffile->fp, maxp_table_offset + 4, SEEK_SET);
@@ -1159,9 +1140,7 @@ long maxp_table_offset;
 
 
 /* Read the kerning information for a glyph */
-static void ProcessKernTable(ffile, kern_table_offset)
-FontFileInfo *ffile;
-long kern_table_offset;
+static void ProcessKernTable(FontFileInfo *ffile, long kern_table_offset)
 {
   int i, j;
   USHORT temp16;
@@ -1189,7 +1168,7 @@ long kern_table_offset;
   if (kern_table->nTables == 0)
     return;
 
-  kern_table->tables = POV_MALLOC(kern_table->nTables * sizeof(TTKernTable),
+  kern_table->tables = (TTKernTable *)POV_MALLOC(kern_table->nTables * sizeof(TTKernTable),
                                   "ProcessKernTable");
   
   for (i = 0; i < kern_table->nTables; i++)
@@ -1230,7 +1209,7 @@ long kern_table_offset;
       temp16 = READUSHORT(ffile->fp);     /* rangeShift */
       
       kern_table->tables[i].kern_pairs =
-      POV_MALLOC(kern_table->tables[i].nPairs * sizeof(KernData), "Kern Pairs");
+      (KernData *)POV_MALLOC(kern_table->tables[i].nPairs * sizeof(KernData), "Kern Pairs");
 
       for (j = 0; j < kern_table->tables[i].nPairs; j++)
       {
@@ -1266,9 +1245,7 @@ long kern_table_offset;
 /*
  * This routine determines the total number of horizontal metrics.
  */
-static void ProcessHheaTable(ffile, hhea_table_offset)
-FontFileInfo *ffile;
-long hhea_table_offset;
+static void ProcessHheaTable(FontFileInfo *ffile, long hhea_table_offset)
 {
 #ifdef TTF_DEBUG
   sfnt_HorizHeader horizHeader;
@@ -1317,9 +1294,7 @@ long hhea_table_offset;
 #endif
 }
 
-static void ProcessHmtxTable (ffile, hmtx_table_offset)
-FontFileInfo *ffile;
-long hmtx_table_offset;
+static void ProcessHmtxTable (FontFileInfo *ffile, long hmtx_table_offset)
 {
   int i;
   longHorMetric *metric;
@@ -1327,7 +1302,7 @@ long hmtx_table_offset;
 
   fseek(ffile->fp, hmtx_table_offset, SEEK_SET);
 
-  ffile->hmtx_table = POV_MALLOC(ffile->numGlyphs*sizeof(longHorMetric), "ttf");
+  ffile->hmtx_table = (longHorMetric *)POV_MALLOC(ffile->numGlyphs*sizeof(longHorMetric), "ttf");
 
   /*
    * Read in the total glyph width, and the left side offset.  There is
@@ -1374,10 +1349,7 @@ long hmtx_table_offset;
 *
 ******************************************************************************/
 
-static GlyphPtr ProcessCharacter(ffile, search_char, glyph_index)
-FontFileInfo *ffile;
-unsigned int search_char;
-unsigned int *glyph_index;
+static GlyphPtr ProcessCharacter(FontFileInfo *ffile, unsigned int search_char, unsigned int *glyph_index)
 {
   GlyphPtr glyph;
 
@@ -1454,9 +1426,7 @@ unsigned int *glyph_index;
 *   961120  esp  Added check to allow Macintosh encodings to pass
 *
 ******************************************************************************/
-static USHORT ProcessCharMap(ffile, search_char)
-FontFileInfo *ffile;
-unsigned int search_char;
+static USHORT ProcessCharMap(FontFileInfo *ffile, unsigned int search_char)
 {
   long old_table_offset;
   long entry_offset;
@@ -1603,9 +1573,7 @@ unsigned int search_char;
 *   -
 *
 ******************************************************************************/
-static USHORT ProcessFormat0Glyph(ffile, search_char)
-FontFileInfo *ffile;
-unsigned int search_char;
+static USHORT ProcessFormat0Glyph(FontFileInfo *ffile, unsigned int search_char)
 {
   BYTE temp_index;
 
@@ -1645,9 +1613,7 @@ unsigned int search_char;
 *   Mar 26, 1996: Cache segment info rather than read each time.  [AED]
 *
 ******************************************************************************/
-static USHORT ProcessFormat4Glyph(ffile, search_char)
-FontFileInfo *ffile;
-unsigned int search_char;
+static USHORT ProcessFormat4Glyph(FontFileInfo *ffile, unsigned int search_char)
 {
   int i;
   unsigned int glyph_index = 0;  /* Set the glyph index to "not present" */
@@ -1668,10 +1634,10 @@ unsigned int search_char;
 
     /* Now allocate and read in the segment arrays */
   
-    ffile->endCount = POV_MALLOC(ffile->segCount * sizeof(USHORT), "ttf");
-    ffile->startCount = POV_MALLOC(ffile->segCount * sizeof(USHORT), "ttf");
-    ffile->idDelta = POV_MALLOC(ffile->segCount * sizeof(USHORT), "ttf");
-    ffile->idRangeOffset = POV_MALLOC(ffile->segCount * sizeof(USHORT), "ttf");
+    ffile->endCount = (USHORT *)POV_MALLOC(ffile->segCount * sizeof(USHORT), "ttf");
+    ffile->startCount = (USHORT *)POV_MALLOC(ffile->segCount * sizeof(USHORT), "ttf");
+    ffile->idDelta = (USHORT *)POV_MALLOC(ffile->segCount * sizeof(USHORT), "ttf");
+    ffile->idRangeOffset = (USHORT *)POV_MALLOC(ffile->segCount * sizeof(USHORT), "ttf");
 
     for (i = 0; i < ffile->segCount; i++)
     {
@@ -1781,9 +1747,7 @@ glyph_search:
 *   -
 *
 ******************************************************************************/
-static USHORT ProcessFormat6Glyph(ffile, search_char)
-FontFileInfo *ffile;
-unsigned int search_char;
+static USHORT ProcessFormat6Glyph(FontFileInfo *ffile, unsigned int search_char)
 {
   USHORT firstCode, entryCount;
   BYTE glyph_index;
@@ -1828,10 +1792,7 @@ unsigned int search_char;
 *   -
 *
 ******************************************************************************/
-static GlyphPtr ExtractGlyphInfo(ffile, glyph_index, c)
-FontFileInfo *ffile;
-unsigned int *glyph_index;
-unsigned int c;
+static GlyphPtr ExtractGlyphInfo(FontFileInfo *ffile, unsigned int *glyph_index, unsigned int c)
 {
   GlyphOutline *ttglyph;
   GlyphPtr glyph;
@@ -1892,17 +1853,14 @@ unsigned int c;
 *   -
 *
 ******************************************************************************/
-static GlyphOutline *ExtractGlyphOutline(ffile, glyph_index, c)
-FontFileInfo *ffile;
-unsigned int *glyph_index;
-unsigned int c;
+static GlyphOutline *ExtractGlyphOutline(FontFileInfo *ffile, unsigned int *glyph_index, unsigned int c)
 {
   int i;
   USHORT n;
   SHORT nc;
   GlyphOutline *ttglyph;
 
-  ttglyph = POV_CALLOC(1, sizeof(GlyphOutline), "ttf");
+  ttglyph = (GlyphOutline *)POV_CALLOC(1, sizeof(GlyphOutline), "ttf");
   ttglyph->myMetrics = *glyph_index;
 
   /* Have to treat space characters differently */
@@ -1939,7 +1897,7 @@ unsigned int c;
 
     /* Grab the contour endpoints */
   
-    ttglyph->endPoints = POV_MALLOC(nc * sizeof(USHORT), "ttf");
+    ttglyph->endPoints = (USHORT *)POV_MALLOC(nc * sizeof(USHORT), "ttf");
   
     for (i = 0; i < nc; i++)
     {
@@ -1962,7 +1920,7 @@ unsigned int c;
 
     /* Read the flags */
     
-    ttglyph->flags = POV_MALLOC(n * sizeof(BYTE), "ttf");
+    ttglyph->flags = (BYTE *)POV_MALLOC(n * sizeof(BYTE), "ttf");
     
     for (i = 0; i < ttglyph->numPoints; i++)
     {
@@ -1989,8 +1947,8 @@ unsigned int c;
 
     /* Read the coordinate vectors */
     
-    ttglyph->x = POV_MALLOC(n * sizeof(DBL), "ttf");
-    ttglyph->y = POV_MALLOC(n * sizeof(DBL), "ttf");
+    ttglyph->x = (DBL *)POV_MALLOC(n * sizeof(DBL), "ttf");
+    ttglyph->y = (DBL *)POV_MALLOC(n * sizeof(DBL), "ttf");
 
     coord = 0;
     
@@ -2197,11 +2155,11 @@ unsigned int c;
       n = ttglyph->numPoints;
       n2 = sub_ttglyph->numPoints;
 
-      ttglyph->endPoints = POV_REALLOC(ttglyph->endPoints,
+      ttglyph->endPoints = (USHORT *)POV_REALLOC(ttglyph->endPoints,
                                        (nc + nc2) * sizeof(USHORT), "ttf");
-      ttglyph->flags = POV_REALLOC(ttglyph->flags, (n+n2)*sizeof(BYTE), "ttf");
-      ttglyph->x = POV_REALLOC(ttglyph->x, (n + n2) * sizeof(DBL), "ttf");
-      ttglyph->y = POV_REALLOC(ttglyph->y, (n + n2) * sizeof(DBL), "ttf");
+      ttglyph->flags = (BYTE *)POV_REALLOC(ttglyph->flags, (n+n2)*sizeof(BYTE), "ttf");
+      ttglyph->x = (DBL *)POV_REALLOC(ttglyph->x, (n + n2) * sizeof(DBL), "ttf");
+      ttglyph->y = (DBL *)POV_REALLOC(ttglyph->y, (n + n2) * sizeof(DBL), "ttf");
 
       /* Add the sub glyph info to the end of the current glyph */
 
@@ -2295,9 +2253,7 @@ unsigned int c;
 *   -
 *
 ******************************************************************************/
-static GlyphPtr ConvertOutlineToGlyph(ffile, ttglyph)
-FontFileInfo *ffile;
-GlyphOutline *ttglyph;
+static GlyphPtr ConvertOutlineToGlyph(FontFileInfo *ffile, GlyphOutline *ttglyph)
 {
   GlyphPtr glyph;
   DBL *temp_x, *temp_y;
@@ -2306,10 +2262,10 @@ GlyphOutline *ttglyph;
 
   /* Create storage for this glyph */
 
-  glyph = POV_MALLOC(sizeof(Glyph), "ttf");
+  glyph = (Glyph *)POV_MALLOC(sizeof(Glyph), "ttf");
   if (ttglyph->header.numContours > 0)
   {
-    glyph->contours = POV_MALLOC(ttglyph->header.numContours * sizeof(Contour), "ttf");
+    glyph->contours = (Contour *)POV_MALLOC(ttglyph->header.numContours * sizeof(Contour), "ttf");
   }
   else
   {
@@ -2334,10 +2290,10 @@ GlyphOutline *ttglyph;
 
     /* Copy the coordinate information into the glyph */
   
-    temp_x = POV_MALLOC((j + 1) * sizeof(DBL), "ttf");
-    temp_y = POV_MALLOC((j + 1) * sizeof(DBL), "ttf");
+    temp_x = (DBL *)POV_MALLOC((j + 1) * sizeof(DBL), "ttf");
+    temp_y = (DBL *)POV_MALLOC((j + 1) * sizeof(DBL), "ttf");
 
-    temp_f = POV_MALLOC((j + 1) * sizeof(BYTE), "ttf");
+    temp_f = (BYTE *)POV_MALLOC((j + 1) * sizeof(BYTE), "ttf");
     memcpy(temp_x, &ttglyph->x[last_j], j * sizeof(DBL));
     memcpy(temp_y, &ttglyph->y[last_j], j * sizeof(DBL));
 
@@ -2393,10 +2349,7 @@ GlyphOutline *ttglyph;
 }
 
 /* Test to see if "point" is inside the splined polygon "points". */
-static int Inside_Glyph(x, y, glyph)
-double x;
-double y;
-GlyphPtr glyph;
+static int Inside_Glyph(double x, double y, GlyphPtr glyph)
 {
   int i, j, k, n, n1, crossings;
   int qi, ri, qj, rj;
@@ -2571,11 +2524,7 @@ end_curve_test:
 }
 
 
-static int solve_quad(x, y, mindist, maxdist)
-double *x;
-double *y;
-double mindist;
-DBL maxdist;
+static int solve_quad(double *x, double *y, double mindist, DBL maxdist)
 {
   double d, t, a, b, c, q;
 
@@ -2638,13 +2587,7 @@ DBL maxdist;
  * These distances are to the the bottom and top surfaces of the glyph.
  * The distances are set to -1 if there is no hit.
  */
-static void GetZeroOneHits(glyph, P, D, glyph_depth, t0, t1)
-GlyphPtr glyph;
-VECTOR P;
-VECTOR D;
-DBL glyph_depth;
-double *t0;
-double *t1;
+static void GetZeroOneHits(GlyphPtr glyph, VECTOR P, VECTOR D, DBL glyph_depth, double *t0, double *t1)
 {
   double x0, y0, t;
 
@@ -2720,16 +2663,8 @@ double *t1;
  * This is then solved using the quadratic formula.  Any solutions of s that are
  * between 0 and 1 (inclusive) are valid solutions.
  */
-static int GlyphIntersect(Object, P, D, len, glyph, glyph_depth,
-                          Ray, Depth_Stack)
-OBJECT *Object;
-VECTOR P;
-VECTOR D;
-DBL len;
-GlyphPtr glyph;
-DBL glyph_depth;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int GlyphIntersect(OBJECT *Object, VECTOR P, VECTOR D, GlyphPtr glyph, DBL glyph_depth,
+                          RAY *Ray, ISTACK *Depth_Stack) /* tw */
 {
   Contour *contour;
   int i, j, k, l, n, m, Flag = 0;
@@ -2752,7 +2687,7 @@ ISTACK *Depth_Stack;
 
   if (t0 > 0.0)
   {
-    Depth = t0 / len;
+    Depth = t0 /* / len */;
     VScale(IPoint, Ray->Direction, Depth);
     VAddEq(IPoint, Ray->Initial);
   
@@ -2769,7 +2704,7 @@ ISTACK *Depth_Stack;
 
   if (t1 > 0.0)
   {
-    Depth = t1 / len;
+    Depth = t1 /* / len */;
     VScale(IPoint, Ray->Direction, Depth);
     VAddEq(IPoint, Ray->Initial);
     
@@ -2855,7 +2790,7 @@ ISTACK *Depth_Stack;
         
         z = P[Z] + t * D[Z];
         
-        Depth = t / len;
+        Depth = t /* / len */;
 
         if (z >= 0 && z <= glyph_depth && Depth > TTF_Tolerance)
         {
@@ -2929,7 +2864,7 @@ ISTACK *Depth_Stack;
 
           z = P[Z] + t * D[Z];
           
-          Depth = t / len;
+          Depth = t /* / len */;
           
           if (z >= 0 && z <= glyph_depth && Depth > TTF_Tolerance)
           {
@@ -2956,13 +2891,10 @@ ISTACK *Depth_Stack;
   return Flag;
 }
 
-static int All_TTF_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_TTF_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   TTF *ttf = (TTF *) Object;
-  DBL len;
+  /* DBL len; */ /* tw, mtg */
   VECTOR P, D;
   GlyphPtr glyph;
 
@@ -2974,16 +2906,17 @@ ISTACK *Depth_Stack;
   MInvTransDirection(D, Ray->Direction, ttf->Trans);
 
   /* Tweak the ray to try to avoid pathalogical intersections */
+/*
   D[0] *= 1.0000013147;
   D[1] *= 1.0000022741;
   D[2] *= 1.0000017011;
 
   VLength(len, D);
   VInverseScaleEq(D, len);
-
+ */
   glyph = (GlyphPtr)ttf->glyph;
 
-  if (GlyphIntersect(Object, P, D, len, glyph,ttf->depth,Ray,Depth_Stack))
+  if (GlyphIntersect(Object, P, D, glyph,ttf->depth,Ray,Depth_Stack)) /* tw */
   {
     Increase_Counter(stats[Ray_TTF_Tests_Succeeded]);
     return TRUE;
@@ -2992,9 +2925,7 @@ ISTACK *Depth_Stack;
   return FALSE;
 }
 
-static int Inside_TTF(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_TTF(VECTOR IPoint, OBJECT *Object)
 {
   VECTOR New_Point;
   TTF *ttf = (TTF *) Object;
@@ -3013,18 +2944,14 @@ OBJECT *Object;
     return (Test_Flag(ttf, INVERTED_FLAG));
 }
 
-static void TTF_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void TTF_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   /* Use precomputed normal. [ARE 11/94] */
 
   Assign_Vector(Result, Inter->INormal);
 }
 
-static void *Copy_TTF(Object)
-OBJECT *Object;
+static TTF *Copy_TTF(OBJECT *Object)
 {
   TTF *New, *Old = (TTF *) Object;
 
@@ -3040,39 +2967,27 @@ OBJECT *Object;
   return (New);
 }
 
-static void Translate_TTF(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_TTF(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_TTF(Object, Trans);
 }
 
-static void Rotate_TTF(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_TTF(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_TTF(Object, Trans);
 }
 
-static void Scale_TTF(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_TTF(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_TTF(Object, Trans);
 }
 
-static void Invert_TTF(Object)
-OBJECT *Object;
+static void Invert_TTF(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
 
-static void Transform_TTF(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_TTF(OBJECT *Object, TRANSFORM *Trans)
 {
   TTF *ttf = (TTF *) Object;
 
@@ -3093,7 +3008,7 @@ static TTF *Create_TTF()
   /* Initialize TTF specific information */
 
   New->Trans = Create_Transform();
-
+  
   New->glyph = NULL;
   New->depth = 1.0;
 
@@ -3103,8 +3018,7 @@ static TTF *Create_TTF()
   return New;
 }
 
-static void Destroy_TTF(Object)
-OBJECT *Object;
+static void Destroy_TTF(OBJECT *Object)
 {
   TTF *ttf = (TTF *) Object;
 
@@ -3143,8 +3057,7 @@ OBJECT *Object;
 *   -
 *
 ******************************************************************************/
-void Compute_TTF_BBox(ttf)
-TTF *ttf;
+void Compute_TTF_BBox(TTF *ttf)
 {
   DBL funit_size, xMin, yMin, zMin, xMax, yMax, zMax;
   GlyphPtr glyph;

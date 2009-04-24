@@ -12,16 +12,16 @@
 *  the public domain. [ARE]
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -62,16 +62,16 @@
 * Static functions
 ******************************************************************************/
 
-static BBOX_TREE *create_bbox_node PARAMS((int size));
+static BBOX_TREE *create_bbox_node (int size);
 
-static int find_axis PARAMS((BBOX_TREE **Finite, long first, long last));
-static void calc_bbox PARAMS((BBOX *BBox, BBOX_TREE **Finite, long first, long last));
-static void build_area_table PARAMS((BBOX_TREE **Finite, long a, long b, DBL *areas));
-static int sort_and_split PARAMS((BBOX_TREE **Root, BBOX_TREE **Finite, long *nFinite, long first, long last));
+static int find_axis (BBOX_TREE **Finite, long first, long last);
+static void calc_bbox (BBOX *BBox, BBOX_TREE **Finite, long first, long last);
+static void build_area_table (BBOX_TREE **Finite, long a, long b, DBL *areas);
+static int sort_and_split (BBOX_TREE **Root, BBOX_TREE **Finite, long *nFinite, long first, long last);
 
-static void priority_queue_insert PARAMS((PRIORITY_QUEUE *Queue, DBL Depth, BBOX_TREE *Node));
+static void priority_queue_insert (PRIORITY_QUEUE *Queue, DBL Depth, BBOX_TREE *Node);
 
-static int CDECL compboxes PARAMS((CONST void *in_a, CONST void *in_b));
+static int CDECL compboxes (CONST void *in_a, CONST void *in_b);
 
 
 /*****************************************************************************
@@ -197,8 +197,7 @@ void Deinitialize_BBox_Code()
 *
 ******************************************************************************/
 
-PRIORITY_QUEUE *Create_Priority_Queue(QSize)
-unsigned QSize;
+PRIORITY_QUEUE *Create_Priority_Queue(unsigned QSize)
 {
   PRIORITY_QUEUE *New;
 
@@ -243,8 +242,7 @@ unsigned QSize;
 *
 ******************************************************************************/
 
-void Destroy_Priority_Queue(Queue)
-PRIORITY_QUEUE *Queue;
+void Destroy_Priority_Queue(PRIORITY_QUEUE *Queue)
 {
   if (Queue != NULL)
   {
@@ -284,8 +282,7 @@ PRIORITY_QUEUE *Queue;
 *
 ******************************************************************************/
 
-void Destroy_BBox_Tree(Node)
-BBOX_TREE *Node;
+void Destroy_BBox_Tree(BBOX_TREE *Node)
 {
   short i;
 
@@ -341,9 +338,7 @@ BBOX_TREE *Node;
 *
 ******************************************************************************/
 
-void Recompute_BBox(bbox, trans)
-BBOX *bbox;
-TRANSFORM *trans;
+void Recompute_BBox(BBOX *bbox, TRANSFORM *trans)
 {
   int i;
   VECTOR lower_left, lengths, corner;
@@ -422,9 +417,7 @@ TRANSFORM *trans;
 *
 ******************************************************************************/
 
-void Recompute_Inverse_BBox(bbox, trans)
-BBOX *bbox;
-TRANSFORM *trans;
+void Recompute_Inverse_BBox(BBOX *bbox, TRANSFORM *trans)
 {
   int i;
   VECTOR lower_left, lengths, corner;
@@ -506,10 +499,7 @@ TRANSFORM *trans;
 *
 ******************************************************************************/
 
-void Build_BBox_Tree(Root, nFinite, Finite, nInfinite, Infinite)
-BBOX_TREE **Root;
-long nFinite, nInfinite;
-BBOX_TREE **Finite, **Infinite;
+void Build_BBox_Tree(BBOX_TREE **Root, long nFinite, BBOX_TREE **Finite, long  nInfinite, BBOX_TREE  **Infinite)
 {
   short i;
   long low, high;
@@ -630,8 +620,7 @@ BBOX_TREE **Finite, **Infinite;
 *
 ******************************************************************************/
 
-void Build_Bounding_Slabs(Root)
-BBOX_TREE **Root;
+void Build_Bounding_Slabs(BBOX_TREE **Root)
 {
   long i, nFinite, nInfinite, iFinite, iInfinite;
   BBOX_TREE **Finite, **Infinite;
@@ -853,11 +842,7 @@ void Destroy_Bounding_Slabs()
 *
 ******************************************************************************/
 
-int Intersect_BBox_Tree(Root, Ray, Best_Intersection, Best_Object)
-BBOX_TREE *Root;
-RAY *Ray;
-INTERSECTION *Best_Intersection;
-OBJECT **Best_Object;
+int Intersect_BBox_Tree(BBOX_TREE *Root, RAY *Ray, INTERSECTION *Best_Intersection, OBJECT **Best_Object)
 {
   int i, found;
   DBL Depth;
@@ -960,10 +945,7 @@ OBJECT **Best_Object;
 *
 ******************************************************************************/
 
-static void priority_queue_insert(Queue, Depth, Node)
-PRIORITY_QUEUE *Queue;
-DBL Depth;
-BBOX_TREE *Node;
+static void priority_queue_insert(PRIORITY_QUEUE *Queue, DBL Depth, BBOX_TREE *Node)
 {
   unsigned size;
   int i;
@@ -1044,10 +1026,7 @@ BBOX_TREE *Node;
 *
 ******************************************************************************/
 
-void Priority_Queue_Delete(Queue, Depth, Node)
-PRIORITY_QUEUE *Queue;
-DBL *Depth;
-BBOX_TREE **Node;
+void Priority_Queue_Delete(PRIORITY_QUEUE *Queue, DBL *Depth, BBOX_TREE **Node)
 {
   QELEM tmp, *List;
   int i, j;
@@ -1138,11 +1117,7 @@ BBOX_TREE **Node;
 *
 ******************************************************************************/
 
-void Check_And_Enqueue(Queue, Node, BBox, rayinfo)
-PRIORITY_QUEUE *Queue;
-BBOX_TREE *Node;
-BBOX *BBox;
-RAYINFO *rayinfo;
+void Check_And_Enqueue(PRIORITY_QUEUE *Queue, BBOX_TREE *Node, BBOX *BBox, RAYINFO *rayinfo)
 {
   DBL tmin, tmax;
   DBL dmin, dmax;
@@ -1360,9 +1335,7 @@ RAYINFO *rayinfo;
 *
 ******************************************************************************/
 
-void Create_Rayinfo(Ray, rayinfo)
-RAY *Ray;
-RAYINFO *rayinfo;
+void Create_Rayinfo(RAY *Ray, RAYINFO *rayinfo)
 {
   DBL t;
 
@@ -1424,8 +1397,7 @@ RAYINFO *rayinfo;
 *
 ******************************************************************************/
 
-static BBOX_TREE *create_bbox_node(size)
-int size;
+static BBOX_TREE *create_bbox_node(int size)
 {
   BBOX_TREE *New;
 
@@ -1481,9 +1453,7 @@ int size;
 *
 ******************************************************************************/
 
-static int CDECL compboxes(in_a, in_b)
-CONST void *in_a;
-CONST void *in_b;
+static int CDECL compboxes(CONST void *in_a, CONST void *in_b)
 {
   BBOX *a, *b;
   BBOX_VAL am, bm;
@@ -1544,9 +1514,7 @@ CONST void *in_b;
 *
 ******************************************************************************/
 
-static int find_axis(Finite, first, last)
-BBOX_TREE **Finite;
-long first, last;
+static int find_axis(BBOX_TREE **Finite, long first, long  last)
 {
   int which = X;
   long i;
@@ -1644,10 +1612,7 @@ long first, last;
 *
 ******************************************************************************/
 
-static void calc_bbox(BBox, Finite, first, last)
-BBOX *BBox;
-BBOX_TREE **Finite;
-long first, last;
+static void calc_bbox(BBOX *BBox, BBOX_TREE **Finite, long first, long  last)
 {
   long i;
   DBL tmin, tmax;
@@ -1713,10 +1678,7 @@ long first, last;
 *
 ******************************************************************************/
 
-static void build_area_table(Finite, a, b, areas)
-BBOX_TREE **Finite;
-long a, b;
-DBL *areas;
+static void build_area_table(BBOX_TREE **Finite, long a, long  b, DBL *areas)
 {
   long i, imin, dir;
   DBL tmin, tmax;
@@ -1791,10 +1753,7 @@ DBL *areas;
 *
 ******************************************************************************/
 
-static int sort_and_split(Root, Finite, nFinite, first, last)
-BBOX_TREE **Root;
-BBOX_TREE **Finite;
-long *nFinite, first, last;
+static int sort_and_split(BBOX_TREE **Root, BBOX_TREE **Finite, long *nFinite, long  first, long  last)
 {
   BBOX_TREE *cd;
   long size, i, best_loc;

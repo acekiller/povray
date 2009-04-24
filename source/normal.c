@@ -5,16 +5,16 @@
 *  normal to create a bumpy effect. 
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -69,15 +69,15 @@ VECTOR Pyramid_Vect [4]= {{ 0.942809041,-0.333333333, 0.0},
 * Static functions
 ******************************************************************************/
 
-static void ripples PARAMS((VECTOR EPoint, TNORMAL *Tnormal, VECTOR Vector));
-static void waves PARAMS((VECTOR EPoint, TNORMAL *Tnormal, VECTOR Vector));
-static void bumps PARAMS((VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal));
-static void dents PARAMS((VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal));
-static void wrinkles PARAMS((VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal));
-static void quilted PARAMS((VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal));
-static DBL Hermite_Cubic PARAMS((DBL T1,UV_VECT UV1,UV_VECT UV2));
-static DBL Do_Slope_Map PARAMS((DBL value, BLEND_MAP *Blend_Map));
-static void Do_Average_Normals PARAMS((VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal));
+static void ripples (VECTOR EPoint, TNORMAL *Tnormal, VECTOR Vector);
+static void waves (VECTOR EPoint, TNORMAL *Tnormal, VECTOR Vector);
+static void bumps (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal);
+static void dents (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal);
+static void wrinkles (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal);
+static void quilted (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal);
+static DBL Hermite_Cubic (DBL T1,UV_VECT UV1,UV_VECT UV2);
+static DBL Do_Slope_Map (DBL value, BLEND_MAP *Blend_Map);
+static void Do_Average_Normals (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal);
 
 
 /*****************************************************************************
@@ -102,10 +102,7 @@ static void Do_Average_Normals PARAMS((VECTOR EPoint, TNORMAL *Tnormal, VECTOR n
 *
 ******************************************************************************/
 
-static void ripples (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+static void ripples (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   register unsigned int i;
   register DBL length, scalar, index;
@@ -151,10 +148,7 @@ VECTOR normal;
 *
 ******************************************************************************/
 
-static void waves (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+static void waves (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   register unsigned int i;
   register DBL length, scalar, index, sinValue ;
@@ -205,10 +199,7 @@ VECTOR normal;
 *
 ******************************************************************************/
 
-static void bumps (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+static void bumps (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   VECTOR bump_turb;
 
@@ -245,10 +236,7 @@ VECTOR normal;
 *
 ******************************************************************************/
 
-static void dents (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+static void dents (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   DBL noise;
   VECTOR stucco_turb;
@@ -301,10 +289,7 @@ VECTOR normal;
 *
 ******************************************************************************/
 
-static void wrinkles (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+static void wrinkles (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   register int i;
   register DBL scale = 1.0;
@@ -350,10 +335,7 @@ VECTOR normal;
 *
 ******************************************************************************/
 
-static void quilted (EPoint, Tnormal, normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+static void quilted (VECTOR EPoint, TNORMAL *Tnormal, VECTOR normal)
 {
   VECTOR value;
   DBL t;
@@ -436,8 +418,7 @@ TNORMAL *Create_Tnormal ()
 *
 ******************************************************************************/
 
-TNORMAL *Copy_Tnormal (Old)
-TNORMAL *Old;
+TNORMAL *Copy_Tnormal (TNORMAL *Old)
 {
   TNORMAL *New;
 
@@ -481,8 +462,7 @@ TNORMAL *Old;
 *
 ******************************************************************************/
 
-void Destroy_Tnormal(Tnormal)
-TNORMAL *Tnormal;
+void Destroy_Tnormal(TNORMAL *Tnormal)
 {
   if (Tnormal != NULL)
   {
@@ -516,8 +496,7 @@ TNORMAL *Tnormal;
 *
 ******************************************************************************/
 
-void Post_Tnormal (Tnormal)
-TNORMAL *Tnormal;
+void Post_Tnormal (TNORMAL *Tnormal)
 {
   int i;
   BLEND_MAP *Map;
@@ -601,15 +580,18 @@ TNORMAL *Tnormal;
 
 #define DELTA 0.02
 
-void Perturb_Normal(Layer_Normal, Tnormal, EPoint)
-VECTOR Layer_Normal, EPoint;
-TNORMAL *Tnormal;
+void Perturb_Normal(VECTOR Layer_Normal, TNORMAL *Tnormal, VECTOR  EPoint)
 {
   VECTOR TPoint,P1;
   DBL value1,value2,Amount;
   int i;
   BLEND_MAP *Blend_Map;
   BLEND_MAP_ENTRY *Prev, *Cur;
+  
+  if (Tnormal==NULL)
+  {
+    return;
+  }
 
   /* If normal_map present, use it and return */
 
@@ -651,9 +633,6 @@ TNORMAL *Tnormal;
       {
        case BITMAP_PATTERN: bump_map (TPoint, Tnormal, Layer_Normal); break;
        case BUMPS_PATTERN:  bumps (TPoint, Tnormal, Layer_Normal);    break;
-       case BUMPY1_PATTERN: bumpy1 (TPoint, Tnormal, Layer_Normal);   break;
-       case BUMPY2_PATTERN: bumpy2 (TPoint, Tnormal, Layer_Normal);   break;
-       case BUMPY3_PATTERN: bumpy3 (TPoint, Tnormal, Layer_Normal);   break;
        case DENTS_PATTERN:  dents (TPoint, Tnormal, Layer_Normal);    break;
        case RIPPLES_PATTERN:ripples (TPoint, Tnormal, Layer_Normal);  break;
        case WAVES_PATTERN:  waves (TPoint, Tnormal, Layer_Normal);    break;
@@ -704,9 +683,7 @@ TNORMAL *Tnormal;
 *
 ******************************************************************************/
 
-static DBL Do_Slope_Map (value,Blend_Map)
-DBL value;
-BLEND_MAP *Blend_Map;
+static DBL Do_Slope_Map (DBL value,BLEND_MAP *Blend_Map)
 {
   DBL Result;
   BLEND_MAP_ENTRY *Prev, *Cur;
@@ -753,10 +730,7 @@ BLEND_MAP *Blend_Map;
 #define P1 UV1[0]
 #define P2 UV2[0]
 
-static DBL Hermite_Cubic(T1,UV1,UV2)
-DBL T1;
-UV_VECT UV1;
-UV_VECT UV2;
+static DBL Hermite_Cubic(DBL T1,UV_VECT UV1,UV_VECT UV2)
 {
   DBL TT=T1*T1;
   DBL TTT=TT*T1;
@@ -789,10 +763,7 @@ UV_VECT UV2;
 *
 ******************************************************************************/
 
-static void Do_Average_Normals (EPoint,Tnormal,normal)
-VECTOR EPoint;
-TNORMAL *Tnormal;
-VECTOR normal;
+static void Do_Average_Normals (VECTOR EPoint,TNORMAL *Tnormal,VECTOR normal)
 {
    int i;
    BLEND_MAP *Map = Tnormal->Blend_Map;

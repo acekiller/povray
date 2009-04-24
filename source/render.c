@@ -8,16 +8,16 @@
 *                 be specified.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -32,6 +32,7 @@
 #include "bbox.h"
 #include "chi2.h"
 #include "colour.h"
+#include "interior.h"
 #include "lighting.h"
 #include "normal.h"
 #include "objects.h"
@@ -290,9 +291,7 @@ static float jitttab[256] = {
 
 static int Primary_Ray_State_Tested;
 static int Containing_Index;
-static TEXTURE *Containing_Textures[MAX_CONTAINING_OBJECTS];
-static OBJECT  *Containing_Objects[MAX_CONTAINING_OBJECTS];
-static DBL      Containing_IORs[MAX_CONTAINING_OBJECTS];
+static INTERIOR *Containing_Interiors[MAX_CONTAINING_OBJECTS];
 
 /* Flag wether to compute camera constant that don't change during one frame. */
 
@@ -307,24 +306,24 @@ static DBL Camera_Aspect_Ratio;
 * Local functions
 ******************************************************************************/
 
-static void focal_blur PARAMS((RAY *Ray, COLOUR Colour, DBL x, DBL y));
-static void jitter_camera_ray PARAMS((RAY *ray, int ray_number));
-static void check_stats PARAMS((int y, int doingMosaic, int pixWidth));
-static void do_anti_aliasing PARAMS((int x, int y, COLOUR Colour));
-static void output_line PARAMS((int y));
-static int  create_ray PARAMS((RAY *ray, DBL x, DBL y, int ray_number));
-static void supersample PARAMS((COLOUR result, int x, int y));
-static void gamma_correct PARAMS((COLOUR Colour));
-static void extract_colors PARAMS((COLOUR Colour, unsigned char *Red, unsigned char *Green, unsigned char *Blue, unsigned char *Alpha, DBL *grey));
-static void trace_pixel PARAMS((int x, int y, COLOUR Colour));
-static void initialise_histogram PARAMS((void)) ;
-static void accumulate_histogram PARAMS((int x, int y, int on));
-static void plot_pixel PARAMS((int x, int y, COLOUR Colour));
-static void jitter_pixel_position PARAMS((int x, int y, DBL *Jitter_X, DBL *Jitter_Y));
-static void trace_sub_pixel PARAMS((int level, PIXEL **Block, int x, int y, int x1, int y1, int x2, int y2, int size, COLOUR Colour, int antialias));
-static void trace_ray_with_offset PARAMS((int x, int y, DBL dx, DBL dy, COLOUR Colour));
-static void initialize_ray_container_state PARAMS((RAY *Ray, int Compute));
-static void initialize_ray_container_state_tree PARAMS((RAY *Ray, BBOX_TREE *Node));
+static void focal_blur (RAY *Ray, COLOUR Colour, DBL x, DBL y);
+static void jitter_camera_ray (RAY *ray, int ray_number);
+static void check_stats (int y, int doingMosaic, int pixWidth);
+static void do_anti_aliasing (int x, int y, COLOUR Colour);
+static void output_line (int y);
+static int  create_ray (RAY *ray, DBL x, DBL y, int ray_number);
+static void supersample (COLOUR result, int x, int y);
+static void gamma_correct (COLOUR Colour);
+static void extract_colors (COLOUR Colour, unsigned char *Red, unsigned char *Green, unsigned char *Blue, unsigned char *Alpha, DBL *grey);
+static void trace_pixel (int x, int y, COLOUR Colour);
+static void initialise_histogram (void) ;
+static void accumulate_histogram (int x, int y, int on);
+static void plot_pixel (int x, int y, COLOUR Colour);
+static void jitter_pixel_position (int x, int y, DBL *Jitter_X, DBL *Jitter_Y);
+static void trace_sub_pixel (int level, PIXEL **Block, int x, int y, int x1, int y1, int x2, int y2, int size, COLOUR Colour, int antialias);
+static void trace_ray_with_offset (int x, int y, DBL dx, DBL dy, COLOUR Colour);
+static void initialize_ray_container_state (RAY *Ray, int Compute);
+static void initialize_ray_container_state_tree (RAY *Ray, BBOX_TREE *Node);
 
 
 
@@ -354,7 +353,7 @@ static void initialize_ray_container_state_tree PARAMS((RAY *Ray, BBOX_TREE *Nod
 *
 ******************************************************************************/
 
-void Initialize_Renderer PARAMS((void))
+void Initialize_Renderer (void)
 {
   char **Grid;
   int i, xi, yi, Grid_Size;
@@ -365,6 +364,7 @@ void Initialize_Renderer PARAMS((void))
   VEC2 *Standard_Sample_Grid;
 
   maxclr = (DBL)(1 << Color_Bits) - 1.0;
+  Radiosity_Trace_Level = 1;
 
   size = (Frame.Screen_Width + 1) * sizeof(COLOUR);
 
@@ -705,10 +705,9 @@ void Terminate_Renderer()
 *
 ******************************************************************************/
 
-void Read_Rendered_Part(New_Fname)
-char *New_Fname;
+void Read_Rendered_Part(char *New_Fname)
 {
-  int rc, x, line_number = 0;
+  int rc, x, line_number = -1;
   unsigned char Red, Green, Blue, Alpha;
   DBL grey;
 
@@ -730,6 +729,10 @@ char *New_Fname;
   }
 
   opts.First_Line = line_number + 1;
+  if(opts.First_Line < 1)
+  {
+    opts.First_Line = 1;
+  }
 
   Close_File(Output_File_Handle);
 
@@ -778,8 +781,7 @@ char *New_Fname;
 *
 ******************************************************************************/
 
-void Check_User_Abort(Forced)
-int Forced;
+void Check_User_Abort(int Forced)
 {
   if (Forced)
   {
@@ -853,8 +855,7 @@ int Forced;
 *
 ******************************************************************************/
 
-void Start_Tracing_Mosaic_Preview(StartPixelSize, EndPixelSize)
-int StartPixelSize, EndPixelSize;
+void Start_Tracing_Mosaic_Preview(int StartPixelSize, int  EndPixelSize)
 {
   unsigned char Red, Green, Blue, Alpha;
   int x, y, x2, y2, PreviewStep, PixelSize, AlreadyPainted, PreviewPass;
@@ -913,10 +914,10 @@ int StartPixelSize, EndPixelSize;
 
           extract_colors(Colour, &Red, &Green, &Blue, &Alpha, &grey);
 
-          y2 = min(y + PixelSize - 1, opts.Last_Line);
-          x2 = min(x + PixelSize - 1, opts.Last_Column);
+          y2 = min(y + PixelSize - 1, opts.Last_Line-1);
+          x2 = min(x + PixelSize - 1, opts.Last_Column-1);
 
-          POV_DISPLAY_PLOT_RECT(x, x2, y, y2, Red, Green, Blue, Alpha);
+          POV_DISPLAY_PLOT_RECT(x, y, x2, y2, Red, Green, Blue, Alpha);
         }
       }
 
@@ -971,8 +972,7 @@ int StartPixelSize, EndPixelSize;
 *   Feb 1996 : Made the row buffers dynamically allocated [AED]
 *
 ******************************************************************************/
-void Start_Tracing_Mosaic_Smooth(StartPixelSize, EndPixelSize)
-int StartPixelSize, EndPixelSize;
+void Start_Tracing_Mosaic_Smooth(int StartPixelSize, int  EndPixelSize)
 {
   unsigned char Red, Green, Blue, Alpha;
   unsigned char *thisr = NULL, *thisg = NULL, *thisb = NULL, *thisa = NULL;
@@ -1060,6 +1060,7 @@ int StartPixelSize, EndPixelSize;
         extract_colors(Colour, &Red, &Green, &Blue, &Alpha, &grey);
 
         Assign_Colour(Current_Line[x], Colour);
+        POV_ASSIGN_PIXEL (x, y, Colour)
 
         if (opts.Options & DISPLAY)
         {
@@ -1075,28 +1076,28 @@ int StartPixelSize, EndPixelSize;
               upa[x] = Alpha;
             }
 
-            ulr = (x>0) ? upr[x-skip] : Red;
+            ulr = (x>opts.First_Column) ? upr[x-skip] : Red;
             urr = upr[x];
 
-            llr = (x>0) ? lastr   : Red;
+            llr = (x>opts.First_Column) ? lastr   : Red;
             lrr = Red;
 
-            ulg = (x>0) ? upg[x-skip] : Green;
+            ulg = (x>opts.First_Column) ? upg[x-skip] : Green;
             urg = upg[x];
 
-            llg = (x>0) ? lastg   : Green;
+            llg = (x>opts.First_Column) ? lastg   : Green;
             lrg = Green;
 
-            ulb = (x>0) ? upb[x-skip] : Blue;
+            ulb = (x>opts.First_Column) ? upb[x-skip] : Blue;
             urb = upb[x];
 
-            llb = (x>0) ? lastb   : Blue;
+            llb = (x>opts.First_Column) ? lastb   : Blue;
             lrb = Blue;
 
-            ula = (x>0) ? upa[x-skip] : Alpha;
+            ula = (x>opts.First_Column) ? upa[x-skip] : Alpha;
             ura = upa[x];
 
-            lla = (x>0) ? lasta   : Alpha;
+            lla = (x>opts.First_Column) ? lasta   : Alpha;
             lra = Alpha;
 
             for (ty = y, dy = 0; (dy < skip) && (ty < opts.Last_Line); dy++, ty++)
@@ -1133,10 +1134,10 @@ int StartPixelSize, EndPixelSize;
           }
           else
           {
-            y2 = min(y + skip - 1, opts.Last_Line);
-            x2 = min(x + skip - 1, opts.Last_Column);
+            y2 = min(y + skip - 1, opts.Last_Line - 1);
+            x2 = min(x + skip - 1, opts.Last_Column - 1);
 
-            POV_DISPLAY_PLOT_RECT(x, x2, y, y2, Red, Green, Blue, Alpha);
+            POV_DISPLAY_PLOT_RECT(x, y, x2, y2, Red, Green, Blue, Alpha);
           }
         }
       } /* end loop for each block horizontally in a row of blocks */
@@ -1308,6 +1309,7 @@ void Start_Non_Adaptive_Tracing()
       {
         Write_Line(Output_File_Handle, Previous_Line, y);
       }
+      POV_WRITE_LINE (Previous_Line, y)
 
       continue;
     }
@@ -1367,12 +1369,13 @@ void Start_Non_Adaptive_Tracing()
 
   /* Write last row to disk. */
 
-  if (opts.Options & DISKWRITE)
+  if (opts.Last_Line != opts.First_Line)
   {
-    if (opts.Last_Line != opts.First_Line)
+    if (opts.Options & DISKWRITE)
     {
       Write_Line(Output_File_Handle, Previous_Line, opts.Last_Line - 1);
     }
+    POV_WRITE_LINE (Previous_Line, opts.Last_Line - 1)
   }
 }
 
@@ -1570,6 +1573,7 @@ void Start_Adaptive_Tracing()
       /* Store colour in current line */
 
       Assign_Colour(Current_Line[x], Colour);
+      POV_ASSIGN_PIXEL (x, y, Colour)
 
       /* Display pixel */
 
@@ -1604,12 +1608,13 @@ void Start_Adaptive_Tracing()
 
   /* We've come to the end ... at last! */
 
-  if (opts.Options & DISKWRITE)
+  if (opts.Last_Line != opts.First_Line)
   {
-    if (opts.Last_Line != opts.First_Line)
+    if (opts.Options & DISKWRITE)
     {
       Write_Line (Output_File_Handle, Previous_Line, opts.Last_Line - 1);
     }
+    POV_WRITE_LINE (Previous_Line, opts.Last_Line - 1)
   }
 
   /* Free memory. */
@@ -1657,10 +1662,7 @@ void Start_Adaptive_Tracing()
 *
 ******************************************************************************/
 
-DBL Trace(Ray, Colour, Weight)
-RAY *Ray;
-COLOUR Colour;
-DBL Weight;
+DBL Trace(RAY *Ray, COLOUR Colour, DBL Weight)
 {
   int i, Intersection_Found, all_hollow;
   OBJECT *Object;
@@ -1730,24 +1732,24 @@ DBL Weight;
   }
   else
   {
-      /* Infinite ray, set intersecton distance. */
+    /* Infinite ray, set intersecton distance. */
 
-      Best_Intersection.Depth = Max_Distance;
+    Best_Intersection.Depth = Max_Distance;
 
-      /* Apply infinite atmospheric effects. */
+    /* Apply infinite atmospheric effects. */
 
-      Do_Infinite_Atmosphere(Ray, Colour);
+    Do_Infinite_Atmosphere(Ray, Colour);
   }
 
   /* Test if all contained objects are hollow. */
 
   all_hollow = TRUE;
 
-  if (Ray->Containing_Index > -1)
+  if (Ray->Index > -1)
   {
-    for (i = 0; i <= Ray->Containing_Index; i++)
+    for (i = 0; i <= Ray->Index; i++)
     {
-      if (!Test_Flag(Ray->Containing_Objects[i], HOLLOW_FLAG))
+      if (!Ray->Interiors[i]->hollow)
       {
         all_hollow = FALSE;
 
@@ -1757,8 +1759,7 @@ DBL Weight;
   }
 
   /* Apply finite atmospheric effects. */
-
-  if (all_hollow)
+  if (all_hollow && (opts.Quality_Flags & Q_VOLUME))
   {
     Do_Finite_Atmosphere(Ray, &Best_Intersection, Colour, FALSE);
   }
@@ -1797,9 +1798,7 @@ DBL Weight;
 *
 ******************************************************************************/
 
-static void do_anti_aliasing(x, y, Colour)
-register int x, y;
-COLOUR Colour;
+static void do_anti_aliasing(register int x, register int y, COLOUR Colour)
 {
   char Antialias_Center_Flag = FALSE;
 
@@ -1860,6 +1859,7 @@ COLOUR Colour;
     Current_Line_Antialiased_Flags[x] = TRUE;
 
     Assign_Colour(Colour, Current_Line[x]);
+    POV_ASSIGN_PIXEL (x, y, Colour)
 
     SuperSampleCount++;
 
@@ -1898,9 +1898,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static void supersample(result, x, y)
-COLOUR result;
-int x, y;
+static void supersample(COLOUR result, int x, int  y)
 {
   int i, j, samples;
   int JRange, JSteps;
@@ -2056,12 +2054,7 @@ int x, y;
 *
 ******************************************************************************/
 
-static void trace_sub_pixel(level, Block, x, y, x1, y1, x3, y3, size, Colour, antialias)
-int level;
-PIXEL **Block;
-int x, y, x1, y1, x3, y3, size;
-COLOUR Colour;
-int antialias;
+static void trace_sub_pixel(int level, PIXEL **Block, int x, int  y, int  x1, int  y1, int  x3, int  y3, int  size, COLOUR Colour, int antialias)
 {
   int x2, y2;    /* Coordinates of center sub-pixel of current block.     */
   DBL dx1, dy1;  /* coord. of upper left corner relative to pixel coord.  */
@@ -2206,10 +2199,7 @@ int antialias;
 *
 ******************************************************************************/
 
-static void trace_ray_with_offset(x, y, dx, dy, Colour)
-int x, y;
-DBL dx, dy;
-COLOUR Colour;
+static void trace_ray_with_offset(int x, int  y, DBL dx, DBL  dy, COLOUR Colour)
 {
   DBL Jitter_X, Jitter_Y;
 
@@ -2288,10 +2278,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static void focal_blur(Ray, Colour, x, y)
-RAY *Ray;
-COLOUR Colour;
-DBL x, y;
+static void focal_blur(RAY *Ray, COLOUR Colour, DBL x, DBL  y)
 {
   int nr;     /* Number of current samples. */
   int level;  /* Index into number of samples list. */
@@ -2356,8 +2343,6 @@ DBL x, y;
 
         Clip_Colour(C, C);
 
-        gamma_correct(C);
-
         Add_Colour(Colour, Colour, C);
       }
       else
@@ -2402,6 +2387,8 @@ DBL x, y;
   while (nr < Frame.Camera->Blur_Samples);
 
   Scale_Colour(Colour, Colour, 1.0 / (DBL)nr);
+
+  gamma_correct(Colour);
 }
 
 
@@ -2436,9 +2423,7 @@ DBL x, y;
 *
 ******************************************************************************/
 
-static void jitter_camera_ray(ray, ray_number)
-RAY *ray;
-int ray_number;
+static void jitter_camera_ray(RAY *ray, int ray_number)
 {
   DBL xjit, yjit, xlen, ylen, r;
   VECTOR temp_xperp, temp_yperp, deflection;
@@ -2505,9 +2490,7 @@ int ray_number;
 *
 ******************************************************************************/
 
-static void trace_pixel(x, y, Colour)
-int x, y;
-COLOUR Colour;
+static void trace_pixel(int x, int  y, COLOUR Colour)
 {
   Increase_Counter(stats[Number_Of_Pixels]);
 
@@ -2611,10 +2594,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static int create_ray(Ray, x, y, ray_number)
-RAY *Ray;
-DBL x, y;
-int ray_number;
+static int create_ray(RAY *Ray, DBL x, DBL  y, int ray_number)
 {
   /* Just some shortcuts. */
 
@@ -3051,38 +3031,6 @@ int ray_number;
 
       break;
 
-    /*
-     * Test camera 1.
-     */
-
-    case TEST_CAMERA_1:
-
-      break;
-
-    /*
-     * Test camera 2.
-     */
-
-    case TEST_CAMERA_2:
-
-      break;
-
-    /*
-     * Test camera 3.
-     */
-
-    case TEST_CAMERA_3:
-
-      break;
-
-    /*
-     * Test camera 4.
-     */
-
-    case TEST_CAMERA_4:
-
-      break;
-
     default:
 
     Error("Unknown camera type in create_ray().\n");
@@ -3164,8 +3112,7 @@ int ray_number;
 *
 ******************************************************************************/
 
-static void gamma_correct(Colour)
-COLOUR Colour;
+static void gamma_correct(COLOUR Colour)
 {
   if (opts.Options & GAMMA_CORRECT)
   {
@@ -3208,10 +3155,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static void extract_colors(Colour, Red, Green, Blue, Alpha, grey)
-COLOUR Colour;
-unsigned char *Red, *Green, *Blue, *Alpha;
-DBL *grey;
+static void extract_colors(COLOUR Colour, unsigned char *Red, unsigned char  *Green, unsigned char  *Blue, unsigned char  *Alpha, DBL *grey)
 {
   if (opts.PaletteOption == GREY)
   {
@@ -3259,9 +3203,7 @@ DBL *grey;
 *
 ******************************************************************************/
 
-static void plot_pixel(x, y, Colour)
-int x, y;
-COLOUR Colour;
+static void plot_pixel(int x, int  y, COLOUR Colour)
 {
   unsigned char Red, Green, Blue, Alpha;
   DBL grey;
@@ -3307,9 +3249,7 @@ COLOUR Colour;
 *
 ******************************************************************************/
 
-static void jitter_pixel_position(x, y, Jitter_X, Jitter_Y)
-int x, y;
-DBL *Jitter_X, *Jitter_Y;
+static void jitter_pixel_position(int x, int  y, DBL *Jitter_X, DBL  *Jitter_Y)
 {
   static int Jitt_Offset = 10;
 
@@ -3360,18 +3300,18 @@ DBL *Jitter_X, *Jitter_Y;
 *
 ******************************************************************************/
 
-static void output_line(y)
-int y;
+static void output_line(int y)
 {
   COLOUR *Temp_Colour_Ptr;
   char *Temp_Char_Ptr;
 
-  if (opts.Options & DISKWRITE)
+  if (y > opts.First_Line)
   {
-    if (y > opts.First_Line)
+    if (opts.Options & DISKWRITE)
     {
       Write_Line(Output_File_Handle, Previous_Line, y - 1);
     }
+    POV_WRITE_LINE (Previous_Line, y - 1)
   }
 
   if (opts.Options & VERBOSE)
@@ -3438,7 +3378,7 @@ static void initialise_histogram ()
   if (opts.histogram_on)
   {
     PRECISION_TIMER_INIT
-    histogram_grid = POV_CALLOC (opts.histogram_x * opts.histogram_y,
+    histogram_grid = (unsigned long *)POV_CALLOC (opts.histogram_x * opts.histogram_y,
                                  sizeof(unsigned long), "histogram grid");
   }
 #else
@@ -3517,8 +3457,7 @@ void destroy_histogram ()
 *
 ******************************************************************************/
 
-static void accumulate_histogram(x, y, on)
-int x, y, on;
+static void accumulate_histogram(int x, int  y, int  on)
 {
 #if PRECISION_TIMER_AVAILABLE
   int loc_x, loc_y;
@@ -3586,8 +3525,7 @@ int x, y, on;
 *
 ******************************************************************************/
 
-void write_histogram(filename)
-char *filename;
+void write_histogram(char *filename)
 {
 #if PRECISION_TIMER_AVAILABLE
   int x, y, x_step, y_step;
@@ -3603,7 +3541,7 @@ char *filename;
   {
     case CSV :
 
-      if ((f = fopen (filename, WRITE_FILE_STRING)) == NULL)
+      if ((f = fopen (filename, WRITE_TXTFILE_STRING)) == NULL)
       {
         Warning (0.0, "Cannot open file %s for histogram output.", filename);
 
@@ -3710,10 +3648,7 @@ char *filename;
 *
 ******************************************************************************/
 
-static void check_stats(y, doingMosaic, pixWidth)
-register int y;
-register int doingMosaic;
-register int pixWidth;
+static void check_stats(register int y, register int doingMosaic, register int pixWidth)
 {
   DBL time_dif;
   unsigned long hrs, mins;
@@ -3782,9 +3717,9 @@ register int pixWidth;
 *   ray's origin is currently inside will be added to the containing
 *   lists.
 *
-*   This is neccessary to make halos work if the camera is inside the
-*   halo. It is also neccessary to make refraction work correctly if
-*   the camera is inside this object.
+*   This is neccessary to make participating media work if the camera 
+*   is inside the medium. It is also neccessary to make refraction work 
+*   correctly if the camera is inside this object.
 *
 * CHANGES
 *
@@ -3792,9 +3727,7 @@ register int pixWidth;
 *
 ******************************************************************************/
 
-static void initialize_ray_container_state(Ray, Compute)
-RAY *Ray;
-int Compute;
+static void initialize_ray_container_state(RAY *Ray, int Compute)
 {
   int i, solid;
   OBJECT *Object;
@@ -3807,25 +3740,14 @@ int Compute;
     {
       for (Object = Frame.Objects; Object != NULL; Object = Object -> Sibling)
       {
-        if (Inside(Ray->Initial, Object))
+        if (Inside(Ray->Initial, Object) && (Object->Interior != NULL))
         {
-          if ((++Containing_Index)>=MAX_CONTAINING_OBJECTS)
+          if ((++Containing_Index) >= MAX_CONTAINING_OBJECTS)
           {
              Error("Too many nested objects\n");
           }
-          Containing_Objects[Containing_Index] = Object;
-          Containing_Textures[Containing_Index]  = Object->Texture;
 
-          if ((Object->Texture != NULL) &&
-              (Object->Texture->Type == PLAIN_PATTERN) &&
-              (Object->Texture->Finish != NULL))
-          {
-            Containing_IORs[Containing_Index] = Object->Texture->Finish->Index_Of_Refraction;
-          }
-          else
-          {
-            Containing_IORs[Containing_Index] = Frame.Atmosphere_IOR;
-          }
+          Containing_Interiors[Containing_Index] = Object->Interior;
         }
       }
     }
@@ -3837,12 +3759,10 @@ int Compute;
 
   for (i = 0; i <= Containing_Index; i++)
   {
-    Ray->Containing_Textures[i] = Containing_Textures[i];
-    Ray->Containing_Objects[i]  = Containing_Objects[i];
-    Ray->Containing_IORs[i]     = Containing_IORs[i];
+    Ray->Interiors[i] = Containing_Interiors[i];
   }
 
-  Ray->Containing_Index = Containing_Index;
+  Ray->Index = Containing_Index;
 
   /* Test if we are in a hollow object (do this only once). */
 
@@ -3852,7 +3772,7 @@ int Compute;
 
     for (i = 0; i <= Containing_Index; i++)
     {
-      if (!Test_Flag(Containing_Objects[i], HOLLOW_FLAG))
+      if (!Containing_Interiors[i]->hollow)
       {
         solid = TRUE;
 
@@ -3862,7 +3782,7 @@ int Compute;
 
     if (solid)
     {
-      Warning(0.0, "Camera is inside a non-hollow object.\nAtmosphere, fog, and halo may not work as expected.\n");
+      Warning(0.0, "Camera is inside a non-hollow object.\nFog and participating media may not work as expected.\n");
     }
 
     Primary_Ray_State_Tested = TRUE;
@@ -3900,9 +3820,7 @@ int Compute;
 *
 ******************************************************************************/
 
-static void initialize_ray_container_state_tree(Ray, Node)
-RAY *Ray;
-BBOX_TREE *Node;
+static void initialize_ray_container_state_tree(RAY *Ray, BBOX_TREE *Node)
 {
   int i;
   OBJECT *Object;
@@ -3934,28 +3852,14 @@ BBOX_TREE *Node;
 
     Object = (OBJECT *)Node->Node;
 
-    if (Inside(Ray->Initial, Object))
+    if (Inside(Ray->Initial, Object) && (Object->Interior != NULL))
     {
-      if (Object->Texture != NULL)
+      if ((++Containing_Index) >= MAX_CONTAINING_OBJECTS)
       {
-        if ((++Containing_Index)>=MAX_CONTAINING_OBJECTS)
-        {
-           Error("Too many nested objects\n");
-        }
-        Containing_Objects[Containing_Index] = Object;
-        Containing_Textures[Containing_Index]  = Object->Texture;
-
-        if ((Object->Texture != NULL) &&
-            (Object->Texture->Type == PLAIN_PATTERN) &&
-            (Object->Texture->Finish != NULL))
-        {
-          Containing_IORs[Containing_Index] = Object->Texture->Finish->Index_Of_Refraction;
-        }
-        else
-        {
-          Containing_IORs[Containing_Index] = Frame.Atmosphere_IOR;
-        }
+        Error("Too many nested objects\n");
       }
+
+      Containing_Interiors[Containing_Index] = Object->Interior;
     }
   }
 }

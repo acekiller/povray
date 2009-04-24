@@ -8,16 +8,16 @@
 *  "Hypertexture", SIGGRAPH '89 Conference Proceedings page 253.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -36,7 +36,6 @@
 #include "vector.h"
 #include "povproto.h"
 #include "texture.h"
-#include "halos.h"
 #include "image.h"
 #include "matrices.h"
 #include "normal.h"
@@ -135,8 +134,8 @@ static unsigned long int next_rand = 1;
 * Static functions
 ******************************************************************************/
 
-static void InitTextureTable PARAMS((void));
-static TEXTURE *Copy_Materials PARAMS((TEXTURE *Old));
+static void InitTextureTable (void);
+static TEXTURE *Copy_Materials (TEXTURE *Old);
 
 
 /*****************************************************************************
@@ -216,7 +215,7 @@ void Initialize_Noise()
 
 static void InitTextureTable()
 {
-  int i, j, temp;
+  short int i, j, temp;
 
   POV_SRAND(0);
 
@@ -306,8 +305,7 @@ void Free_Noise_Tables()
 *
 ******************************************************************************/
 
-DBL Noise(EPoint)
-VECTOR EPoint;
+DBL Noise(VECTOR EPoint)
 {
   DBL x, y, z;
   DBL *mp;
@@ -417,9 +415,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-void DNoise(result, EPoint)
-VECTOR result;
-VECTOR EPoint;
+void DNoise(VECTOR result, VECTOR EPoint)
 {
   DBL x, y, z;
   DBL *mp;
@@ -560,9 +556,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-DBL Turbulence(EPoint,Turb)
-VECTOR EPoint;
-TURB *Turb;
+DBL Turbulence(VECTOR EPoint,TURB *Turb)
 {
   int i;
   DBL Lambda, Omega, l, o, value;
@@ -619,9 +613,7 @@ TURB *Turb;
 ******************************************************************************/
 
 
-void DTurbulence(result, EPoint, Turb)
-VECTOR  result, EPoint;
-TURB *Turb;
+void DTurbulence(VECTOR result, VECTOR  EPoint, TURB *Turb)
 {
   DBL Omega, Lambda;
   int i;
@@ -681,8 +673,7 @@ TURB *Turb;
 *
 ******************************************************************************/
 
-DBL cycloidal(value)
-DBL value;
+DBL cycloidal(DBL value)
 {
   register int indx;
   
@@ -726,8 +717,7 @@ DBL value;
 *
 ******************************************************************************/
 
-DBL Triangle_Wave(value)
-DBL value;
+DBL Triangle_Wave(DBL value)
 {
   register DBL offset;
   
@@ -756,64 +746,6 @@ DBL value;
 * FUNCTION
 *
 * INPUT
-*   
-* OUTPUT
-*   
-* RETURNS
-*   
-* AUTHOR
-*
-*   POV-Ray Team
-*   
-* DESCRIPTION
-*
-* CHANGES
-*
-******************************************************************************/
-
-void Translate_Textures(Textures, Trans)
-TEXTURE *Textures;
-TRANSFORM *Trans;
-{
-  Transform_Textures(Textures, Trans);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-* INPUT
-*   
-* OUTPUT
-*   
-* RETURNS
-*   
-* AUTHOR
-*
-*   POV-Ray Team
-*
-* DESCRIPTION
-*
-* CHANGES
-*
-******************************************************************************/
-
-void Rotate_Textures(Textures, Trans)
-TEXTURE *Textures;
-TRANSFORM *Trans;
-{
-  Transform_Textures(Textures, Trans);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-* INPUT
 *
 * OUTPUT
 *
@@ -829,38 +761,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-void Scale_Textures(Textures, Trans)
-TEXTURE *Textures;
-TRANSFORM *Trans;
-{
-  Transform_Textures(Textures, Trans);
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-* INPUT
-*
-* OUTPUT
-*
-* RETURNS
-*
-* AUTHOR
-*
-*   POV-Ray Team
-*
-* DESCRIPTION
-*
-* CHANGES
-*
-******************************************************************************/
-
-void Transform_Textures(Textures, Trans)
-TEXTURE *Textures;
-TRANSFORM *Trans;
+void Transform_Textures(TEXTURE *Textures, TRANSFORM *Trans)
 {
   TEXTURE *Layer;
 
@@ -870,7 +771,6 @@ TRANSFORM *Trans;
     {
       Transform_Tpattern((TPATTERN *)Layer->Pigment, Trans);
       Transform_Tpattern((TPATTERN *)Layer->Tnormal, Trans);
-      Transform_Halo(Layer->Halo, Trans);
     }
     else
     {
@@ -916,21 +816,18 @@ FINISH *Create_Finish()
   New->Phong_Size = 40.0;
   New->Specular   = 0.0;
   New->Roughness  = 1.0 / 0.05;
-  New->Refraction = 0.0;
-
-  New->Index_Of_Refraction = 1.0;
 
   New->Crand = 0.0;
 
   New->Metallic = 0.0;
-  New->Caustics = 0.0;
 
   New->Irid                = 0.0;
   New->Irid_Film_Thickness = 0.0;
   New->Irid_Turb           = 0.0;
-
-  New->Fade_Distance = 0.0;
-  New->Fade_Power    = 0.0;
+  New->Temp_Caustics = -1.0;
+  New->Temp_IOR     = -1.0;
+  New->Temp_Refract =  1.0;
+  New->Reflect_Exp  =  1.0;
 
   return(New);
 }
@@ -957,8 +854,7 @@ FINISH *Create_Finish()
 *
 ******************************************************************************/
 
-FINISH *Copy_Finish(Old)
-FINISH *Old;
+FINISH *Copy_Finish(FINISH *Old)
 {
   FINISH *New;
   
@@ -1010,7 +906,6 @@ TEXTURE *Create_Texture()
   New->Pigment = NULL;
   New->Tnormal = NULL;
   New->Finish  = NULL;
-  New->Halo    = NULL;
 
   New->Next          = NULL;
   New->Next_Material = NULL;
@@ -1039,8 +934,7 @@ TEXTURE *Create_Texture()
 *
 ******************************************************************************/
 
-TEXTURE *Copy_Texture_Pointer(Texture)
-TEXTURE *Texture;
+TEXTURE *Copy_Texture_Pointer(TEXTURE *Texture)
 {
   if (Texture != NULL)
   {
@@ -1073,8 +967,7 @@ TEXTURE *Texture;
 *
 ******************************************************************************/
 
-TEXTURE *Copy_Textures(Textures)
-TEXTURE *Textures;
+TEXTURE *Copy_Textures(TEXTURE *Textures)
 {
   TEXTURE *New, *First, *Previous, *Layer;
   
@@ -1084,6 +977,13 @@ TEXTURE *Textures;
   {
     New = Create_Texture();
     Copy_TPat_Fields ((TPATTERN *)New, (TPATTERN *)Layer);
+    
+    /*  Mesh copies a texture pointer that already has multiple
+        references.  We just want a clean copy, not a copy
+        that's multply referenced.
+     */
+
+    New->References = 1;
 
     switch (Layer->Type)
     {
@@ -1091,7 +991,6 @@ TEXTURE *Textures;
         New->Pigment = Copy_Pigment(Layer->Pigment);
         New->Tnormal = Copy_Tnormal(Layer->Tnormal);
         New->Finish  = Copy_Finish(Layer->Finish);
-        New->Halo    = Copy_Halo(Layer->Halo);
 
         break;
       
@@ -1144,8 +1043,7 @@ TEXTURE *Textures;
 *
 ******************************************************************************/
 
-static TEXTURE *Copy_Materials(Old)
-TEXTURE *Old;
+static TEXTURE *Copy_Materials(TEXTURE *Old)
 {
   TEXTURE *New, *First, *Previous, *Material;
   
@@ -1193,8 +1091,7 @@ TEXTURE *Old;
 *
 ******************************************************************************/
 
-void Destroy_Textures(Textures)
-TEXTURE *Textures;
+void Destroy_Textures(TEXTURE *Textures)
 {
   TEXTURE *Layer = Textures;
   TEXTURE *Mats;
@@ -1226,7 +1123,6 @@ TEXTURE *Textures;
         Destroy_Pigment(Layer->Pigment);
         Destroy_Tnormal(Layer->Tnormal);
         Destroy_Finish(Layer->Finish);
-        Destroy_Halo(Layer->Halo);
 
       break;
 
@@ -1268,8 +1164,7 @@ TEXTURE *Textures;
 *
 ******************************************************************************/
 
-void Post_Textures(Textures)
-TEXTURE *Textures;
+void Post_Textures(TEXTURE *Textures)
 {
   TEXTURE *Layer, *Material;
   int i;
@@ -1290,7 +1185,6 @@ TEXTURE *Textures;
 
           Post_Pigment(Layer->Pigment);
           Post_Tnormal(Layer->Tnormal);
-          Post_Halo(Layer);
 
           break;
 
@@ -1358,8 +1252,7 @@ TEXTURE *Textures;
 *
 ******************************************************************************/
 
-int Test_Opacity(Texture)
-TEXTURE *Texture;
+int Test_Opacity(TEXTURE *Texture)
 {
   int x, y;
   int Opaque, Help;
@@ -1500,7 +1393,7 @@ TEXTURE *Texture;
 *
 * FUNCTION
 *
-*   POV_Std_rand
+*   POV_RAND
 *
 * INPUT
 *
@@ -1524,11 +1417,16 @@ TEXTURE *Texture;
 *
 ******************************************************************************/
 
-int POV_Std_rand()
+int POV_RAND()
 {
   next_rand = next_rand * 1812433253L + 12345L;
 
   return((int)(next_rand >> 16) & RNDMASK);
+}
+
+int POV_GET_OLD_RAND()
+{
+  return(next_rand);
 }
 
 
@@ -1537,7 +1435,7 @@ int POV_Std_rand()
 *
 * FUNCTION
 *
-*   POV_Std_srand
+*   POV_SRAND
 *
 * INPUT
 *
@@ -1561,8 +1459,7 @@ int POV_Std_rand()
 *
 ******************************************************************************/
 
-void POV_Std_srand(seed)
-int seed;
+void POV_SRAND(int seed)
 {
   next_rand = (unsigned long int)seed;
 }

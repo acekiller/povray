@@ -4,16 +4,16 @@
 *  This module contains the code to read and write the PNG output file
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -26,6 +26,8 @@
 * Updated to set the flush distance based on the file buffer size, Dec 1995
 * Updated to use the libpng 0.87 messaging functions, Dec 1995
 * Updated to use the libpng 0.89 structure interface, Jun 1996
+*
+* Modifications by Hans-Detlev Fink, January 1999, used with permission
 *
 *****************************************************************************/
 
@@ -102,21 +104,31 @@ static FILE       *tmp_fp = NULL;
 * Static functions
 ******************************************************************************/
 
-static int Open_Png_File PARAMS((FILE_HANDLE *handle, char *name, int *width,
-                              int *height, int buffer_size, int mode));
-static void Write_Png_Line PARAMS((FILE_HANDLE *handle, COLOUR *line_data,
-                                   int line_number));
-static int Read_Png_Line PARAMS((FILE_HANDLE *handle, COLOUR *line_data,
-                                 int *line_number));
-static void Close_Png_File PARAMS((FILE_HANDLE *handle));
+static int Open_Png_File (FILE_HANDLE *handle, char *name, int *width,
+                              int *height, int buffer_size, int mode);
+static void Write_Png_Line (FILE_HANDLE *handle, COLOUR *line_data,
+                                   int line_number);
+static int Read_Png_Line (FILE_HANDLE *handle, COLOUR *line_data,
+                                 int *line_number);
+static void Close_Png_File (FILE_HANDLE *handle);
 
 
 /* These are replacement error and warning functions for the libpng code */
-static void png_pov_err PARAMS((png_structp, png_const_charp));
-static void png_pov_warn PARAMS((png_structp, png_const_charp));
+static void png_pov_err (png_structp, png_const_charp);
+static void png_pov_warn (png_structp, png_const_charp);
 
 /* This is an internal function for libpng */
-extern void png_write_finish_row PARAMS((png_structp));
+extern 
+#ifdef __cplusplus
+ "C" {
+#endif
+
+void png_write_finish_row (png_structp);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 /*****************************************************************************
 *
@@ -182,9 +194,7 @@ FILE_HANDLE *Get_Png_File_Handle()
 * CHANGES
 *
 ******************************************************************************/
-static void png_pov_warn(png_ptr, msg)
-png_structp png_ptr;
-png_const_charp msg;
+static void png_pov_warn(png_structp png_ptr, png_const_charp msg)
 {
   if (png_get_error_ptr(png_ptr))
     Warning(0.0,"libpng: %s\n",msg);
@@ -212,9 +222,7 @@ png_const_charp msg;
 * CHANGES
 *
 ******************************************************************************/
-static void png_pov_err(png_ptr, msg)
-png_structp png_ptr;
-png_const_charp msg;
+static void png_pov_err(png_structp png_ptr, png_const_charp msg)
 {
   if (png_get_error_ptr(png_ptr))
     Error_Line("libpng: %s\n",msg);
@@ -252,13 +260,7 @@ png_const_charp msg;
 *
 ******************************************************************************/
 
-static int Open_Png_File(handle, name, width, height, buffer_size, mode)
-FILE_HANDLE *handle;
-char *name;
-int *width;
-int *height;
-int buffer_size;
-int mode;
+static int Open_Png_File(FILE_HANDLE *handle, char *name, int *width, int *height, int buffer_size, int mode)
 {
   handle->mode = mode;
   handle->filename = name;
@@ -287,10 +289,10 @@ int mode;
        * to check if a temp file already exists, in case the transfer
        * has been previously aborted.
        */
-      if ((tmp_fp = fopen(tmp_fname,READ_FILE_STRING)) == NULL)
+      if ((tmp_fp = fopen(tmp_fname,READ_BINFILE_STRING)) == NULL)
       {
         /* The temp file doesn't exist.  Try the original file. */
-        if ((tmp_fp = fopen(name,READ_FILE_STRING)) == NULL)
+        if ((tmp_fp = fopen(name,READ_BINFILE_STRING)) == NULL)
         {
           Status_Info("\n");
           return(0);  /* Neither file exists - start from scratch. */
@@ -305,7 +307,7 @@ int mode;
           }
 
           /* Open the original file (now with a new name) for reading */
-          if ((tmp_fp = fopen(tmp_fname,READ_FILE_STRING)) == NULL)
+          if ((tmp_fp = fopen(tmp_fname,READ_BINFILE_STRING)) == NULL)
           {
             RENAME_FILE(tmp_fname,name); /* Try to rename back - not crucial */
             Error("\nError opening temporary PNG file for continuing trace.\n");
@@ -316,7 +318,7 @@ int mode;
        * as well, then there is something wrong, and we can't automatically
        * defide which file to delete.
        */
-      else if((handle->file = fopen(name,READ_FILE_STRING)) != NULL)
+      else if((handle->file = fopen(name,READ_BINFILE_STRING)) != NULL)
       {
         fclose(tmp_fp);
         fclose(handle->file);
@@ -329,7 +331,7 @@ int mode;
        * to move the old one back so that users don't fret if it's missing.
        * PNG will be able to continue without loss of data either way.
        */
-      if ((handle->file = fopen(name, WRITE_FILE_STRING)) == NULL)
+      if ((handle->file = fopen(name, WRITE_BINFILE_STRING)) == NULL)
       {
         Status_Info("\n");
 
@@ -340,7 +342,7 @@ int mode;
 
       if (buffer_size > 0)
       {
-        handle->buffer = POV_MALLOC(buffer_size, "PNG file buffer");
+        handle->buffer = (char *)POV_MALLOC(buffer_size, "PNG file buffer");
         setvbuf(handle->file, handle->buffer, _IOFBF, buffer_size);
       }
 
@@ -487,14 +489,14 @@ int mode;
         buffer_size = 0;
         handle->file = stdout;
       }
-      else if ((handle->file = fopen(name, WRITE_FILE_STRING)) == NULL)
+      else if ((handle->file = fopen(name, WRITE_BINFILE_STRING)) == NULL)
       {
         return(0);
       }
 
       if (buffer_size != 0)
       {
-        handle->buffer = POV_MALLOC((size_t)buffer_size, "PNG file buffer");
+        handle->buffer = (char *)POV_MALLOC((size_t)buffer_size, "PNG file buffer");
         setvbuf(handle->file, handle->buffer, _IOFBF, buffer_size);
       }
 
@@ -654,7 +656,7 @@ int mode;
 #endif /* PNG_WRITE_FLUSH_SUPPORTED */
 
       if (!(opts.Options & TO_STDOUT) && (handle->file =
-          freopen(name, APPEND_FILE_STRING, handle->file)) == NULL)
+          freopen(name, APPEND_BINFILE_STRING, handle->file)) == NULL)
       {
         if (handle->buffer != NULL)
         {
@@ -716,10 +718,7 @@ int mode;
 *
 ******************************************************************************/
 
-static void Write_Png_Line(handle, line_data, line_number)
-FILE_HANDLE *handle;
-COLOUR *line_data;
-int line_number;
+static void Write_Png_Line(FILE_HANDLE *handle, COLOUR *line_data, int line_number)
 {
   register int col, j;
   int himask;
@@ -963,7 +962,7 @@ int line_number;
     fflush(handle->file);
 #endif
 
-    handle->file = freopen(handle->filename, APPEND_FILE_STRING, handle->file);
+    handle->file = freopen(handle->filename, APPEND_BINFILE_STRING, handle->file);
   }
 }
 
@@ -993,10 +992,7 @@ int line_number;
 *
 ******************************************************************************/
 
-static int Read_Png_Line(handle, line_data, line_number)
-FILE_HANDLE *handle;
-COLOUR *line_data;
-int *line_number;
+static int Read_Png_Line(FILE_HANDLE *handle, COLOUR *line_data, int *line_number)
 {
   register int col, j, step;
 
@@ -1116,8 +1112,7 @@ int *line_number;
 *
 ******************************************************************************/
 
-static void Close_Png_File(handle)
-FILE_HANDLE *handle;
+static void Close_Png_File(FILE_HANDLE *handle)
 {
 #ifdef POV_COMMENTS
   int n, index = - 1;
@@ -1369,9 +1364,7 @@ FILE_HANDLE *handle;
 *
 ******************************************************************************/
 
-void Read_Png_Image(Image, name)
-IMAGE *Image;
-char *name;
+void Read_Png_Image(IMAGE *Image, char *name)
 {
   unsigned int width, height;
   int row, col, j;
@@ -1384,9 +1377,10 @@ char *name;
 
   /* Start by trying to open the file */
 
-  if ((filep = Locate_File(name, READ_FILE_STRING, ".png", ".PNG",TRUE)) == NULL)
+  if ((filep = Locate_File(name, READ_BINFILE_STRING, ".png", ".PNG",NULL,TRUE)) == NULL)
   {
     Error("Error opening PNG file.\n");
+    return;	/* -hdf99- */
   }
 
   if ((r_png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
@@ -1394,6 +1388,7 @@ char *name;
       (r_info_ptr = png_create_info_struct(r_png_ptr)) == NULL)
   {
     Error("Error allocating PNG data structures");
+    return;	/* -hdf99- */
   }
 
   if (setjmp(r_png_ptr->jmpbuf))
@@ -1402,6 +1397,7 @@ char *name;
 
     png_destroy_read_struct(&r_png_ptr, &r_info_ptr, (png_infopp)NULL);
     Error("Error reading PNG image.");
+    return;	/* -hdf99- */
   }
 
   /* set up the input control */

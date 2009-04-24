@@ -1,60 +1,100 @@
-;                     PERSISTENCE OF VISION RAY TRACER
-;
-;                           POV-Ray VERSION 3.0
-;
-;                         SAMPLE .povrayrc FILE
-;
-;  This file contains options which control how POV-Ray does its job.
-;  The file should be placed in your home directory as .povrayrc, and
-;  it will automaticaly read when POVRAY is run.
-;
-;  The general form of the options is "Variable=value".  Everything 
-;  between the equals sign and the end of the line is considered part 
-;  of the value.  The spacing and layout is free-form but only one option 
-;  per line is allowed.  Variables and values are not case-sensitive.  
-;
-;  Note: characters after a semi-colon are treated as a comment, unless
-;        the semi-colon is immediately preceded by a backslash like \;
-;
-;  Traditional POV-Ray switches beginning with + or - are also allowed
-;  and they may be given with more than one switch per line.  
-;
-;  These options have been put in this file because they will help
-;  you get up and running quickly.  This file assumes you have installed
-;  the program in the /usr/local/lib directory.  If you have installed
-;  the program on a directory you must edit the Library_Path lines below.
-;  See the general and Linux specific documentation for full instructions
-;  on how to use INI options.
-;
-;  Add your own options at the bottom and/or edit these to suit.
-;
-;
-; Width of image in pixels.  Accepts integer values.
-;
-Width = 320
-;
-;
-; Height of image in pixels.  Accepts integer values.
-;
-Height = 240
-;
-;
-; Turns pause when done feature off/on.  Accepts boolean values.
-;
-Pause_when_Done = on
-;
-;
-; Sets minimum number of objects before auto bounding kicks in.
-;
-Bounding_Threshold = 3
-;
-;
-; Test for user abort with any keypress every 100 pixels.
-;
-Test_Abort=On
-Test_Abort_Count=100
-;
-; Specify path to search for any files not found in current
-; directory.  Up to 25 such paths may be specified.
-Library_Path=/usr/local/lib/povray3
-Library_Path=/usr/local/lib/povray3/include
+;;
+;;
+;;                 PERSISTENCE OF VISION(tm) RAY TRACER
+;;
+;;                       POV-Ray version 3.1e
+;;
+;;
+;; This file contains the system default options for POV-Ray.  To replace
+;; these system defaults with a personal set, copy this file to
+;; $HOME/.povrayrc and change it to meet your needs.  A per-project set of
+;; defaults can be created in each directory under the name povray.ini.
+;; Options set in a default INI file can be overridden on the command line
+;; directly with switches or with options set in other named INI files.
+;;
+;; Only some of the more commonly used options are in this file.  Read
+;; the User's Documentation for a list of all the possibilities.  The
+;; command line equivalents of the options are also noted in ()'s.
+
+;; Modified by Mike Fleetwood, February 1999
+
+;; Search path for #include source files or command line ini files not
+;; found in the current directory.  New directories are added to the
+;; search path, up to a maximum of 25.
+Library_Path=/usr/local/lib/povray31			;; (+Ldir)
+Library_Path=/usr/local/lib/povray31/include
+
+
+;; Image size.
+Width=320			;; (+Wn)
+Height=240			;; (+Hn)
+
+
+;; Partial trace of the image.
+;; Values range from top left to bottom right.
+;; Can use either 0.0 to 1.0 as fraction of height/width, or
+;; whole numbers as rows and columns.
+;Start_Row=0.1			;; (+SR0.n / +SRn)
+;End_Row=0.2			;; (+ER0.n / +ERn)
+;Start_Column=45		;; (+SC0.n / +SCn)
+;End_Column=90			;; (+EC0.n / +ECn)
+
+
+;; Test for trace abort.  Use 'q' or 'Q' to abort if enabled.  Not
+;; really needed on Unix as you can always use the Interrupt signal.
+Test_Abort=true			;; (+/-X)
+Test_Abort_Count=100		;; (+Xn)
+
+
+;; Output quality. (Ray tracer actions).
+;;     0-1    Quick colours.  Full ambient lighting only.
+;;     2-3    Quick colours.  Diffuse and ambient lighting only.
+;;     4      Quick colours.  Render shadows.  No extended lights.
+;;     5      Quick colours.  Render shadows including extended lights.
+;;     6-7    Texture patterns.
+;;     8      Reflected, refracted and transmitted rays.
+;;     9      Compute media.
+;;     10     Compute radiosity but no media.
+;;     11     Compute radiosity and media.
+Quality=9			;; (+Qn)
+
+
+;; Anti-aliasing controls.
+;Antialias=true			;; (+/-An)
+;Sampling_Method=2
+
+
+;; Display the image while tracing controls.
+Display=false			;; (+/-D)
+Pause_When_Done=false		;; (+/-P)
+
+
+;; Internal animation loop control.
+;; The 'clock' definition within the source changes from 0 to 1 for each
+;; frame of the animation.  If cyclic animation is enabled it steps from
+;; 0 to a fraction below 1 (actually 1 - 1/Final_Frame).
+;Initial_Frame=1		;; (+KFIn)
+;Final_Frame=36			;; (+KFFn)
+;Cyclic_Animation=true		;; (+/-KC)
+
+
+;; File output type control.
+;;     T    Uncompressed Targa-24
+;;     C    Compressed Targa-24
+;;     P    UNIX PPM
+;;     N    PNG (8-bits per colour RGB)
+;;     Nc   PNG (``c'' bit per colour RGB where 5 <= c <= 16)
+Output_to_File=true
+Output_File_Type=N		;; (+/-Ftype)
+
+
+;; Define the Gamma output responce of the monitor.
+;; This is about correct for most Unix an PC monitors.
+Display_Gamma=2.2		;; (Not available as command line switch)
+
+
+
+
+
+
+

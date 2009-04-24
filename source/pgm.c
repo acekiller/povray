@@ -4,16 +4,16 @@
 *  This module contains the code to read the PGM file format.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -21,6 +21,8 @@
 *
 * Original patch copyright 1994 Tim Rowley
 * Updated for POV 3.0 by Chris Cason, Jan '95.
+*
+* Modifications by Hans-Detlev Fink, January 1999, used with permission
 *
 *****************************************************************************/
 
@@ -68,9 +70,7 @@
 *
 ******************************************************************************/
 
-void Read_PGM_Image(Image, name)
-IMAGE *Image;
-char *name;
+void Read_PGM_Image(IMAGE *Image, char *name)
 {
   char type;
   int width, height;
@@ -81,14 +81,16 @@ char *name;
   int data;
   FILE *infile;
 
-  if ((infile = Locate_File(name,READ_FILE_STRING,".pgm",".PGM",TRUE)) == NULL)
+  if ((infile = Locate_File(name,READ_BINFILE_STRING,".pgm",".PGM",NULL,TRUE)) == NULL)
   {
     Error ("Cannot open PGM image %s.\n", name);
+    return;	/* -hdf99- */
   }
 
   if (fscanf(infile,"P%c\n",&type) != 1 || (type != '2' && type != '5'))
   {
     Error ("File is not in PGM format.\n");
+    return;	/* -hdf99- */
   }
 
   /* Ignore any comments */

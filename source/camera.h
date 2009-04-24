@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for CAMERA.C.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -46,10 +46,6 @@
 #define CYL_2_CAMERA            8
 #define CYL_3_CAMERA            9
 #define CYL_4_CAMERA           10
-#define TEST_CAMERA_1          11
-#define TEST_CAMERA_2          12
-#define TEST_CAMERA_3          13
-#define TEST_CAMERA_4          14
 
 
 
@@ -89,13 +85,13 @@ struct Camera_Struct
 * Global functions
 ******************************************************************************/
 
-void Translate_Camera PARAMS((CAMERA *Cm, VECTOR Vector));
-void Rotate_Camera PARAMS((CAMERA *Cm, VECTOR Vector));
-void Scale_Camera PARAMS((CAMERA *Cm, VECTOR Vector));
-void Transform_Camera PARAMS((CAMERA *Cm, TRANSFORM *Trans));
-CAMERA *Copy_Camera PARAMS((CAMERA *Old));
-CAMERA *Create_Camera PARAMS((void));
-void Destroy_Camera PARAMS((CAMERA *Cm));
+void Translate_Camera (CAMERA *Cm, VECTOR Vector);
+void Rotate_Camera (CAMERA *Cm, VECTOR Vector);
+void Scale_Camera (CAMERA *Cm, VECTOR Vector);
+void Transform_Camera (CAMERA *Cm, TRANSFORM *Trans);
+CAMERA *Copy_Camera (CAMERA *Old);
+CAMERA *Create_Camera (void);
+void Destroy_Camera (CAMERA *Cm);
 
 
 #endif

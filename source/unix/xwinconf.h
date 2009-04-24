@@ -21,6 +21,9 @@
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
+* Updated to 3.1 Feb, 1999 [mtg] Thanks to Mike Fleetwood for noting
+* the spot I missed.
+*
 *****************************************************************************/
 
 /* Below are several defines needed by the X Windows part of POV.  You
@@ -51,7 +54,7 @@ void XWIN_display_init PARAMS((int w, int h));
 void XWIN_display_plot PARAMS((int x, int y,
                                unsigned char Red, unsigned char Green,
                                unsigned char Blue, unsigned char Alpha));
-void XWIN_display_plot_rect PARAMS((int x1, int x2, int y1, int y2,
+void XWIN_display_plot_rect PARAMS((int x1, int y1, int x2, int y2,
                                     unsigned char Red, unsigned char Green,
                                     unsigned char Blue, unsigned char Alpha));
 void XWIN_display_plot_box PARAMS((int x1, int y1, int x2, int y2,

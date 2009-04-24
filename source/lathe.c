@@ -6,20 +6,22 @@
 *  This module was written by Dieter Bayer [DB].
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modification from Thomas Willhalm, March 1999, used with permission
 *
 *****************************************************************************/
 
@@ -111,6 +113,7 @@
 #include "vector.h"
 #include "povproto.h"
 #include "bbox.h"
+#include "bcyl.h"
 #include "lathe.h"
 #include "polysolv.h"
 #include "matrices.h"
@@ -143,19 +146,19 @@
 * Static functions
 ******************************************************************************/
 
-static int  intersect_lathe PARAMS((RAY *Ray, LATHE *Lathe, ISTACK *Depth_Stack));
-static int  All_Lathe_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int  Inside_Lathe PARAMS((VECTOR point, OBJECT *Object));
-static void Lathe_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Lathe PARAMS((OBJECT *Object));
-static void Translate_Lathe PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Lathe PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Lathe PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Lathe PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Lathe PARAMS((OBJECT *Object));
-static void Destroy_Lathe PARAMS((OBJECT *Object));
+static int  intersect_lathe (RAY *Ray, LATHE *Lathe, ISTACK *Depth_Stack);
+static int  All_Lathe_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int  Inside_Lathe (VECTOR point, OBJECT *Object);
+static void Lathe_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static LATHE *Copy_Lathe (OBJECT *Object);
+static void Translate_Lathe (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Lathe (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Lathe (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Lathe (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Lathe (OBJECT *Object);
+static void Destroy_Lathe (OBJECT *Object);
 
-static int  test_hit PARAMS((LATHE *, RAY *, ISTACK *, DBL, DBL, int));
+static int  test_hit (LATHE *, RAY *, ISTACK *, DBL, DBL, int);
 
 
 /*****************************************************************************
@@ -166,7 +169,7 @@ static METHODS Lathe_Methods =
 {
   All_Lathe_Intersections,
   Inside_Lathe, Lathe_Normal,
-  Copy_Lathe,
+  (COPY_METHOD)Copy_Lathe,
   Translate_Lathe, Rotate_Lathe,
   Scale_Lathe, Transform_Lathe, Invert_Lathe, Destroy_Lathe
 };
@@ -208,10 +211,7 @@ static METHODS Lathe_Methods =
 *
 ******************************************************************************/
 
-static int All_Lathe_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Lathe_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   Increase_Counter(stats[Ray_Lathe_Tests]);
 
@@ -265,10 +265,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int intersect_lathe(Ray, Lathe, Depth_Stack)
-RAY *Ray;
-LATHE *Lathe;
-ISTACK *Depth_Stack;
+static int intersect_lathe(RAY *Ray, LATHE *Lathe, ISTACK *Depth_Stack)
 {
   int cnt;
   int found, j, n1, n2;
@@ -411,6 +408,7 @@ ISTACK *Depth_Stack;
       * Cubic spline.
       ************************************************************************/
 
+      case BEZIER_SPLINE:
       case CUBIC_SPLINE:
 
         /* Solve 6th order polynomial. */
@@ -522,22 +520,18 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_Lathe(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Lathe(VECTOR IPoint, OBJECT *Object)
 {
   int i, n, NC;
   DBL r, k, w;
   DBL x[4], y[3];
-  DBL *height, *radius;
+  DBL *height;
   VECTOR P;
   BCYL_ENTRY *entry;
   LATHE_SPLINE_ENTRY *Entry;
   LATHE *Lathe = (LATHE *)Object;
 
   height = Lathe->Spline->BCyl->height;
-
-  radius = Lathe->Spline->BCyl->radius;
 
   entry = Lathe->Spline->BCyl->entry;
 
@@ -634,10 +628,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Lathe_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Lathe_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   DBL r, dx, dy;
   VECTOR P, N;
@@ -714,10 +705,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Lathe(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Lathe(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Lathe(Object, Trans);
 }
@@ -755,10 +743,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Lathe(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Lathe(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Lathe(Object, Trans);
 }
@@ -796,10 +781,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Lathe(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Lathe(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Lathe(Object, Trans);
 }
@@ -837,9 +819,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Lathe(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Lathe(OBJECT *Object, TRANSFORM *Trans)
 {
   Compose_Transforms(((LATHE *)Object)->Trans, Trans);
 
@@ -878,8 +858,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Lathe(Object)
-OBJECT *Object;
+static void Invert_Lathe(OBJECT *Object)
 {
   Invert_Flag(Object, INVERTED_FLAG);
 }
@@ -975,8 +954,7 @@ LATHE *Create_Lathe()
 *
 ******************************************************************************/
 
-static void *Copy_Lathe(Object)
-OBJECT *Object;
+static LATHE *Copy_Lathe(OBJECT *Object)
 {
   LATHE *New, *Lathe = (LATHE *)Object;
 
@@ -1032,8 +1010,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Lathe(Object)
-OBJECT *Object;
+static void Destroy_Lathe(OBJECT *Object)
 {
   LATHE *Lathe = (LATHE *)Object;
 
@@ -1083,8 +1060,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Lathe_BBox(Lathe)
-LATHE *Lathe;
+void Compute_Lathe_BBox(LATHE *Lathe)
 {
   Make_BBox(Lathe->BBox, -Lathe->Radius2, Lathe->Height1, -Lathe->Radius2,
     2.0 * Lathe->Radius2, Lathe->Height2 - Lathe->Height1, 2.0 * Lathe->Radius2);
@@ -1128,11 +1104,9 @@ LATHE *Lathe;
 *
 ******************************************************************************/
 
-void Compute_Lathe(Lathe, P)
-LATHE *Lathe;
-UV_VECT *P;
+void Compute_Lathe(LATHE *Lathe, UV_VECT *P)
 {
-  int i, n;
+  int i, i1, i2, i3, n, segment, number_of_segments;
   DBL x[4], xmin, xmax;
   DBL y[4], ymin, ymax;
   DBL c[3], r[2];
@@ -1142,7 +1116,41 @@ UV_VECT *P;
   DBL *tmp_h2;
   UV_VECT A, B, C, D;
 
-  /* Allocate Lathe->Number segments. */
+  /* Get number of segments. */
+
+  switch (Lathe->Spline_Type)
+  {
+    case LINEAR_SPLINE:
+
+      number_of_segments = Lathe->Number - 1;
+
+      break;
+
+    case QUADRATIC_SPLINE:
+
+      number_of_segments = Lathe->Number - 2;
+
+      break;
+
+    case CUBIC_SPLINE:
+
+      number_of_segments = Lathe->Number - 3;
+
+      break;
+
+    case BEZIER_SPLINE:
+
+      number_of_segments = Lathe->Number / 4;
+
+      break;
+
+  default: /* tw */
+
+    number_of_segments = 0; /* tw */
+
+  }
+
+  /* Allocate segments. */
 
   if (Lathe->Spline == NULL)
   {
@@ -1152,7 +1160,7 @@ UV_VECT *P;
 
     Lathe->Spline->References = 1;
 
-    Lathe->Spline->Entry = (LATHE_SPLINE_ENTRY *)POV_MALLOC(Lathe->Number*sizeof(LATHE_SPLINE_ENTRY), "spline segments of lathe");
+    Lathe->Spline->Entry = (LATHE_SPLINE_ENTRY *)POV_MALLOC(number_of_segments*sizeof(LATHE_SPLINE_ENTRY), "spline segments of lathe");
   }
   else
   {
@@ -1163,10 +1171,10 @@ UV_VECT *P;
 
   /* Allocate temporary lists. */
 
-  tmp_r1 = (DBL *)POV_MALLOC(Lathe->Number * sizeof(DBL), "temp lathe data");
-  tmp_r2 = (DBL *)POV_MALLOC(Lathe->Number * sizeof(DBL), "temp lathe data");
-  tmp_h1 = (DBL *)POV_MALLOC(Lathe->Number * sizeof(DBL), "temp lathe data");
-  tmp_h2 = (DBL *)POV_MALLOC(Lathe->Number * sizeof(DBL), "temp lathe data");
+  tmp_r1 = (DBL *)POV_MALLOC(number_of_segments * sizeof(DBL), "temp lathe data");
+  tmp_r2 = (DBL *)POV_MALLOC(number_of_segments * sizeof(DBL), "temp lathe data");
+  tmp_h1 = (DBL *)POV_MALLOC(number_of_segments * sizeof(DBL), "temp lathe data");
+  tmp_h2 = (DBL *)POV_MALLOC(number_of_segments * sizeof(DBL), "temp lathe data");
 
   /***************************************************************************
   * Calculate segments.
@@ -1177,8 +1185,12 @@ UV_VECT *P;
   xmax = ymax = -BOUND_HUGE;
   xmin = ymin = BOUND_HUGE;
 
-  for (i = 0; i < Lathe->Number; i++)
+  for (i = segment = 0; segment < number_of_segments; )
   {
+    i1 = i + 1;
+    i2 = i + 2;
+    i3 = i + 3;
+
     switch (Lathe->Spline_Type)
     {
       /*************************************************************************
@@ -1189,23 +1201,23 @@ UV_VECT *P;
 
         /* Use linear interpolation. */
 
-        A[X] = 0.0;
-        B[X] = 0.0;
-        C[X] = -1.0 * P[i][X] + 1.0 * P[i+1][X];
+        A[X] =  0.0;
+        B[X] =  0.0;
+        C[X] = -1.0 * P[i][X] + 1.0 * P[i1][X];
         D[X] =  1.0 * P[i][X];
 
-        A[Y] = 0.0;
-        B[Y] = 0.0;
-        C[Y] = -1.0 * P[i][Y] + 1.0 * P[i+1][Y];
+        A[Y] =  0.0;
+        B[Y] =  0.0;
+        C[Y] = -1.0 * P[i][Y] + 1.0 * P[i1][Y];
         D[Y] =  1.0 * P[i][Y];
 
         /* Get maximum coordinates in current segment. */
 
         x[0] = x[2] = P[i][X];
-        x[1] = x[3] = P[i+1][X];
+        x[1] = x[3] = P[i1][X];
 
         y[0] = y[2] = P[i][Y];
-        y[1] = y[3] = P[i+1][Y];
+        y[1] = y[3] = P[i1][Y];
 
         break;
 
@@ -1219,22 +1231,22 @@ UV_VECT *P;
         /* Use quadratic interpolation. */
 
         A[X] =  0.0;
-        B[X] =  0.5 * P[i][X] - 1.0 * P[i+1][X] + 0.5 * P[i+2][X];
-        C[X] = -0.5 * P[i][X]                   + 0.5 * P[i+2][X];
-        D[X] =                  1.0 * P[i+1][X];
+        B[X] =  0.5 * P[i][X] - 1.0 * P[i1][X] + 0.5 * P[i2][X];
+        C[X] = -0.5 * P[i][X]                  + 0.5 * P[i2][X];
+        D[X] =                  1.0 * P[i1][X];
 
         A[Y] =  0.0;
-        B[Y] =  0.5 * P[i][Y] - 1.0 * P[i+1][Y] + 0.5 * P[i+2][Y];
-        C[Y] = -0.5 * P[i][Y]                   + 0.5 * P[i+2][Y];
-        D[Y] =                  1.0 * P[i+1][Y];
+        B[Y] =  0.5 * P[i][Y] - 1.0 * P[i1][Y] + 0.5 * P[i2][Y];
+        C[Y] = -0.5 * P[i][Y]                  + 0.5 * P[i2][Y];
+        D[Y] =                  1.0 * P[i1][Y];
 
         /* Get maximum coordinates in current segment. */
 
-        x[0] = x[2] = P[i+1][X];
-        x[1] = x[3] = P[i+2][X];
+        x[0] = x[2] = P[i1][X];
+        x[1] = x[3] = P[i2][X];
 
-        y[0] = y[2] = P[i+1][Y];
-        y[1] = y[3] = P[i+2][Y];
+        y[0] = y[2] = P[i1][Y];
+        y[1] = y[3] = P[i2][Y];
 
         break;
 
@@ -1247,23 +1259,53 @@ UV_VECT *P;
 
         /* Use cubic interpolation. */
 
-        A[X] = -0.5 * P[i][X] + 1.5 * P[i+1][X] - 1.5 * P[i+2][X] + 0.5 * P[i+3][X];
-        B[X] =        P[i][X] - 2.5 * P[i+1][X] + 2.0 * P[i+2][X] - 0.5 * P[i+3][X];
-        C[X] = -0.5 * P[i][X]                   + 0.5 * P[i+2][X];
-        D[X] =                        P[i+1][X];
+        A[X] = -0.5 * P[i][X] + 1.5 * P[i1][X] - 1.5 * P[i2][X] + 0.5 * P[i3][X];
+        B[X] =        P[i][X] - 2.5 * P[i1][X] + 2.0 * P[i2][X] - 0.5 * P[i3][X];
+        C[X] = -0.5 * P[i][X]                  + 0.5 * P[i2][X];
+        D[X] =                        P[i1][X];
 
-        A[Y] = -0.5 * P[i][Y] + 1.5 * P[i+1][Y] - 1.5 * P[i+2][Y] + 0.5 * P[i+3][Y];
-        B[Y] =        P[i][Y] - 2.5 * P[i+1][Y] + 2.0 * P[i+2][Y] - 0.5 * P[i+3][Y];
-        C[Y] = -0.5 * P[i][Y]                   + 0.5 * P[i+2][Y];
-        D[Y] =                        P[i+1][Y];
+        A[Y] = -0.5 * P[i][Y] + 1.5 * P[i1][Y] - 1.5 * P[i2][Y] + 0.5 * P[i3][Y];
+        B[Y] =        P[i][Y] - 2.5 * P[i1][Y] + 2.0 * P[i2][Y] - 0.5 * P[i3][Y];
+        C[Y] = -0.5 * P[i][Y]                  + 0.5 * P[i2][Y];
+        D[Y] =                        P[i1][Y];
 
         /* Get maximum coordinates in current segment. */
 
-        x[0] = x[2] = P[i+1][X];
-        x[1] = x[3] = P[i+2][X];
+        x[0] = x[2] = P[i1][X];
+        x[1] = x[3] = P[i2][X];
 
-        y[0] = y[2] = P[i+1][Y];
-        y[1] = y[3] = P[i+2][Y];
+        y[0] = y[2] = P[i1][Y];
+        y[1] = y[3] = P[i2][Y];
+
+        break;
+
+      /*************************************************************************
+      * Bezier spline.
+      **************************************************************************/
+
+      case BEZIER_SPLINE:
+
+        /* Use Bernstein interpolation. */
+
+        A[X] = P[i][X] - 3.0 * P[i1][X] + 3.0 * P[i2][X] -       P[i3][X];
+        B[X] =           3.0 * P[i1][X] - 6.0 * P[i2][X] + 3.0 * P[i3][X];
+        C[X] =           3.0 * P[i2][X] - 3.0 * P[i3][X];
+        D[X] =                                                   P[i3][X];
+
+        A[Y] = P[i][Y] - 3.0 * P[i1][Y] + 3.0 * P[i2][Y] -       P[i3][Y];
+        B[Y] =           3.0 * P[i1][Y] - 6.0 * P[i2][Y] + 3.0 * P[i3][Y];
+        C[Y] =           3.0 * P[i2][Y] - 3.0 * P[i3][Y];
+        D[Y] =                                                   P[i3][Y];
+
+        x[0] = P[i][X];
+        x[1] = P[i1][X];
+        x[2] = P[i2][X];
+        x[3] = P[i3][X];
+
+        y[0] = P[i][Y];
+        y[1] = P[i1][Y];
+        y[2] = P[i2][Y];
+        y[3] = P[i3][Y];
 
         break;
 
@@ -1273,62 +1315,89 @@ UV_VECT *P;
 
     }
 
-    Assign_UV_Vect(Lathe->Spline->Entry[i].A, A);
-    Assign_UV_Vect(Lathe->Spline->Entry[i].B, B);
-    Assign_UV_Vect(Lathe->Spline->Entry[i].C, C);
-    Assign_UV_Vect(Lathe->Spline->Entry[i].D, D);
+    Assign_UV_Vect(Lathe->Spline->Entry[segment].A, A);
+    Assign_UV_Vect(Lathe->Spline->Entry[segment].B, B);
+    Assign_UV_Vect(Lathe->Spline->Entry[segment].C, C);
+    Assign_UV_Vect(Lathe->Spline->Entry[segment].D, D);
 
-    /* Get maximum coordinates in current segment. */
-
-    c[0] = 3.0 * A[X];
-    c[1] = 2.0 * B[X];
-    c[2] = C[X];
-
-    n = Solve_Polynomial(2, c, r, FALSE, 0.0);
-
-    while (n--)
+    if ((Lathe->Spline_Type == QUADRATIC_SPLINE) ||
+        (Lathe->Spline_Type == CUBIC_SPLINE))
     {
-      if ((r[n] >= 0.0) && (r[n] <= 1.0))
+      /* Get maximum coordinates in current segment. */
+
+      c[0] = 3.0 * A[X];
+      c[1] = 2.0 * B[X];
+      c[2] = C[X];
+
+      n = Solve_Polynomial(2, c, r, FALSE, 0.0);
+
+      while (n--)
       {
-        x[n] = r[n] * (r[n] * (r[n] * A[X] + B[X]) + C[X]) + D[X];
+        if ((r[n] >= 0.0) && (r[n] <= 1.0))
+        {
+          x[n] = r[n] * (r[n] * (r[n] * A[X] + B[X]) + C[X]) + D[X];
+        }
       }
-    }
 
-    c[0] = 3.0 * A[Y];
-    c[1] = 2.0 * B[Y];
-    c[2] = C[Y];
+      c[0] = 3.0 * A[Y];
+      c[1] = 2.0 * B[Y];
+      c[2] = C[Y];
 
-    n = Solve_Polynomial(2, c, r, FALSE, 0.0);
+      n = Solve_Polynomial(2, c, r, FALSE, 0.0);
 
-    while (n--)
-    {
-      if ((r[n] >= 0.0) && (r[n] <= 1.0))
+      while (n--)
       {
-        y[n] = r[n] * (r[n] * (r[n] * A[Y] + B[Y]) + C[Y]) + D[Y];
+        if ((r[n] >= 0.0) && (r[n] <= 1.0))
+        {
+          y[n] = r[n] * (r[n] * (r[n] * A[Y] + B[Y]) + C[Y]) + D[Y];
+        }
       }
     }
 
     /* Set current segment's bounding cylinder. */
 
-    tmp_r1[i] = min(min(x[0], x[1]), min(x[2], x[3]));
-    tmp_r2[i] = max(max(x[0], x[1]), max(x[2], x[3]));
+    tmp_r1[segment] = min(min(x[0], x[1]), min(x[2], x[3]));
+    tmp_r2[segment] = max(max(x[0], x[1]), max(x[2], x[3]));
 
-    tmp_h1[i] = min(min(y[0], y[1]), min(y[2], y[3]));
-    tmp_h2[i] = max(max(y[0], y[1]), max(y[2], y[3]));
+    tmp_h1[segment] = min(min(y[0], y[1]), min(y[2], y[3]));
+    tmp_h2[segment] = max(max(y[0], y[1]), max(y[2], y[3]));
 
     /* Keep track of overall bounding cylinder. */
 
-    xmin = min(xmin, tmp_r1[i]);
-    xmax = max(xmax, tmp_r2[i]);
+    xmin = min(xmin, tmp_r1[segment]);
+    xmax = max(xmax, tmp_r2[segment]);
 
-    ymin = min(ymin, tmp_h1[i]);
-    ymax = max(ymax, tmp_h2[i]);
+    ymin = min(ymin, tmp_h1[segment]);
+    ymax = max(ymax, tmp_h2[segment]);
 
 /*
     fprintf(stderr, "bound spline segment %d: ", i);
-    fprintf(stderr, "r = %f - %f, h = %f - %f\n", tmp_r1[i], tmp_r2[i], tmp_h1[i], tmp_h2[i]);
+    fprintf(stderr, "r = %f - %f, h = %f - %f\n", tmp_r1[segment], tmp_r2[segment], tmp_h1[segment], tmp_h2[segment]);
 */
+
+    /* Advance to next segment. */
+
+    switch (Lathe->Spline_Type)
+    {
+      case LINEAR_SPLINE:
+      case QUADRATIC_SPLINE:
+      case CUBIC_SPLINE:
+
+        i++;
+
+        break;
+
+      case BEZIER_SPLINE:
+
+        i += 4;
+
+        break;
+    }
+
+    segment++;
   }
+
+  Lathe->Number = number_of_segments;
 
   /* Set overall bounding cylinder. */
 
@@ -1384,12 +1453,7 @@ UV_VECT *P;
 *
 ******************************************************************************/
 
-static int test_hit(Lathe, Ray, Depth_Stack, d, w, n)
-LATHE *Lathe;
-RAY *Ray;
-ISTACK *Depth_Stack;
-DBL d, w;
-int n;
+static int test_hit(LATHE *Lathe, RAY *Ray, ISTACK *Depth_Stack, DBL d, DBL  w, int n)
 {
   VECTOR IPoint;
 

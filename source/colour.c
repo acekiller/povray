@@ -4,16 +4,16 @@
 *  This module implements routines to manipulate colours.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -114,8 +114,7 @@ COLOUR *Create_Colour ()
 *
 ******************************************************************************/
 
-COLOUR *Copy_Colour (Old)
-COLOUR Old;
+COLOUR *Copy_Colour (COLOUR Old)
 {
   COLOUR *New;
 
@@ -159,8 +158,7 @@ COLOUR Old;
 *
 ******************************************************************************/
 
-BLEND_MAP_ENTRY *Create_BMap_Entries (Map_Size)
-int Map_Size;
+BLEND_MAP_ENTRY *Create_BMap_Entries (int Map_Size)
 {
   BLEND_MAP_ENTRY *New;
 
@@ -192,9 +190,7 @@ int Map_Size;
 *
 ******************************************************************************/
 
-BLEND_MAP_ENTRY *Copy_BMap_Entries (Old, Map_Size, Type)
-BLEND_MAP_ENTRY *Old;
-int Map_Size, Type;
+BLEND_MAP_ENTRY *Copy_BMap_Entries (BLEND_MAP_ENTRY *Old, int Map_Size, int  Type)
 {
   int i;
   BLEND_MAP_ENTRY *New;
@@ -317,8 +313,7 @@ BLEND_MAP *Create_Blend_Map ()
 *
 ******************************************************************************/
 
-BLEND_MAP *Copy_Blend_Map (Old)
-BLEND_MAP *Old;
+BLEND_MAP *Copy_Blend_Map (BLEND_MAP *Old)
 {
   BLEND_MAP *New;
 
@@ -368,8 +363,7 @@ BLEND_MAP *Old;
 *
 ******************************************************************************/
 
-DBL Colour_Distance (colour1, colour2)
-COLOUR colour1, colour2;
+DBL Colour_Distance (COLOUR colour1, COLOUR  colour2)
 {
   return (fabs(colour1[RED]   - colour2[RED]) +
           fabs(colour1[GREEN] - colour2[GREEN]) +
@@ -404,8 +398,7 @@ COLOUR colour1, colour2;
 *
 ******************************************************************************/
 
-void Add_Colour (result, colour1, colour2)
-COLOUR result, colour1, colour2;
+void Add_Colour (COLOUR result, COLOUR  colour1, COLOUR  colour2)
 {
   result[RED]    = colour1[RED]    + colour2[RED];
   result[GREEN]  = colour1[GREEN]  + colour2[GREEN];
@@ -442,9 +435,7 @@ COLOUR result, colour1, colour2;
 *
 ******************************************************************************/
 
-void Scale_Colour (result, colour, factor)
-COLOUR result, colour;
-DBL factor;
+void Scale_Colour (COLOUR result, COLOUR  colour, DBL factor)
 {
   result[RED]    = colour[RED]    * factor;
   result[GREEN]  = colour[GREEN]  * factor;
@@ -481,8 +472,7 @@ DBL factor;
 *
 ******************************************************************************/
 
-void Clip_Colour (result, colour)
-COLOUR result, colour;
+void Clip_Colour (COLOUR result, COLOUR  colour)
 {
   if (colour[RED] > 1.0)
   {
@@ -593,8 +583,7 @@ COLOUR result, colour;
 *
 ******************************************************************************/
 
-void Destroy_Blend_Map (BMap)
-BLEND_MAP *BMap;
+void Destroy_Blend_Map (BLEND_MAP *BMap)
 {
   int i;
   
@@ -607,6 +596,7 @@ BLEND_MAP *BMap;
         switch (BMap->Type)
         {
            case PIGMENT_TYPE:
+           case DENSITY_TYPE:
              Destroy_Pigment(BMap->Blend_Map_Entries[i].Vals.Pigment);
              break;
 

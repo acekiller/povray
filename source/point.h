@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for POINT.C.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -63,8 +63,8 @@ struct Light_Source_Struct
   unsigned char Light_Type, Area_Light, Jitter, Track;
   int Area_Size1, Area_Size2;
   int Adaptive_Level;
-  int Atmospheric_Attenuation;
-  int Atmosphere_Interaction;
+  int Media_Attenuation;
+  int Media_Interaction;
   COLOUR **Light_Grid;
   OBJECT *Shadow_Cached_Object;
 
@@ -87,9 +87,9 @@ struct Light_Source_Struct
 * Global functions
 ******************************************************************************/
 
-LIGHT_SOURCE *Create_Light_Source PARAMS((void));
-DBL Attenuate_Light PARAMS((LIGHT_SOURCE *Light_Source, RAY *Light_Source_Ray, DBL Distance));
-COLOUR **Create_Light_Grid PARAMS((int Size1, int Size2));
+LIGHT_SOURCE *Create_Light_Source (void);
+DBL Attenuate_Light (LIGHT_SOURCE *Light_Source, RAY *Light_Source_Ray, DBL Distance);
+COLOUR **Create_Light_Grid (int Size1, int Size2);
 
 
 

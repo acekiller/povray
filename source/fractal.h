@@ -4,16 +4,16 @@
 *  This module contains all defines, typedefs, and prototypes for FRACTAL.C.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -65,11 +65,11 @@
 
 typedef struct Fractal_Struct FRACTAL;
 typedef struct cmplx { DBL x,y; } CMPLX;
-typedef void (*NORMAL_CALC_METHOD) PARAMS((VECTOR, int, FRACTAL *));
-typedef int (*ITERATION_METHOD) PARAMS((VECTOR, FRACTAL *));
-typedef int (*D_ITERATION_METHOD) PARAMS((VECTOR, FRACTAL *, DBL *));
-typedef int (*F_BOUND_METHOD) PARAMS((RAY *, FRACTAL *, DBL *, DBL *));
-typedef void (*COMPLEX_FUNCTION_METHOD) PARAMS((CMPLX *, CMPLX *));
+typedef void (*NORMAL_CALC_METHOD) (VECTOR, int, FRACTAL *);
+typedef int (*ITERATION_METHOD) (VECTOR, FRACTAL *);
+typedef int (*D_ITERATION_METHOD) (VECTOR, FRACTAL *, DBL *);
+typedef int (*F_BOUND_METHOD) (RAY *, FRACTAL *, DBL *, DBL *);
+typedef void (*COMPLEX_FUNCTION_METHOD) (CMPLX *, CMPLX *);
 
 struct Fractal_Struct
 {
@@ -109,9 +109,9 @@ extern VECTOR Direction;
 * Global functions
 ******************************************************************************/
 
-FRACTAL *Create_Fractal PARAMS((void));
-void SetUp_Fractal PARAMS((FRACTAL * Fractal));
-void Allocate_Iteration_Stack PARAMS((int n));
-void Free_Iteration_Stack PARAMS((void));
+FRACTAL *Create_Fractal (void);
+void SetUp_Fractal (FRACTAL * Fractal);
+void Allocate_Iteration_Stack (int n);
+void Free_Iteration_Stack (void);
 
 #endif

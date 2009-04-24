@@ -6,20 +6,22 @@
 *  This file was written by Jim McElhiney.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modifications by Thomas Willhalm, March 1999, used with permission
 *
 *****************************************************************************/
 
@@ -92,9 +94,9 @@ long maxloops = 0;
 * Static functions
 ******************************************************************************/
 
-long ot_save_node PARAMS((VECTOR point, OT_ID *node));
-long ot_traverse PARAMS((OT_NODE *subtree, long (*function)(OT_BLOCK *block, void * handle1), void * handle2));
-long ot_free_subtree PARAMS((OT_NODE *node));
+long ot_save_node (VECTOR point, OT_ID *node);
+long ot_traverse (OT_NODE *subtree, long (*function)(OT_BLOCK *block, void * handle1), void * handle2);
+long ot_free_subtree (OT_NODE *node);
 
 
 
@@ -126,11 +128,9 @@ long ot_free_subtree PARAMS((OT_NODE *node));
 *   --- 1994 : Creation.
 *
 ******************************************************************************/
-
-void ot_ins(root_ptr, new_block, new_id)
-OT_NODE **root_ptr;
-OT_BLOCK *new_block;    /* The data to store */
-OT_ID *new_id;          /* The oct-tree node id at which to store */
+/* The data to store */
+/* The oct-tree node id at which to store */
+void ot_ins(OT_NODE **root_ptr, OT_BLOCK *new_block, OT_ID *new_id)
 {
   long target_size, dx, dy, dz, index;
   OT_NODE *temp_node, *this_node;
@@ -276,9 +276,7 @@ OT_ID *new_id;          /* The oct-tree node id at which to store */
 *
 ******************************************************************************/
 
-void ot_list_insert(list_head, new_block)
-OT_BLOCK **list_head;
-OT_BLOCK *new_block;
+void ot_list_insert(OT_BLOCK **list_head, OT_BLOCK *new_block)
 {
   new_block->next = *list_head; /* copy addr of old first block */
 
@@ -315,8 +313,7 @@ OT_BLOCK *new_block;
 *
 ******************************************************************************/
 
-void ot_newroot(root_ptr)
-OT_NODE **root_ptr;
+void ot_newroot(OT_NODE **root_ptr)
 {
   OT_NODE *newroot;
   long dx, dy, dz, index;
@@ -378,12 +375,8 @@ OT_NODE **root_ptr;
 *
 ******************************************************************************/
 
-long ot_dist_traverse(subtree, point, bounce_depth, function, handle)
-OT_NODE *subtree;
-VECTOR point;
-int bounce_depth;               /* only those nodes with this recur depth */
-long (*function) PARAMS((OT_BLOCK * bl, void *handle1));
-void *handle;
+long ot_dist_traverse(OT_NODE *subtree, VECTOR point, int bounce_depth, long (*function)(OT_BLOCK *block, void *handle1), void *handle)
+/* only those nodes with this recur depth */
 {
 #ifdef RADSTATS
   extern long ot_seenodecount, ot_seeblockcount;
@@ -471,16 +464,13 @@ void *handle;
 *
 ******************************************************************************/
 long
-ot_traverse(subtree, function, handle)
+ot_traverse(OT_NODE *subtree, long (*function)(OT_BLOCK * bl, void * handle1), void *handle)
 /* Call "function(&block, handle)" for every block hanging off every node.
    Post traverse = small stuff first = the kids before this node.
    "function(*node, handle)" must return true/false on whether or not to
    Continue with further processing.  Returns 0 if execution
    was halted this way, 1 otherwise;
 */
-OT_NODE *subtree;
-long (*function)(OT_BLOCK * bl, void * handle1);
-void *handle;
 {
   long i, oksofar;
   OT_NODE *this_node;
@@ -543,9 +533,7 @@ void *handle;
 *
 ******************************************************************************/
 
-long ot_point_in_node(point, id)
-VECTOR point;
-OT_ID *id;
+long ot_point_in_node(VECTOR point, OT_ID *id)
 {
   DBL sized, minx, miny, minz, lox, loy, loz, hix, hiy, hiz;
 
@@ -605,10 +593,7 @@ OT_ID *id;
 *
 ******************************************************************************/
 
-void ot_index_sphere(point, radius, id)
-VECTOR point;
-DBL radius;
-OT_ID *id;
+void ot_index_sphere(VECTOR point, DBL radius, OT_ID *id)
 {
   VECTOR min_point, max_point;
 
@@ -672,10 +657,7 @@ OT_ID *id;
 *
 ******************************************************************************/
 
-void ot_index_box(min_point, max_point, id)
-VECTOR min_point;
-VECTOR max_point;
-OT_ID *id;
+void ot_index_box(VECTOR min_point, VECTOR max_point, OT_ID *id)
 {
   long done, idx, idy, idz;
   float dx, dy, dz, maxdel;     /* MUST BE "float" NOT "DBL" */
@@ -815,8 +797,7 @@ OT_ID *id;
 *
 ******************************************************************************/
 
-void ot_parent(dad_id, kid_id)
-OT_ID *dad_id, *kid_id;
+void ot_parent(OT_ID *dad_id, OT_ID  *kid_id)
 {
   dad_id->Size = kid_id->Size + 1;
   dad_id->x = (kid_id->x > 0) ? (kid_id->x >> 1) : (kid_id->x - 1) / 2;
@@ -858,14 +839,12 @@ OT_ID *dad_id, *kid_id;
 *
 ******************************************************************************/
 long
-ot_save_tree(root, fd)
-OT_NODE *root;
-FILE *fd;
+ot_save_tree(OT_NODE *root, FILE *fd)
 {
   long retval = 0;
 
   if ( fd != NULL ) {
-    retval = ot_traverse(root, &ot_write_block, (void *)fd);
+    retval = ot_traverse(root, ot_write_block, (void *)fd);
   }
   else
   {
@@ -903,14 +882,12 @@ FILE *fd;
 *
 ******************************************************************************/
 long
-ot_write_block(bl, fd)
-OT_BLOCK *bl;
-void *fd;        /* must be passed as void * for compatibility */
+ot_write_block/* must be passed as void * for compatibility */(OT_BLOCK *bl, void *fd)
 {
 
   if ( bl->Bounce_Depth == 1 )
   {
-    fprintf((FILE *)fd, "C%ld\t%g\t%g\t%g\t%02x%02x%02x\t%.4f\t%.4f\t%.4f\t%g\t%g\t%02x%02x%02x\n",
+    fprintf((FILE *)fd, "C%ld\t%g\t%g\t%g\t%02lx%02lx%02lx\t%.4f\t%.4f\t%.4f\t%g\t%g\t%02lx%02lx%02lx\n", /* tw */
       (long)bl->Bounce_Depth,
 
       bl->Point[X], bl->Point[Y], bl->Point[Z],
@@ -960,14 +937,13 @@ void *fd;        /* must be passed as void * for compatibility */
 *
 ******************************************************************************/
 long
-ot_free_tree(ppRoot)
+ot_free_tree(OT_NODE **ppRoot)
 /* Free a complete radiosity cache tree, and all of its nodes and blocks.
    Note parameter is a pointer to the tree pointer...tree pointer will get zeroed.
    Example call:
       ot_free_tree(&ot_root);
    Returns 1 for success, 0 for failure.
 */
-OT_NODE **ppRoot;
 {
   long all_ok;
 
@@ -1005,7 +981,7 @@ OT_NODE **ppRoot;
 *
 ******************************************************************************/
 long
-ot_free_subtree(subtree)
+ot_free_subtree(OT_NODE *subtree)
 /* Free this subtree.  That is, free all of its daughters, then 
    free all of the blocks hanging off this node, then free this node itself.
 
@@ -1013,7 +989,6 @@ ot_free_subtree(subtree)
    Currently, this code assumes success.  If called with an invalid tree pointer,
    it would probably crash with a memory protection error.
 */
-OT_NODE *subtree;
 {
   long i, oksofar;
   OT_NODE *this_node;
@@ -1073,11 +1048,10 @@ OT_NODE *subtree;
 *
 ******************************************************************************/
 long
-ot_read_file(fd)
+ot_read_file(FILE *fd)
 /* Read in a radiosity cache file, building a tree from its values.
    If there is an existing tree, these values are added to it.
 */
-FILE *fd;
 {
   long retval, line_num, tempdepth, tx, ty, tz, goodreads;
   int count, goodparse, readret;
@@ -1117,8 +1091,8 @@ FILE *fd;
         }    
         case 'C':
         {
-          count = sscanf(line, "C%d %lf %lf %lf %s %f %f %f %f %f %s\n",
-                     &tempdepth,      /* since you can't scan a short */
+          count = sscanf(line, "C%ld %lf %lf %lf %s %f %f %f %f %f %s\n", /* tw */
+		     &tempdepth,      /* since you can't scan a short */
                      &bl.Point[X], &bl.Point[Y], &bl.Point[Z],
                      normal_string,
                      &bl.Illuminance[X], &bl.Illuminance[Y], &bl.Illuminance[Z],

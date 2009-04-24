@@ -4,20 +4,22 @@
 *  This module implements a parser for the scene description files.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modifications by Thomas Willhalm, March 1999, used with permission.
 *
 *****************************************************************************/
 
@@ -30,17 +32,18 @@
 #include "bezier.h"   
 #include "blob.h"     
 #include "boxes.h"
+#include "bsphere.h"
 #include "colour.h"
 #include "cones.h"    
-#include "csg.h"      
+#include "csg.h"
 #include "discs.h"
 #include "express.h"  
 #include "fractal.h"
 #include "gif.h"      
-#include "halos.h"
 #include "hfield.h"
 #include "iff.h"      
 #include "image.h"    
+#include "interior.h"    
 #include "lathe.h"    
 #include "polysolv.h"
 #include "matrices.h"
@@ -89,68 +92,63 @@
 * Local variables
 ******************************************************************************/
 
-short Have_Vector;
 short Not_In_Default;
 short Ok_To_Declare;
+short LValue_Ok;
 
 static TOKEN *Brace_Stack;
 static int Brace_Index;
 static CAMERA *Default_Camera;
 
-
-
 /*****************************************************************************
 * Static functions
 ******************************************************************************/
 
-static TRANSFORM *Parse_Transform PARAMS((void));
-static void Frame_Init PARAMS((void));
-static void Parse_Coeffs PARAMS((int order, DBL *Coeffs));
+static TRANSFORM *Parse_Transform (void);
+static void Frame_Init (void);
+static void Parse_Coeffs (int order, DBL *Coeffs);
 
-static OBJECT *Parse_Bicubic_Patch PARAMS((void));
-static OBJECT *Parse_Blob PARAMS((void));
-static OBJECT *Parse_Bound_Clip PARAMS((void));
-static OBJECT *Parse_Box PARAMS((void));
-static OBJECT *Parse_Cone PARAMS((void));
-static OBJECT *Parse_CSG PARAMS((int CSG_Type));
-static OBJECT *Parse_Cylinder PARAMS((void));
-static OBJECT *Parse_Disc PARAMS((void));
-static OBJECT *Parse_Julia_Fractal PARAMS((void));
-static OBJECT *Parse_HField PARAMS((void));
-static OBJECT *Parse_Lathe PARAMS((void));
-static OBJECT *Parse_Light_Source PARAMS((void));
-static OBJECT *Parse_Object_Id PARAMS((void));
-static OBJECT *Parse_Plane PARAMS((void));
-static OBJECT *Parse_Poly PARAMS((int order));
-static OBJECT *Parse_Polygon PARAMS((void));
-static OBJECT *Parse_Prism PARAMS((void));
-static OBJECT *Parse_Quadric PARAMS((void));
-static OBJECT *Parse_Smooth_Triangle PARAMS((void));
-static OBJECT *Parse_Sor PARAMS((void));
-static OBJECT *Parse_Sphere PARAMS((void));
-static OBJECT *Parse_Superellipsoid PARAMS((void));
-static OBJECT *Parse_Torus PARAMS((void));
-static OBJECT *Parse_Triangle PARAMS((void));
-static OBJECT *Parse_Mesh PARAMS((void));
-static TEXTURE *Parse_Mesh_Texture PARAMS((void));
-static OBJECT *Parse_TrueType PARAMS((void));
-static void Parse_Blob_Element_Mods PARAMS((BLOB_ELEMENT *Element));
+static OBJECT *Parse_Bicubic_Patch (void);
+static OBJECT *Parse_Blob (void);
+static OBJECT *Parse_Bound_Clip (void);
+static OBJECT *Parse_Box (void);
+static OBJECT *Parse_Cone (void);
+static OBJECT *Parse_CSG (int CSG_Type);
+static OBJECT *Parse_Cylinder (void);
+static OBJECT *Parse_Disc (void);
+static OBJECT *Parse_Julia_Fractal (void);
+static OBJECT *Parse_HField (void);
+static OBJECT *Parse_Lathe (void);
+static OBJECT *Parse_Light_Source (void);
+static OBJECT *Parse_Object_Id (void);
+static OBJECT *Parse_Plane (void);
+static OBJECT *Parse_Poly (int order);
+static OBJECT *Parse_Polygon (void);
+static OBJECT *Parse_Prism (void);
+static OBJECT *Parse_Quadric (void);
+static OBJECT *Parse_Smooth_Triangle (void);
+static OBJECT *Parse_Sor (void);
+static OBJECT *Parse_Sphere (void);
+static OBJECT *Parse_Superellipsoid (void);
+static OBJECT *Parse_Torus (void);
+static OBJECT *Parse_Triangle (void);
+static OBJECT *Parse_Mesh (void);
+static TEXTURE *Parse_Mesh_Texture (void);
+static OBJECT *Parse_TrueType (void);
+static void Parse_Blob_Element_Mods (BLOB_ELEMENT *Element);
 
-static void Parse_Camera PARAMS((CAMERA **Camera_Ptr));
-static void Parse_Frame PARAMS((void));
+static void Parse_Camera (CAMERA **Camera_Ptr);
+static void Parse_Frame (void);
 
-static char *Get_Token_String PARAMS((TOKEN Token_Id));
-static int Test_Redefine PARAMS((int Previous, int a));
-static void Destroy_Constants PARAMS((void));
-static void Found_Instead PARAMS((void));
-static void Link PARAMS((OBJECT *New_Object,OBJECT **Field,OBJECT **Old_Object_List));
-static void Link_To_Frame PARAMS((OBJECT *Object));
-static void Post_Process PARAMS((OBJECT *Object, OBJECT *Parent));
-static void Parse_Global_Settings PARAMS((void));
-static void Global_Setting_Warn PARAMS((void));
+static void Found_Instead (void);
+static void Link (OBJECT *New_Object,OBJECT **Field,OBJECT **Old_Object_List);
+static void Link_To_Frame (OBJECT *Object);
+static void Post_Process (OBJECT *Object, OBJECT *Parent);
+static void Parse_Global_Settings (void);
+static void Global_Setting_Warn (void);
 
-static void Set_CSG_Children_Hollow PARAMS((OBJECT *Object, int hollow));
-
+static void Set_CSG_Children_Flag (OBJECT*, unsigned long, unsigned long, unsigned long);
+static void *Copy_Identifier (void *Data, int Type);
 
 
 /*****************************************************************************
@@ -185,16 +183,18 @@ void Parse ()
   Default_Texture->Pigment = Create_Pigment();
   Default_Texture->Tnormal = NULL;
   Default_Texture->Finish  = Create_Finish();
-  Default_Texture->Halo    = NULL;
 
   Not_In_Default = TRUE;
   Ok_To_Declare = TRUE;
+  LValue_Ok = FALSE;
 
   Frame_Init ();
   
   Stage = STAGE_PARSING;
 
   Parse_Frame ();
+
+  Post_Media(Frame.Atmosphere);
 
   if (Frame.Objects == NULL)
   {
@@ -204,7 +204,6 @@ void Parse ()
   Stage = STAGE_CLEANUP_PARSE;
 
   Terminate_Tokenizer();
-  Destroy_Constants ();
   Destroy_Textures(Default_Texture); 
   Destroy_Camera(Default_Camera); 
   POV_FREE (Brace_Stack);
@@ -237,7 +236,7 @@ void Parse ()
 /* Set up the fields in the frame to default values. */
 static
 void Frame_Init ()
-  {
+{
    Frame.Camera = Copy_Camera(Default_Camera);
    Frame.Number_Of_Light_Sources = 0;  
    Frame.Light_Sources = NULL;
@@ -283,16 +282,24 @@ void Frame_Init ()
 ******************************************************************************/
 
 void Parse_Begin ()
-  {
+{
    char *front;
+   
+   if (++Brace_Index >= MAX_BRACES)
+   {
+      Warn(0.0,"Too many nested '{' braces.\n");
+      Brace_Index--;
+   }
 
-   Brace_Stack[++Brace_Index]=Token.Token_Id;
+   Brace_Stack[Brace_Index]=Token.Token_Id;
 
    Get_Token ();
 
    if (Token.Token_Id == LEFT_CURLY_TOKEN)
+   {
      return;
-
+   }
+   
    front = Get_Token_String (Brace_Stack[Brace_Index]);
 
    Where_Error ();
@@ -321,16 +328,20 @@ void Parse_Begin ()
 ******************************************************************************/
 
 void Parse_End ()
-  {
+{
    char *front;
 
    Get_Token ();
 
    if (Token.Token_Id == RIGHT_CURLY_TOKEN)
-     {
-      Brace_Index--;
+   {
+      if(--Brace_Index < 0)
+      {
+        Warn(0.0,"Possible '}' brace missmatch.");
+        Brace_Index = 0;
+      }
       return;
-     }
+   }
 
    front = Get_Token_String (Brace_Stack[Brace_Index]);
 
@@ -360,13 +371,13 @@ void Parse_End ()
 ******************************************************************************/
 
 static OBJECT *Parse_Object_Id ()
-  {
+{
    OBJECT *Object;
 
    EXPECT
      CASE (OBJECT_ID_TOKEN)
        Warn_State(OBJECT_ID_TOKEN, OBJECT_TOKEN);
-       Object = Copy_Object((OBJECT *) Token.Constant_Data);
+       Object = Copy_Object((OBJECT *) Token.Data);
        Parse_Object_Mods (Object);
        EXIT
      END_CASE
@@ -401,14 +412,27 @@ static OBJECT *Parse_Object_Id ()
 *
 ******************************************************************************/
 
-void Parse_Comma ()
-  {
+void Parse_Comma (void)
+{
    Get_Token();
    if (Token.Token_Id != COMMA_TOKEN)
-     {
+   {
       UNGET;
-     }
-  }
+   }
+}
+
+void Parse_Semi_Colon (void)
+{
+   Get_Token();
+   if (Token.Token_Id != SEMI_COLON_TOKEN)
+   {
+      UNGET;
+      if (opts.Language_Version >= 3.1)
+      {
+         Warn(0.0,"All #version and #declares of float, vector, and color require semi-colon ';' at end.\n");
+      }
+   }
+}
 
 
 
@@ -430,10 +454,8 @@ void Parse_Comma ()
 *
 ******************************************************************************/
 
-static void Parse_Coeffs(order, Coeffs)
-  int order;
-  DBL *Coeffs;
-  {
+static void Parse_Coeffs(int order, DBL *Coeffs)
+{
    int i;
 
    EXPECT
@@ -476,7 +498,7 @@ static void Parse_Coeffs(order, Coeffs)
 
 static
 OBJECT *Parse_Bound_Clip ()
-  {
+{
    VECTOR Local_Vector;
    MATRIX Local_Matrix;
    TRANSFORM Local_Trans;
@@ -527,7 +549,7 @@ OBJECT *Parse_Bound_Clip ()
        GET(TRANSFORM_ID_TOKEN)
        for (Current = First; Current != NULL; Current = Current->Sibling)
        {
-         Transform_Object (Current, (TRANSFORM *)Token.Constant_Data);
+         Transform_Object (Current, (TRANSFORM *)Token.Data);
        }
      END_CASE
 
@@ -574,9 +596,8 @@ OBJECT *Parse_Bound_Clip ()
 *
 ******************************************************************************/
 
-void Parse_Object_Mods (Object)
-  OBJECT *Object;
-  {
+void Parse_Object_Mods (OBJECT *Object)
+{
    DBL Temp_Water_Level;
    DBL V1, V2;
    VECTOR Min, Max;  
@@ -586,6 +607,7 @@ void Parse_Object_Mods (Object)
    BBOX BBox;
    OBJECT *Sib;
    TEXTURE *Local_Texture;
+   MATERIAL Local_Material;
    OBJECT *Temp1_Object;
    OBJECT *Temp2_Object;
    COLOUR Local_Colour;
@@ -624,7 +646,7 @@ void Parse_Object_Mods (Object)
 
      CASE (TRANSFORM_TOKEN)
        GET(TRANSFORM_ID_TOKEN)
-       Transform_Object (Object, (TRANSFORM *)Token.Constant_Data);
+       Transform_Object (Object, (TRANSFORM *)Token.Data);
      END_CASE
 
      CASE (MATRIX_TOKEN)
@@ -707,7 +729,19 @@ void Parse_Object_Mods (Object)
        Link_Textures(&(Object->Texture), Local_Texture);
      END_CASE
 
-     CASE4 (PIGMENT_TOKEN, TNORMAL_TOKEN, FINISH_TOKEN, HALO_TOKEN)
+     CASE (INTERIOR_TOKEN)
+       Parse_Interior((INTERIOR **)(&Object->Interior));
+     END_CASE
+
+     CASE (MATERIAL_TOKEN)
+       Local_Material.Texture  = Object->Texture;
+       Local_Material.Interior = Object->Interior;
+       Parse_Material(&Local_Material);
+       Object->Texture  = Local_Material.Texture;
+       Object->Interior = Local_Material.Interior;
+     END_CASE
+
+     CASE3 (PIGMENT_TOKEN, TNORMAL_TOKEN, FINISH_TOKEN)
        Object->Type |= TEXTURED_OBJECT;
        if (Object->Texture == NULL)
          Object->Texture = Copy_Textures(Default_Texture);
@@ -730,10 +764,6 @@ void Parse_Object_Mods (Object)
 
          CASE (FINISH_TOKEN)
            Parse_Finish ( &(Object->Texture->Finish) );
-         END_CASE
-
-         CASE (HALO_TOKEN)
-           Parse_Halo ( &(Object->Texture->Halo) );
          END_CASE
 
          OTHERWISE
@@ -792,7 +822,7 @@ void Parse_Object_Mods (Object)
            (Object->Methods == &CSG_Merge_Methods) ||
            (Object->Methods == &CSG_Union_Methods))
        {
-         Set_CSG_Children_Hollow(Object, Test_Flag(Object, HOLLOW_FLAG));
+         Set_CSG_Children_Flag(Object, Test_Flag(Object, HOLLOW_FLAG), HOLLOW_FLAG, HOLLOW_SET_FLAG);
        }
      END_CASE
 
@@ -887,52 +917,6 @@ void Parse_Object_Mods (Object)
 *
 * FUNCTION
 *
-*  Set_CSG_Children_Hollow
-*
-* INPUT
-*
-* OUTPUT
-*
-* RETURNS
-*
-* AUTHOR
-*
-* DESCRIPTION
-*
-* CHANGES
-*
-******************************************************************************/
-
-static void Set_CSG_Children_Hollow(Object, hollow)
-OBJECT *Object;
-int hollow;
-{
-  OBJECT *Sib;
-
-  for (Sib = ((CSG *)Object)->Children; Sib != NULL; Sib = Sib->Sibling)
-  {
-    if (!Test_Flag(Sib, HOLLOW_SET_FLAG))
-    {
-      if ((Sib->Methods == &CSG_Intersection_Methods) ||
-          (Sib->Methods == &CSG_Merge_Methods) ||
-          (Sib->Methods == &CSG_Union_Methods))
-      {
-        Set_CSG_Children_Hollow(Sib, hollow);
-      }
-      else
-      {
-        Sib->Flags = (Sib->Flags & (~HOLLOW_FLAG)) | hollow;
-      }
-    }
-  }
-}
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
 * INPUT
 *
 * OUTPUT
@@ -995,7 +979,7 @@ static OBJECT *Parse_Sphere()
 
 static
 OBJECT *Parse_Plane ()
-  {
+{
    DBL len;
    PLANE *Object;
 
@@ -1162,7 +1146,7 @@ static OBJECT *Parse_Triangle()
 
 static
 OBJECT *Parse_Smooth_Triangle ()
-  {
+{
    SMOOTH_TRIANGLE *Object;
    short degen;
    DBL vlen;
@@ -1245,7 +1229,7 @@ OBJECT *Parse_Smooth_Triangle ()
 
 static
 OBJECT *Parse_Quadric ()
-  {
+{
    VECTOR Min, Max;
    QUADRIC *Object;
 
@@ -1293,7 +1277,7 @@ OBJECT *Parse_Quadric ()
 
 static
 OBJECT *Parse_Box ()
-  {
+{
    BOX *Object;
    DBL temp;
 
@@ -1352,7 +1336,7 @@ OBJECT *Parse_Box ()
 
 static
 OBJECT *Parse_Disc ()
-  {
+{
    DISC *Object;
    DBL tmpf;
 
@@ -1415,7 +1399,7 @@ OBJECT *Parse_Disc ()
 
 static
 OBJECT *Parse_Cylinder ()
-  {
+{
    CONE *Object;
 
    Parse_Begin ();
@@ -1473,7 +1457,7 @@ OBJECT *Parse_Cylinder ()
 
 static
 OBJECT *Parse_Cone ()
-  {
+{
    CONE *Object;
 
    Parse_Begin ();
@@ -1539,8 +1523,7 @@ OBJECT *Parse_Cone ()
 *
 ******************************************************************************/
 
-static void Parse_Blob_Element_Mods(Element)
-BLOB_ELEMENT *Element;
+static void Parse_Blob_Element_Mods(BLOB_ELEMENT *Element)
 {
   VECTOR Local_Vector;
   MATRIX Local_Matrix;
@@ -1565,7 +1548,7 @@ BLOB_ELEMENT *Element;
 
     CASE (TRANSFORM_TOKEN)
       GET(TRANSFORM_ID_TOKEN)
-      Transform_Blob_Element (Element, (TRANSFORM *)Token.Constant_Data);
+      Transform_Blob_Element (Element, (TRANSFORM *)Token.Data);
     END_CASE
 
     CASE (MATRIX_TOKEN)
@@ -1581,7 +1564,7 @@ BLOB_ELEMENT *Element;
       Link_Textures(&Element->Texture, Local_Texture);
     END_CASE
 
-    CASE4 (PIGMENT_TOKEN, TNORMAL_TOKEN, FINISH_TOKEN, HALO_TOKEN)
+    CASE3 (PIGMENT_TOKEN, TNORMAL_TOKEN, FINISH_TOKEN)
       if (Element->Texture == NULL)
       {
         Element->Texture = Copy_Textures(Default_Texture);
@@ -1609,10 +1592,6 @@ BLOB_ELEMENT *Element;
 
         CASE (FINISH_TOKEN)
           Parse_Finish(&Element->Texture->Finish);
-        END_CASE
-
-        CASE (HALO_TOKEN)
-          Parse_Halo(&(Element->Texture->Halo));
         END_CASE
 
         OTHERWISE
@@ -2187,6 +2166,10 @@ static OBJECT *Parse_Prism()
       Object->Spline_Type = CUBIC_SPLINE;
     END_CASE
 
+    CASE(BEZIER_SPLINE_TOKEN)
+      Object->Spline_Type = BEZIER_SPLINE;
+    END_CASE
+
     CASE(LINEAR_SWEEP_TOKEN)
       Object->Sweep_Type = LINEAR_SWEEP;
     END_CASE
@@ -2243,6 +2226,17 @@ static OBJECT *Parse_Prism()
       {
         Error("Prism with cubic splines must have at least six points.");
       }
+
+      break;
+
+    case BEZIER_SPLINE :
+
+      if ((Object->Number & 3) != 0)
+      {
+        Error("Prism with Bezier splines must have four points per segment.");
+      }
+
+      break;
   }
 
   /* Allocate Object->Number points for the prism. */
@@ -2274,70 +2268,90 @@ static OBJECT *Parse_Prism()
 
   /* Check for closed prism. */
 
-  switch (Object->Spline_Type)
+  if ((Object->Spline_Type == LINEAR_SPLINE) ||
+      (Object->Spline_Type == QUADRATIC_SPLINE) ||
+      (Object->Spline_Type == CUBIC_SPLINE))
   {
-    case LINEAR_SPLINE :
-
-      i = 1;
-
-      Assign_UV_Vect(P, Points[0]);
-
-      break;
-
-    case QUADRATIC_SPLINE :
-    case CUBIC_SPLINE :
-
-      i = 2;
-
-      Assign_UV_Vect(P, Points[1]);
-
-      break;
-  }
-
-  for ( ; i < Object->Number; i++)
-  {
-    closed = FALSE;
-
-    if ((fabs(P[X] - Points[i][X]) < EPSILON) &&
-        (fabs(P[Y] - Points[i][Y]) < EPSILON))
+    switch (Object->Spline_Type)
     {
-      switch (Object->Spline_Type)
+      case LINEAR_SPLINE :
+
+        i = 1;
+
+        Assign_UV_Vect(P, Points[0]);
+
+        break;
+
+      case QUADRATIC_SPLINE :
+      case CUBIC_SPLINE :
+
+        i = 2;
+
+        Assign_UV_Vect(P, Points[1]);
+
+        break;
+    }
+
+    for ( ; i < Object->Number; i++)
+    {
+      closed = FALSE;
+
+      if ((fabs(P[X] - Points[i][X]) < EPSILON) &&
+          (fabs(P[Y] - Points[i][Y]) < EPSILON))
       {
-        case LINEAR_SPLINE :
+        switch (Object->Spline_Type)
+        {
+          case LINEAR_SPLINE :
 
-          i++;
+            i++;
 
-          if (i < Object->Number)
-          {
-            Assign_UV_Vect(P, Points[i]);
-          }
+            if (i < Object->Number)
+            {
+              Assign_UV_Vect(P, Points[i]);
+            }
 
-          break;
+            break;
 
-        case QUADRATIC_SPLINE :
+          case QUADRATIC_SPLINE :
 
-          i += 2;
+            i += 2;
 
-          if (i < Object->Number)
-          {
-            Assign_UV_Vect(P, Points[i]);
-          }
+            if (i < Object->Number)
+            {
+              Assign_UV_Vect(P, Points[i]);
+            }
 
-          break;
+            break;
 
-        case CUBIC_SPLINE :
+          case CUBIC_SPLINE :
 
-          i += 3;
+            i += 3;
 
-          if (i < Object->Number)
-          {
-            Assign_UV_Vect(P, Points[i]);
-          }
+            if (i < Object->Number)
+            {
+              Assign_UV_Vect(P, Points[i]);
+            }
 
-          break;
+            break;
+        }
+
+        closed = TRUE;
       }
+    }
+  }
+  else
+  {
+    closed = TRUE;
 
-      closed = TRUE;
+    for (i = 0; i < Object->Number; i += 4)
+    {
+      if ((fabs(Points[i][X] - Points[(i-1+Object->Number) % Object->Number][X]) > EPSILON) ||
+          (fabs(Points[i][Y] - Points[(i-1+Object->Number) % Object->Number][Y]) > EPSILON))
+      {
+        closed = FALSE;
+
+        break;
+      }
     }
   }
 
@@ -2548,6 +2562,10 @@ static OBJECT *Parse_Lathe()
       Object->Spline_Type = CUBIC_SPLINE;
     END_CASE
 
+    CASE(BEZIER_SPLINE_TOKEN)
+      Object->Spline_Type = BEZIER_SPLINE;
+    END_CASE
+
     OTHERWISE
       UNGET
       EXIT
@@ -2557,6 +2575,45 @@ static OBJECT *Parse_Lathe()
   /* Get number of points. */
 
   Object->Number = (int)Parse_Float();
+
+  switch (Object->Spline_Type)
+  {
+    case LINEAR_SPLINE :
+
+      if (Object->Number < 2)
+      {
+        Error("Lathe with linear splines must have at least two points.");
+      }
+
+      break;
+
+    case QUADRATIC_SPLINE :
+
+      if (Object->Number < 3)
+      {
+        Error("Lathe with quadratic splines must have at least three points.");
+      }
+
+      break;
+
+    case CUBIC_SPLINE :
+
+      if (Object->Number < 4)
+      {
+        Error("Prism with cubic splines must have at least four points.");
+      }
+
+      break;
+
+    case BEZIER_SPLINE :
+
+      if ((Object->Number & 3) != 0)
+      {
+        Error("Lathe with Bezier splines must have four points per segment.");
+      }
+
+      break;
+  }
 
   /* Get temporary points describing the rotated curve. */
 
@@ -2574,32 +2631,6 @@ static OBJECT *Parse_Lathe()
     {
       Error("Incorrect point in lathe.");
     }
-  }
-
-  switch (Object->Spline_Type)
-  {
-    case LINEAR_SPLINE :
-
-      Object->Number--;
-
-      break;
-
-    case QUADRATIC_SPLINE :
-
-      Object->Number -= 2;
-
-      break;
-
-    case CUBIC_SPLINE :
-
-      Object->Number -= 3;
-
-      break;
-  }
-
-  if (Object->Number <1)
-  {
-    Error("Lathe must have at least one segment.");
   }
 
   /* Compute spline segments. */
@@ -2783,7 +2814,7 @@ static TEXTURE *Parse_Mesh_Texture()
 
       GET(TEXTURE_ID_TOKEN);
 
-      Texture = (TEXTURE *)Token.Constant_Data;
+      Texture = (TEXTURE *)Token.Data;
 
       Parse_End();
     END_CASE
@@ -2838,6 +2869,7 @@ static OBJECT *Parse_Mesh()
   TEXTURE **Textures;
   MESH *Object;
   MESH_TRIANGLE *Triangles;
+  int fully_textured=TRUE;
 
   Parse_Begin();
 
@@ -2918,6 +2950,11 @@ static OBJECT *Parse_Mesh()
 
         Triangles[number_of_triangles].Texture = Mesh_Hash_Texture(&number_of_textures, &max_textures, &Textures, Parse_Mesh_Texture());
 
+        if (Triangles[number_of_triangles].Texture < 0)
+        {
+          fully_textured = FALSE;
+        }
+
         number_of_triangles++;
       }
 
@@ -2995,6 +3032,11 @@ static OBJECT *Parse_Mesh()
 
         Triangles[number_of_triangles].Texture = Mesh_Hash_Texture(&number_of_textures, &max_textures, &Textures, Parse_Mesh_Texture());
 
+        if (Triangles[number_of_triangles].Texture < 0)
+        {
+          fully_textured = FALSE;
+        }
+
         number_of_triangles++;
       }
 
@@ -3020,7 +3062,7 @@ static OBJECT *Parse_Mesh()
 
   /* Init triangle mesh data. */
 
-  Object->Data = POV_MALLOC(sizeof(MESH_DATA), "triangle mesh data");
+  Object->Data = (MESH_DATA *)POV_MALLOC(sizeof(MESH_DATA), "triangle mesh data");
 
   Object->Data->References = 1;
 
@@ -3063,7 +3105,15 @@ static OBJECT *Parse_Mesh()
 
   for (i = 0; i < number_of_textures; i++)
   {
-    Object->Data->Textures[i] = Textures[i];
+    Object->Data->Textures[i] = Copy_Textures(Textures[i]);
+
+    /* now free the texture, in order to decrement the reference count */
+    Destroy_Textures(Textures[i]);
+  }
+  
+  if (fully_textured)
+  {
+    Object->Type |= TEXTURED_OBJECT;
   }
 
   for (i = 0; i < number_of_triangles; i++)
@@ -3131,9 +3181,8 @@ static OBJECT *Parse_Mesh()
 ******************************************************************************/
 
 static
-OBJECT *Parse_Poly (order)
-  int order;
-  {
+OBJECT *Parse_Poly (int order)
+{
    POLY *Object;
 
    Parse_Begin ();
@@ -3181,7 +3230,7 @@ OBJECT *Parse_Poly (order)
 
 static
 OBJECT *Parse_Bicubic_Patch ()
-  {
+{
    BICUBIC_PATCH *Object;
    int i, j;
 
@@ -3276,11 +3325,12 @@ OBJECT *Parse_Bicubic_Patch ()
 
 static
 OBJECT *Parse_TrueType ()
-  {
+{
    OBJECT *Object;
    char *filename, *text_string;
    DBL depth;
    VECTOR offset;
+   TRANSFORM Local_Trans;
 
    Parse_Begin ();
    
@@ -3316,6 +3366,11 @@ OBJECT *Parse_TrueType ()
    /**** Compute_TTF_BBox(Object); */
    Compute_CSG_BBox((OBJECT *)Object);
 
+/* This tiny rotation should fix cracks in text that lies along an axis */
+   Make_Vector(offset, 0.001, 0.001, 0.001);
+   Compute_Rotation_Transform(&Local_Trans, offset);
+   Rotate_Object ((OBJECT *)Object, offset, &Local_Trans);
+
    /* Get any rotate/translate or texturing stuff */
    Parse_Object_Mods ((OBJECT *)Object);
 
@@ -3343,12 +3398,12 @@ OBJECT *Parse_TrueType ()
 ******************************************************************************/
 
 static
-OBJECT *Parse_CSG (CSG_Type)
-  int CSG_Type;
-  {
+OBJECT *Parse_CSG (int CSG_Type)
+{
    CSG *Object;
    OBJECT *Local;
    int Object_Count = 0;
+   int Light_Source_Union = TRUE;
 
    Parse_Begin ();
 
@@ -3373,10 +3428,19 @@ OBJECT *Parse_CSG (CSG_Type)
       if ((CSG_Type & CSG_DIFFERENCE_TYPE) && (Object_Count > 1))
         Invert_Object (Local);
       Object->Type |=  (Local->Type & CHILDREN_FLAGS);
+      if (!(Local->Type & LIGHT_SOURCE_OBJECT))
+      {
+         Light_Source_Union = FALSE;
+      }
       Local->Type |= IS_CHILD_OBJECT;
       Link(Local, &Local->Sibling, &Object->Children);
      };
 
+   if (Light_Source_Union)
+   {
+     Object->Type |= LT_SRC_UNION_OBJECT;
+   }
+   
    if ((Object_Count < 2) && (opts.Language_Version >= 1.5))
      Warn(1.5, "Should have at least 2 objects in csg.");
 
@@ -3409,7 +3473,7 @@ OBJECT *Parse_CSG (CSG_Type)
 
 static
 OBJECT *Parse_Light_Source ()
-  {
+{
    DBL Len;
    VECTOR Local_Vector;
    MATRIX Local_Matrix;
@@ -3514,14 +3578,12 @@ OBJECT *Parse_Light_Source ()
        Object->Adaptive_Level = (int)Parse_Float();
      END_CASE
 
-     CASE (ATMOSPHERIC_ATTENUATION_TOKEN)
-       Experimental_Flag |= EF_ATMOS;
-       Object->Atmospheric_Attenuation = Allow_Float(1.0) > 0.0;
+     CASE (MEDIA_ATTENUATION_TOKEN)
+       Object->Media_Attenuation = Allow_Float(1.0) > 0.0;
      END_CASE
 
-     CASE (ATMOSPHERE_TOKEN)
-       Experimental_Flag |= EF_ATMOS;
-       Object->Atmosphere_Interaction = Allow_Float(1.0) > 0.0;
+     CASE (MEDIA_INTERACTION_TOKEN)
+       Object->Media_Interaction = Allow_Float(1.0) > 0.0;
      END_CASE
 
      CASE (TRANSLATE_TOKEN)
@@ -3544,7 +3606,7 @@ OBJECT *Parse_Light_Source ()
 
      CASE (TRANSFORM_TOKEN)
        GET(TRANSFORM_ID_TOKEN)
-       Transform_Object ((OBJECT *)Object, (TRANSFORM *)Token.Constant_Data);
+       Transform_Object ((OBJECT *)Object, (TRANSFORM *)Token.Data);
      END_CASE
 
      CASE (MATRIX_TOKEN)
@@ -3600,7 +3662,7 @@ OBJECT *Parse_Light_Source ()
 ******************************************************************************/
 
 OBJECT *Parse_Object ()
-  {
+{
    OBJECT *Object = NULL;
 
    EXPECT
@@ -3708,7 +3770,7 @@ OBJECT *Parse_Object ()
      END_CASE
 
      CASE (OBJECT_ID_TOKEN)
-       Object = Copy_Object((OBJECT *) Token.Constant_Data);
+       Object = Copy_Object((OBJECT *) Token.Data);
        EXIT
      END_CASE
 
@@ -3812,16 +3874,15 @@ OBJECT *Parse_Object ()
 ******************************************************************************/
 
 void Parse_Default ()
-  {
+{
    TEXTURE *Local_Texture;
    PIGMENT *Local_Pigment;
    TNORMAL *Local_Tnormal;
    FINISH  *Local_Finish;
-   HALO    *Local_Halo;
 
    Not_In_Default = FALSE;
    Parse_Begin();
-   
+
    EXPECT
      CASE (TEXTURE_TOKEN)
        Local_Texture = Default_Texture;
@@ -3860,13 +3921,6 @@ void Parse_Default ()
        Default_Texture->Finish = Local_Finish;
      END_CASE
 
-     CASE (HALO_TOKEN)
-       Local_Halo = Copy_Halo((Default_Texture->Halo));
-       Parse_Halo (&Local_Halo);
-       Destroy_Halo(Default_Texture->Halo);
-       Default_Texture->Halo = Local_Halo;
-     END_CASE
-
      CASE (CAMERA_TOKEN)
        Parse_Camera (&Default_Camera);
      END_CASE
@@ -3903,12 +3957,12 @@ void Parse_Default ()
 ******************************************************************************/
 
 static void Parse_Frame ()
-  {
+{
    OBJECT *Object;
    RAINBOW  *Local_Rainbow;
    FOG  *Local_Fog;
    SKYSPHERE  *Local_Skysphere;
-   ATMOSPHERE *Local_Atmosphere;
+   int i;
 
    EXPECT
      CASE (RAINBOW_TOKEN)
@@ -3925,6 +3979,10 @@ static void Parse_Frame ()
          Destroy_Skysphere(Frame.Skysphere);
        }
        Frame.Skysphere = Local_Skysphere;
+       for (i=0; i<Local_Skysphere->Count; i++)
+       {
+         Post_Pigment(Local_Skysphere->Pigments[i]);
+       }
      END_CASE
 
      CASE (FOG_TOKEN)
@@ -3933,14 +3991,8 @@ static void Parse_Frame ()
        Frame.Fog = Local_Fog;
      END_CASE
 
-     CASE (ATMOSPHERE_TOKEN)
-       Local_Atmosphere = Parse_Atmosphere();
-       if (Frame.Atmosphere != NULL)
-       {
-         Warn(0.0, "Only one atmosphere allowed (last one will be used).");
-         Destroy_Atmosphere(Frame.Atmosphere);
-       }
-       Frame.Atmosphere = Local_Atmosphere;
+     CASE (MEDIA_TOKEN)
+       Parse_Media(&Frame.Atmosphere);
      END_CASE
 
      CASE (BACKGROUND_TOKEN)
@@ -4277,7 +4329,7 @@ void Destroy_Frame()
 
     /* Destroy atmosphere. [DB 1/95] */
 
-    Destroy_Atmosphere(Frame.Atmosphere);
+    Destroy_Media(Frame.Atmosphere);
 
     Frame.Atmosphere = NULL;
 
@@ -4309,8 +4361,7 @@ void Destroy_Frame()
 *
 ******************************************************************************/
 
-static void Parse_Camera (Camera_Ptr)
-CAMERA **Camera_Ptr;
+static void Parse_Camera (CAMERA **Camera_Ptr)
 {
    int i;
    DBL Direction_Length = 1.0, Up_Length, Right_Length, Handedness;
@@ -4325,7 +4376,7 @@ CAMERA **Camera_Ptr;
    EXPECT
      CASE (CAMERA_ID_TOKEN)
        Destroy_Camera(*Camera_Ptr);
-       *Camera_Ptr = Copy_Camera ((CAMERA *) Token.Constant_Data);
+       *Camera_Ptr = Copy_Camera ((CAMERA *) Token.Data);
        EXIT
      END_CASE
 
@@ -4385,22 +4436,6 @@ CAMERA **Camera_Ptr;
          case 3: New->Type = CYL_3_CAMERA; break;
          case 4: New->Type = CYL_4_CAMERA; break;
        }       
-     END_CASE
-
-     CASE (TEST_CAMERA_1_TOKEN)
-       New->Type = TEST_CAMERA_1;
-     END_CASE
-
-     CASE (TEST_CAMERA_2_TOKEN)
-       New->Type = TEST_CAMERA_2;
-     END_CASE
-
-     CASE (TEST_CAMERA_3_TOKEN)
-       New->Type = TEST_CAMERA_3;
-     END_CASE
-
-     CASE (TEST_CAMERA_4_TOKEN)
-       New->Type = TEST_CAMERA_4;
      END_CASE
 
      /* Read viewing angle. Scale direction vector if necessary. [DB 7/94] */
@@ -4526,7 +4561,7 @@ CAMERA **Camera_Ptr;
 
      CASE (TRANSFORM_TOKEN)
        GET(TRANSFORM_ID_TOKEN)
-       Transform_Camera (New, (TRANSFORM *)Token.Constant_Data);
+       Transform_Camera (New, (TRANSFORM *)Token.Data);
      END_CASE
 
      CASE (MATRIX_TOKEN)
@@ -4625,8 +4660,7 @@ CAMERA **Camera_Ptr;
 *
 ******************************************************************************/
 
-void Parse_Matrix(Matrix)
-MATRIX Matrix;
+void Parse_Matrix(MATRIX Matrix)
 {
   int i, j;
 
@@ -4687,7 +4721,7 @@ MATRIX Matrix;
 
 static
 TRANSFORM *Parse_Transform ()
-  {
+{
    MATRIX Local_Matrix;
    TRANSFORM *New, Local_Trans;
    VECTOR Local_Vector;
@@ -4697,8 +4731,12 @@ TRANSFORM *Parse_Transform ()
 
    EXPECT
      CASE(TRANSFORM_ID_TOKEN)
-       Compose_Transforms (New, (TRANSFORM *)Token.Constant_Data);
-       EXIT
+       Compose_Transforms (New, (TRANSFORM *)Token.Data);
+     END_CASE
+
+     CASE (TRANSFORM_TOKEN)
+       GET(TRANSFORM_ID_TOKEN)
+       Compose_Transforms(New, (TRANSFORM *)Token.Data);
      END_CASE
 
      CASE (TRANSLATE_TOKEN)
@@ -4756,46 +4794,53 @@ TRANSFORM *Parse_Transform ()
 ******************************************************************************/
 
 void Parse_Declare ()
-  {
-  VECTOR Local_Vector;
-  COLOUR *Local_Colour;
-  PIGMENT *Local_Pigment;
-  TNORMAL *Local_Tnormal;
-  FINISH *Local_Finish;
-  HALO *Local_Halo = NULL;
-  TEXTURE *Local_Texture, *Temp_Texture;
-  TRANSFORM *Local_Trans;
-  OBJECT *Local_Object;
-  CAMERA *Local_Camera;
-  char *Temp_Data;
-  int Previous;
+{
+  int Previous=-1; /* tw */
+  int Local_Index,Local_Flag;
+  SYM_ENTRY *Temp_Entry;
 
-  struct Constant_Struct *Constant_Ptr = NULL;
+  if ((Local_Flag=(Token.Token_Id==LOCAL_TOKEN))) /* tw */
+  {
+     Local_Index=Table_Index;
+  }
+  else
+  {
+     Local_Index=1;
+  }
+  
+  LValue_Ok = TRUE;
 
   EXPECT
     CASE (IDENTIFIER_TOKEN)
-      if (++Number_Of_Constants >= Max_Constants)
-      {
-        if (Max_Constants >= INT_MAX/2)
-        {
-          Error("Too many constants declared.\n");
-        }
-
-        Max_Constants *= 2;
-
-        Constants = (struct Constant_Struct *)POV_REALLOC(Constants, (Max_Constants+1) * sizeof(struct Constant_Struct), "constants table");
-      }
-
-      Constant_Ptr = &(Constants[Number_Of_Constants]);
-      Constant_Ptr->Constant_Type = IDENTIFIER_TOKEN;
+      Temp_Entry = Add_Symbol (Local_Index,Token.Token_String,IDENTIFIER_TOKEN);
+      Token.NumberPtr = &(Temp_Entry->Token_Number);
+      Token.DataPtr   = &(Temp_Entry->Data);
+      Previous        = Token.Token_Id;
       EXIT
     END_CASE
 
     CASE4 (TNORMAL_ID_TOKEN, FINISH_ID_TOKEN, TEXTURE_ID_TOKEN, OBJECT_ID_TOKEN)
     CASE4 (COLOUR_MAP_ID_TOKEN, TRANSFORM_ID_TOKEN, CAMERA_ID_TOKEN, PIGMENT_ID_TOKEN)
     CASE4 (SLOPE_MAP_ID_TOKEN,NORMAL_MAP_ID_TOKEN,TEXTURE_MAP_ID_TOKEN,COLOUR_ID_TOKEN)
-    CASE3 (PIGMENT_MAP_ID_TOKEN, HALO_ID_TOKEN,STRING_ID_TOKEN)
-      Constant_Ptr = &(Constants[Token.Constant_Index]);
+    CASE4 (PIGMENT_MAP_ID_TOKEN, MEDIA_ID_TOKEN,STRING_ID_TOKEN,INTERIOR_ID_TOKEN)
+    CASE5 (DENSITY_MAP_ID_TOKEN, ARRAY_ID_TOKEN, DENSITY_ID_TOKEN,UV_ID_TOKEN,VECTOR_4D_ID_TOKEN)
+    CASE4 (RAINBOW_ID_TOKEN, FOG_ID_TOKEN, SKYSPHERE_ID_TOKEN,MATERIAL_ID_TOKEN)
+      if (Local_Flag && (Token.Table_Index != Table_Index))
+      {
+        Temp_Entry = Add_Symbol (Local_Index,Token.Token_String,IDENTIFIER_TOKEN);
+        Token.NumberPtr = &(Temp_Entry->Token_Number);
+        Token.DataPtr   = &(Temp_Entry->Data);
+        Previous        = IDENTIFIER_TOKEN;
+      }
+      else
+      {
+        Previous        = Token.Token_Id;
+      }
+      EXIT
+    END_CASE
+
+    CASE (EMPTY_ARRAY_TOKEN)
+      Previous = Token.Token_Id;
       EXIT
     END_CASE
 
@@ -4804,7 +4849,13 @@ void Parse_Declare ()
         {
          case VECTOR_ID_TOKEN:
          case FLOAT_ID_TOKEN:
-           Constant_Ptr = &(Constants[Token.Constant_Index]);
+           if (Local_Flag && (Token.Table_Index != Table_Index))
+           {
+              Temp_Entry = Add_Symbol (Local_Index,Token.Token_String,IDENTIFIER_TOKEN);
+              Token.NumberPtr = &(Temp_Entry->Token_Number);
+              Token.DataPtr   = &(Temp_Entry->Data);
+           }
+           Previous           = Token.Function_Id;
            break;
 
          default:
@@ -4819,43 +4870,161 @@ void Parse_Declare ()
     END_CASE
   END_EXPECT
 
-  Previous = Token.Token_Id;
+  LValue_Ok = FALSE;
 
   GET (EQUALS_TOKEN);
+  
+  if (!Parse_RValue (Previous,Token.NumberPtr,Token.DataPtr, FALSE,TRUE))
+  {
+    Parse_Error_Str("RValue to declare");
+  }
+}
 
+int Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, int ParFlag, int SemiFlag)
+{
+  EXPRESS Local_Express;
+  COLOUR *Local_Colour;
+  PIGMENT *Local_Pigment;
+  TNORMAL *Local_Tnormal;
+  FINISH *Local_Finish;
+  TEXTURE *Local_Texture, *Temp_Texture;
+  TRANSFORM *Local_Trans;
+  OBJECT *Local_Object;
+  CAMERA *Local_Camera;
+  IMEDIA *Local_Media;
+  PIGMENT *Local_Density;
+  INTERIOR *Local_Interior;
+  MATERIAL *Local_Material;
+  void *Temp_Data;
+  POV_PARAM *New_Par;
+  int Found=TRUE;
+  int Temp_Count=30000;
+  int Old_Ok=Ok_To_Declare;
+  int Terms;
+  
   EXPECT
+    CASE4 (TNORMAL_ID_TOKEN, FINISH_ID_TOKEN, TEXTURE_ID_TOKEN, OBJECT_ID_TOKEN)
+    CASE4 (COLOUR_MAP_ID_TOKEN, TRANSFORM_ID_TOKEN, CAMERA_ID_TOKEN, PIGMENT_ID_TOKEN)
+    CASE4 (SLOPE_MAP_ID_TOKEN,NORMAL_MAP_ID_TOKEN,TEXTURE_MAP_ID_TOKEN,ARRAY_ID_TOKEN)
+    CASE4 (PIGMENT_MAP_ID_TOKEN, MEDIA_ID_TOKEN,INTERIOR_ID_TOKEN,DENSITY_ID_TOKEN)
+    CASE4 (DENSITY_MAP_ID_TOKEN, RAINBOW_ID_TOKEN, FOG_ID_TOKEN, SKYSPHERE_ID_TOKEN)
+    CASE  (MATERIAL_ID_TOKEN)
+      if (ParFlag)
+      {
+        New_Par            = (POV_PARAM *)POV_MALLOC(sizeof(POV_PARAM),"parameter");
+        New_Par->NumberPtr = Token.NumberPtr;
+        New_Par->DataPtr   = Token.DataPtr;
+        *NumberPtr = PARAMETER_ID_TOKEN;
+        *DataPtr   = (void *)New_Par;
+      }
+      else
+      {
+        Temp_Data  = (void *) Copy_Identifier((void *)*Token.DataPtr,*Token.NumberPtr);
+        *NumberPtr = *Token.NumberPtr;
+        Test_Redefine(Previous,NumberPtr,*DataPtr);
+        *DataPtr   = Temp_Data;
+      }
+      EXIT
+    END_CASE
+
+    CASE (IDENTIFIER_TOKEN)
+      if (ParFlag)
+      {
+         Error("Cannot pass uninitialized identifier as macro parameter.\nInitialize first.\n");
+      }
+      else
+      {
+         Error("Cannot assign uninitialized identifier.\n");
+      }
+      EXIT
+    END_CASE
+
     CASE_COLOUR
-      Local_Colour = Create_Colour();
+      Local_Colour  = Create_Colour();
       Ok_To_Declare = FALSE;
       Parse_Colour (*Local_Colour);
+      if (SemiFlag)
+      {
+         Parse_Semi_Colon();
+      }
       Ok_To_Declare = TRUE;
-      if (Test_Redefine(Previous,COLOUR_ID_TOKEN))
-        Destroy_Colour((COLOUR *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Data = (char *) Local_Colour;
-      Constant_Ptr->Constant_Type = COLOUR_ID_TOKEN;
+      *NumberPtr    = COLOUR_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr      = (void *) Local_Colour;
       EXIT
     END_CASE
 
     CASE_VECTOR
       Ok_To_Declare = FALSE;
-      Have_Vector = FALSE;
-      Parse_Vector_Float (Local_Vector);
-      if (Have_Vector)
-        {
-         if (Test_Redefine(Previous,VECTOR_FUNCT_TOKEN))
-           Destroy_Vector((VECTOR *)Constant_Ptr->Constant_Data);
-         Constant_Ptr->Constant_Type = VECTOR_ID_TOKEN;
-         Constant_Ptr->Constant_Data = (char *) Create_Vector();
-         Assign_Vector(Constant_Ptr->Constant_Data,Local_Vector);
-        }
+      if (ParFlag && 
+          ( ( (Token.Token_Id==FLOAT_FUNCT_TOKEN) && 
+              (Token.Function_Id==FLOAT_ID_TOKEN) 
+            ) ||
+            ( (Token.Token_Id==VECTOR_FUNCT_TOKEN) && 
+              (Token.Function_Id==VECTOR_ID_TOKEN) 
+            )  ||
+            (Token.Token_Id==VECTOR_4D_ID_TOKEN) 
+               ||
+            (Token.Token_Id==UV_ID_TOKEN) 
+          ) 
+         ) 
+      {
+         Temp_Count=token_count;
+      }
+      Terms = Parse_Unknown_Vector (Local_Express);
+      if (SemiFlag)
+      {
+         Parse_Semi_Colon();
+      }
+      Temp_Count -= token_count;
+      if ((Temp_Count==-1) || (Temp_Count==1000))
+      {
+         New_Par            = (POV_PARAM *)POV_MALLOC(sizeof(POV_PARAM),"parameter");
+         New_Par->NumberPtr = Token.NumberPtr;
+         New_Par->DataPtr   = Token.DataPtr;
+         *NumberPtr = PARAMETER_ID_TOKEN;
+         *DataPtr   = (void *)New_Par;
+      }
       else
-        {
-         if (Test_Redefine(Previous,FLOAT_FUNCT_TOKEN))
-           Destroy_Float((DBL *)Constant_Ptr->Constant_Data);
-         Constant_Ptr->Constant_Type = FLOAT_ID_TOKEN;
-                        Constant_Ptr->Constant_Data = (char *) Create_Float();
-         *((DBL *) Constant_Ptr->Constant_Data) = Local_Vector[X];
-        }
+      {
+         switch(Terms)
+         {
+           case 1:
+            *NumberPtr = FLOAT_ID_TOKEN;
+            Test_Redefine(Previous,NumberPtr,*DataPtr);
+            *DataPtr   = (void *) Create_Float();
+            *((DBL *)*DataPtr)  = Local_Express[X];
+            break;
+            
+           case 2:
+            *NumberPtr = UV_ID_TOKEN;
+            Test_Redefine(Previous,NumberPtr,*DataPtr);
+            *DataPtr   = (void *) Create_UV_Vect();
+            Assign_UV_Vect(*DataPtr, Local_Express);
+            break;
+            
+           case 3:
+            *NumberPtr = VECTOR_ID_TOKEN;
+            Test_Redefine(Previous,NumberPtr,*DataPtr);
+            *DataPtr   = (void *) Create_Vector();
+            Assign_Vector(*DataPtr, Local_Express);
+            break;
+            
+           case 4:
+            *NumberPtr = VECTOR_4D_ID_TOKEN;
+            Test_Redefine(Previous,NumberPtr,*DataPtr);
+            *DataPtr   = (void *) Create_Vector_4D();
+            Assign_Vector_4D(*DataPtr, Local_Express);
+            break;
+            
+           case 5:
+            *NumberPtr    = COLOUR_ID_TOKEN;
+            Test_Redefine(Previous,NumberPtr,*DataPtr);
+            *DataPtr      = (void *) Create_Colour();
+            Assign_Colour(*DataPtr, Local_Express);
+            break;
+         }
+      } 
       Ok_To_Declare = TRUE;
       EXIT
     END_CASE
@@ -4865,10 +5034,9 @@ void Parse_Declare ()
       Parse_Begin ();
       Parse_Pigment (&Local_Pigment);
       Parse_End ();
-      if (Test_Redefine(Previous,PIGMENT_ID_TOKEN))
-        Destroy_Pigment((PIGMENT *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = PIGMENT_ID_TOKEN;
-      Constant_Ptr->Constant_Data = (char *)Local_Pigment;
+      *NumberPtr = PIGMENT_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = (void *)Local_Pigment;
       EXIT
     END_CASE
 
@@ -4877,40 +5045,27 @@ void Parse_Declare ()
       Parse_Begin ();
       Parse_Tnormal (&Local_Tnormal);
       Parse_End ();
-      if (Test_Redefine(Previous,TNORMAL_ID_TOKEN))
-        Destroy_Tnormal((TNORMAL *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = TNORMAL_ID_TOKEN;
-      Constant_Ptr->Constant_Data = (char *) Local_Tnormal;
+      *NumberPtr = TNORMAL_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = (void *) Local_Tnormal;
       EXIT
     END_CASE
 
     CASE (FINISH_TOKEN)
       Local_Finish = Copy_Finish((Default_Texture->Finish));
       Parse_Finish (&Local_Finish);
-      if (Test_Redefine(Previous,FINISH_ID_TOKEN))
-        Destroy_Finish((FINISH *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = FINISH_ID_TOKEN;
-      Constant_Ptr->Constant_Data = (char *) Local_Finish;
-      EXIT
-    END_CASE
-
-    CASE (HALO_TOKEN)
-      Local_Halo = Copy_Halo((Default_Texture->Halo));
-      Parse_Halo (&Local_Halo);
-      if (Test_Redefine(Previous,HALO_ID_TOKEN))
-        Destroy_Halo((HALO *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = HALO_ID_TOKEN;
-      Constant_Ptr->Constant_Data = (char *) Local_Halo;
+      *NumberPtr = FINISH_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = (void *) Local_Finish;
       EXIT
     END_CASE
 
     CASE (CAMERA_TOKEN)
       Local_Camera = Copy_Camera(Default_Camera);
       Parse_Camera (&Local_Camera);
-      if (Test_Redefine(Previous,CAMERA_ID_TOKEN))
-        Destroy_Camera((CAMERA *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = CAMERA_ID_TOKEN;
-      Constant_Ptr->Constant_Data = (char *) Local_Camera;
+      *NumberPtr = CAMERA_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = (void *) Local_Camera;
       EXIT
     END_CASE
 
@@ -4935,129 +5090,279 @@ void Parse_Declare ()
         END_CASE
       END_EXPECT
 
-      if (Test_Redefine(Previous,TEXTURE_ID_TOKEN))
-      {
-        Destroy_Textures((TEXTURE *)Constant_Ptr->Constant_Data);
-      }
-      Constant_Ptr->Constant_Type = TEXTURE_ID_TOKEN;
-      Constant_Ptr->Constant_Data = (char *)Temp_Texture;
+      *NumberPtr    = TEXTURE_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr      = (void *)Temp_Texture;
       Ok_To_Declare = TRUE;
       EXIT
     END_CASE
 
     CASE (COLOUR_MAP_TOKEN)
-      Temp_Data=(char *) Parse_Colour_Map ();
-      if (Test_Redefine(Previous,COLOUR_MAP_ID_TOKEN))
-        Destroy_Blend_Map((BLEND_MAP *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = COLOUR_MAP_ID_TOKEN;
-      Constant_Ptr->Constant_Data = Temp_Data;
+      Temp_Data=(void *) Parse_Colour_Map ();
+      *NumberPtr = COLOUR_MAP_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     CASE (PIGMENT_MAP_TOKEN)
-      Temp_Data = (char *) Parse_Blend_Map (PIGMENT_TYPE,NO_PATTERN);
-      if (Test_Redefine(Previous,PIGMENT_MAP_ID_TOKEN))
-        Destroy_Blend_Map((BLEND_MAP *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = PIGMENT_MAP_ID_TOKEN;
-      Constant_Ptr->Constant_Data = Temp_Data;
+      Temp_Data  = (void *) Parse_Blend_Map (PIGMENT_TYPE,NO_PATTERN);
+      *NumberPtr = PIGMENT_MAP_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
+      EXIT
+    END_CASE
+
+    CASE (DENSITY_MAP_TOKEN)
+      Temp_Data  = (void *) Parse_Blend_Map (DENSITY_TYPE,NO_PATTERN);
+      *NumberPtr = DENSITY_MAP_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     CASE (SLOPE_MAP_TOKEN)
-      Temp_Data = (char *) Parse_Blend_Map (SLOPE_TYPE,NO_PATTERN);
-      Constant_Ptr->Constant_Type = SLOPE_MAP_ID_TOKEN;
-      if (Test_Redefine(Previous,SLOPE_MAP_ID_TOKEN))
-        Destroy_Blend_Map((BLEND_MAP *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Data = Temp_Data;
+      Temp_Data  = (void *) Parse_Blend_Map (SLOPE_TYPE,NO_PATTERN);
+      *NumberPtr = SLOPE_MAP_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     CASE (TEXTURE_MAP_TOKEN)
-      Temp_Data = (char *) Parse_Blend_Map (TEXTURE_TYPE,NO_PATTERN);
-      Constant_Ptr->Constant_Type = TEXTURE_MAP_ID_TOKEN;
-      if (Test_Redefine(Previous,TEXTURE_MAP_ID_TOKEN))
-        Destroy_Blend_Map((BLEND_MAP *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Data = Temp_Data;
+      Temp_Data  = (void *) Parse_Blend_Map (TEXTURE_TYPE,NO_PATTERN);
+      *NumberPtr = TEXTURE_MAP_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     CASE (NORMAL_MAP_TOKEN)
-      Temp_Data= (char *) Parse_Blend_Map (NORMAL_TYPE,NO_PATTERN);
-      Constant_Ptr->Constant_Type = NORMAL_MAP_ID_TOKEN;
-      if (Test_Redefine(Previous,NORMAL_MAP_ID_TOKEN))
-        Destroy_Blend_Map((BLEND_MAP *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Data = Temp_Data;
+      Temp_Data  = (void *) Parse_Blend_Map (NORMAL_TYPE,NO_PATTERN);
+      *NumberPtr = NORMAL_MAP_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     CASE (RAINBOW_TOKEN)
-      Temp_Data= (char *) Parse_Rainbow();
-      Constant_Ptr->Constant_Type = RAINBOW_ID_TOKEN;
-      if (Test_Redefine(Previous,RAINBOW_ID_TOKEN))
-        Destroy_Rainbow((RAINBOW *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Data = Temp_Data;
+      Temp_Data  = (void *) Parse_Rainbow();
+      *NumberPtr = RAINBOW_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     CASE (FOG_TOKEN)
-      Temp_Data= (char *) Parse_Fog();
-      if (Test_Redefine(Previous,FOG_ID_TOKEN))
-        Destroy_Fog((FOG *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Data = Temp_Data;
-      Constant_Ptr->Constant_Type = FOG_ID_TOKEN;
+      Temp_Data  = (void *) Parse_Fog();
+      *NumberPtr = FOG_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
-    CASE (ATMOSPHERE_TOKEN)
-      Temp_Data= (char *) Parse_Atmosphere();
-      if (Test_Redefine(Previous,ATMOSPHERE_ID_TOKEN))
-        Destroy_Atmosphere((ATMOSPHERE *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Data = Temp_Data;
-      Constant_Ptr->Constant_Type = ATMOSPHERE_ID_TOKEN;
+    CASE (MEDIA_TOKEN)
+      Local_Media = NULL;
+      Parse_Media(&Local_Media);
+      Temp_Data  = (void *)Local_Media;
+      *NumberPtr = MEDIA_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
+      EXIT
+    END_CASE
+
+    CASE (DENSITY_TOKEN)
+      Local_Density = NULL;
+      Parse_Begin ();
+      Parse_Media_Density_Pattern (&Local_Density);
+      Parse_End ();
+      *NumberPtr = DENSITY_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = (void *)Local_Density;
+      EXIT
+    END_CASE
+
+    CASE (INTERIOR_TOKEN)
+      Local_Interior = NULL;
+      Parse_Interior(&Local_Interior);
+      Temp_Data  = (void *)Local_Interior;
+      *NumberPtr = INTERIOR_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
+      EXIT
+    END_CASE
+
+    CASE (MATERIAL_TOKEN)
+      Local_Material = Create_Material();
+      Parse_Material(Local_Material);
+      Temp_Data  = (void *)Local_Material;
+      *NumberPtr = MATERIAL_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     CASE (SKYSPHERE_TOKEN)
-      Temp_Data= (char *) Parse_Skysphere();
-      if (Test_Redefine(Previous,SKYSPHERE_ID_TOKEN))
-        Destroy_Skysphere((SKYSPHERE *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Data = Temp_Data;
-      Constant_Ptr->Constant_Type = SKYSPHERE_ID_TOKEN;
+      Temp_Data  = (void *) Parse_Skysphere();
+      *NumberPtr = SKYSPHERE_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     CASE (TRANSFORM_TOKEN)
       Local_Trans = Parse_Transform ();
-      if (Test_Redefine(Previous,TRANSFORM_ID_TOKEN))
-        Destroy_Transform((TRANSFORM *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = TRANSFORM_ID_TOKEN;
-      Constant_Ptr->Constant_Data = (char *) Local_Trans;
+      *NumberPtr  = TRANSFORM_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr    = (void *) Local_Trans;
       EXIT
     END_CASE
 
     CASE4 (STRING_LITERAL_TOKEN,CHR_TOKEN,SUBSTR_TOKEN,STR_TOKEN)
     CASE4 (CONCAT_TOKEN,STRUPR_TOKEN,STRLWR_TOKEN,STRING_ID_TOKEN)
       UNGET
-      Temp_Data= Parse_String();
-      if (Test_Redefine(Previous,STRING_ID_TOKEN))
-        POV_FREE(Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = STRING_ID_TOKEN;
-      Constant_Ptr->Constant_Data = Temp_Data;
+      Temp_Data  = Parse_String();
+      *NumberPtr = STRING_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
+      EXIT
+    END_CASE
+
+    CASE (ARRAY_TOKEN)
+      Temp_Data  = (void *) Parse_Array_Declare();
+      *NumberPtr = ARRAY_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr   = Temp_Data;
       EXIT
     END_CASE
 
     OTHERWISE
       UNGET
       Local_Object = Parse_Object ();
-      if (Test_Redefine(Previous,OBJECT_ID_TOKEN))
-        Destroy_Object((OBJECT *)Constant_Ptr->Constant_Data);
-      Constant_Ptr->Constant_Type = OBJECT_ID_TOKEN;
-      Constant_Ptr->Constant_Data = (char *) Local_Object;
+      Found=(Local_Object!=NULL);
+      *NumberPtr   = OBJECT_ID_TOKEN;
+      Test_Redefine(Previous,NumberPtr,*DataPtr);
+      *DataPtr     = (void *) Local_Object;
       EXIT
     END_CASE
 
   END_EXPECT
+  
+  Ok_To_Declare=Old_Ok;
+  return(Found);
 }
+
+void Destroy_Ident_Data (void *Data, int Type)
+{
+  int i;
+  POV_ARRAY *a;
+  DATA_FILE *Temp_File;
+  
+  if (Data==NULL)
+  {
+     return;
+  }
+
+  switch (Type)
+  {
+     case COLOUR_ID_TOKEN:
+       Destroy_Colour((COLOUR *)Data);
+       break;
+     case VECTOR_ID_TOKEN:
+       Destroy_Vector((VECTOR *)Data);
+       break;
+     case UV_ID_TOKEN:
+       Destroy_UV_Vect((UV_VECT *)Data);
+       break;
+     case VECTOR_4D_ID_TOKEN:
+       Destroy_Vector((VECTOR_4D *)Data);
+       break;
+     case FLOAT_ID_TOKEN:
+       Destroy_Float((DBL *)Data);
+       break;
+     case PIGMENT_ID_TOKEN:
+     case DENSITY_ID_TOKEN:
+       Destroy_Pigment((PIGMENT *)Data);
+       break;
+     case TNORMAL_ID_TOKEN:
+       Destroy_Tnormal((TNORMAL *)Data);
+       break;
+     case FINISH_ID_TOKEN:
+       Destroy_Finish((FINISH *)Data);
+       break;
+     case MEDIA_ID_TOKEN:
+       Destroy_Media((IMEDIA *)Data);
+       break;
+     case INTERIOR_ID_TOKEN:
+       Destroy_Interior((INTERIOR *)Data);
+       break;
+     case MATERIAL_ID_TOKEN:
+       Destroy_Material((MATERIAL *)Data);
+       break;
+     case TEXTURE_ID_TOKEN:
+       Destroy_Textures((TEXTURE *)Data);
+       break;
+     case OBJECT_ID_TOKEN:
+       Destroy_Object((OBJECT *)Data);
+       break;
+     case COLOUR_MAP_ID_TOKEN:
+     case PIGMENT_MAP_ID_TOKEN:
+     case SLOPE_MAP_ID_TOKEN:
+     case TEXTURE_MAP_ID_TOKEN:
+     case NORMAL_MAP_ID_TOKEN:
+     case DENSITY_MAP_ID_TOKEN:
+       Destroy_Blend_Map((BLEND_MAP *)Data);
+       break;
+     case TRANSFORM_ID_TOKEN:
+       Destroy_Transform((TRANSFORM *)Data);
+       break;
+     case CAMERA_ID_TOKEN:
+       Destroy_Camera((CAMERA *)Data);
+       break;
+     case RAINBOW_ID_TOKEN:
+       Destroy_Rainbow((RAINBOW *)Data);
+       break;
+     case FOG_ID_TOKEN:
+       Destroy_Fog((FOG *)Data);
+       break;
+     case SKYSPHERE_ID_TOKEN:
+       Destroy_Skysphere((SKYSPHERE *)Data);
+       break;
+     case MACRO_ID_TOKEN:
+       Destroy_Macro((POV_MACRO *)Data);
+       break;
+     case STRING_ID_TOKEN:
+       POV_FREE((char *)Data);
+       break;
+     case ARRAY_ID_TOKEN:
+       a=(POV_ARRAY *)Data;
+       for (i=0; i<a->Total; i++)
+       {
+         Destroy_Ident_Data (a->DataPtrs[i],a->Type);
+       }
+       POV_FREE(a->DataPtrs);
+       POV_FREE(a);
+       break;
+     case PARAMETER_ID_TOKEN:
+       POV_FREE(Data);
+       break;
+     case FILE_ID_TOKEN:
+       Temp_File=(DATA_FILE *)Data;
+       if (Temp_File->File!=NULL)
+       {
+         fflush(Temp_File->File);
+         fclose(Temp_File->File);
+       }
+       if (Temp_File->Filename!=NULL)
+       {
+         POV_FREE(Temp_File->Filename);
+       }
+       POV_FREE(Data);
+       break;
+   }
+}
+
+
 
 
 
@@ -5079,9 +5384,8 @@ void Parse_Declare ()
 *
 ******************************************************************************/
 
-static void Link (New_Object, Field, Old_Object_List)
-  OBJECT *New_Object, **Field, **Old_Object_List;
-  {
+static void Link (OBJECT *New_Object, OBJECT  **Field, OBJECT  **Old_Object_List)
+{
   *Field = *Old_Object_List;
   *Old_Object_List = New_Object;
   }
@@ -5106,10 +5410,8 @@ static void Link (New_Object, Field, Old_Object_List)
 *
 ******************************************************************************/
 
-void Link_Textures (Old_Textures, New_Textures)
-  TEXTURE **Old_Textures;
-  TEXTURE  *New_Textures;
-  {
+void Link_Textures (TEXTURE **Old_Textures, TEXTURE *New_Textures)
+{
    TEXTURE *Layer;
    
    if (New_Textures == NULL)
@@ -5156,10 +5458,8 @@ void Link_Textures (Old_Textures, New_Textures)
 *
 ******************************************************************************/
 
-static
-char *Get_Token_String (Token_Id)
-  TOKEN Token_Id;
-  {
+char *Get_Token_String (TOKEN Token_Id)
+{
   register int i;
 
   for (i = 0 ; i < LAST_TOKEN ; i++)
@@ -5188,21 +5488,28 @@ char *Get_Token_String (Token_Id)
 *
 ******************************************************************************/
 
-static int Test_Redefine(Previous,a)
-  int Previous;
-  int a;
-  {
-  char *old, *new;
+void Test_Redefine(TOKEN Previous, TOKEN *NumberPtr, void *Data)
+{
+  char *oldt, *newt;
 
-  if (Previous == IDENTIFIER_TOKEN)
-    return (FALSE);
-  if (Previous != a)
-    {old = Get_Token_String (Previous);
-     new = Get_Token_String (a);
-     Error ("Attempted to redefine %s as %s.", old, new);
-    }
-  return (TRUE);
+  if ((Previous == IDENTIFIER_TOKEN) || (Previous == EMPTY_ARRAY_TOKEN))
+  {
+    return;
   }
+  
+  if (Previous == *NumberPtr)
+  {
+     Destroy_Ident_Data(Data,*NumberPtr);
+  }
+  else
+  {
+     oldt = Get_Token_String (Previous);
+     newt = Get_Token_String (*NumberPtr);
+     *NumberPtr = Previous;
+     
+     Error ("Attempted to redefine %s as %s.", oldt, newt);
+  }
+}
 
 
 
@@ -5224,9 +5531,8 @@ static int Test_Redefine(Previous,a)
 *
 ******************************************************************************/
 
-void Parse_Error (Token_Id)
-  TOKEN Token_Id;
-  {
+void Parse_Error (TOKEN Token_Id)
+{
   char *expected;
 
   expected = Get_Token_String (Token_Id);
@@ -5253,9 +5559,8 @@ void Parse_Error (Token_Id)
 *
 ******************************************************************************/
 
-void Parse_Error_Str (str)
-  char *str;
-  {
+void Parse_Error_Str (char *str)
+{
    Where_Error ();
    Error_Line("%s expected but", str);
    Found_Instead ();
@@ -5334,9 +5639,8 @@ static void Found_Instead ()
 *
 ******************************************************************************/
 
-void Warn_State (Token_Id,Type)
-  TOKEN Token_Id, Type;
-  {
+void Warn_State (TOKEN Token_Id,TOKEN  Type)
+{
   char *found;
   char *should;
 
@@ -5366,10 +5670,8 @@ void Warn_State (Token_Id,Type)
 *
 ******************************************************************************/
 
-void Warn (Level, str)
-  DBL Level;
-  char *str;
-  {
+void Warn (DBL Level, char *str)
+{
   if (opts.Language_Version < Level)
     return;
 
@@ -5396,10 +5698,8 @@ void Warn (Level, str)
 *
 ******************************************************************************/
 
-void MAError (str,size)
-  char *str;
-  size_t size;
-  {
+void MAError (char *str,size_t size)
+{
   Error ("Out of memory.  Cannot allocate %ld bytes for %s.\n",size,str);
   }
 
@@ -5423,121 +5723,133 @@ void MAError (str,size)
 *
 ******************************************************************************/
 
-/* Write a token out to the token file */
-
-void Write_Token (Token_Id, Data_File)
-  TOKEN Token_Id;
-  DATA_FILE *Data_File;
-
-  {
-   Token.Token_Line_No = Data_File->Line_Number;
-   Token.Filename = Data_File->Filename;
-   Token.Token_String = String;
-   Token.Constant_Data = NULL;
-   Token.Token_Id = Token_Id;
-
-   Token.Constant_Index = (int) Token.Token_Id - (int) LAST_TOKEN;
-
-   if (Token.Constant_Index >= 0)
-   {
-      if (Token.Constant_Index <= Number_Of_Constants)
-      {
-        Token.Constant_Data = Constants[Token.Constant_Index].Constant_Data;
-        Token.Token_Id=Constants[Token.Constant_Index].Constant_Type;
-      }
-      else 
-      {
-         Token.Token_Id = IDENTIFIER_TOKEN;
-      }
-   }
-
-   Token.Function_Id = Token.Token_Id;
-   if (Token.Token_Id < FLOAT_FUNCT_TOKEN)
-     Token.Token_Id = FLOAT_FUNCT_TOKEN;
-   else
-     if (Token.Token_Id < VECTOR_FUNCT_TOKEN)
-       Token.Token_Id = VECTOR_FUNCT_TOKEN;
-     else
-       if (Token.Token_Id < COLOUR_KEY_TOKEN)
-         Token.Token_Id = COLOUR_KEY_TOKEN;
-  }
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-* INPUT
-*
-* OUTPUT
-*
-* RETURNS
-*
-* AUTHOR
-*
-* DESCRIPTION
-*
-* CHANGES
-*
-******************************************************************************/
-
-static void Post_Process (Object,Parent)
-OBJECT *Object, *Parent;
+static void Post_Process (OBJECT *Object,OBJECT  *Parent)
 {
   DBL Volume;
   OBJECT *Sib;
+  FINISH *Finish;
 
   if (Object == NULL)
+  {
     return;
+  }
+
+  if (Object->Type & LT_SRC_UNION_OBJECT) 
+  {
+    for (Sib = ((CSG *)Object)->Children; Sib != NULL; Sib = Sib->Sibling)
+    {
+      Post_Process(Sib, Object);
+    }
+    return;
+  }
+
+  /* Promote texture etc. from parent to children. */
 
   if (Parent != NULL)
   {
     if (Object->Texture == NULL)
-      Object->Texture = Copy_Texture_Pointer (Parent->Texture);
+    {
+      Object->Texture = Copy_Texture_Pointer(Parent->Texture);
+    }
 
-/*
-    else
-      if (Parent->Texture != NULL)
-      {
-        Local_Texture = Copy_Textures (Parent->Texture);
-        Link_Textures (&(Object->Texture), Local_Texture);
-      }
-*/ /* Removed for backward compat with 1.0.  May put back in. CEY 12/92 */
+    if (Object->Interior == NULL)
+    {
+      Object->Interior = Copy_Interior_Pointer(Parent->Interior);
+    }
 
     if (Test_Flag(Parent, NO_SHADOW_FLAG))
+    {
       Set_Flag(Object, NO_SHADOW_FLAG);
+    }
+  }
+
+  if (Object->Interior != NULL)
+  {
+     Post_Media(Object->Interior->IMedia);
   }
 
   if ((Object->Texture == NULL) &&
       !(Object->Type & TEXTURED_OBJECT) &&
       !(Object->Type & LIGHT_SOURCE_OBJECT))
-    Object->Texture = Copy_Textures(Default_Texture);
-
-  if (Object->Type & COMPOUND_OBJECT)
   {
-    if (Object->Type & LIGHT_SOURCE_OBJECT)
-    {
-       ((LIGHT_SOURCE *)Object)->Next_Light_Source = Frame.Light_Sources;
-       Frame.Light_Sources = (LIGHT_SOURCE *)Object;
-       Frame.Number_Of_Light_Sources++;
-    }
+    Object->Texture = Copy_Textures(Default_Texture);
+  }
 
-    for (Sib = ((CSG *)Object)->Children; Sib != NULL; Sib = Sib->Sibling)
-      Post_Process(Sib, Object);
+  Post_Textures(Object->Texture);  /*moved cey 6/97*/
+
+  if (Object->Type & LIGHT_SOURCE_OBJECT)
+  {
+    ((LIGHT_SOURCE *)Object)->Next_Light_Source = Frame.Light_Sources;
+
+    Frame.Light_Sources = (LIGHT_SOURCE *)Object;
+
+    Frame.Number_Of_Light_Sources++;
   }
   else
   {
-    if (Object->Texture == NULL)
-      Object->Texture = Copy_Textures(Default_Texture);
+    /* If there is no interior create one. */
 
-    if (Object->Texture->Type == PLAIN_PATTERN)
-      if (Object->Texture->Tnormal != NULL)
-        Object->Type |= DOUBLE_ILLUMINATE;
+    if (Object->Interior == NULL)
+    {
+      Object->Interior = Create_Interior();
+    }
+
+    /* Promote hollow flag to interior. */
+
+    Object->Interior->hollow = (Test_Flag(Object, HOLLOW_FLAG) != FALSE);
+
+    /* Promote finish's IOR to interior IOR. */
+
+    if (Object->Texture != NULL)
+    {
+      if (Object->Texture->Type == PLAIN_PATTERN)
+      {
+        if ((Finish = Object->Texture->Finish) != NULL)
+        {
+          if (Finish->Temp_IOR >= 0.0)
+          {
+            Object->Interior->IOR = Finish->Temp_IOR;
+          }
+          if (Finish->Temp_Caustics >= 0.0)
+          {
+            Object->Interior->Caustics = Finish->Temp_Caustics;
+          }
+
+          Object->Interior->Old_Refract = Finish->Temp_Refract;
+        }
+      }
+    }
+
+    /* If there is no IOR specified use the atmopshere ior. */
+
+    if (Object->Interior->IOR == 0.0)
+    {
+      Object->Interior->IOR = Frame.Atmosphere_IOR;
+    }
   }
 
-  Post_Textures (Object->Texture);
-
+  if (Object->Type & COMPOUND_OBJECT)
+  {
+    for (Sib = ((CSG *)Object)->Children; Sib != NULL; Sib = Sib->Sibling)
+    {
+      Post_Process(Sib, Object);
+    }
+  }
+  /* [removed by CEY 01/98]
+  else
+  {
+    if (Object->Texture != NULL)
+    {
+      if (Object->Texture->Type == PLAIN_PATTERN)
+      {
+        if (Object->Texture->Tnormal != NULL)
+        {
+          Object->Type |= DOUBLE_ILLUMINATE;
+        }
+      }
+    }
+  }
+  */
   /* Test wether the object is finite or infinite. [DB 9/94] */
 
   BOUNDS_VOLUME(Volume, Object->BBox);
@@ -5549,119 +5861,27 @@ OBJECT *Object, *Parent;
 
   /* Test wether the object is opaque or not. [DB 8/94] */
 
-  /*
-   * Blobs and meshes have to be handled speratly because
-   * of the multiple textures.
-   */
-
   if ((Object->Methods != &Blob_Methods) &&
       (Object->Methods != &Mesh_Methods) &&
       (Test_Opacity(Object->Texture)))
   {
     Set_Flag(Object, OPAQUE_FLAG);
   }
-
-  if (Object->Methods == &Blob_Methods)
+  else
   {
-    Test_Blob_Opacity((BLOB *)Object);
-  }
+    /* Objects with multiple textures have to be handled separately. */
 
-  if (Object->Methods == &Mesh_Methods)
-  {
-    Test_Mesh_Opacity((MESH *)Object);
+    if (Object->Methods == &Blob_Methods)
+    {
+      Test_Blob_Opacity((BLOB *)Object);
+    }
+
+    if (Object->Methods == &Mesh_Methods)
+    {
+      Test_Mesh_Opacity((MESH *)Object);
+    }
   }
 }
-
-
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-* INPUT
-*
-* OUTPUT
-*
-* RETURNS
-*
-* AUTHOR
-*
-* DESCRIPTION
-*
-* CHANGES
-*
-******************************************************************************/
-
-static void Destroy_Constants ()
-  {
-   int i;
-   char *Ptr;
-
-   for (i=1; i <= Number_Of_Constants; i++)
-     {
-      Ptr = Constants[i].Constant_Data;
-      switch (Constants[i].Constant_Type)
-        {
-         case COLOUR_ID_TOKEN:
-           Destroy_Colour((COLOUR *)Ptr);
-           break;
-         case VECTOR_ID_TOKEN:
-           Destroy_Vector((VECTOR *)Ptr);
-           break;
-         case FLOAT_ID_TOKEN:
-           Destroy_Float((DBL *)Ptr);
-           break;
-         case PIGMENT_ID_TOKEN:
-           Destroy_Pigment((PIGMENT *)Ptr);
-           break;
-         case TNORMAL_ID_TOKEN:
-           Destroy_Tnormal((TNORMAL *)Ptr);
-           break;
-         case FINISH_ID_TOKEN:
-           Destroy_Finish((FINISH *)Ptr);
-           break;
-         case HALO_ID_TOKEN:
-           Destroy_Halo((HALO *)Ptr);
-           break;
-         case TEXTURE_ID_TOKEN:
-           Destroy_Textures((TEXTURE *)Ptr);
-           break;
-         case OBJECT_ID_TOKEN:
-           Destroy_Object((OBJECT *)Ptr);
-           break;
-         case COLOUR_MAP_ID_TOKEN:
-         case PIGMENT_MAP_ID_TOKEN:
-         case SLOPE_MAP_ID_TOKEN:
-         case TEXTURE_MAP_ID_TOKEN:
-         case NORMAL_MAP_ID_TOKEN:
-           Destroy_Blend_Map((BLEND_MAP *)Ptr);
-           break;
-         case TRANSFORM_ID_TOKEN:
-           Destroy_Transform((TRANSFORM *)Ptr);
-           break;
-         case CAMERA_ID_TOKEN:
-           Destroy_Camera((CAMERA *)Ptr);
-           break;
-         case RAINBOW_ID_TOKEN:
-           Destroy_Rainbow((RAINBOW *)Ptr);
-           break;
-         case FOG_ID_TOKEN:
-           Destroy_Fog((FOG *)Ptr);
-           break;
-         case SKYSPHERE_ID_TOKEN:
-           Destroy_Skysphere((SKYSPHERE *)Ptr);
-           break;
-         case ATMOSPHERE_ID_TOKEN:
-           Destroy_Atmosphere((ATMOSPHERE *)Ptr);
-           break;
-         case STRING_ID_TOKEN:
-           POV_FREE(Ptr);
-           break;
-        }
-     }
-
-     POV_FREE(Constants);
-  }
 
 /*****************************************************************************
 *
@@ -5694,8 +5914,7 @@ static void Destroy_Constants ()
 *
 ******************************************************************************/
 
-static void Link_To_Frame(Object)
-OBJECT *Object;
+static void Link_To_Frame(OBJECT *Object)
 {
   int finite;
   DBL Volume;
@@ -5832,8 +6051,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Only_In(s1,s2)
-char *s1, *s2;
+void Only_In(char *s1,char  *s2)
 {
   Error("Keyword '%s' can only be used in a %s statement.",s1,s2);
 }
@@ -5858,9 +6076,181 @@ char *s1, *s2;
 *
 ******************************************************************************/
 
-void Not_With(s1,s2)
-char *s1, *s2;
+void Not_With(char *s1,char  *s2)
 {
   Error("Keyword '%s' cannot be used %s.",s1,s2);
 }
+
+void Warn_Compat(int f)
+{
+  Warning(0.0,"Use of this syntax ");
+
+  if (f)
+  {
+    Warning(0.0,"is not");
+  }
+  else
+  {
+    Warning(0.0,"may not be");
+  }
+    
+  Warning(0.0," backwards compatable with earlier versions\n%s",
+  "of POV-Ray. The #version directive or +MV switch will not help.\n\n");
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*  Set_CSG_Children_Hollow
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+static void Set_CSG_Children_Flag(OBJECT *Object, unsigned long f, unsigned long  flag, unsigned long  set_flag)
+{
+  OBJECT *Sib;
+
+  for (Sib = ((CSG *)Object)->Children; Sib != NULL; Sib = Sib->Sibling)
+  {
+    if (!Test_Flag(Sib, set_flag))
+    {
+      if ((Sib->Methods == &CSG_Intersection_Methods) ||
+          (Sib->Methods == &CSG_Merge_Methods) ||
+          (Sib->Methods == &CSG_Union_Methods))
+      {
+        Set_CSG_Children_Flag(Sib, f, flag, set_flag);
+      }
+      else
+      {
+        Sib->Flags = (Sib->Flags & (~flag)) | f;
+      }
+    }
+  }
+}
+
+
+
+static void *Copy_Identifier (void *Data, int Type)
+{
+  int i;
+  POV_ARRAY *a, *na;
+  VECTOR *vp;
+  DBL *dp;
+  UV_VECT *uvp;
+  VECTOR_4D *v4p;
+  void *New;
+  
+  if (Data==NULL)
+  {
+     return(NULL);
+  }
+
+  switch (Type)
+  {
+     case COLOUR_ID_TOKEN:
+       New = (void *)Copy_Colour(*(COLOUR *)Data);
+       break;
+     case VECTOR_ID_TOKEN:
+       vp = Create_Vector();
+       Assign_Vector((*vp),(*((VECTOR *)Data)));
+       New=vp;
+       break;
+     case UV_ID_TOKEN:
+       uvp = Create_UV_Vect();
+       Assign_Vector((*uvp),(*((UV_VECT *)Data)));
+       New=uvp;
+       break;
+     case VECTOR_4D_ID_TOKEN:
+       v4p = Create_Vector_4D();
+       Assign_Vector((*v4p),(*((VECTOR_4D *)Data)));
+       New=v4p;
+       break;
+     case FLOAT_ID_TOKEN:
+       dp = Create_Float();
+       *dp = *((DBL *)Data);
+       New = dp;
+       break;
+     case PIGMENT_ID_TOKEN:
+     case DENSITY_ID_TOKEN:
+       New = (void *)Copy_Pigment((PIGMENT *)Data);
+       break;
+     case TNORMAL_ID_TOKEN:
+       New = (void *)Copy_Tnormal((TNORMAL *)Data);
+       break;
+     case FINISH_ID_TOKEN:
+       New = (void *)Copy_Finish((FINISH *)Data);
+       break;
+     case MEDIA_ID_TOKEN:
+       New = (void *)Copy_Media((IMEDIA *)Data);
+       break;
+     case INTERIOR_ID_TOKEN:
+       New = (void *)Copy_Interior((INTERIOR *)Data);
+       break;
+     case MATERIAL_ID_TOKEN:
+       New = (void *)Copy_Material((MATERIAL *)Data);
+       break;
+     case TEXTURE_ID_TOKEN:
+       New = (void *)Copy_Textures((TEXTURE *)Data);
+       break;
+     case OBJECT_ID_TOKEN:
+       New = (void *)Copy_Object((OBJECT *)Data);
+       break;
+     case COLOUR_MAP_ID_TOKEN:
+     case PIGMENT_MAP_ID_TOKEN:
+     case SLOPE_MAP_ID_TOKEN:
+     case TEXTURE_MAP_ID_TOKEN:
+     case NORMAL_MAP_ID_TOKEN:
+     case DENSITY_MAP_ID_TOKEN:
+       New = (void *)Copy_Blend_Map((BLEND_MAP *)Data);
+       break;
+     case TRANSFORM_ID_TOKEN:
+       New = (void *)Copy_Transform((TRANSFORM *)Data);
+       break;
+     case CAMERA_ID_TOKEN:
+       New = (void *)Copy_Camera((CAMERA *)Data);
+       break;
+     case RAINBOW_ID_TOKEN:
+       New = (void *)Copy_Rainbow((RAINBOW *)Data);
+       break;
+     case FOG_ID_TOKEN:
+       New = (void *)Copy_Fog((FOG *)Data);
+       break;
+     case SKYSPHERE_ID_TOKEN:
+       New = (void *)Copy_Skysphere((SKYSPHERE *)Data);
+       break;
+     case STRING_ID_TOKEN:
+       New = (void *)POV_STRDUP((char *)Data);
+       break;
+     case ARRAY_ID_TOKEN:
+       a=(POV_ARRAY *)Data;
+       na=(POV_ARRAY *)POV_MALLOC(sizeof(POV_ARRAY),"array");
+       *na=*a;
+       na->DataPtrs = (void **)POV_MALLOC(sizeof(void *)*(a->Total),"array");
+       for (i=0; i<a->Total; i++)
+       {
+         na->DataPtrs[i] = (void *)Copy_Identifier (a->DataPtrs[i],a->Type);
+       }
+       New = (void *)na;
+       break;
+     default:
+       Error("Cannot copy identifier");
+       New = NULL; /* tw */
+   }
+   return(New);
+}
+
+
 

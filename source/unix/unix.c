@@ -19,12 +19,23 @@
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
+* Various modifications from Mike Fleetwood, February 1999
+* In a nutshell, they allow for enhanced (and fixed) default INI support.
+* They include two new functions, UNIX_Process_Env and UNIX_Process_Povray_Ini
+* and associated modifications as noted below
+*
 *****************************************************************************/
 
 #include "frame.h"
-#include "render.h"    /* For Check_User_Abort */
 #include "povproto.h"  /* For Status_Info */
 #include "povray.h"    /* For Stop_Flag */
+
+/* The following includes are newly required by Mike Fleetwood's modifications */
+#include "optin.h"     /* For parse_ini_file() */
+#include <stdlib.h>    /* For getenv() */
+#include <string.h>    /* For strncpy(), strncat() */
+/* That's the end of the newly required includes */
+
 #include <sys/time.h>  /* For gettimeofday() */
 #include <signal.h>
 
@@ -299,4 +310,93 @@ void UNIX_Abort_Start()
   signal(SIGFPE, SIG_IGN);
 #endif
 }
+
+/*****************************************************************************
+*
+* FUNCTION  UNIX_Process_Env
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR  Mike Fleetwood  Jan 1999
+*
+* DESCRIPTION  Process a default INI file pointed to by the environment
+*              variable POVINI.  Leaves the global variable Option_String_Ptr
+*              set to non-NULL if and only if the environment variable POVINI
+*              points to a file which was read.
+*
+* CHANGES
+*
+******************************************************************************/
+
+void UNIX_Process_Env(void)
+{
+  if ((Option_String_Ptr = getenv("POVINI")) != NULL)
+  {
+    if (!parse_ini_file(Option_String_Ptr))
+    {
+      Warning(0.0, "Could not find '%s' as specified in POVINI environment.\n",
+	      Option_String_Ptr);
+      Option_String_Ptr = NULL;
+    }
+  }
+  return;
+}
+
+/*****************************************************************************
+*
+* FUNCTION  UNIX_Process_Povray_Ini
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR  Mike Fleetwood  Jan 1999
+*
+* DESCRIPTION  If UNIX_Process_Env() processed a default INI file from the
+*              POVINI environment variable then do nothing; otherwise search
+*              for a default INI file, reading the first one found, from the
+*              list:
+*                  ./povray.ini
+*                  $HOME/.povrayrc
+*                  POV_LIB_DIR/povray.ini
+*
+* CHANGES
+*
+******************************************************************************/
+
+void UNIX_Process_Povray_Ini(void)
+{
+  char ini_name[FILE_NAME_MAX];
+
+  if (Option_String_Ptr != NULL)
+    return;
+  if (parse_ini_file("./povray.ini"))
+    return;
+  if ((Option_String_Ptr = getenv("HOME")) != NULL)
+  {
+    strncpy(ini_name, Option_String_Ptr, FILE_NAME_MAX);
+    strncat(ini_name, "/.povrayrc", FILE_NAME_MAX);
+    if (parse_ini_file(ini_name))
+      return;
+    else
+      Option_String_Ptr = NULL;
+  }
+#ifdef POV_LIB_DIR
+  strncpy(ini_name, POV_LIB_DIR, FILE_NAME_MAX);
+  strncat(ini_name, "/povray.ini", FILE_NAME_MAX);
+  parse_ini_file(ini_name);
+#endif
+  return;
+}
+
+
+
+
+
 

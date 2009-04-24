@@ -4,16 +4,16 @@
 *  This module implements the point & spot light source primitive.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -47,17 +47,17 @@
 * Static functions
 ******************************************************************************/
 
-static DBL cubic_spline PARAMS(( DBL low,DBL high,DBL pos));
-static int  All_Light_Source_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int  Inside_Light_Source PARAMS((VECTOR point, OBJECT *Object));
-static void Light_Source_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void Translate_Light_Source PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Light_Source PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Light_Source PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Light_Source PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Light_Source PARAMS((OBJECT *Object));
-static void *Copy_Light_Source PARAMS((OBJECT *Object));
-static void Destroy_Light_Source PARAMS((OBJECT *Object));
+static DBL cubic_spline ( DBL low,DBL high,DBL pos);
+static int  All_Light_Source_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int  Inside_Light_Source (VECTOR point, OBJECT *Object);
+static void Light_Source_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static void Translate_Light_Source (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Light_Source (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Light_Source (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Light_Source (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Light_Source (OBJECT *Object);
+static LIGHT_SOURCE *Copy_Light_Source (OBJECT *Object);
+static void Destroy_Light_Source (OBJECT *Object);
 
 /*****************************************************************************
 * Local variables
@@ -67,7 +67,7 @@ static METHODS Light_Source_Methods =
 {
   All_Light_Source_Intersections,
   Inside_Light_Source, Light_Source_Normal,
-  Copy_Light_Source,
+  (COPY_METHOD)Copy_Light_Source,
   Translate_Light_Source, Rotate_Light_Source,
   Scale_Light_Source, Transform_Light_Source, Invert_Light_Source,
   Destroy_Light_Source
@@ -103,10 +103,7 @@ static METHODS Light_Source_Methods =
 *
 ******************************************************************************/
 
-static int All_Light_Source_Intersections (Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Light_Source_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   if (((LIGHT_SOURCE *)Object)->Children != NULL)
   {
@@ -150,9 +147,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_Light_Source (IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Light_Source (VECTOR IPoint, OBJECT *Object)
 {
   if (((LIGHT_SOURCE *)Object)->Children != NULL)
   {
@@ -193,10 +188,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Light_Source_Normal (Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Light_Source_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   if (((LIGHT_SOURCE *)Object)->Children != NULL)
   {
@@ -232,10 +224,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Light_Source (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Light_Source (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Object;
 
@@ -276,10 +265,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Light_Source (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Light_Source (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Light_Source(Object, Trans);
 }
@@ -312,10 +298,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Light_Source (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Light_Source (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Light_Source(Object, Trans);
 }
@@ -348,9 +331,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Light_Source (Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Light_Source (OBJECT *Object, TRANSFORM *Trans)
 {
   DBL len;
   LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Object;
@@ -405,8 +386,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Light_Source (Object)
-OBJECT *Object;
+static void Invert_Light_Source (OBJECT *Object)
 {
   LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Object;
 
@@ -486,8 +466,8 @@ LIGHT_SOURCE *Create_Light_Source ()
 
   New->Adaptive_Level = 100;
 
-  New->Atmospheric_Attenuation = FALSE;
-  New->Atmosphere_Interaction  = TRUE;
+  New->Media_Attenuation = FALSE;
+  New->Media_Interaction = TRUE;
 
   for (i = 0; i < 6; i++)
   {
@@ -525,8 +505,7 @@ LIGHT_SOURCE *Create_Light_Source ()
 *
 ******************************************************************************/
 
-static void *Copy_Light_Source (Old)
-OBJECT *Old;
+static LIGHT_SOURCE *Copy_Light_Source (OBJECT *Old)
 {
   int i, j;
   LIGHT_SOURCE *New;
@@ -586,8 +565,7 @@ OBJECT *Old;
 *
 ******************************************************************************/
 
-static void Destroy_Light_Source (Object)
-OBJECT *Object;
+static void Destroy_Light_Source (OBJECT *Object)
 {
   int i;
   LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Object;
@@ -635,8 +613,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-COLOUR **Create_Light_Grid (Size1, Size2)
-int Size1, Size2;
+COLOUR **Create_Light_Grid (int Size1, int  Size2)
 {
   int i;
   COLOUR **New;
@@ -680,8 +657,7 @@ int Size1, Size2;
 *
 ******************************************************************************/
 
-static DBL cubic_spline(low, high, pos)
-DBL low, high, pos;
+static DBL cubic_spline(DBL low, DBL  high, DBL  pos)
 {
   /* Check to see if the position is within the proper boundaries. */
 
@@ -744,10 +720,7 @@ DBL low, high, pos;
 *
 ******************************************************************************/
 
-DBL Attenuate_Light (Light, Ray, Distance)
-LIGHT_SOURCE *Light;
-RAY *Ray;
-DBL Distance;
+DBL Attenuate_Light (LIGHT_SOURCE *Light, RAY *Ray, DBL Distance)
 {
   DBL len, k, costheta;
   DBL Attenuation = 1.0;

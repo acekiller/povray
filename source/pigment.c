@@ -5,16 +5,16 @@
 *  transparency of an object's surface.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -141,7 +141,7 @@ BLEND_MAP Check_Default_Map =
 /*****************************************************************************
 * Static functions
 ******************************************************************************/
-static void Do_Average_Pigments PARAMS((COLOUR Colour, PIGMENT *Pigment, VECTOR EPoint));
+static void Do_Average_Pigments (COLOUR Colour, PIGMENT *Pigment, VECTOR EPoint);
 
 
 
@@ -212,8 +212,7 @@ PIGMENT *Create_Pigment ()
 *
 ******************************************************************************/
 
-PIGMENT *Copy_Pigment (Old)
-PIGMENT *Old;
+PIGMENT *Copy_Pigment (PIGMENT *Old)
 {
   PIGMENT *New;
 
@@ -227,6 +226,7 @@ PIGMENT *Old;
     {
       Assign_Colour(New->Colour,Old->Colour);
     }
+    New->Next = (TPATTERN *)Copy_Pigment((PIGMENT *)Old->Next);
   }
   else
   {
@@ -262,8 +262,7 @@ PIGMENT *Old;
 *
 ******************************************************************************/
 
-void Destroy_Pigment (Pigment)
-PIGMENT *Pigment;
+void Destroy_Pigment (PIGMENT *Pigment)
 {
   if (Pigment != NULL)
   {
@@ -299,8 +298,7 @@ PIGMENT *Pigment;
 *
 ******************************************************************************/
 
-int Post_Pigment(Pigment)
-PIGMENT *Pigment;
+int Post_Pigment(PIGMENT *Pigment)
 {
   int i, Has_Filter;
   BLEND_MAP *Map;
@@ -376,7 +374,7 @@ PIGMENT *Pigment;
 
   if ((Map = Pigment->Blend_Map) != NULL)
   {
-    if (Map->Type == PIGMENT_TYPE)
+    if ((Map->Type == PIGMENT_TYPE) || (Map->Type == DENSITY_TYPE))
     {
        for (i = 0; i < Map->Number_Of_Entries; i++)
        {
@@ -396,6 +394,11 @@ PIGMENT *Pigment;
   if (Has_Filter)
   {
     Pigment->Flags |= HAS_FILTER;
+  }
+  
+  if (Pigment->Next != NULL)
+  {
+    Post_Pigment((PIGMENT *)Pigment->Next);
   }
 
   return(Has_Filter);
@@ -437,10 +440,7 @@ PIGMENT *Pigment;
 *
 ******************************************************************************/
 
-int Compute_Pigment (Colour, Pigment, EPoint)
-COLOUR Colour;
-PIGMENT *Pigment;
-VECTOR EPoint;
+int Compute_Pigment (COLOUR Colour, PIGMENT *Pigment, VECTOR EPoint)
 {
   int Colour_Found;
   VECTOR TPoint;
@@ -564,10 +564,7 @@ VECTOR EPoint;
 *
 ******************************************************************************/
 
-static void Do_Average_Pigments (Colour, Pigment, EPoint)
-COLOUR Colour;
-PIGMENT *Pigment;
-VECTOR EPoint;
+static void Do_Average_Pigments (COLOUR Colour, PIGMENT *Pigment, VECTOR EPoint)
 {
    int i;
    COLOUR LC;

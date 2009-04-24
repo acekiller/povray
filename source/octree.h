@@ -1,13 +1,30 @@
-/************************************************************************
+/****************************************************************************
+*                   octree.h
+*
 *  Oct-tree routine prototypes.  Use by Radiosity calculation routies.
 *  Implemented by and (c) 1994 Jim McElhiney, mcelhiney@acm.org or cserve 71201,1326
 *  All standard POV distribution rights granted.  All other rights reserved.
+*
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996,1998 Persistence of Vision Team
+*---------------------------------------------------------------------------
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
+*
+* This program is based on the popular DKB raytracer version 2.12.
+* DKBTrace was originally written by David K. Buck.
+* DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
 *************************************************************************/
 
 #ifndef OCTREE_H
 #define OCTREE_H
-
 
 
 /*****************************************************************************
@@ -66,23 +83,23 @@ struct ot_node_struct
 * Global functions
 ******************************************************************************/
 
-void ot_ins PARAMS((OT_NODE **root, OT_BLOCK *new_block, OT_ID *new_id));
-void ot_list_insert PARAMS((OT_BLOCK **list_ptr, OT_BLOCK *item));
-void ot_newroot PARAMS((OT_NODE **root_ptr));
-long ot_dist_traverse PARAMS((OT_NODE *subtree, VECTOR point, int bounce_depth,  \
-               long (*func)(OT_BLOCK *block, void *handle1), void *handle2));
-long ot_point_in_node PARAMS((VECTOR point, OT_ID *node));
-void ot_index_sphere PARAMS((VECTOR point, DBL radius, OT_ID *id));
-void ot_index_box PARAMS((VECTOR min_point, VECTOR max_point, OT_ID *id));
-void ot_parent PARAMS((OT_ID *dad, OT_ID *kid));
-long ot_save_tree PARAMS((OT_NODE *rootptr, FILE *fd));
-long ot_write_block PARAMS((OT_BLOCK *bl, void * handle));
-long ot_free_tree PARAMS((OT_NODE **ppRoot));
-long ot_read_file PARAMS((FILE * fd));
+void ot_ins (OT_NODE **root, OT_BLOCK *new_block, OT_ID *new_id);
+void ot_list_insert (OT_BLOCK **list_ptr, OT_BLOCK *item);
+void ot_newroot (OT_NODE **root_ptr);
+long ot_dist_traverse (OT_NODE *subtree, VECTOR point, int bounce_depth,  \
+               long (*func)(OT_BLOCK *block, void *handle1), void *handle2);
+long ot_point_in_node (VECTOR point, OT_ID *node);
+void ot_index_sphere (VECTOR point, DBL radius, OT_ID *id);
+void ot_index_box (VECTOR min_point, VECTOR max_point, OT_ID *id);
+void ot_parent (OT_ID *dad, OT_ID *kid);
+long ot_save_tree (OT_NODE *rootptr, FILE *fd);
+long ot_write_block (OT_BLOCK *bl, void * handle);
+long ot_free_tree (OT_NODE **ppRoot);
+long ot_read_file (FILE * fd);
 
 
 /* a trunc function which always returns the floor integer */
-long Trunc PARAMS((DBL value));
+long Trunc (DBL value);
 
 
 

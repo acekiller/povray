@@ -5,20 +5,22 @@
 *  colours in scene description files.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+*
+* Modifications by Thomas Willhalm, March 1999, used with permission
 *
 *****************************************************************************/
 
@@ -44,7 +46,9 @@
 ******************************************************************************/
 
 #define ftrue(f) ((int)(fabs(f)>EPSILON))
-
+#ifndef FIX_WATCOM_BUG
+#define FIX_WATCOM_BUG
+#endif
 
 
 /*****************************************************************************
@@ -65,20 +69,20 @@ static unsigned long *next_rand;
 * Static functions
 ******************************************************************************/
 
-static void Parse_Vector_Param PARAMS((VECTOR Vector));
-static void Parse_Vector_Param2 PARAMS((VECTOR Vect1, VECTOR Vect2));
-static void Parse_Num_Factor PARAMS((EXPRESS Express, int *Terms));
-static void Parse_Num_Term PARAMS((EXPRESS Express, int *Terms));
-static void Parse_Rel_Factor PARAMS((EXPRESS Express, int *Terms));
-static void Parse_Rel_Term PARAMS((EXPRESS Express, int *Terms));
-static void Parse_Logical PARAMS((EXPRESS Express, int *Terms));
-static void Parse_Express PARAMS((EXPRESS Express, int *Terms));
-static void Promote_Express PARAMS((EXPRESS Express,int *Old_Terms,int New_Terms));
-static void POV_strupr PARAMS((char *s));
-static void POV_strlwr PARAMS((char *s));
+static void Parse_Vector_Param (VECTOR Vector);
+static void Parse_Vector_Param2 (VECTOR Vect1, VECTOR Vect2);
+static void Parse_Num_Factor (EXPRESS Express, int *Terms);
+static void Parse_Num_Term (EXPRESS Express, int *Terms);
+static void Parse_Rel_Factor (EXPRESS Express, int *Terms);
+static void Parse_Rel_Term (EXPRESS Express, int *Terms);
+static void Parse_Logical (EXPRESS Express, int *Terms);
+static void Parse_Express (EXPRESS Express, int *Terms);
+static void Promote_Express (EXPRESS Express,int *Old_Terms,int New_Terms);
+static void POV_strupr (char *s);
+static void POV_strlwr (char *s);
 
-static DBL stream_rand PARAMS((int stream));
-static int stream_seed PARAMS((int seed));
+static DBL stream_rand (int stream);
+static int stream_seed (int seed);
 
 
 
@@ -141,10 +145,8 @@ DBL Parse_Float_Param()
 *
 ******************************************************************************/
 
-void Parse_Float_Param2(Val1,Val2)
-  DBL *Val1;
-  DBL *Val2;
-  {
+void Parse_Float_Param2(DBL *Val1,DBL *Val2)
+{
    GET (LEFT_PAREN_TOKEN);
    *Val1 = Parse_Float();
    Parse_Comma();
@@ -172,9 +174,8 @@ void Parse_Float_Param2(Val1,Val2)
 *
 ******************************************************************************/
 
-static void Parse_Vector_Param(Vector)
-  VECTOR Vector;
-  {
+static void Parse_Vector_Param(VECTOR Vector)
+{
   GET(LEFT_PAREN_TOKEN);
   Parse_Vector(Vector);
   GET(RIGHT_PAREN_TOKEN);
@@ -200,10 +201,8 @@ static void Parse_Vector_Param(Vector)
 *
 ******************************************************************************/
 
-static void Parse_Vector_Param2(Val1,Val2)
-  VECTOR Val1;
-  VECTOR Val2;
-  {
+static void Parse_Vector_Param2(VECTOR Val1,VECTOR Val2)
+{
    GET (LEFT_PAREN_TOKEN);
    Parse_Vector(Val1);
    Parse_Comma();
@@ -231,9 +230,7 @@ static void Parse_Vector_Param2(Val1,Val2)
 *
 ******************************************************************************/
 
-static void Parse_Num_Factor (Express,Terms)
-EXPRESS Express;
-int *Terms;
+static void Parse_Num_Factor (EXPRESS Express,int *Terms)
 {
   int i = 0;
   DBL Val,Val2;
@@ -241,6 +238,10 @@ int *Terms;
   TRANSFORM Trans;
   char *Local_String, *Local_String2;
   FILE *f;
+  POV_ARRAY *a;
+  int Old_Ok=Ok_To_Declare;
+  
+  Ok_To_Declare=TRUE;
 
   EXPECT
     CASE (FLOAT_FUNCT_TOKEN)
@@ -278,7 +279,14 @@ int *Terms;
 
           case ATAN2_TOKEN:
             Parse_Float_Param2(&Val,&Val2);
-            Val=atan2(Val,Val2);
+            if (ftrue(Val) || ftrue(Val2))
+            {
+               Val=atan2(Val,Val2);
+            }
+            else
+            {
+               Error("Domain error in atan2\n");
+            }
             break;
 
           case CEIL_TOKEN:
@@ -291,6 +299,10 @@ int *Terms;
 
           case COS_TOKEN:
             Val = cos(Parse_Float_Param());
+            break;
+
+          case DEFINED_TOKEN:
+            Val = Parse_Ifdef_Param();
             break;
 
           case DEGREES_TOKEN:
@@ -309,14 +321,17 @@ int *Terms;
           case FILE_EXISTS_TOKEN:
             GET (LEFT_PAREN_TOKEN);
             Local_String=Parse_String();
-            Val = ((f=Locate_File(Local_String,READ_FILE_STRING,"","",FALSE))==NULL) ? 0.0 : 1.0;
-            fclose(f);
+            Val = ((f=Locate_File(Local_String,READ_BINFILE_STRING,"","",NULL,FALSE))==NULL) ? 0.0 : 1.0;
+            if (f != NULL)
+            {
+               fclose(f);
+            }
             POV_FREE(Local_String);
             GET (RIGHT_PAREN_TOKEN);
             break;
 
           case FLOAT_ID_TOKEN:
-            Val = *((DBL *) Token.Constant_Data);
+            Val = *((DBL *) Token.Data);
             break;
 
           case FLOAT_TOKEN:
@@ -449,6 +464,34 @@ int *Terms;
             Val = stream_rand(i);
             break;
 
+          case CLOCK_DELTA_TOKEN:
+            Val = Clock_Delta;
+            break;
+
+          case DIMENSIONS_TOKEN:
+            GET(LEFT_PAREN_TOKEN)
+            GET(ARRAY_ID_TOKEN)
+            a = (POV_ARRAY *)(*(Token.DataPtr));
+            Val = a->Dims+1;
+            GET(RIGHT_PAREN_TOKEN)
+            break;
+
+          case DIMENSION_SIZE_TOKEN:
+            GET(LEFT_PAREN_TOKEN)
+            GET(ARRAY_ID_TOKEN)
+            Parse_Comma();
+            a = (POV_ARRAY *)(*(Token.DataPtr));
+            i = (int)Parse_Float()-1.0;
+            if ((i < 0) || (i > a->Dims))
+            {
+              Val = 0.0;
+            }
+            else
+            {
+              Val = a->Sizes[i];
+            }
+            GET(RIGHT_PAREN_TOKEN)
+            break;
          }
        for (i=0; i < *Terms; i++)
          Express[i]=Val;
@@ -477,7 +520,7 @@ int *Terms;
             break;
 
           case VECTOR_ID_TOKEN:
-            Assign_Vector(Vect,Token.Constant_Data);
+            Assign_Vector(Vect,Token.Data);
             break;
 
           case VNORMALIZE_TOKEN:
@@ -519,7 +562,21 @@ int *Terms;
      CASE (COLOUR_ID_TOKEN)
        *Terms=5;
        for (i=0; i<5; i++)
-         Express[i]=(DBL)(  ((COLC *)(Token.Constant_Data))[i]  );
+         Express[i]=(DBL)(  ((COLC *)(Token.Data))[i]  );
+       EXIT
+     END_CASE
+
+     CASE (UV_ID_TOKEN)
+       *Terms=2;
+       for (i=0; i<2; i++)
+         Express[i]=(DBL)(  ((DBL *)(Token.Data))[i]  );
+       EXIT
+     END_CASE
+
+     CASE (VECTOR_4D_ID_TOKEN)
+       *Terms=4;
+       for (i=0; i<4; i++)
+         Express[i]=(DBL)(  ((DBL *)(Token.Data))[i]  );
        EXIT
      END_CASE
 
@@ -550,14 +607,20 @@ int *Terms;
      END_CASE
 
      CASE (DASH_TOKEN)
+       Ok_To_Declare=Old_Ok;
        Parse_Num_Factor(Express,Terms);
+       Old_Ok=Ok_To_Declare;
+       Ok_To_Declare=TRUE;
        for (i=0; i<*Terms; i++)
          Express[i]=-Express[i];
        EXIT
      END_CASE
 
      CASE (EXCLAMATION_TOKEN)
+       Ok_To_Declare=Old_Ok;
        Parse_Num_Factor(Express,Terms);
+       Old_Ok=Ok_To_Declare;
+       Ok_To_Declare=TRUE;
        for (i=0; i<*Terms; i++)
          Express[i] = ftrue(Express[i])?0.0:1.0;
        EXIT
@@ -576,6 +639,7 @@ int *Terms;
      CASE (LEFT_ANGLE_TOKEN)
        Express[X] = Parse_Float();   Parse_Comma();
        Express[Y] = Parse_Float();   Parse_Comma();
+       *Terms=2;
 
        EXPECT
          CASE_EXPRESS
@@ -628,7 +692,9 @@ int *Terms;
        Parse_Error_Str ("numeric expression");
      END_CASE
    END_EXPECT
- 
+   
+   Ok_To_Declare=Old_Ok;
+
    /* Parse VECTOR.x or COLOR.red type things */
    EXPECT
      CASE(PERIOD_TOKEN)
@@ -746,11 +812,8 @@ int *Terms;
    then set all terms to Express[0].  Otherwise pad extra terms with 0.0.
 */
 
-static void Promote_Express(Express,Old_Terms,New_Terms)
-  EXPRESS Express;
-  int *Old_Terms;
-  int New_Terms;
-  {
+static void Promote_Express(EXPRESS Express,int *Old_Terms,int New_Terms)
+{
    register int i;
 
    if (*Old_Terms >= New_Terms)
@@ -795,10 +858,8 @@ static void Promote_Express(Express,Old_Terms,New_Terms)
 *
 ******************************************************************************/
 
-static void Parse_Num_Term (Express,Terms)
-  EXPRESS Express;
-  int *Terms;
-  {
+static void Parse_Num_Term (EXPRESS Express,int *Terms)
+{
    register int i;
    EXPRESS Local_Express;
    int Local_Terms;
@@ -821,7 +882,17 @@ static void Parse_Num_Term (Express,Terms)
        Promote_Express(Express,Terms,Local_Terms);
 
        for(i=0;i<*Terms;i++)
-         Express[i] /= Local_Express[i];
+       {
+         if (Local_Express[i]==0.0) /* must be 0.0, not EPSILON */
+         {
+           Express[i]=HUGE_VAL;
+           Warn(0.0,"Divide by zero.");
+         }
+         else
+         {
+           Express[i] /= Local_Express[i];
+         }
+       }
      END_CASE
 
      OTHERWISE
@@ -852,10 +923,8 @@ static void Parse_Num_Term (Express,Terms)
 *
 ******************************************************************************/
 
-static void Parse_Rel_Factor (Express,Terms)
-  EXPRESS Express;
-  int *Terms;
-  {
+static void Parse_Rel_Factor (EXPRESS Express,int *Terms)
+{
    register int i;
    EXPRESS Local_Express;
    int Local_Terms;
@@ -909,10 +978,8 @@ static void Parse_Rel_Factor (Express,Terms)
 *
 ******************************************************************************/
 
-static void Parse_Rel_Term (Express,Terms)
-  EXPRESS Express;
-  int *Terms;
-  {
+static void Parse_Rel_Term (EXPRESS Express,int *Terms)
+{
    register int i;
    EXPRESS Local_Express;
    int Local_Terms;
@@ -998,10 +1065,8 @@ static void Parse_Rel_Term (Express,Terms)
 *
 ******************************************************************************/
 
-static void Parse_Logical (Express,Terms)
-  EXPRESS Express;
-  int *Terms;
-  {
+static void Parse_Logical (EXPRESS Express,int *Terms)
+{
    register int i;
    EXPRESS Local_Express;
    int Local_Terms;
@@ -1055,10 +1120,8 @@ static void Parse_Logical (Express,Terms)
 *
 ******************************************************************************/
 
-static void Parse_Express (Express,Terms)
-  EXPRESS Express;
-  int *Terms;
-  {
+static void Parse_Express (EXPRESS Express,int *Terms)
+{
    EXPRESS Local_Express1, Local_Express2;
    EXPRESS *Chosen;
    int Local_Terms1, Local_Terms2;
@@ -1170,7 +1233,7 @@ DBL Parse_Raw_Number()
 ******************************************************************************/
 
 DBL Parse_Float ()
-  {
+{
    EXPRESS Express;
    int Terms;
 
@@ -1207,9 +1270,8 @@ DBL Parse_Float ()
 *
 ******************************************************************************/
 
-DBL Allow_Float (defval)
-  DBL defval;
-  {
+DBL Allow_Float (DBL defval)
+{
   DBL retval;
 
   EXPECT
@@ -1248,9 +1310,8 @@ DBL Allow_Float (defval)
 *
 ******************************************************************************/
 
-void Parse_Vector (Vector)
-  VECTOR Vector;
-  {
+void Parse_Vector (VECTOR Vector)
+{
    EXPRESS Express;
    int Terms;
 
@@ -1294,9 +1355,8 @@ void Parse_Vector (Vector)
 *
 ******************************************************************************/
 
-void Parse_Vector4D (Vector)
-  VECTOR Vector;
-  {
+void Parse_Vector4D (VECTOR Vector)
+{
    EXPRESS Express;
    int Terms;
    int Dim = 4;
@@ -1342,9 +1402,8 @@ void Parse_Vector4D (Vector)
 *
 ******************************************************************************/
 
-void Parse_UV_Vect (UV_Vect)
-  UV_VECT UV_Vect;
-  {
+void Parse_UV_Vect (UV_VECT UV_Vect)
+{
    EXPRESS Express;
    int Terms;
 
@@ -1389,10 +1448,8 @@ void Parse_UV_Vect (UV_Vect)
 *
 ******************************************************************************/
 
-void Parse_Vector_Float(Vector)
-  VECTOR Vector;
-  {
-   EXPRESS Express;
+int Parse_Unknown_Vector(EXPRESS Express)
+{
    int Terms;
 
    /* Initialize expression. [DB 12/94] */
@@ -1405,21 +1462,15 @@ void Parse_Vector_Float(Vector)
    Terms=1;
 
    if (opts.Language_Version < 1.5)
-          Parse_Num_Factor(Express,&Terms);
+   {
+      Parse_Num_Factor(Express,&Terms);
+   }
    else
+   {
       Parse_Rel_Factor(Express,&Terms);
-
-   if (Terms>3)
-      Error ("Vector or float expected but color expression found.");
-
-   Have_Vector=(Terms==3);
-
-   if (Have_Vector)
-     for(Terms=0;Terms<3;Terms++)
-       Vector[Terms]=Express[Terms];
-   else
-     for(Terms=0;Terms<3;Terms++)
-       Vector[Terms]=Express[0];
+   }
+   
+   return(Terms);
   }
 
 
@@ -1441,9 +1492,8 @@ void Parse_Vector_Float(Vector)
 *
 ******************************************************************************/
 
-void Parse_Scale_Vector (Vector)
-  VECTOR Vector;
-  {
+void Parse_Scale_Vector (VECTOR Vector)
+{
    Parse_Vector(Vector);
 
    if (Vector[X] == 0.0)
@@ -1483,9 +1533,8 @@ void Parse_Scale_Vector (Vector)
 *
 ******************************************************************************/
 
-void Parse_Colour (Colour)
-  COLOUR Colour;
-  {
+void Parse_Colour (COLOUR Colour)
+{
   EXPRESS Express;
   int Terms;
   register int i;
@@ -1620,9 +1669,8 @@ void Parse_Colour (Colour)
 *
 ******************************************************************************/
 
-BLEND_MAP *Parse_Blend_Map (Blend_Type,Pat_Type)
-int Blend_Type,Pat_Type;
-  {
+BLEND_MAP *Parse_Blend_Map (int Blend_Type,int Pat_Type)
+{
    BLEND_MAP *New = NULL;
    BLEND_MAP_ENTRY *Temp_Ent;
    int i;
@@ -1632,7 +1680,11 @@ int Blend_Type,Pat_Type;
    EXPECT
      CASE2 (COLOUR_MAP_ID_TOKEN, PIGMENT_MAP_ID_TOKEN)
      CASE3 (NORMAL_MAP_ID_TOKEN, TEXTURE_MAP_ID_TOKEN, SLOPE_MAP_ID_TOKEN)
-       New = Copy_Blend_Map ((BLEND_MAP *) Token.Constant_Data);
+       New = Copy_Blend_Map ((BLEND_MAP *) Token.Data);
+       if (Blend_Type != New->Type)
+       {
+          Error("Wrong identifier type\n");
+       }
        EXIT
      END_CASE
 
@@ -1676,6 +1728,11 @@ int Blend_Type,Pat_Type;
               Temp_Ent[i].Vals.Texture=Parse_Texture();
               break;
 
+            case DENSITY_TYPE:
+              Temp_Ent[i].Vals.Pigment=NULL;
+              Parse_Media_Density_Pattern (&(Temp_Ent[i].Vals.Pigment));
+              break;
+
             default:
               Error("Type not implemented yet.");
            }
@@ -1693,7 +1750,7 @@ int Blend_Type,Pat_Type;
            New->Number_Of_Entries = i;
            New->Type=Blend_Type;
            New->Transparency_Flag=TRUE; /*Temp fix.  Really set in Post_???*/
-           New->Blend_Map_Entries = POV_REALLOC(Temp_Ent,sizeof(BLEND_MAP_ENTRY)*i,"blend map entries");
+           New->Blend_Map_Entries = (BLEND_MAP_ENTRY *)POV_REALLOC(Temp_Ent,sizeof(BLEND_MAP_ENTRY)*i,"blend map entries");
            EXIT
          END_CASE
        END_EXPECT
@@ -1726,11 +1783,8 @@ int Blend_Type,Pat_Type;
 *
 ******************************************************************************/
 
-BLEND_MAP *Parse_Blend_List (Count,Def_Map,Blend_Type)
-  int Count;
-  BLEND_MAP *Def_Map;
-  int Blend_Type;
-  {
+BLEND_MAP *Parse_Blend_List (int Count,BLEND_MAP *Def_Map,int Blend_Type)
+{
    BLEND_MAP *New;
    BLEND_MAP_ENTRY *Temp_Ent;
    int Type, i;
@@ -1839,6 +1893,26 @@ BLEND_MAP *Parse_Blend_List (Count,Def_Map,Blend_Type)
        END_EXPECT
        break;
 
+     case DENSITY_TYPE:
+       EXPECT
+         CASE(DENSITY_TOKEN)
+           Parse_Begin ();
+           Temp_Ent[i].Vals.Pigment=NULL;
+           Parse_Media_Density_Pattern (&(Temp_Ent[i].Vals.Pigment));
+           Parse_End ();
+           Parse_Comma ();
+           Temp_Ent[i].value = (SNGL)i;
+           if (++i >= Count)
+             EXIT
+         END_CASE
+
+         OTHERWISE
+           UNGET
+           EXIT
+         END_CASE
+       END_EXPECT
+       break;
+
    }
    
    if ((Type==NORMAL_TYPE) && (i==0))
@@ -1865,6 +1939,10 @@ BLEND_MAP *Parse_Blend_List (Count,Def_Map,Blend_Type)
 
         case TEXTURE_TYPE:
           Temp_Ent[i].Vals.Texture=Copy_Textures(Default_Texture);
+          break;
+
+        case DENSITY_TYPE:
+          Temp_Ent[i].Vals.Pigment=NULL;
           break;
 
      }
@@ -1910,7 +1988,7 @@ BLEND_MAP *Parse_Blend_List (Count,Def_Map,Blend_Type)
 ******************************************************************************/
 
 BLEND_MAP *Parse_Colour_Map ()
-  {
+{
    BLEND_MAP *New = NULL;
    int i,j,c,p,ii;
    EXPRESS Express;
@@ -1921,7 +1999,7 @@ BLEND_MAP *Parse_Colour_Map ()
 
    EXPECT
      CASE (COLOUR_MAP_ID_TOKEN)
-       New = Copy_Blend_Map ((BLEND_MAP *) Token.Constant_Data);
+       New = Copy_Blend_Map ((BLEND_MAP *) Token.Data);
        EXIT
      END_CASE
 
@@ -1971,10 +2049,6 @@ BLEND_MAP *Parse_Colour_Map ()
                j++;
                EXIT
              END_CASE
-             
-             OTHERWISE
-               Parse_Error_Str ("float or color");
-             END_CASE
 
            END_EXPECT
 
@@ -2003,7 +2077,7 @@ BLEND_MAP *Parse_Colour_Map ()
            New->Number_Of_Entries = p;
            New->Type=COLOUR_TYPE;
            New->Transparency_Flag=TRUE; /*Temp fix.  Really set in Post_???*/
-           New->Blend_Map_Entries = POV_REALLOC(Temp_Ent,sizeof(BLEND_MAP_ENTRY)*p,"blend map entries");
+           New->Blend_Map_Entries = (BLEND_MAP_ENTRY *)POV_REALLOC(Temp_Ent,sizeof(BLEND_MAP_ENTRY)*p,"blend map entries");
            EXIT
          END_CASE
        END_EXPECT
@@ -2046,7 +2120,7 @@ char *Parse_String()
 
   EXPECT
     CASE(STRING_LITERAL_TOKEN)
-      New=POV_MALLOC(strlen(Token.Token_String) + 1, "temporary string");
+      New=(char *)POV_MALLOC(strlen(Token.Token_String) + 1, "temporary string");
       strcpy (New, Token.Token_String);
       EXIT
     END_CASE
@@ -2091,7 +2165,9 @@ char *Parse_String()
             
       sprintf(temp4,temp3,val);
       
-      New=POV_MALLOC(strlen(temp4) + 1, "temporary string");
+      FIX_WATCOM_BUG
+
+      New=(char *)POV_MALLOC(strlen(temp4) + 1, "temporary string");
       strcpy (New, temp4);
       EXIT
     END_CASE
@@ -2110,7 +2186,7 @@ char *Parse_String()
           temp1=New;
           temp2=Parse_String();
           l2=strlen(temp1)+strlen(temp2)+2;
-          New=POV_MALLOC(l2, "temporary string");
+          New=(char *)POV_MALLOC(l2, "temporary string");
           strcpy(New,temp1);
           strcat(New,temp2);
           POV_FREE(temp1);
@@ -2121,7 +2197,7 @@ char *Parse_String()
     END_CASE
     
     CASE(CHR_TOKEN)
-      New=POV_MALLOC(2, "temporary string");
+      New=(char *)POV_MALLOC(2, "temporary string");
       d=(int)Parse_Float_Param();
       if ((d<0)||(d>255))
       {
@@ -2144,7 +2220,7 @@ char *Parse_String()
       {
          Error("Illegal params in substr(%s,%d,%d).\n",temp1,l,d);
       }
-      New=POV_MALLOC((size_t)(d+1), "temporary string");
+      New=(char *)POV_MALLOC((size_t)(d+1), "temporary string");
       strncpy(New,&(temp1[l-1]),(unsigned)d);
       New[d]='\0';
       POV_FREE(temp1);
@@ -2169,8 +2245,8 @@ char *Parse_String()
     END_CASE
     
     CASE(STRING_ID_TOKEN)
-      New=POV_MALLOC(strlen(Token.Constant_Data) + 1, "temporary string");
-      strcpy (New, Token.Constant_Data);
+      New=(char *)POV_MALLOC(strlen((char *)Token.Data) + 1, "temporary string");
+      strcpy (New, (char *)Token.Data);
       EXIT
     END_CASE
       
@@ -2204,45 +2280,57 @@ char *Parse_String()
 
 char *Parse_Formatted_String()
 {
-  char *New, *src, *dest;
+  char *New, *dest, *src, *temp;
+  char buff[MAX_STRING_INDEX*2];
+  
+  dest = &buff[0];
 
-  New = src = dest = Parse_String();
+  temp = src = Parse_String();
 
   while (*src != '\0')
   {
-    if (*src=='\\')
+    switch(*src)
     {
-      switch(*(++src))
-      {
-        case 'a': *dest=0x07; break;
+      case '\\':
+        switch(*(++src))
+        {
+          case 'a': *dest=0x07; break;
            
-        case 'b': *dest=0x08; break;
+          case 'b': *dest=0x08; break;
 
-        case 'f': *dest=0x0c; break;
+          case 'f': *dest=0x0c; break;
 
-        case 'n': *dest=0x0a; break;
+          case 'n': *dest=0x0a; break;
 
-        case 'r': *dest=0x0d; break;
+          case 'r': *dest=0x0d; break;
 
-        case 't': *dest=0x09; break;
+          case 't': *dest=0x09; break;
 
-        case 'v': *dest=0x0b; break;
+          case 'v': *dest=0x0b; break;
 
-        case '\0': *dest=0x5c; break;
+          case '\0': *dest=0x5c; break;
 
-        case '\'': *dest=0x27; break;
+          case '\'': *dest=0x27; break;
            
-        default: *dest='\\'; dest++; *dest=*src; break;
-      }
-    }
-    else
-    {
-      *dest=*src;
+          default: *dest='\\'; dest++; *dest=*src; break;
+        }
+        break;
+        
+      case '%':
+        *dest=*src; dest++; *dest=*src;
+        break;
+        
+      default:
+        *dest=*src;
+        break;
     }
     src++;
     dest++;
   }
   *dest='\0';
+  
+  New=POV_STRDUP(buff);
+  POV_FREE(temp);
   return (New);
 }
 
@@ -2265,8 +2353,7 @@ char *Parse_Formatted_String()
 *
 ******************************************************************************/
 
-static void POV_strupr(s)
-char *s;
+static void POV_strupr(char *s)
 {
   int i;
   
@@ -2296,8 +2383,7 @@ char *s;
 *
 ******************************************************************************/
 
-static void POV_strlwr(s)
-char *s;
+static void POV_strlwr(char *s)
 {
   int i;
   
@@ -2339,8 +2425,7 @@ char *s;
 *
 ******************************************************************************/
 
-static DBL stream_rand(stream)
-int stream;
+static DBL stream_rand(int stream)
 {
   next_rand[stream] = next_rand[stream] * 1812433253L + 12345L;
 
@@ -2377,8 +2462,7 @@ int stream;
 *
 ******************************************************************************/
 
-static int stream_seed(seed)
-int seed;
+static int stream_seed(int seed)
 {
   next_rand = (unsigned long *)POV_REALLOC(next_rand, (Number_Of_Random_Generators+1)*sizeof(unsigned long), "random number generator");
 
@@ -2460,3 +2544,35 @@ void Destroy_Random_Generators()
   Number_Of_Random_Generators = 0;
 }
 
+DBL Parse_Signed_Float(void)
+{
+   DBL Sign=1.0;
+   DBL Val=0.0; /* tw */
+  
+   EXPECT
+     CASE (PLUS_TOKEN)
+     END_CASE
+     
+     CASE (DASH_TOKEN) 
+        Sign=-1.0;
+        Get_Token();  
+        /* Deliberate fall through with no END_CASE */
+     CASE (FLOAT_FUNCT_TOKEN)
+       if (Token.Function_Id==FLOAT_TOKEN)
+       {
+          Val = Sign * Token.Token_Float;
+          EXIT
+       }
+       else
+       {
+          Parse_Error(FLOAT_TOKEN);
+       }
+     END_CASE
+     
+     OTHERWISE
+       Parse_Error(FLOAT_TOKEN);
+     END_CASE
+   END_EXPECT
+ 
+   return(Val);
+}

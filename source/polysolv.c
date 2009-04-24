@@ -5,16 +5,16 @@
 *  4th-6th order shapes and generously provided us these enhancements.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -62,9 +62,15 @@
       factor3 - Similar to factor2 at a later stage of the algebraic solver.
 */
 
-#define FUDGE_FACTOR1 1.0e12
-#define FUDGE_FACTOR2 -1.0e-5
-#define FUDGE_FACTOR3 1.0e-7
+#ifndef FUDGE_FACTOR1
+ #define FUDGE_FACTOR1 1.0e12
+#endif
+#ifndef FUDGE_FACTOR2
+ #define FUDGE_FACTOR2 -1.0e-5
+#endif
+#ifndef FUDGE_FACTOR3 
+ #define FUDGE_FACTOR3 1.0e-7
+#endif
 
 /* Constants. */
 
@@ -108,18 +114,18 @@ polynomial;
 * Static functions
 ******************************************************************************/
 
-static int solve_quadratic PARAMS((DBL *x, DBL *y));
-static int solve_cubic PARAMS((DBL *x, DBL *y));
-static int solve_quartic PARAMS((DBL *x, DBL *y));
-static int polysolve PARAMS((int order, DBL *Coeffs, DBL *roots));
-static int modp PARAMS((polynomial *u, polynomial *v, polynomial *r));
-static int regula_falsa PARAMS((int order, DBL *coef, DBL a, DBL b, DBL *val));
-static int sbisect PARAMS((int np, polynomial *sseq, DBL min, DBL max, int atmin, int atmax, DBL *roots));
-static int numchanges PARAMS((int np, polynomial *sseq, DBL a));
-static DBL polyeval PARAMS((DBL x, int n, DBL *Coeffs));
-static int buildsturm PARAMS((int ord, polynomial *sseq));
-static int visible_roots PARAMS((int np, polynomial *sseq, int *atneg, int *atpos));
-static int difficult_coeffs PARAMS((int n, DBL *x));
+static int solve_quadratic (DBL *x, DBL *y);
+static int solve_cubic (DBL *x, DBL *y);
+static int solve_quartic (DBL *x, DBL *y);
+static int polysolve (int order, DBL *Coeffs, DBL *roots);
+static int modp (polynomial *u, polynomial *v, polynomial *r);
+static int regula_falsa (int order, DBL *coef, DBL a, DBL b, DBL *val);
+static int sbisect (int np, polynomial *sseq, DBL min, DBL max, int atmin, int atmax, DBL *roots);
+static int numchanges (int np, polynomial *sseq, DBL a);
+static DBL polyeval (DBL x, int n, DBL *Coeffs);
+static int buildsturm (int ord, polynomial *sseq);
+static int visible_roots (int np, polynomial *sseq, int *atneg, int *atpos);
+static int difficult_coeffs (int n, DBL *x);
 
 
 
@@ -152,8 +158,7 @@ static int difficult_coeffs PARAMS((int n, DBL *x));
 *
 ******************************************************************************/
 
-static int modp(u, v, r)
-polynomial *u, *v, *r;
+static int modp(polynomial *u, polynomial  *v, polynomial  *r)
 {
   int k, j;
 
@@ -227,9 +232,7 @@ polynomial *u, *v, *r;
 *
 ******************************************************************************/
 
-static int buildsturm(ord, sseq)
-int ord;
-polynomial *sseq;
+static int buildsturm(int ord, polynomial *sseq)
 {
   int i;
   DBL f, *fp, *fc;
@@ -299,10 +302,7 @@ polynomial *sseq;
 *
 ******************************************************************************/
 
-static int visible_roots(np, sseq, atzer, atpos)
-int np;
-polynomial *sseq;
-int *atzer, *atpos;
+static int visible_roots(int np, polynomial *sseq, int *atzer, int  *atpos)
 {
   int atposinf, atzero;
   polynomial *s;
@@ -377,10 +377,7 @@ int *atzer, *atpos;
 *
 ******************************************************************************/
 
-static int numchanges(np, sseq, a)
-int np;
-polynomial *sseq;
-DBL a;
+static int numchanges(int np, polynomial *sseq, DBL a)
 {
   int changes;
   DBL f, lf;
@@ -439,12 +436,7 @@ DBL a;
 *
 ******************************************************************************/
 
-static int sbisect(np, sseq, min_value, max_value, atmin, atmax, roots)
-int np;
-polynomial *sseq;
-DBL min_value, max_value;
-int atmin, atmax;
-DBL *roots;
+static int sbisect(int np, polynomial *sseq, DBL min_value, DBL  max_value, int atmin, int  atmax, DBL *roots)
 {
   DBL mid;
   int n1, n2, its, atmid;
@@ -466,7 +458,7 @@ DBL *roots;
         mid = (min_value + max_value) / 2;
 
         atmid = numchanges(np, sseq, mid);
-        
+
         /* The follow only happens if there is a bug.  And
            unfortunately, there is. CEY 04/97 
          */
@@ -474,7 +466,7 @@ DBL *roots;
         {
            return(0);
         }
-
+  
         if (fabs(mid) > RELERROR)
         {
           if (fabs((max_value - min_value) / mid) < RELERROR)
@@ -547,7 +539,7 @@ DBL *roots;
         return(1);
       }
     }
-
+  
     n1 = atmin - atmid;
     n2 = atmid - atmax;
 
@@ -608,9 +600,7 @@ DBL *roots;
 *
 ******************************************************************************/
 
-static DBL polyeval(x, n, Coeffs)
-DBL x, *Coeffs;
-int n;
+static DBL polyeval(DBL x, int n, DBL  *Coeffs)
 {
   register int i;
   DBL val;
@@ -653,10 +643,7 @@ int n;
 *
 ******************************************************************************/
 
-static int regula_falsa(order, coef, a, b, val)
-int order;
-DBL *coef;
-DBL a, b, *val;
+static int regula_falsa(int order, DBL *coef, DBL a, DBL  b, DBL  *val)
 {
   int its;
   DBL fa, fb, x, fx, lfx;
@@ -809,8 +796,7 @@ DBL a, b, *val;
 *
 ******************************************************************************/
 
-static int solve_quadratic(x, y)
-DBL *x, *y;
+static int solve_quadratic(DBL *x, DBL  *y)
 {
   DBL d, t, a, b, c;
 
@@ -898,8 +884,7 @@ DBL *x, *y;
 *
 ******************************************************************************/
 
-static int solve_cubic(x, y)
-DBL *x, *y;
+static int solve_cubic(DBL *x, DBL  *y)
 {
   DBL Q, R, Q3, R2, sQ, d, an, theta;
   DBL A2, a0, a1, a2, a3;
@@ -1005,9 +990,7 @@ DBL *x, *y;
 *
 ******************************************************************************/
 
-static int difficult_coeffs(n, x)
-int n;
-DBL *x;
+static int difficult_coeffs(int n, DBL *x)
 {
   int i, flag = 0;
   DBL t, biggest;
@@ -1073,9 +1056,7 @@ DBL *x;
 *
 ******************************************************************************/
 
-static int difficult_coeffs(n, x)
-int n;
-DBL *x;
+static int difficult_coeffs(int n, DBL *x)
 {
   int i;
   DBL biggest;
@@ -1141,8 +1122,7 @@ DBL *x;
 *
 ******************************************************************************/
 
-static int solve_quartic(x, results)
-DBL *x, *results;
+static int solve_quartic(DBL *x, DBL  *results)
 {
   DBL cubic[4], roots[3];
   DBL a0, a1, y, d1, x1, t1, t2;
@@ -1245,7 +1225,7 @@ DBL *x, *results;
   }
 
   if (t1 < FUDGE_FACTOR3)
-  {
+{
     /* Second special case, the "x" term on the right hand side above
        has vanished.  In this case:
 
@@ -1275,7 +1255,7 @@ DBL *x, *results;
   d2 = q1 * q1 - 4.0 * q2;
 
   if (d2 >= 0.0)
-  {
+{
     d2 = sqrt(d2);
 
     results[0] = 0.5 * (q1 + d2);
@@ -1291,7 +1271,7 @@ DBL *x, *results;
   d2 = q1 * q1 - 4.0 * q2;
 
   if (d2 >= 0.0)
-  {
+{
     d2 = sqrt(d2);
 
     results[i++] = 0.5 * (q1 + d2);
@@ -1327,8 +1307,7 @@ DBL *x, *results;
 *
 ******************************************************************************/
 
-static int solve_quartic(x, results)
-DBL *x, *results;
+static int solve_quartic(DBL *x, DBL *results)
 {
   DBL cubic[4], roots[3];
   DBL c12, z, p, q, q1, q2, r, d1, d2;
@@ -1340,7 +1319,7 @@ DBL *x, *results;
   c0 = x[0];
 
   if (c0 != 1.0)
-  {
+{
     c1 = x[1] / c0;
     c2 = x[2] / c0;
     c3 = x[3] / c0;
@@ -1369,7 +1348,7 @@ DBL *x, *results;
   i = solve_cubic(cubic, roots);
 
   if (i > 0)
-  {
+{
     z = roots[0];
   }
   else
@@ -1380,7 +1359,7 @@ DBL *x, *results;
   d1 = 2.0 * z - p;
 
   if (d1 < 0.0)
-  {
+{
     if (d1 > -SMALL_ENOUGH)
     {
       d1 = 0.0;
@@ -1392,7 +1371,7 @@ DBL *x, *results;
   }
 
   if (d1 < SMALL_ENOUGH)
-  {
+{
     d2 = z * z - r;
 
     if (d2 < 0.0)
@@ -1420,7 +1399,7 @@ DBL *x, *results;
   p = q1 - 4.0 * (z - d2);
 
   if (p == 0)
-  {
+{
     results[i++] = -0.5 * d1 - q2;
   }
   else
@@ -1438,7 +1417,7 @@ DBL *x, *results;
   p = q1 - 4.0 * (z + d2);
 
   if (p == 0)
-  {
+{
     results[i++] = 0.5 * d1 - q2;
   }
   else
@@ -1483,9 +1462,7 @@ DBL *x, *results;
 *
 ******************************************************************************/
 
-static int polysolve(order, Coeffs, roots)
-int order;
-DBL *Coeffs, *roots;
+static int polysolve(int order, DBL *Coeffs, DBL *roots)
 {
   polynomial sseq[MAX_ORDER+1];
   DBL min_value, max_value;
@@ -1494,7 +1471,7 @@ DBL *Coeffs, *roots;
   /* Put the coefficients into the top of the stack. */
 
   for (i = 0; i <= order; i++)
-  {
+{
     sseq[0].coef[order-i] = Coeffs[i] / Coeffs[0];
   }
 
@@ -1502,11 +1479,10 @@ DBL *Coeffs, *roots;
 
   np = buildsturm(order, &sseq[0]);
 
-
   /* Get the total number of visible roots */
 
   if ((nroots = visible_roots(np, sseq, &atmin, &atmax)) == 0)
-  {
+{
     return(0);
   }
 
@@ -1521,7 +1497,7 @@ DBL *Coeffs, *roots;
   nroots = atmin - atmax;
 
   if (nroots == 0)
-  {
+{
     return(0);
   }
 
@@ -1590,9 +1566,7 @@ DBL *Coeffs, *roots;
 *
 ******************************************************************************/
 
-int Solve_Polynomial(n, c0, r, sturm, epsilon)
-int n, sturm;
-DBL *c0, *r, epsilon;
+int Solve_Polynomial(int n, DBL *c0, DBL *r, int sturm, DBL epsilon)
 {
   int roots, i;
   DBL *c;
@@ -1609,7 +1583,7 @@ DBL *c0, *r, epsilon;
   i = 0;
 
   while ((fabs(c0[i]) < SMALL_ENOUGH) && (i < n))
-  {
+{
     i++;
   }
 
@@ -1618,7 +1592,7 @@ DBL *c0, *r, epsilon;
   c = &c0[i];
 
   switch (n)
-  {
+{
     case 0:
 
       break;

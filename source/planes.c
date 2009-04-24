@@ -4,16 +4,16 @@
 *  This module implements functions that manipulate planes.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -41,17 +41,17 @@
 * Static functions
 ******************************************************************************/
 
-static int   Intersect_Plane PARAMS((RAY *Ray, PLANE *Plane, DBL *Depth));
-static int   All_Plane_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int   Inside_Plane PARAMS((VECTOR point, OBJECT *Object));
-static void  Plane_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void  *Copy_Plane PARAMS((OBJECT *Object));
-static void  Translate_Plane PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Rotate_Plane PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Scale_Plane PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void  Transform_Plane PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void  Invert_Plane PARAMS((OBJECT *Object));
-static void  Destroy_Plane PARAMS((OBJECT *Object));
+static int   Intersect_Plane (RAY *Ray, PLANE *Plane, DBL *Depth);
+static int   All_Plane_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int   Inside_Plane (VECTOR point, OBJECT *Object);
+static void  Plane_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static PLANE *Copy_Plane (OBJECT *Object);
+static void  Translate_Plane (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Rotate_Plane (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Scale_Plane (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void  Transform_Plane (OBJECT *Object, TRANSFORM *Trans);
+static void  Invert_Plane (OBJECT *Object);
+static void  Destroy_Plane (OBJECT *Object);
 
 /*****************************************************************************
 * Local variables
@@ -61,7 +61,7 @@ METHODS Plane_Methods =
 {
   All_Plane_Intersections,
   Inside_Plane, Plane_Normal,
-  Copy_Plane,
+  (COPY_METHOD)Copy_Plane,
   Translate_Plane, Rotate_Plane,
   Scale_Plane, Transform_Plane, Invert_Plane, Destroy_Plane
 };
@@ -93,10 +93,7 @@ METHODS Plane_Methods =
 *
 ******************************************************************************/
 
-static int All_Plane_Intersections (Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Plane_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   DBL Depth;
   VECTOR IPoint;
@@ -144,10 +141,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Intersect_Plane (Ray, Plane, Depth)
-RAY *Ray;
-PLANE *Plane;
-DBL *Depth;
+static int Intersect_Plane (RAY *Ray, PLANE *Plane, DBL *Depth)
 {
   DBL NormalDotOrigin, NormalDotDirection;
   VECTOR P, D;
@@ -222,9 +216,7 @@ DBL *Depth;
 *
 ******************************************************************************/
 
-static int Inside_Plane (IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Plane (VECTOR IPoint, OBJECT *Object)
 {
   DBL Temp;
   VECTOR P;
@@ -271,10 +263,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Plane_Normal (Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Plane_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   Assign_Vector(Result,((PLANE *)Object)->Normal_Vector);
 
@@ -314,10 +303,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Plane (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Plane (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   VECTOR Translation;
   PLANE *Plane = (PLANE *)Object;
@@ -364,10 +350,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Plane (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Plane (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   if (((PLANE *)Object)->Trans == NULL)
   {
@@ -409,10 +392,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Plane (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Plane (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   DBL Length;
   PLANE *Plane = (PLANE  *) Object;
@@ -463,8 +443,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Plane (Object)
-OBJECT *Object;
+static void Invert_Plane (OBJECT *Object)
 {
   VScaleEq(((PLANE *)Object)->Normal_Vector, -1.0);
 
@@ -499,9 +478,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Transform_Plane(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Plane(OBJECT *Object, TRANSFORM *Trans)
 {
   PLANE *Plane = (PLANE  *) Object;
 
@@ -588,8 +565,7 @@ PLANE *Create_Plane()
 *
 ******************************************************************************/
 
-static void *Copy_Plane (Object)
-OBJECT *Object;
+static PLANE *Copy_Plane (OBJECT *Object)
 {
   PLANE *New;
 
@@ -632,8 +608,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Plane(Object)
-OBJECT *Object;
+static void Destroy_Plane(OBJECT *Object)
 {
   Destroy_Transform(((PLANE *)Object)->Trans);
 
@@ -672,8 +647,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Plane_BBox(Plane)
-PLANE *Plane;
+void Compute_Plane_BBox(PLANE *Plane)
 {
   Make_BBox(Plane->BBox, -BOUND_HUGE/2, -BOUND_HUGE/2, -BOUND_HUGE/2,
     BOUND_HUGE, BOUND_HUGE, BOUND_HUGE);

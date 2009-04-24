@@ -4,16 +4,16 @@
 *  This module implements routines for constructive solid geometry.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -46,19 +46,19 @@
 * Static functions
 ******************************************************************************/
 
-static int All_CSG_Union_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int All_CSG_Merge_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int All_CSG_Intersect_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_CSG_Union PARAMS((VECTOR point, OBJECT *Object));
-static int Inside_CSG_Intersection PARAMS((VECTOR point, OBJECT *Object));
-static void *Copy_CSG PARAMS((OBJECT *Object));
-static void Translate_CSG PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_CSG PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_CSG PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_CSG PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Destroy_CSG PARAMS((OBJECT *Object));
-static void Invert_CSG_Union PARAMS((OBJECT *Object));
-static void Invert_CSG_Intersection PARAMS((OBJECT *Object));
+static int All_CSG_Union_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int All_CSG_Merge_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int All_CSG_Intersect_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_CSG_Union (VECTOR point, OBJECT *Object);
+static int Inside_CSG_Intersection (VECTOR point, OBJECT *Object);
+static CSG *Copy_CSG (OBJECT *Object);
+static void Translate_CSG (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_CSG (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_CSG (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_CSG (OBJECT *Object, TRANSFORM *Trans);
+static void Destroy_CSG (OBJECT *Object);
+static void Invert_CSG_Union (OBJECT *Object);
+static void Invert_CSG_Intersection (OBJECT *Object);
 
 
 /*****************************************************************************
@@ -69,7 +69,7 @@ METHODS CSG_Union_Methods =
 {
   All_CSG_Union_Intersections,
   Inside_CSG_Union, NULL /*Normal*/,
-  Copy_CSG,
+  (COPY_METHOD)Copy_CSG,
   Translate_CSG, Rotate_CSG,
   Scale_CSG, Transform_CSG, Invert_CSG_Union, Destroy_CSG
 };
@@ -78,7 +78,7 @@ METHODS CSG_Merge_Methods =
 {
   All_CSG_Merge_Intersections,
   Inside_CSG_Union, NULL /*Normal*/,
-  Copy_CSG,
+  (COPY_METHOD)Copy_CSG,
   Translate_CSG, Rotate_CSG,
   Scale_CSG, Transform_CSG, Invert_CSG_Union, Destroy_CSG
 };
@@ -87,7 +87,7 @@ METHODS CSG_Intersection_Methods =
 {
   All_CSG_Intersect_Intersections,
   Inside_CSG_Intersection, NULL /*Normal*/,
-  Copy_CSG,
+  (COPY_METHOD)Copy_CSG,
   Translate_CSG, Rotate_CSG,
   Scale_CSG, Transform_CSG, Invert_CSG_Intersection, Destroy_CSG
 };
@@ -120,10 +120,7 @@ METHODS CSG_Intersection_Methods =
 *
 ******************************************************************************/
 
-static int All_CSG_Union_Intersections (Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_CSG_Union_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Found;
   OBJECT *Current_Sib, *Clip;
@@ -211,10 +208,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int All_CSG_Intersect_Intersections (Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_CSG_Intersect_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Maybe_Found, Found;
   OBJECT *Current_Sib, *Inside_Sib;
@@ -302,10 +296,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int All_CSG_Merge_Intersections (Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_CSG_Merge_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Found, inside_flag;
   OBJECT *Sib1, *Sib2;
@@ -391,9 +382,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_CSG_Union (IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_CSG_Union (VECTOR IPoint, OBJECT *Object)
 {
   OBJECT *Current_Sib;
 
@@ -436,9 +425,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static int Inside_CSG_Intersection (IPoint, Object)
-OBJECT *Object;
-VECTOR IPoint;
+static int Inside_CSG_Intersection (VECTOR IPoint, OBJECT *Object)
 {
   OBJECT *Current_Sib;
 
@@ -481,10 +468,7 @@ VECTOR IPoint;
 *
 ******************************************************************************/
 
-static void Translate_CSG (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_CSG (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   OBJECT *Sib;
 
@@ -524,10 +508,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_CSG (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_CSG (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   OBJECT *Sib;
 
@@ -567,10 +548,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_CSG (Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_CSG (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   OBJECT *Sib;
 
@@ -610,9 +588,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_CSG (Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_CSG (OBJECT *Object, TRANSFORM *Trans)
 {
   OBJECT *Sib;
 
@@ -652,8 +628,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_CSG_Union (Object)
-OBJECT *Object;
+static void Invert_CSG_Union (OBJECT *Object)
 {
   OBJECT *Sib;
 
@@ -695,12 +670,11 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Invert_CSG_Intersection (Object)
-OBJECT *Object;
+static void Invert_CSG_Intersection (OBJECT *Object)
 {
   OBJECT *Sib;
 
-  Object->Methods = &CSG_Union_Methods;
+  Object->Methods = &CSG_Merge_Methods;
 
   for (Sib = ((CSG *)Object)->Children; Sib != NULL; Sib = Sib->Sibling)
   {
@@ -861,8 +835,7 @@ CSG *Create_CSG_Intersection ()
 *
 ******************************************************************************/
 
-static void *Copy_CSG (Object)
-OBJECT *Object;
+static CSG *Copy_CSG (OBJECT *Object)
 {
   CSG *New;
   OBJECT *Old_Sib, *New_Sib, *Prev_Sib;
@@ -921,8 +894,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_CSG (Object)
-OBJECT *Object;
+static void Destroy_CSG (OBJECT *Object)
 {
   Destroy_Object (((CSG *) Object)->Children);
 
@@ -957,8 +929,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_CSG_BBox (Object)
-OBJECT *Object;
+void Compute_CSG_BBox (OBJECT *Object)
 {
   int i, count;
   DBL Old_Volume, New_Volume;

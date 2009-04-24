@@ -399,10 +399,11 @@ void SVGA_display_plot(int x, int y, unsigned char Red, unsigned char Green,
 * CHANGES
 *
 *    Fixed display loop to be horizontal for dithering.  Jul, 1996. [AED]
+*    Modified order of parameters for 3.1.  March, 1999 [mtg]
 *
 ******************************************************************************/
 
-void SVGA_display_plot_rect(int x1, int x2, int y1, int y2,
+void SVGA_display_plot_rect(int x1, int y1, int x2, int y2,
                             unsigned char Red, unsigned char Green,
                             unsigned char Blue, unsigned char Alpha)
 {
@@ -492,4 +493,3 @@ void SVGA_display_plot_box(int x1, int y1, int x2, int y2,
   vga_unlockvc();
   couldwrite = i;
 }
-

@@ -7,16 +7,16 @@
 *  bezier bicubic patches and generously provided us these enhancements.
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -54,37 +54,37 @@
 * Static functions
 ******************************************************************************/
 
-static int InvertMatrix PARAMS((VECTOR in[3], VECTOR out[3]));
-static void bezier_value PARAMS((VECTOR(*Control_Points)[4][4], DBL u0, DBL v0, VECTOR P, VECTOR N));
-static int intersect_subpatch PARAMS((BICUBIC_PATCH *, RAY *, VECTOR [3], DBL [3], DBL [3], DBL *, VECTOR , VECTOR , DBL *, DBL *));
-static void find_average PARAMS((int, VECTOR *, VECTOR , DBL *));
-static int spherical_bounds_check PARAMS((RAY *, VECTOR , DBL));
-static int intersect_bicubic_patch0 PARAMS((RAY *, BICUBIC_PATCH *, ISTACK *));
-static DBL point_plane_distance PARAMS((VECTOR , VECTOR , DBL *));
-static DBL determine_subpatch_flatness PARAMS((VECTOR(*)[4][4]));
-static int flat_enough PARAMS((BICUBIC_PATCH *, VECTOR(*)[4][4]));
-static void bezier_bounding_sphere PARAMS((VECTOR(*)[4][4], VECTOR , DBL *));
-static int bezier_subpatch_intersect PARAMS((RAY *, BICUBIC_PATCH *, VECTOR(*)[4][4], DBL, DBL, DBL, DBL, ISTACK *));
-static void bezier_split_left_right PARAMS((VECTOR(*)[4][4], VECTOR(*)[4][4], VECTOR(*)[4][4]));
-static void bezier_split_up_down PARAMS((VECTOR(*)[4][4], VECTOR(*)[4][4], VECTOR(*)[4][4]));
-static int bezier_subdivider PARAMS((RAY *, BICUBIC_PATCH *, VECTOR(*)[4][4], DBL, DBL, DBL, DBL, int, ISTACK *));
-static void bezier_tree_deleter PARAMS((BEZIER_NODE *Node));
-static BEZIER_NODE *bezier_tree_builder PARAMS((BICUBIC_PATCH *Object, VECTOR(*Patch)[4][4], DBL u0, DBL u1, DBL v0, DBL v1, int depth));
-static int bezier_tree_walker PARAMS((RAY *, BICUBIC_PATCH *, BEZIER_NODE *, ISTACK *));
-static BEZIER_NODE *create_new_bezier_node PARAMS((void));
-static BEZIER_VERTICES *create_bezier_vertex_block PARAMS((void));
-static BEZIER_CHILDREN *create_bezier_child_block PARAMS((void));
-static int subpatch_normal PARAMS((VECTOR v1, VECTOR v2, VECTOR v3, VECTOR Result, DBL *d));
-static int All_Bicubic_Patch_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
-static int Inside_Bicubic_Patch PARAMS((VECTOR IPoint, OBJECT *Object));
-static void Bicubic_Patch_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
-static void *Copy_Bicubic_Patch PARAMS((OBJECT *Object));
-static void Translate_Bicubic_Patch PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Rotate_Bicubic_Patch PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Scale_Bicubic_Patch PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
-static void Transform_Bicubic_Patch PARAMS((OBJECT *Object, TRANSFORM *Trans));
-static void Invert_Bicubic_Patch PARAMS((OBJECT *Object));
-static void Destroy_Bicubic_Patch PARAMS((OBJECT *Object));
+static int InvertMatrix (VECTOR in[3], VECTOR out[3]);
+static void bezier_value (VECTOR(*Control_Points)[4][4], DBL u0, DBL v0, VECTOR P, VECTOR N);
+static int intersect_subpatch (BICUBIC_PATCH *, RAY *, VECTOR [3], DBL [3], DBL [3], DBL *, VECTOR , VECTOR , DBL *, DBL *);
+static void find_average (int, VECTOR *, VECTOR , DBL *);
+static int spherical_bounds_check (RAY *, VECTOR , DBL);
+static int intersect_bicubic_patch0 (RAY *, BICUBIC_PATCH *, ISTACK *);
+static DBL point_plane_distance (VECTOR , VECTOR , DBL *);
+static DBL determine_subpatch_flatness (VECTOR(*)[4][4]);
+static int flat_enough (BICUBIC_PATCH *, VECTOR(*)[4][4]);
+static void bezier_bounding_sphere (VECTOR(*)[4][4], VECTOR , DBL *);
+static int bezier_subpatch_intersect (RAY *, BICUBIC_PATCH *, VECTOR(*)[4][4], DBL, DBL, DBL, DBL, ISTACK *);
+static void bezier_split_left_right (VECTOR(*)[4][4], VECTOR(*)[4][4], VECTOR(*)[4][4]);
+static void bezier_split_up_down (VECTOR(*)[4][4], VECTOR(*)[4][4], VECTOR(*)[4][4]);
+static int bezier_subdivider (RAY *, BICUBIC_PATCH *, VECTOR(*)[4][4], DBL, DBL, DBL, DBL, int, ISTACK *);
+static void bezier_tree_deleter (BEZIER_NODE *Node);
+static BEZIER_NODE *bezier_tree_builder (BICUBIC_PATCH *Object, VECTOR(*Patch)[4][4], DBL u0, DBL u1, DBL v0, DBL v1, int depth);
+static int bezier_tree_walker (RAY *, BICUBIC_PATCH *, BEZIER_NODE *, ISTACK *);
+static BEZIER_NODE *create_new_bezier_node (void);
+static BEZIER_VERTICES *create_bezier_vertex_block (void);
+static BEZIER_CHILDREN *create_bezier_child_block (void);
+static int subpatch_normal (VECTOR v1, VECTOR v2, VECTOR v3, VECTOR Result, DBL *d);
+static int All_Bicubic_Patch_Intersections (OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack);
+static int Inside_Bicubic_Patch (VECTOR IPoint, OBJECT *Object);
+static void Bicubic_Patch_Normal (VECTOR Result, OBJECT *Object, INTERSECTION *Inter);
+static BICUBIC_PATCH *Copy_Bicubic_Patch (OBJECT *Object);
+static void Translate_Bicubic_Patch (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Rotate_Bicubic_Patch (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Scale_Bicubic_Patch (OBJECT *Object, VECTOR Vector, TRANSFORM *Trans);
+static void Transform_Bicubic_Patch (OBJECT *Object, TRANSFORM *Trans);
+static void Invert_Bicubic_Patch (OBJECT *Object);
+static void Destroy_Bicubic_Patch (OBJECT *Object);
 
 
 
@@ -95,7 +95,7 @@ static void Destroy_Bicubic_Patch PARAMS((OBJECT *Object));
 static METHODS Bicubic_Patch_Methods =
 {
   All_Bicubic_Patch_Intersections,
-  Inside_Bicubic_Patch, Bicubic_Patch_Normal, Copy_Bicubic_Patch,
+  Inside_Bicubic_Patch, Bicubic_Patch_Normal, (COPY_METHOD)Copy_Bicubic_Patch,
   Translate_Bicubic_Patch, Rotate_Bicubic_Patch,
   Scale_Bicubic_Patch, Transform_Bicubic_Patch, Invert_Bicubic_Patch,
   Destroy_Bicubic_Patch
@@ -244,11 +244,7 @@ static BEZIER_CHILDREN *create_bezier_child_block()
 *
 ******************************************************************************/
 
-static BEZIER_NODE *bezier_tree_builder(Object, Patch, u0, u1, v0, v1, depth)
-BICUBIC_PATCH *Object;
-VECTOR(*Patch)[4][4];
-DBL u0, u1, v0, v1;
-int depth;
+static BEZIER_NODE *bezier_tree_builder(BICUBIC_PATCH *Object, VECTOR (*Patch)[4][4], DBL u0, DBL  u1, DBL  v0, DBL  v1, int depth)
 {
   VECTOR Lower_Left[4][4], Lower_Right[4][4];
   VECTOR Upper_Left[4][4], Upper_Right[4][4];
@@ -403,10 +399,7 @@ int depth;
 *
 ******************************************************************************/
 
-static void bezier_value(Control_Points, u0, v0, P, N)
-VECTOR(*Control_Points)[4][4];
-DBL u0, v0;
-VECTOR P, N;
+static void bezier_value(VECTOR (*Control_Points)[4][4], DBL u0, DBL  v0, VECTOR P, VECTOR  N)
 {
   int i, j;
   DBL c, t, ut, vt;
@@ -504,9 +497,7 @@ VECTOR P, N;
 *
 ******************************************************************************/
 
-static int subpatch_normal(v1, v2, v3, Result, d)
-VECTOR v1, v2, v3, Result;
-DBL *d;
+static int subpatch_normal(VECTOR v1, VECTOR  v2, VECTOR  v3, VECTOR  Result, DBL *d)
 {
   VECTOR V1, V2;
   DBL Length;
@@ -566,8 +557,7 @@ DBL *d;
 *
 ******************************************************************************/
 
-static int InvertMatrix(in, out)
-VECTOR in[3], out[3];
+static int InvertMatrix(VECTOR in[3], VECTOR  out[3])
 {
   int i;
   DBL det;
@@ -634,13 +624,7 @@ VECTOR in[3], out[3];
 *
 ******************************************************************************/
 
-static int intersect_subpatch(Shape, ray, V1, uu, vv, Depth, P, N, u, v)
-BICUBIC_PATCH *Shape;
-RAY *ray;
-VECTOR V1[3];
-DBL uu[3], vv[3], *Depth;
-VECTOR P, N;
-DBL *u, *v;
+static int intersect_subpatch(BICUBIC_PATCH *Shape, RAY *ray, VECTOR V1[3], DBL uu[3], DBL  vv[3], DBL  *Depth, VECTOR P, VECTOR  N, DBL *u, DBL  *v)
 {
   DBL d, n, a, b, r;
   VECTOR B[3], IB[3], NN[3], Q, T1;
@@ -759,10 +743,7 @@ DBL *u, *v;
 *
 ******************************************************************************/
 
-static void find_average(vector_count, vectors, center, radius)
-int vector_count;
-VECTOR *vectors, center;
-DBL *radius;
+static void find_average(int vector_count, VECTOR *vectors, VECTOR  center, DBL *radius)
 {
   int i;
   DBL r0, r1, xc = 0, yc = 0, zc = 0;
@@ -828,10 +809,7 @@ DBL *radius;
 *
 ******************************************************************************/
 
-static int spherical_bounds_check(Ray, center, radius)
-RAY *Ray;
-VECTOR center;
-DBL radius;
+static int spherical_bounds_check(RAY *Ray, VECTOR center, DBL radius)
 {
   DBL x, y, z, dist1, dist2;
 
@@ -892,9 +870,7 @@ DBL radius;
 *
 ******************************************************************************/
 
-static void bezier_bounding_sphere(Patch, center, radius)
-VECTOR(*Patch)[4][4], center;
-DBL *radius;
+static void bezier_bounding_sphere(VECTOR (*Patch)[4][4], VECTOR  center, DBL *radius)
 {
   int i, j;
   DBL r0, r1, xc = 0, yc = 0, zc = 0;
@@ -966,8 +942,7 @@ DBL *radius;
 *
 ******************************************************************************/
 
-void Precompute_Patch_Values(Shape)
-BICUBIC_PATCH *Shape;
+void Precompute_Patch_Values(BICUBIC_PATCH *Shape)
 {
   int i, j;
   VECTOR Control_Points[16];
@@ -1024,9 +999,7 @@ BICUBIC_PATCH *Shape;
 *
 ******************************************************************************/
 
-static DBL point_plane_distance(p, n, d)
-VECTOR p, n;
-DBL *d;
+static DBL point_plane_distance(VECTOR p, VECTOR  n, DBL *d)
 {
   DBL temp1, temp2;
 
@@ -1074,12 +1047,7 @@ DBL *d;
 *
 ******************************************************************************/
 
-static int bezier_subpatch_intersect(ray, Shape, Patch, u0, u1, v0, v1, Depth_Stack)
-RAY *ray;
-BICUBIC_PATCH *Shape;
-VECTOR(*Patch)[4][4];
-DBL u0, u1, v0, v1;
-ISTACK *Depth_Stack;
+static int bezier_subpatch_intersect(RAY *ray, BICUBIC_PATCH *Shape, VECTOR (*Patch)[4][4], DBL u0, DBL  u1, DBL  v0, DBL  v1, ISTACK *Depth_Stack)
 {
   int cnt = 0;
   VECTOR V1[3];
@@ -1145,8 +1113,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static void bezier_split_left_right(Patch, Left_Patch, Right_Patch)
-VECTOR(*Patch)[4][4], (*Left_Patch)[4][4], (*Right_Patch)[4][4];
+static void bezier_split_left_right(VECTOR (*Patch)[4][4], VECTOR  (*Left_Patch)[4][4], VECTOR  (*Right_Patch)[4][4])
 {
   int i, j;
   VECTOR Temp1[4], Temp2[4], Half;
@@ -1201,8 +1168,7 @@ VECTOR(*Patch)[4][4], (*Left_Patch)[4][4], (*Right_Patch)[4][4];
 *
 ******************************************************************************/
 
-static void bezier_split_up_down(Patch, Bottom_Patch, Top_Patch)
-VECTOR(*Patch)[4][4], (*Top_Patch)[4][4], (*Bottom_Patch)[4][4];
+static void bezier_split_up_down(VECTOR (*Patch)[4][4], VECTOR  (*Bottom_Patch)[4][4], VECTOR  (*Top_Patch)[4][4])
 {
   int i, j;
   VECTOR Temp1[4], Temp2[4], Half;
@@ -1259,8 +1225,7 @@ VECTOR(*Patch)[4][4], (*Top_Patch)[4][4], (*Bottom_Patch)[4][4];
 *
 ******************************************************************************/
 
-static DBL determine_subpatch_flatness(Patch)
-VECTOR(*Patch)[4][4];
+static DBL determine_subpatch_flatness(VECTOR (*Patch)[4][4])
 {
   int i, j;
   DBL d, dist, temp1;
@@ -1423,9 +1388,7 @@ VECTOR(*Patch)[4][4];
 *
 ******************************************************************************/
 
-static int flat_enough(Object, Patch)
-BICUBIC_PATCH *Object;
-VECTOR(*Patch)[4][4];
+static int flat_enough(BICUBIC_PATCH *Object, VECTOR (*Patch)[4][4])
 {
   DBL Dist;
 
@@ -1476,14 +1439,8 @@ VECTOR(*Patch)[4][4];
 *
 ******************************************************************************/
 
-static int bezier_subdivider(Ray, Object, Patch, u0, u1, v0, v1,
-recursion_depth, Depth_Stack)
-RAY *Ray;
-BICUBIC_PATCH *Object;
-VECTOR(*Patch)[4][4];
-DBL u0, u1, v0, v1;
-int recursion_depth;
-ISTACK *Depth_Stack;
+static int bezier_subdivider(RAY *Ray, BICUBIC_PATCH *Object, VECTOR (*Patch)[4][4], DBL u0, DBL  u1, DBL  v0, DBL  v1,
+int recursion_depth, ISTACK *Depth_Stack)
 {
   int cnt = 0;
   DBL ut, vt, radius;
@@ -1523,7 +1480,7 @@ ISTACK *Depth_Stack;
     {
       bezier_split_up_down(Patch, (VECTOR(*)[4][4])Lower_Left, (VECTOR(*)[4][4])Upper_Left);
 
-      vt = (v1 - v0) / 2.0;
+      vt = (v1 + v0) / 2.0;
 
       cnt += bezier_subdivider(Ray, Object, (VECTOR(*)[4][4])Lower_Left, u0, u1, v0, vt, recursion_depth + 1, Depth_Stack);
       cnt += bezier_subdivider(Ray, Object, (VECTOR(*)[4][4])Upper_Left, u0, u1, vt, v1, recursion_depth + 1, Depth_Stack);
@@ -1535,15 +1492,15 @@ ISTACK *Depth_Stack;
     {
       bezier_split_left_right(Patch, (VECTOR(*)[4][4])Lower_Left, (VECTOR(*)[4][4])Lower_Right);
 
-      ut = (u1 - u0) / 2.0;
+      ut = (u1 + u0) / 2.0;
 
       cnt += bezier_subdivider(Ray, Object, (VECTOR(*)[4][4])Lower_Left, u0, ut, v0, v1, recursion_depth + 1, Depth_Stack);
       cnt += bezier_subdivider(Ray, Object, (VECTOR(*)[4][4])Lower_Right, ut, u1, v0, v1, recursion_depth + 1, Depth_Stack);
     }
     else
     {
-      ut = (u1 - u0) / 2.0;
-      vt = (v1 - v0) / 2.0;
+      ut = (u1 + u0) / 2.0;
+      vt = (v1 + v0) / 2.0;
 
       bezier_split_left_right(Patch, (VECTOR(*)[4][4])Lower_Left, (VECTOR(*)[4][4])Lower_Right);
       bezier_split_up_down((VECTOR(*)[4][4])Lower_Left, (VECTOR(*)[4][4])Lower_Left, (VECTOR(*)[4][4])Upper_Left) ;
@@ -1587,8 +1544,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static void bezier_tree_deleter(Node)
-BEZIER_NODE *Node;
+static void bezier_tree_deleter(BEZIER_NODE *Node)
 {
   int i;
   BEZIER_CHILDREN *Children;
@@ -1649,11 +1605,7 @@ BEZIER_NODE *Node;
 *
 ******************************************************************************/
 
-static int bezier_tree_walker(Ray, Shape, Node, Depth_Stack)
-RAY *Ray;
-BICUBIC_PATCH *Shape;
-BEZIER_NODE *Node;
-ISTACK *Depth_Stack;
+static int bezier_tree_walker(RAY *Ray, BICUBIC_PATCH *Shape, BEZIER_NODE *Node, ISTACK *Depth_Stack)
 {
   int i, cnt = 0;
   DBL Depth, u, v, uu[3], vv[3];
@@ -1761,10 +1713,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int intersect_bicubic_patch0(Ray, Shape, Depth_Stack)
-RAY *Ray;
-BICUBIC_PATCH *Shape;
-ISTACK *Depth_Stack;
+static int intersect_bicubic_patch0(RAY *Ray, BICUBIC_PATCH *Shape, ISTACK *Depth_Stack)
 {
   VECTOR(*Patch)[4][4] = (VECTOR(*)[4][4]) Shape->Control_Points;
   
@@ -1799,10 +1748,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int All_Bicubic_Patch_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;
-ISTACK *Depth_Stack;
+static int All_Bicubic_Patch_Intersections(OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack)
 {
   int Found, cnt = 0;
 
@@ -1867,9 +1813,7 @@ ISTACK *Depth_Stack;
 *
 ******************************************************************************/
 
-static int Inside_Bicubic_Patch(IPoint, Object)
-VECTOR IPoint;
-OBJECT *Object;
+static int Inside_Bicubic_Patch(VECTOR IPoint, OBJECT *Object)
 {
   return (0);
 }
@@ -1902,10 +1846,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Bicubic_Patch_Normal(Result, Object, Inter)
-OBJECT *Object;
-VECTOR Result;
-INTERSECTION *Inter;
+static void Bicubic_Patch_Normal(VECTOR Result, OBJECT *Object, INTERSECTION *Inter)
 {
   /* Use preocmputed normal. */
 
@@ -1940,10 +1881,7 @@ INTERSECTION *Inter;
 *
 ******************************************************************************/
 
-static void Translate_Bicubic_Patch(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Translate_Bicubic_Patch(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   int i, j;
   BICUBIC_PATCH *Patch = (BICUBIC_PATCH *) Object;
@@ -1989,10 +1927,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Rotate_Bicubic_Patch(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Rotate_Bicubic_Patch(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   Transform_Bicubic_Patch(Object, Trans);
 }
@@ -2025,10 +1960,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Scale_Bicubic_Patch(Object, Vector, Trans)
-OBJECT *Object;
-VECTOR Vector;
-TRANSFORM *Trans;
+static void Scale_Bicubic_Patch(OBJECT *Object, VECTOR Vector, TRANSFORM *Trans)
 {
   int i, j;
   BICUBIC_PATCH *Patch = (BICUBIC_PATCH *) Object;
@@ -2075,9 +2007,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Transform_Bicubic_Patch(Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
+static void Transform_Bicubic_Patch(OBJECT *Object, TRANSFORM *Trans)
 {
   int i, j;
   BICUBIC_PATCH *Patch = (BICUBIC_PATCH *) Object;
@@ -2123,8 +2053,7 @@ TRANSFORM *Trans;
 *
 ******************************************************************************/
 
-static void Invert_Bicubic_Patch(Object)
-OBJECT *Object;
+static void Invert_Bicubic_Patch(OBJECT *Object)
 {
 }
 
@@ -2210,8 +2139,7 @@ BICUBIC_PATCH *Create_Bicubic_Patch()
 *
 ******************************************************************************/
 
-static void *Copy_Bicubic_Patch(Object)
-OBJECT *Object;
+static BICUBIC_PATCH *Copy_Bicubic_Patch(OBJECT *Object)
 {
   int i, j;
   BICUBIC_PATCH *New;
@@ -2268,8 +2196,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-static void Destroy_Bicubic_Patch(Object)
-OBJECT *Object;
+static void Destroy_Bicubic_Patch(OBJECT *Object)
 {
   BICUBIC_PATCH *Patch;
   
@@ -2318,8 +2245,7 @@ OBJECT *Object;
 *
 ******************************************************************************/
 
-void Compute_Bicubic_Patch_BBox(Bicubic_Patch)
-BICUBIC_PATCH *Bicubic_Patch;
+void Compute_Bicubic_Patch_BBox(BICUBIC_PATCH *Bicubic_Patch)
 {
   int i, j;
   VECTOR Min, Max;

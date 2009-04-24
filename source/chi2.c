@@ -10,16 +10,16 @@
 *    Direct inquiries to 30 Frost Street, Cambridge, MA 02140
 *
 *  from Persistence of Vision(tm) Ray Tracer
-*  Copyright 1996 Persistence of Vision Team
+*  Copyright 1996,1998 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If
-*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
-*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
-*  Forum.  The latest version of POV-Ray may be found there as well.
+*  named POVLEGAL.DOC which should be distributed with this file.
+*  If POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's GO POVRAY Forum or visit
+*  http://www.povray.org. The latest version of POV-Ray may be found at these sites.
 *
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
@@ -196,13 +196,13 @@ static DBL Q2[8] =
 * Static functions
 ******************************************************************************/
 
-static DBL igami PARAMS((DBL a, DBL y0));
-static DBL lgam PARAMS((DBL x));
-static DBL polevl PARAMS((DBL x, DBL * coef, int N));
-static DBL p1evl PARAMS((DBL x, DBL * coef, int N));
-static DBL igamc PARAMS((DBL a, DBL x));
-static DBL igam PARAMS((DBL a, DBL x));
-static DBL ndtri PARAMS((DBL y0));
+static DBL igami (DBL a, DBL y0);
+static DBL lgam (DBL x);
+static DBL polevl (DBL x, DBL * coef, int N);
+static DBL p1evl (DBL x, DBL * coef, int N);
+static DBL igamc (DBL a, DBL x);
+static DBL igam (DBL a, DBL x);
+static DBL ndtri (DBL y0);
 
 
 
@@ -247,8 +247,7 @@ static DBL ndtri PARAMS((DBL y0));
  *
  */
 
-DBL chdtri(df, y)
-DBL df, y;
+DBL chdtri(DBL df, DBL  y)
 {
   DBL x;
 
@@ -320,8 +319,7 @@ DBL df, y;
  *
  */
 
-static DBL lgam(x)
-DBL x;
+static DBL lgam(DBL x)
 {
   DBL p, q, w, z;
   int i;
@@ -499,8 +497,7 @@ DBL x;
  *
  */
 
-static DBL igamc(a, x)
-DBL a, x;
+static DBL igamc(DBL a, DBL  x)
 {
   DBL ans, c, yc, ax, y, z;
   DBL pk, pkm1, pkm2, qk, qkm1, qkm2;
@@ -636,8 +633,7 @@ DBL a, x;
  *
  */
 
-static DBL igam(a, x)
-DBL a, x;
+static DBL igam(DBL a, DBL  x)
 {
   DBL ans, ax, c, r;
 
@@ -730,8 +726,7 @@ DBL a, x;
  *
  */
 
-static DBL igami(a, y0)
-DBL a, y0;
+static DBL igami(DBL a, DBL  y0)
 {
   DBL d, y, x0, lgm;
   int i;
@@ -844,8 +839,7 @@ done:
  *
  */
 
-static DBL ndtri(y0)
-DBL y0;
+static DBL ndtri(DBL y0)
 {
   DBL x, y, z, y2, x0, x1;
   int code;
@@ -956,10 +950,7 @@ DBL y0;
  *
  */
 
-static DBL polevl(x, coef, N)
-DBL x;
-DBL coef[];
-int N;
+static DBL polevl(DBL x, DBL coef[], int N)
 {
   DBL ans;
   int i;
@@ -984,10 +975,7 @@ int N;
  * Otherwise same as polevl.
  */
 
-static DBL p1evl(x, coef, N)
-DBL x;
-DBL coef[];
-int N;
+static DBL p1evl(DBL x, DBL coef[], int N)
 {
   DBL ans;
   DBL *p;
