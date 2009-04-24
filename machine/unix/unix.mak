@@ -13,10 +13,14 @@
 
 # The exact options may depend on your compiler.  Feel free to modify
 # these as required.
+# The cc compiler on a HP9000 likes the -Aa option for all files except unix.c
+# The gcc compiler is usually satisfied with these options.
+
 OBJ	= o
 MACHINE_OBJ	= unix.$(OBJ)
 CFLAGS=		-c -O
 LFLAGS =	-o povray -O
+CC =            cc
 
 # Make's implicit rules for making a .o file from a .c file...
 #
@@ -24,15 +28,17 @@ LFLAGS =	-o povray -O
 	$(CC) $(CFLAGS) $*.c
 
 
-POVOBJS = povray.$(OBJ) render.$(OBJ) tokenize.$(OBJ) parse.$(OBJ) \
-	  objects.$(OBJ) spheres.$(OBJ) quadrics.$(OBJ) lighting.$(OBJ) \
-	  prioq.$(OBJ) texture.$(OBJ) matrices.$(OBJ) csg.$(OBJ) hfield.$(OBJ)\
-	  txtcolor.$(OBJ) txtbump.$(OBJ) txtmap.$(OBJ) txttest.$(OBJ) \
-	  colour.$(OBJ) viewpnt.$(OBJ) ray.$(OBJ) planes.$(OBJ) iff.$(OBJ) \
-	  gif.$(OBJ) gifdecod.$(OBJ) triangle.$(OBJ) raw.$(OBJ) dump.$(OBJ) \
-	  targa.$(OBJ) poly.$(OBJ) bezier.$(OBJ) vect.$(OBJ) \
-          blob.$(OBJ) boxes.$(OBJ) point.$(OBJ) $(MACHINE_OBJ)
+POVOBJS = povray.$(OBJ) bezier.$(OBJ) blob.$(OBJ) bound.$(OBJ) boxes.$(OBJ)  \
+	  camera.$(OBJ) colour.$(OBJ) cones.$(OBJ) csg.$(OBJ) discs.$(OBJ)   \
+	  dump.$(OBJ) express.$(OBJ) gif.$(OBJ) gifdecod.$(OBJ)              \
+	  hfield.$(OBJ) iff.$(OBJ) image.$(OBJ) lighting.$(OBJ)              \
+	  matrices.$(OBJ) normal.$(OBJ) objects.$(OBJ) parse.$(OBJ)          \
+	  pigment.$(OBJ) planes.$(OBJ) point.$(OBJ) poly.$(OBJ)              \
+	  quadrics.$(OBJ) raw.$(OBJ) ray.$(OBJ) render.$(OBJ) spheres.$(OBJ) \
+	  targa.$(OBJ) texture.$(OBJ) tokenize.$(OBJ) triangle.$(OBJ)        \
+	  txttest.$(OBJ) vect.$(OBJ) $(MACHINE_OBJ)
 
 
 povray:	$(POVOBJS)
-	cc $(LFLAGS) $(POVOBJS) -lm
+	$(CC) $(LFLAGS) $(POVOBJS) -lm
+

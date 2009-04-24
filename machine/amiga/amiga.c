@@ -3,17 +3,18 @@
 *
 *  This module handles all of the Amiga-specific code for the raytracer.
 *
-*  from Persistence of Vision Raytracer 
-*  Copyright 1992 Persistence of Vision Team
+*  from Persistence of Vision Raytracer
+*  Copyright 1993 Persistence of Vision Team
 *---------------------------------------------------------------------------
-*  Copying, distribution and legal info is in the file povlegal.doc which
-*  should be distributed with this file. If povlegal.doc is not available
-*  or for more info please contact:
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other 
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+*  Forum.  The latest version of POV-Ray may be found there as well.
 *
-*       Drew Wells [POV-Team Leader] 
-*       CIS: 73767,1244  Internet: 73767.1244@compuserve.com
-*       Phone: (213) 254-4041
-* 
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
@@ -32,6 +33,8 @@
 #include <exec/types.h>
 #include <intuition/intuition.h>
 #include <graphics/display.h>
+#include <graphics/gfxbase.h>
+#include <graphics/gfx.h>
 #include <libraries/expansionbase.h>
 
 void geta4(void);
@@ -48,52 +51,67 @@ void make_hame_palette(struct ViewPort *vp);
 void SetRGB8 (short reg, unsigned char rr, unsigned char gg,
               unsigned char bb, short base);
 
-void OpenFirecracker (void);
+int  OpenHam8 (void);
+void	write_ham8_pixel(int x, int y, char r, char g, char b);
+int  OpenFirecracker (void);
 void	write_firecracker_pixel(UWORD x, UWORD y, UBYTE r, UBYTE g, UBYTE b);
 
 extern unsigned int Options;
 extern char DisplayFormat;
-extern FRAME 	Frame;
+extern FRAME Frame;
 
 #define INT_REV 29L
 #define GR_REV 29L
 
 struct IntuitionBase *IntuitionBase;
 struct GfxBase *GfxBase;
-struct ExpansionBase *ExpansionBase;
+struct Library *ExpansionBase;
 
-struct Screen *s;
+struct Screen *s = NULL;
 volatile struct Window *w;
 struct Task *Requestor_Task;
 
 volatile int Requestor_Running;
 volatile extern int Stop_Flag;
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 400
+int width, height, depth;
+int bytesperrow;
+int leftedge, rightedge;
+int topedge, bottomedge;
 
-#define HAME_SCREEN_WIDTH 640
-#define HAME_SCREEN_HEIGHT 402
+int IsAGA;
 
-struct NewScreen Ham_Screen =
+struct Rectangle Rect1 =
+   {
+   0, 0, 0, 0
+   };
+
+struct TagItem Tag1 =
+   {
+   SA_DClip,
+   &Rect1
+   };
+
+struct ExtNewScreen Ham_Screen =
    {
    0, 0,
-   SCREEN_WIDTH, SCREEN_HEIGHT,
+   0, 0,
    6,
    0, 1,
-   INTERLACE | HAM,
-   SCREENQUIET,
+   HAM,
+   SCREENQUIET | NS_EXTENDED,
    NULL,
    (UBYTE *) "POV-Ray",
    NULL,
-   NULL
+   NULL,
+   &Tag1
    };
 
 
 struct NewScreen Ham_E_Screen =
    {
    0, 0,
-   HAME_SCREEN_WIDTH, HAME_SCREEN_HEIGHT,
+   0, 0,
    4,
    0, 1,
    INTERLACE | HIRES,
@@ -137,7 +155,7 @@ UWORD chip ColorTbl[16] = { 0x000, 0x111, 0x222, 0x333, 0x444, 0x555, 0x666,
                        0x777, 0x888, 0x999, 0xaaa, 0xbbb, 0xccc, 0xddd,
                        0xeee, 0xfff };
 
-LONG last_red = 0, last_green = 0, last_blue = 0, last_y = -1;
+LONG last_red = 0, last_green = 0, last_blue = 0, last_x = -1, last_y = -1;
 
 /* Firecracker routines */
 typedef struct BOARD {
@@ -150,7 +168,6 @@ typedef struct BOARD {
 } BOARD;
 
 BOARD		*board;
-int fc_width;
 
 void amiga_init_POVRAY(void )
    {
@@ -206,6 +223,10 @@ void Amiga_open()
    GfxBase = (struct GfxBase *) OpenLibrary ("graphics.library", GR_REV);
    if (GfxBase == NULL)
      exit(FALSE);
+
+   IsAGA = GfxBase->ChipRevBits0;
+//   printf ("IsAGA:%x\n", IsAGA);
+
    Requestor_Running = FALSE;
    }
 
@@ -221,7 +242,7 @@ void Amiga_close()
 
    Requestor_Window = NULL;
 
-   CloseLibrary (GfxBase) ;
+   CloseLibrary ((struct Library *) GfxBase) ;
    CloseLibrary (IntuitionBase) ;
    }
 
@@ -252,15 +273,19 @@ void display_finished ()
       }
    }
 
-void	OpenFirecracker() {
-	struct ConfigDev	*dev = NULL;
+int	OpenHam8()
+{
+	return FALSE;
+}
+
+int	OpenFirecracker() {
+	struct ConfigDev	*dev;
 	ULONG			i;
 
-	ExpansionBase = (struct ExpansionBase *) 
-                           OpenLibrary("expansion.library", 0L);
+	ExpansionBase = OpenLibrary("expansion.library", 0L);
 	if (!ExpansionBase) {
 		printf("No expansion library\n");
-		exit(999);
+		return TRUE;
 	}
 
 	dev = FindConfigDev(NULL, 0x838, 0);
@@ -269,34 +294,39 @@ void	OpenFirecracker() {
 	}
 	else {
 		printf("Can't find FireCracker\n");
-		exit(999);
+		return TRUE;
 	}
+
 	CloseLibrary((struct Library *) ExpansionBase);
+        height = 482;
+
         if (Frame.Screen_Width > 768) {
 	   board->control0 = 0xf8;
-           fc_width = 1024;
+           width = 1024;
            }
         else if (Frame.Screen_Width > 512) {
 	   board->control0 = 0xb8;           
-           fc_width = 768;
+           width = 768;
            }
         else if (Frame.Screen_Width > 384) {
 	   board->control0 = 0x78;
-           fc_width = 512;
+           width = 512;
            }
         else {
 	   board->control0 = 0x38;
-           fc_width = 384;
+           width = 384;
            }
 
 	board->control1 = 0x7f;
 	board->y = 0; board->x = 0;
-	for (i=0; i<fc_width*482; i++) {
+	for (i=0; i<width*482; i++) {
            /* I write to the auto-increment and non-autoincrement registers
               to make this work on 68000's as well as 68020's. */
            board->orgb  = 0x40404040;
            board->orgb2 = 0x40404040;
            }
+
+	return FALSE;
 }
 
 
@@ -310,9 +340,9 @@ UBYTE	r,g,b;
 	v1 = r; v2 = g; v3 = b;
 	v = ((v1<<16)&0xff0000) + ((v2<<8)&0xff00) + (v3&0xff);
 
-	new_y = y+(482-Frame.Screen_Height)/2; new_x = x+(fc_width-Frame.Screen_Width)/2;
+	new_y = y+(482-Frame.Screen_Height)/2; new_x = x+(width-Frame.Screen_Width)/2;
         if ((new_x >= 0) && (new_y >= 0)
-            && (new_x < fc_width) && (new_y < 482)) {
+            && (new_x < width) && (new_y < 482)) {
            board->y = new_y;
            board->x = new_x;
 	   board->orgb2 = v;
@@ -584,17 +614,29 @@ void SetRGB8(reg,rr,gg,bb,base)
       }
   }
 
-void display_init (width, height)
-   int width, height;
+void display_init (input_width, input_height)
+   int input_width, input_height;
    {
+   int screen_width, screen_height;
+
+
    Amiga_open();
    open_requestor();
 
    Delay (10);
 
    if (DisplayFormat == 'E') {
+      screen_width = GfxBase->NormalDisplayColumns>>1;
+      Ham_E_Screen.Width = screen_width<<1;
+      screen_height = GfxBase->NormalDisplayRows<<1;
+      Ham_E_Screen.Height = screen_height+2;
+
       if ((s = (struct Screen *) OpenScreen (&Ham_E_Screen)) == NULL)
+      {
+         display_close ();
          exit (FALSE);
+      }
+
       ShowTitle (s, FALSE);
       lacer = 1;
       fp0 = s->BitMap.Planes[0];
@@ -603,24 +645,113 @@ void display_init (width, height)
       fp3 = s->BitMap.Planes[3];
       make_hame_palette(&s->ViewPort);
       SetAPen (&(s->RastPort), 0L);
-      RectFill (&(s -> RastPort), 0L, 0L, HAME_SCREEN_WIDTH-1, 1);
+      RectFill (&(s -> RastPort), 0L, 0L, Ham_E_Screen.Width-1, 1);
       SetAPen (&(s->RastPort), 1L);
-      RectFill (&(s -> RastPort), 0L, 2L, HAME_SCREEN_WIDTH-1, HAME_SCREEN_HEIGHT-1);
+      RectFill (&(s -> RastPort), 0L, 2L, Ham_E_Screen.Width-1,
+                                          Ham_E_Screen.Height-1);
       write_cookie(ham_cookie, 0);
       SetRGB8 (0x11, 0x80, 0x80, 0x80, 0);
       }
    else if (DisplayFormat == 'F') {
-	OpenFirecracker();
+	if (OpenFirecracker() == TRUE)
+        {
+           display_close ();
+           exit (999);
+        }
+      }
+   else if (DisplayFormat == '8') {
+	if (OpenHam8() == TRUE)
+        {
+           display_close ();
+           exit (FALSE);
+        }
       }
    else {
-      if ((s = (struct Screen *) OpenScreen (&Ham_Screen)) == NULL)
-         exit (FALSE);
+	int viewmodes;
 
-      ShowTitle (s, FALSE);
 
-      LoadRGB4 (&(s->ViewPort), ColorTbl, 16L);
-      SetAPen (&(s->RastPort), 7L);
-      RectFill (&(s -> RastPort), 0L, 0L, 319L, 399L);
+	viewmodes = 0;
+
+	if (input_width < 1 || input_height < 1)
+	{
+		display_close ();
+		printf ("? Size must be no smaller than 1 x 1\n");
+		exit (FALSE);
+	}
+
+	if (input_width > 736 || input_height > 482)
+	{
+		display_close ();
+		printf ("? Size must be no larger than 736 x 482\n");
+		exit (FALSE);
+	}
+
+	screen_width = 320;
+	if (input_width > 368 && input_width <= 736)
+	{
+		screen_width = 640;
+		viewmodes |= HIRES;
+	}
+	else if (input_width > 736)	/* Add higher resolutions */
+	{
+		screen_width = 640;
+		viewmodes |= HIRES;
+	}
+
+	width = (input_width>screen_width) ? input_width : screen_width;
+
+	leftedge = 0;
+	rightedge = width;
+	if (input_width < screen_width)
+	{
+	 	leftedge  = (screen_width - input_width) / 2;
+		rightedge = leftedge + input_width;
+	}
+
+	screen_height = 200;
+	if (input_height > 241 && input_height <= 482)
+	{
+		screen_height = 400;
+		viewmodes |= INTERLACE;
+	}
+	else if (input_height > 482)	/* Add higher resolutions */
+	{
+		screen_height = 400;
+		viewmodes |= INTERLACE;
+	}
+
+	height = (input_height>screen_height) ? input_height : screen_height;
+
+	topedge = 0;
+	bottomedge = height;
+	if (input_height < screen_height)
+	{
+		topedge    = (screen_height - input_height) / 2;
+		bottomedge = topedge + input_height;
+	}
+
+	Ham_Screen.Width = Rect1.MaxX = width;
+	Ham_Screen.Height = Rect1.MaxY = height;
+	Ham_Screen.ViewModes |= viewmodes;
+
+        if ((s = (struct Screen *) OpenScreen (&Ham_Screen)) == NULL)
+        {
+           display_close ();
+           printf ("? Can't open screen.\n");
+           exit (FALSE);
+        }
+
+	/* What did we actually get? */
+	width = s->Width;
+	height = s->Height;
+	depth = s->BitMap.Depth;
+	bytesperrow = s->BitMap.BytesPerRow;
+
+        ShowTitle (s, FALSE);
+
+        LoadRGB4 (&(s->ViewPort), ColorTbl, 16L);
+        SetAPen (&(s->RastPort), 7L);
+        RectFill (&(s -> RastPort), 0L, 0L, width-1, height-1);
       }
    }
 
@@ -637,11 +768,22 @@ void display_close ()
    Requestor_Window = NULL;
 
    if (DisplayFormat != 'F')
-      CloseScreen (s);
+      if (s != NULL)
+      {
+         CloseScreen (s);
+         s = NULL;
+      }
    }
 
 #define absdif(x,y) ((x > y) ? (x - y) : (y - x))
 #define max3(x,y,z) ((x>y)?((x>z)?1:3):((y>z)?2:3))
+
+void write_ham8_pixel (x, y, Red, Green, Blue)
+   int x, y;
+   char Red, Green, Blue;
+   {
+
+   }
 
 void write_hame_pixel (x, y, Red, Green, Blue)
    int x, y;
@@ -650,17 +792,25 @@ void write_hame_pixel (x, y, Red, Green, Blue)
    register unsigned char colour;
    short delta_red, delta_green, delta_blue;
 
-   if ((x >= SCREEN_WIDTH )  || (y >= SCREEN_HEIGHT))
+   if (y < last_y)
       return;
 
-   Red = (Red >> 2) & 0x3F;
-   Green = (Green >> 2) & 0x3F;
-   Blue = (Blue >> 2) & 0x3F;
+   if ((x >= width) || (y >= height))
+      return;
 
    if (last_y != y) {
       last_y = y;
       last_red = last_green = last_blue = 0;
       }
+   else
+      if (x <= last_x)
+         return;
+
+   last_x = x;
+
+   Red = (Red >> 2) & 0x3F;
+   Green = (Green >> 2) & 0x3F;
+   Blue = (Blue >> 2) & 0x3F;
 
    delta_red = absdif (Red, last_red);
    delta_green = absdif (Green, last_green);
@@ -693,21 +843,32 @@ void display_plot (x, y, Red, Green, Blue)
    short delta_red, delta_green, delta_blue;
 
    if (DisplayFormat == 'E')
-      return (write_hame_pixel(x, y, Red, Green, Blue));
+   	return (write_hame_pixel(x, y, Red, Green, Blue));
    else if (DisplayFormat == 'F')
-	return (write_firecracker_pixel((UWORD) x, (UWORD) y, Red, Green, Blue));
+	return (write_firecracker_pixel((UWORD) x, (UWORD) y,
+	    (UBYTE) Red, (UBYTE) Green, (UBYTE) Blue));
+   else if (DisplayFormat == '8')
+	return (write_ham8_pixel(x, y, Red, Green, Blue));
 
-   if ((x >= SCREEN_WIDTH )  || (y >= SCREEN_HEIGHT))
+   y += topedge;
+   x += leftedge;
+
+   if (y < last_y)
       return;
-
-   Red = (Red >> 4) & 0x0F;
-   Green = (Green >> 4) & 0x0F;
-   Blue = (Blue >> 4) & 0x0F;
 
    if (last_y != y) {
       last_y = y;
       last_red = last_green = last_blue = 0;
       }
+   else
+      if (x <= last_x)
+         return;
+
+   last_x = x;
+
+   Red = (Red >> 4) & 0x0F;
+   Green = (Green >> 4) & 0x0F;
+   Blue = (Blue >> 4) & 0x0F;
 
    delta_red = absdif (Red, last_red);
    delta_green = absdif (Green, last_green);
@@ -728,7 +889,7 @@ void display_plot (x, y, Red, Green, Blue)
          break;
       }
 
-   index = (SCREEN_WIDTH >> 3) * y + (x >> 3);
+   index = (bytesperrow * y) + (x >> 3);
    mask = 0x80 >> (x & 7);
 
    colour_mask = 1;

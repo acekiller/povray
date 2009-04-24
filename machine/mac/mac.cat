@@ -1,0 +1,80 @@
+Persistence of Vision Raytracer POV-Ray 2.0 Catalog file.
+
+NOTE: Due to the size of the Macintosh source code it is not being
+included in the POVSRC.ZIP archive.  POVSRC.SEA contains all of the
+necessary files for a Mac compilation of POV-Ray.  It is availible
+from the same place you obtained this file or from Graphics Developer's
+Forum on CompuServe (GO GRAPHDEV)
+
+For reference, here is the contents of the \POVSRC\SOURCE directory.
+It contains source files for compiling for Apple Macintosh systems.
+
+===============================================================
+from Persistence of Vision Raytracer
+Copyright 1993 Persistence of Vision Team
+---------------------------------------------------------------
+NOTICE: This source code file is provided so that users may experiment
+with enhancements to POV-Ray and to port the software to other platforms
+than those supported by the POV-Ray Team.  There are strict rules under
+which you are permitted to use this file.  The rules are in the file
+named POVLEGAL.DOC which should be distributed with this file. If
+POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+Forum.  The latest version of POV-Ray may be found there as well.
+
+This program is based on the popular DKB raytracer version 2.12.
+DKBTrace was originally written by David K. Buck.
+DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
+
+===============================================================
+The POVSRC.SEA archive is self-extracting, just double-click it, and
+show it where to save the files.
+
+===================== Mac-specific sources (MPW 3.2 & 3.3, and Think C 5 &
+6)
+Animate.h,
+Animate.c ----------- Prompts for rendering animation info
+Config.h ------------ Mac version of the configuration header file.
+FileQueue.h,
+FileQueue.c --------- Input file queueing routines for ODOC aevt handling.
+ImageWindow.h,
+ImageWindow.c ------- Open, update, virtual, save routines for image window
+
+Mac.cat ------------- this file
+PopupMenu.h,
+PopupMenu.c --------- Handle popups in dialogs
+POV-Ray 2.0 Notes --- Additional notes and tips
+POV-Ray 2.0 Readme -- The essential read-me document
+POV-Ray.make -------- MPW-specific make dependency file.
+POV-Ray.r ----------- MPW-specific resource source code file (SIZE rsrc)
+Pov.c --------------- Main application, mac-specific support routines.
+POV.Pi -------------- Think C 6.0 Project file
+POV.Pi.rsrc --------- POV Mac resources (dialogs, balloon help, icons etc.)
+POVLib.h ------------ Single header file that includes all general POV
+                      library headers (FileQueue.h, ScreenUtils.h, etc.)
+POVMac.h ------------ Header file for Pov.c (defines, typedefs, prototypes)
+POVMalloc.h,
+POVMalloc.c --------- malloc handling/garbage collection routines
+Printf2Window.h,
+Printf2Window.c ----- support code for redirecting C stdio to a window
+ProgressDialog.h,
+ProgressDialog.c ---- General-purpose progress bar handling for dialogs
+SaveCmpPict.h,
+SaveCmpPict.c ------- QuickTime compressed picture saving code for POV-Ray
+ScreenUtils.h,
+ScreenUtils.c ------- General-purpose screen/monitor routines
+Stdio_p2w.h --------- header file for Printf2Window.c, used by Config.h
+TemplateMenu.h,
+TemplateMenu.c ------ Template text insertion menus
+TextEditor.h,
+TextEditor.c -------- Code for the POV-Ray Source definition file editor.
+
+===================== QuickTime 1.6 MPW interfaces from Apple
+Components.h
+ImageCodec.h
+ImageCompression.h
+MediaHandlers.h
+Movies.h
+MoviesFormat.h
+QuickTimeComponents.h
+StdCompressionGlue.o

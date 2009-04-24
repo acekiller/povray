@@ -1,0 +1,21 @@
+noignore
+map
+output povray
+overlay CODE
+file povray,bezier,blob,bound,boxes,camera,colour,cones
+file csg,discs,express,hfield,image,lighting,matrices,normal
+file objects,pigment,planes,point,poly,quadrics
+file ray,render,spheres,texture
+file triangle,txttest,vect,ibm
+library ai.lib
+beginarea
+  section file gif,gifdecod
+  section file iff
+  section file parse,tokenize
+endarea
+
+beginarea
+  section file dump
+  section file targa
+  section file raw
+endarea

@@ -3,23 +3,23 @@
 *
 *  This module implements the methods for objects and composite objects.
 *
-*  from Persistence of Vision Raytracer 
-*  Copyright 1992 Persistence of Vision Team
+*  from Persistence of Vision Raytracer
+*  Copyright 1993 Persistence of Vision Team
 *---------------------------------------------------------------------------
-*  Copying, distribution and legal info is in the file povlegal.doc which
-*  should be distributed with this file. If povlegal.doc is not available
-*  or for more info please contact:
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other 
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+*  Forum.  The latest version of POV-Ray may be found there as well.
 *
-*       Drew Wells [POV-Team Leader] 
-*       CIS: 73767,1244  Internet: 73767.1244@compuserve.com
-*       Phone: (213) 254-4041
-* 
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
 *****************************************************************************/
-
 
 #include "frame.h"
 #include "vector.h"
@@ -29,534 +29,347 @@ extern RAY *VP_Ray;
 extern long Bounding_Region_Tests, Bounding_Region_Tests_Succeeded;
 extern long Clipping_Region_Tests, Clipping_Region_Tests_Succeeded;
 extern unsigned int Options;
+extern long Istack_overflows;
+extern int Number_of_istacks;
+extern int Max_Intersections;
+extern ISTACK *free_istack;
 
-METHODS Composite_Methods =
-{ Object_Intersect, All_Composite_Intersections,
-   Inside_Composite_Object, NULL,
-   Copy_Composite_Object,
-   Translate_Composite_Object, Rotate_Composite_Object,
-   Scale_Composite_Object, Invert_Composite_Object};
-
-METHODS Basic_Object_Methods =
-{ Object_Intersect, All_Object_Intersections,
-   Inside_Basic_Object, NULL,
-   Copy_Basic_Object,
-   Translate_Basic_Object, Rotate_Basic_Object,
-   Scale_Basic_Object, Invert_Basic_Object};
-
-
-INTERSECTION *Object_Intersect (Object, Ray)
+int Intersection (Ray_Intersection, Object, Ray)
+INTERSECTION *Ray_Intersection;
 OBJECT *Object;
 RAY *Ray;
-{
-   INTERSECTION *Local_Intersection, *Queue_Element;
-   PRIOQ *Depth_Queue;
+  {
+  ISTACK *Depth_Stack;
+  INTERSECTION *Local;
+  DBL Closest = HUGE_VAL;
 
-   Depth_Queue = pq_new (128);
+  if (Object == NULL)
+    return (FALSE);
 
-   if ((All_Intersections (Object, Ray, Depth_Queue))
-      && ((Queue_Element = pq_get_highest (Depth_Queue)) != NULL))
-   {
-      if ((Local_Intersection = (INTERSECTION *) malloc(sizeof(INTERSECTION)))
-         == NULL) {
-         printf("Cannot allocate memory for local intersection\n");
-         exit(1);
-      }
-      Local_Intersection->Point = Queue_Element->Point;
-      Local_Intersection->Shape = Queue_Element->Shape;
-      Local_Intersection->Depth = Queue_Element->Depth;
-      Local_Intersection->Object = Queue_Element->Object;
-      pq_free (Depth_Queue);
-      return (Local_Intersection);
-   }
-   else
-   {
-      pq_free (Depth_Queue);
-      return (NULL);
-   }
-}
+  if(!Ray_In_Bounds (Ray,Object->Bound))
+    return (FALSE);
 
+  Depth_Stack = open_istack ();
 
-int All_Composite_Intersections (Object, Ray, Depth_Queue)
-OBJECT *Object;
+  if (All_Intersections (Object, Ray, Depth_Stack))
+    {
+    while ((Local = pop_entry(Depth_Stack)) != NULL)
+      if (Local->Depth < Closest)
+        {
+        *Ray_Intersection = *Local;
+        Closest = Local->Depth;
+        }
+    close_istack (Depth_Stack);
+    return (TRUE);
+    }
+  else
+    {
+    close_istack (Depth_Stack);
+    return (FALSE);
+    }
+  }
+
+int Ray_In_Bounds (Ray,Bounds)
 RAY *Ray;
-PRIOQ *Depth_Queue;
-{
-   register int Intersection_Found, Any_Intersection_Found;
-   SHAPE *Bounding_Shape;
-   SHAPE *Clipping_Shape;
-   INTERSECTION *Local_Intersection;
-   OBJECT *Local_Object;
-   PRIOQ *Local_Depth_Queue;
+OBJECT *Bounds;
+  {
+  OBJECT *Bound;
+  INTERSECTION Local;
 
-   for (Bounding_Shape = ((COMPOSITE *) Object) -> Bounding_Shapes ;
-              Bounding_Shape != NULL ;
-              Bounding_Shape = Bounding_Shape -> Next_Object) {
+  for (Bound = Bounds;
+  Bound != NULL;
+  Bound = Bound->Sibling)
+    {
+    Bounding_Region_Tests++;
 
-      Bounding_Region_Tests++;
-      COOPERATE
-      if ((Local_Intersection = Intersection ((OBJECT *) Bounding_Shape, Ray)) != NULL)
-         free (Local_Intersection);
-      else
-         if (!Inside (&Ray -> Initial, (OBJECT *) Bounding_Shape))
-            return (FALSE);
-      Bounding_Region_Tests_Succeeded++;
-   }
+    if (!Intersection (&Local, Bound, Ray))
+      if (!Inside_Object(&Ray->Initial,Bound))
+        return (FALSE);
 
-   Local_Depth_Queue = pq_new (128);
-   Any_Intersection_Found = FALSE;
+    Bounding_Region_Tests_Succeeded++;
+    }
 
-   for (Local_Object = ((COMPOSITE *) Object) -> Objects ;
-              Local_Object != NULL ;
-              Local_Object = Local_Object -> Next_Object)
+  return (TRUE);
+  }
 
-      All_Intersections (Local_Object, Ray, Local_Depth_Queue);
+int Point_In_Clip (IPoint, Clip)
+VECTOR *IPoint;
+OBJECT *Clip;
+  {
+  OBJECT *Local_Clip;
 
-   for (Local_Intersection = pq_get_highest (Local_Depth_Queue);
-      	Local_Intersection != NULL ;
-      	pq_delete_highest (Local_Depth_Queue),
-      	Local_Intersection = pq_get_highest (Local_Depth_Queue)) {
+  for (Local_Clip = Clip;
+  Local_Clip != NULL;
+  Local_Clip = Local_Clip->Sibling)
+    {
+    Clipping_Region_Tests++;
+    if (!Inside_Object(IPoint, Local_Clip)) 
+      return (FALSE);
 
-      Intersection_Found = TRUE;
+    Clipping_Region_Tests_Succeeded++;
+    }
+  return (TRUE);
+  }
 
-      for (Clipping_Shape = Object -> Clipping_Shapes ;
-         	        Clipping_Shape != NULL ;
-         	        Clipping_Shape = Clipping_Shape -> Next_Object) {
-         Clipping_Region_Tests++;
-         if (!Inside (&Local_Intersection->Point, (OBJECT *) Clipping_Shape)) {
-            Intersection_Found = FALSE;
-            break;
-         }
-         Clipping_Region_Tests_Succeeded++;
-      }
+OBJECT *Copy_Bound_Clip (Old)
+OBJECT *Old;
+  {
+  OBJECT *Current, *New, *Prev, *First;
 
-      if (Intersection_Found) {
-         pq_add (Depth_Queue, Local_Intersection);
-         Any_Intersection_Found = TRUE;
-      }
-   }
-   pq_free (Local_Depth_Queue);
-   return (Any_Intersection_Found);
-}
+  First = Prev = NULL;
 
+  for (Current = Old;
+  Current != NULL ;
+  Current = Current->Sibling) 
+    {
+    New = Copy_Object (Current);
+    if (First == NULL)
+      First = New;
+    if (Prev != NULL)
+      Prev->Sibling = New;
+    Prev = New;
+    }
+  return (First);
+  }
 
-int All_Object_Intersections (Object, Ray, Depth_Queue)
-OBJECT *Object;
-RAY *Ray;
-PRIOQ *Depth_Queue;
-{
-   int Intersection_Found, Any_Intersection_Found;
-   INTERSECTION *Local_Intersection;
-   SHAPE *Bounding_Shape;
-   SHAPE *Clipping_Shape;
-   PRIOQ *Local_Depth_Queue;
+OBJECT *Copy_Object (Old)
+OBJECT *Old;
+  {
+  OBJECT *New;
 
-   for (Bounding_Shape = Object -> Bounding_Shapes ;
-              Bounding_Shape != NULL ;
-              Bounding_Shape = Bounding_Shape -> Next_Object) {
+  if (Old == NULL)
+    return (NULL);
 
-      Bounding_Region_Tests++;
-      COOPERATE
-      if ((Local_Intersection = Intersection ((OBJECT *) Bounding_Shape, Ray)) != NULL)
-         free (Local_Intersection);
-      else
-         if (!Inside (&Ray -> Initial, (OBJECT *) Bounding_Shape))
-            return (FALSE);
-      Bounding_Region_Tests_Succeeded++;
-   }
+  New = Copy (Old);
 
-   Local_Depth_Queue = pq_new (128);
-   Any_Intersection_Found = FALSE;
-   All_Intersections ((OBJECT *)Object->Shape, Ray, Local_Depth_Queue);
+  New->Methods = Old->Methods;
+  New->Type    = Old->Type;
+  New->Sibling = Old->Sibling;
+  New->Texture = Old->Texture;
+  New->Bound   = Old->Bound;
+  New->Clip    = Old->Clip;
+  New->Bounds  = Old->Bounds;
+  New->No_Shadow_Flag = Old->No_Shadow_Flag;
 
-   for (Local_Intersection = pq_get_highest (Local_Depth_Queue);
-         	Local_Intersection != NULL ;
-      	  pq_delete_highest (Local_Depth_Queue),
-      	  Local_Intersection = pq_get_highest (Local_Depth_Queue)) {
+  New->Sibling = NULL;          /* Important */
 
-      Intersection_Found = TRUE;
+  New->Texture = Copy_Textures (Old->Texture);
+  New->Bound   = Copy_Bound_Clip (Old->Bound);
+  if (Old->Bound != Old->Clip)
+    New->Clip  = Copy_Bound_Clip (Old->Clip);
+  else
+    New->Clip  = New->Bound;
 
-      for (Clipping_Shape = Object -> Clipping_Shapes ;
-         	   Clipping_Shape != NULL ;
-         	   Clipping_Shape = Clipping_Shape -> Next_Object) {
+  return (New);
+  }   
 
-         Clipping_Region_Tests++;
-         if (Options & DEBUGGING) {
-            printf("Test (%.4lf, %.4lf, %.4lf)\n",
-               Local_Intersection->Point.x,
-               Local_Intersection->Point.y,
-               Local_Intersection->Point.z);
-         }
-         if (!Inside (&Local_Intersection->Point, (OBJECT *) Clipping_Shape)) {
-            if (Options & DEBUGGING)
-               printf("not ok\n");
-            Intersection_Found = FALSE;
-            break;
-         }
-         Clipping_Region_Tests_Succeeded++; 
-      }
-
-      if (Intersection_Found) {
-         if (Options & DEBUGGING)
-            printf("ok\n");
-         pq_add (Depth_Queue, Local_Intersection);
-         Any_Intersection_Found = TRUE;
-
-      }
-   }
-   pq_free (Local_Depth_Queue);
-   return (Any_Intersection_Found);
-}
-
-
-int Inside_Basic_Object (Test_Point, Object)
-VECTOR *Test_Point;
-OBJECT *Object;
-{
-   SHAPE *Bounding_Shape;
-   SHAPE *Clipping_Shape;
-
-   for (Bounding_Shape = Object -> Bounding_Shapes ;
-              Bounding_Shape != NULL ;
-              Bounding_Shape = Bounding_Shape -> Next_Object)
-
-      if (!Inside (Test_Point, (OBJECT *) Bounding_Shape))
-         return (FALSE);
-
-   for (Clipping_Shape = Object -> Clipping_Shapes ;
-               Clipping_Shape != NULL ;
-               Clipping_Shape = Clipping_Shape -> Next_Object)
-
-      if (!Inside (Test_Point, (OBJECT *) Clipping_Shape))
-         return (FALSE);
-
-   if (Inside (Test_Point, (OBJECT *) Object -> Shape))
-      return (TRUE);
-   return (FALSE);
-}
-
-int Inside_Composite_Object (Test_Point, Object)
-VECTOR *Test_Point;
-OBJECT *Object;
-{
-   SHAPE *Bounding_Shape;
-   SHAPE *Clipping_Shape;
-   OBJECT *Local_Object;
-
-   for (Bounding_Shape = ((COMPOSITE *) Object) -> Bounding_Shapes ;
-              Bounding_Shape != NULL ;
-              Bounding_Shape = Bounding_Shape -> Next_Object)
-
-      if (!Inside (Test_Point, (OBJECT *) Bounding_Shape))
-         return (FALSE);
-
-   for (Clipping_Shape = ((COMPOSITE *) Object) -> Clipping_Shapes ;
-              Clipping_Shape != NULL ;
-              Clipping_Shape = Clipping_Shape -> Next_Object)
-
-      if (!Inside (Test_Point, (OBJECT *) Clipping_Shape))
-         return (FALSE);
-
-   for (Local_Object = ((COMPOSITE *) Object) -> Objects ;
-              Local_Object != NULL ;
-              Local_Object = Local_Object -> Next_Object)
-
-      if (Inside (Test_Point, Local_Object))
-         return (TRUE);
-
-   return (FALSE);
-}
-
-void *Copy_Basic_Object (Object)
-OBJECT *Object;
-{
-   SHAPE *Local_Shape, *Copied_Shape;
-   OBJECT *New_Object;
-
-   New_Object = Get_Object();
-   *New_Object = *Object;
-   New_Object -> Next_Object = NULL;
-   New_Object -> Bounding_Shapes = NULL;
-   New_Object -> Clipping_Shapes = NULL;
-   for (Local_Shape = Object -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object) {
-
-      Copied_Shape = (SHAPE *) Copy((OBJECT *) Local_Shape);
-      Link ((OBJECT *) Copied_Shape,
-         (OBJECT **) &(Copied_Shape -> Next_Object),
-         (OBJECT **) &(New_Object -> Bounding_Shapes));
-
-      if ((Copied_Shape->Type == CSG_UNION_TYPE)
-         || (Copied_Shape->Type == CSG_INTERSECTION_TYPE)
-         || (Copied_Shape->Type == CSG_DIFFERENCE_TYPE))
-         Set_CSG_Parents ((CSG_SHAPE *) Copied_Shape, New_Object);
-   }
-
-   for (Local_Shape = Object -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object) {
-
-      Copied_Shape = (SHAPE *) Copy((OBJECT *) Local_Shape);
-      Link ((OBJECT *) Copied_Shape,
-         (OBJECT **) &(Copied_Shape -> Next_Object),
-         (OBJECT **) &(New_Object -> Clipping_Shapes));
-
-      if ((Copied_Shape->Type == CSG_UNION_TYPE)
-         || (Copied_Shape->Type == CSG_INTERSECTION_TYPE)
-         || (Copied_Shape->Type == CSG_DIFFERENCE_TYPE))
-         Set_CSG_Parents ((CSG_SHAPE *) Copied_Shape, New_Object);
-   }
-
-   New_Object -> Shape = (SHAPE *) Copy((OBJECT *) Object -> Shape);
-   if ((New_Object->Shape->Type == CSG_UNION_TYPE)
-      || (New_Object->Shape->Type == CSG_INTERSECTION_TYPE)
-      || (New_Object->Shape->Type == CSG_DIFFERENCE_TYPE))
-      Set_CSG_Parents ((CSG_SHAPE *) New_Object->Shape, New_Object);
-   else
-      New_Object->Shape->Parent_Object = New_Object;
-
-
-   if (New_Object->Object_Texture != NULL)
-      New_Object->Object_Texture = Copy_Texture (New_Object->Object_Texture);
-
-   return ((void *)New_Object);
-}
-
-void *Copy_Composite_Object (Object)
-OBJECT *Object;
-{
-   COMPOSITE *New_Object;
-   SHAPE *Local_Shape;
-   OBJECT *Local_Object, *Copied_Object;
-
-   New_Object = Get_Composite_Object();
-   *New_Object = *((COMPOSITE *) Object);
-   New_Object -> Next_Object = NULL;
-   New_Object -> Objects = NULL;
-   for (Local_Object = ((COMPOSITE *) Object) -> Objects;
-              Local_Object != NULL ;
-              Local_Object = Local_Object -> Next_Object) {
-
-      Copied_Object = (OBJECT *) Copy(Local_Object);
-      Link (Copied_Object,
-         &(Copied_Object -> Next_Object),
-         &(New_Object -> Objects));
-   }
-
-   New_Object -> Bounding_Shapes = NULL;
-   for (Local_Shape = ((COMPOSITE *) Object) -> Bounding_Shapes;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object) {
-
-      Copied_Object = (OBJECT *) Copy((OBJECT *) Local_Shape);
-      Link (Copied_Object,
-         &(Copied_Object -> Next_Object),
-         (OBJECT **) &(New_Object -> Bounding_Shapes));
-   }
-   New_Object -> Clipping_Shapes = NULL;
-   for (Local_Shape = ((COMPOSITE *) Object) -> Clipping_Shapes;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object) {
-
-      Copied_Object = (OBJECT *) Copy((OBJECT *) Local_Shape);
-      Link (Copied_Object,
-         &(Copied_Object -> Next_Object),
-         (OBJECT **) &(New_Object -> Clipping_Shapes));
-   }
-   return ((void *)New_Object);
-}
-
-void Translate_Basic_Object (Object, Vector)
+void Translate_Object (Object, Vector)
 OBJECT *Object;
 VECTOR *Vector;
-{
-   SHAPE *Local_Shape;
+  {
+  OBJECT *Sib;
 
-   for (Local_Shape = Object -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  if (Object == NULL)
+    return;
 
-      Translate ((OBJECT *) Local_Shape, Vector);
+  for (Sib = Object->Bound;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    Translate_Object (Sib, Vector);
 
-   for (Local_Shape = Object -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  if (Object->Clip != Object->Bound)
+    for (Sib = Object->Clip;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    Translate_Object (Sib, Vector);
 
-      Translate ((OBJECT *) Local_Shape, Vector);
+  Translate_Textures (Object->Texture,Vector);
 
-   Translate ((OBJECT *) Object -> Shape, Vector);
+  Translate (Object,Vector);
+  }
 
-   Translate_Texture (&Object->Object_Texture, Vector);
-}
-
-void Rotate_Basic_Object (Object, Vector)
+void Rotate_Object (Object, Vector)
 OBJECT *Object;
 VECTOR *Vector;
-{
-   SHAPE *Local_Shape;
-   TRANSFORMATION Transformation;
+  {
+  OBJECT *Sib;
 
-   for (Local_Shape = Object -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  if (Object == NULL)
+    return;
 
-      Rotate ((OBJECT *) Local_Shape, Vector);
+  for (Sib = Object->Bound;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    Rotate_Object (Sib, Vector);
 
-   for (Local_Shape = Object -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  if (Object->Clip != Object->Bound)
+    for (Sib = Object->Clip;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    Rotate_Object (Sib, Vector);
 
-      Rotate ((OBJECT *) Local_Shape, Vector);
+  Rotate_Textures (Object->Texture,Vector);
 
-   Rotate ((OBJECT *) Object -> Shape, Vector);
-   Get_Rotation_Transformation (&Transformation, Vector);
+  Rotate (Object,Vector);
+  }
 
-   Rotate_Texture (&Object->Object_Texture, Vector);
-}
-
-void Scale_Basic_Object (Object, Vector)
+void Scale_Object (Object, Vector)
 OBJECT *Object;
 VECTOR *Vector;
-{
-   SHAPE *Local_Shape;
+  {
+  OBJECT *Sib;
 
-   for (Local_Shape = Object -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  if (Object == NULL)
+    return;
 
-      Scale ((OBJECT *) Local_Shape, Vector);
+  for (Sib = Object->Bound;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    Scale_Object (Sib, Vector);
 
-   for (Local_Shape = Object -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  if (Object->Clip != Object->Bound)
+    for (Sib = Object->Clip;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    Scale_Object (Sib, Vector);
 
-      Scale ((OBJECT *) Local_Shape, Vector);
+  Scale_Textures (Object->Texture,Vector);
 
-   Scale ((OBJECT *) Object -> Shape, Vector);
+  Scale (Object,Vector);
+  }
 
-   Scale_Texture (&Object->Object_Texture, Vector);
-}
-
-void Translate_Composite_Object (Object, Vector)
+int Inside_Object (IPoint, Object)
+VECTOR *IPoint;
 OBJECT *Object;
-VECTOR *Vector;
-{
-   OBJECT *Local_Object;
-   SHAPE *Local_Shape;
+  {
+  OBJECT *Sib;
 
-   for (Local_Object = ((COMPOSITE *) Object) -> Objects;
-              Local_Object != NULL ;
-              Local_Object = Local_Object -> Next_Object)
+  /* removed 7/19/92 CEY   
+   for (Sib = Object->Bound;
+        Sib != NULL;
+        Sib = Sib->Sibling)
+     if (!Inside_Object(IPoint, Sib))
+       return(FALSE);
+*/
+  for (Sib = Object->Clip;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    if (!Inside_Object(IPoint, Sib))
+      return(FALSE);
 
-      Translate (Local_Object, Vector);   
+  return (Inside(IPoint,Object));
+  }
 
-   for (Local_Shape = ((COMPOSITE *) Object) -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
-
-      Translate ((OBJECT *) Local_Shape, Vector);
-
-   for (Local_Shape = ((COMPOSITE *) Object) -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
-
-      Translate ((OBJECT *) Local_Shape, Vector);
-}
-
-void Rotate_Composite_Object (Object, Vector)
+void Invert_Object (Object)
 OBJECT *Object;
-VECTOR *Vector;
-{
-   OBJECT *Local_Object;
-   SHAPE *Local_Shape;
+  {
+  /*   OBJECT *Sib; */
 
-   for (Local_Object = ((COMPOSITE *) Object) -> Objects;
-              Local_Object != NULL ;
-              Local_Object = Local_Object -> Next_Object)
+  if (Object == NULL)
+    return;
 
-      Rotate (Local_Object, Vector);   
+  /* removed 3/29/93 CEY
+   for (Sib = Object->Clip;
+        Sib != NULL;
+        Sib = Sib->Sibling)
+     Invert_Object (Sib);
+*/
+  Invert (Object);
+  }
 
-   for (Local_Shape = ((COMPOSITE *) Object) -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
-
-      Rotate ((OBJECT *) Local_Shape, Vector);
-
-   for (Local_Shape = ((COMPOSITE *) Object) -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
-
-      Rotate ((OBJECT *) Local_Shape, Vector);
-}
-
-void Scale_Composite_Object (Object, Vector)
+void Destroy_Object (Object)
 OBJECT *Object;
-VECTOR *Vector;
-{
-   OBJECT *Local_Object;
-   SHAPE *Local_Shape;
+  {
+  OBJECT *Sib;
 
-   for (Local_Object = ((COMPOSITE *) Object) -> Objects;
-              Local_Object != NULL ;
-              Local_Object = Local_Object -> Next_Object)
+  while (Object != NULL)
+    {
+    Destroy_Textures (Object->Texture);
+    Destroy_Object (Object->Bound);
+    if (Object->Bound != Object->Clip)
+      Destroy_Object (Object->Clip);
+    Sib = Object->Sibling;
+    Destroy(Object);
+    Object = Sib;
+    }
+  }   
 
-      Scale (Local_Object, Vector);   
-
-   for (Local_Shape = ((COMPOSITE *) Object) -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
-
-      Scale ((OBJECT *) Local_Shape, Vector);
-
-   for (Local_Shape = ((COMPOSITE *) Object) -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
-
-      Scale ((OBJECT *) Local_Shape, Vector);
-}
-
-
-void Invert_Basic_Object (Object)
+void Transform_Object (Object, Trans)
 OBJECT *Object;
-{
-   SHAPE *Local_Shape;
+TRANSFORM *Trans;
+  {
+  OBJECT *Sib;
 
-   for (Local_Shape = Object -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  if (Object == NULL)
+    return;
 
-      Invert ((OBJECT *) Local_Shape);
+  for (Sib = Object->Bound;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    Transform_Object (Sib, Trans);
 
-   for (Local_Shape = Object -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  if (Object->Clip != Object->Bound)
+    for (Sib = Object->Clip;
+  Sib != NULL;
+  Sib = Sib->Sibling)
+    Transform_Object (Sib, Trans);
 
-      Invert ((OBJECT *) Local_Shape);
-   Invert ((OBJECT *) Object -> Shape);
-}
+  Transform_Textures (Object->Texture,Trans);
 
-void Invert_Composite_Object (Object)
-OBJECT *Object;
-{
-   OBJECT *Local_Object;
-   SHAPE *Local_Shape;
+  Transform (Object,Trans);
+  }
 
-   for (Local_Object = ((COMPOSITE *)Object) -> Objects;
-              Local_Object != NULL ;
-              Local_Object = Local_Object -> Next_Object)
+void create_istack ()
+  {
+  ISTACK *New;
 
-      Invert (Local_Object);   
+  if ((New = (ISTACK *) malloc (sizeof (ISTACK))) == NULL) 
+    {
+    fprintf (stderr, "\nOut of memory. Cannot allocate istack");
+    close_all();
+    exit(1);
+    }
 
-   for (Local_Shape = ((COMPOSITE *) Object) -> Bounding_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+  New->next = free_istack;
+  free_istack = New;
 
-      Invert ((OBJECT *) Local_Shape);
+  if ((New->istack = (INTERSECTION *)
+    malloc (Max_Intersections * sizeof (INTERSECTION))) == NULL) 
+    {
+    fprintf (stderr, "\nOut of memory. Cannot allocate istack entries");
+    close_all();
+    exit(1);
+    }
+  Number_of_istacks++;
+  }
 
-   for (Local_Shape = ((COMPOSITE *) Object) -> Clipping_Shapes ;
-              Local_Shape != NULL ;
-              Local_Shape = Local_Shape -> Next_Object)
+ISTACK *open_istack()
+  {
+  ISTACK *istk;
 
-      Invert ((OBJECT *) Local_Shape);
-}
+  if (free_istack == NULL) 
+    create_istack ();
+
+  istk = free_istack;
+  free_istack = istk->next;
+  istk->top_entry = 0;
+
+  return (istk);
+  }
+
+void close_istack (istk)
+ISTACK *istk;
+  {
+  istk->next = free_istack;
+  free_istack = istk;
+  }
+
+void incstack(istk)
+ISTACK *istk;
+  {
+  if (++istk->top_entry >= (unsigned int)Max_Intersections)
+    {
+    istk->top_entry--;
+    Istack_overflows++;
+    }
+  }

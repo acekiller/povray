@@ -4,17 +4,18 @@
 *  This header file is included by all C modules in POV-Ray. It defines all
 *  globally-accessible types and constants.
 *
-*  from Persistence of Vision Raytracer 
-*  Copyright 1992 Persistence of Vision Team
+*  from Persistence of Vision Raytracer
+*  Copyright 1993 Persistence of Vision Team
 *---------------------------------------------------------------------------
-*  Copying, distribution and legal info is in the file povlegal.doc which
-*  should be distributed with this file. If povlegal.doc is not available
-*  or for more info please contact:
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other 
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+*  Forum.  The latest version of POV-Ray may be found there as well.
 *
-*       Drew Wells [POV-Team Leader] 
-*       CIS: 73767,1244  Internet: 73767.1244@compuserve.com
-*       Phone: (213) 254-4041
-* 
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
@@ -22,10 +23,22 @@
 *****************************************************************************/
 
 /* Generic header for all modules */
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include "config.h"
+
+
+/* These are used by POVRAY.C and the machine specific modules */
+
+#define POV_RAY_VERSION "2.0"
+
+/* This message is for the personal distribution release. */
+#define DISTRIBUTION_MESSAGE_1 "This is an unofficial version compiled by:"
+#define DISTRIBUTION_MESSAGE_2 "FILL IN NAME HERE........................."
+#define DISTRIBUTION_MESSAGE_3 "The POV-Ray Team is not responsible for supporting this version."
 
 
 #ifndef READ_ENV_VAR_BEFORE 
@@ -51,12 +64,16 @@
 #define HUGE_VAL 1.0e+17
 #endif
 
+#ifndef BOUND_HUGE
+#define BOUND_HUGE 1.0e30
+#endif
+
 #ifndef DBL_FORMAT_STRING
 #define DBL_FORMAT_STRING "%lf"
 #endif
 
 #ifndef DEFAULT_OUTPUT_FORMAT
-#define DEFAULT_OUTPUT_FORMAT   'd'
+#define DEFAULT_OUTPUT_FORMAT	'd'
 #endif
 
 #ifndef RED_RAW_FILE_EXTENSION
@@ -77,7 +94,7 @@
 
 /* 0==yes 1==no 2==opt */
 #ifndef CASE_SENSITIVE_DEFAULT
-#define CASE_SENSITIVE_DEFAULT 0 
+#define CASE_SENSITIVE_DEFAULT 0
 #endif
 
 #ifndef READ_FILE_STRING
@@ -205,118 +222,155 @@
 #define WAIT_FOR_KEYPRESS
 #endif
 
+#ifndef CDECL
+#define CDECL
+#endif
+
+#ifndef MAX_BUFSIZE
+#define MAX_BUFSIZE INT_MAX
+#endif
+
 /* If compiler version is undefined, then make it 'u' for unknown */
 #ifndef COMPILER_VER
 #define COMPILER_VER ".u"
 #endif
-
 
 /* These values determine the minumum and maximum distances
    that qualify as ray-object intersections */
 #define Small_Tolerance 0.001
 #define Max_Distance 1.0e7
 
-typedef struct q_entry INTERSECTION;
+typedef struct istk_entry INTERSECTION;
 typedef struct Vector_Struct VECTOR;
 typedef DBL MATRIX [4][4];
+typedef struct Bounding_Box_Struct BBOX;
 typedef struct Colour_Struct COLOUR;
 typedef struct Colour_Map_Entry COLOUR_MAP_ENTRY;
 typedef struct Colour_Map_Struct COLOUR_MAP;
-typedef struct Transformation_Struct TRANSFORMATION;
+typedef struct Transform_Struct TRANSFORM;
 typedef struct Image_Struct IMAGE;
 typedef struct Texture_Struct TEXTURE;
+typedef struct Material_Texture_Struct MATERIAL;
+typedef struct Tiles_Texture_Struct TILES;
+typedef struct Pattern_Struct TPATTERN;
+typedef struct Pigment_Struct PIGMENT;
+typedef struct Tnormal_Struct TNORMAL;
+typedef struct Finish_Struct FINISH;
 typedef struct Method_Struct METHODS;
-typedef struct Viewpoint_Struct VIEWPOINT;
-typedef struct Object_Shape SHAPE;
+typedef struct Camera_Struct CAMERA;
 typedef struct Object_Struct OBJECT;
-typedef struct Sphere_Shape SPHERE;
-typedef struct Light_Source_Shape LIGHT_SHAPE;
-typedef struct Quadric_Shape QUADRIC;
-typedef struct Poly_Shape POLY;
-typedef struct Bicubic_Patch_Shape BICUBIC_PATCH;
-typedef struct Triangle_Shape TRIANGLE;
-typedef struct Smooth_Triangle_Shape SMOOTH_TRIANGLE;
-typedef struct Plane_Shape PLANE;
-typedef struct Box_Shape BOX;
-typedef struct Blob_Shape BLOB;
-typedef struct CSG_Type CSG_SHAPE;
-typedef struct Composite_Object_Struct COMPOSITE;
+typedef struct Composite_Struct COMPOSITE;
+typedef struct Sphere_Struct SPHERE;
+typedef struct Quadric_Struct QUADRIC;
+typedef struct Poly_Struct POLY;
+typedef struct Disc_Struct DISC;
+typedef struct Cone_Struct CYLINDER;
+typedef struct Cone_Struct CONE;
+typedef struct Light_Source_Struct LIGHT_SOURCE;
+typedef struct Bicubic_Patch_Struct BICUBIC_PATCH;
+typedef struct Triangle_Struct TRIANGLE;
+typedef struct Smooth_Triangle_Struct SMOOTH_TRIANGLE;
+typedef struct Plane_Struct PLANE;
+typedef struct CSG_Struct CSG;
+typedef struct Box_Struct BOX;
+typedef struct Blob_Struct BLOB;
 typedef struct Ray_Struct RAY;
 typedef struct Frame_Struct FRAME;
-typedef struct prioq_struct PRIOQ;
+typedef struct istack_struct ISTACK;
 typedef int TOKEN;
 typedef int CONSTANT;
 typedef struct Chunk_Header_Struct CHUNK_HEADER;
 typedef struct Data_File_Struct DATA_FILE;
 typedef struct complex_block complex;
-typedef struct Height_Field_Shape HEIGHT_FIELD;
+typedef struct Height_Field_Struct HEIGHT_FIELD;
 typedef short WORD;
 
-
 struct Vector_Struct
-{
+  {
    DBL x, y, z;
-};
-
+  };
+#define Destroy_Vector(x) if ((x)!=NULL) free(x)
+#define Destroy_Float(x) if ((x)!=NULL) free(x)
 
 struct Colour_Struct
-{
-   DBL Red, Green, Blue, Alpha;
-};
+  {
+   DBL Red, Green, Blue, Filter;
+  };
 
+#define Make_Colour(c,r,g,b) {(c)->Red=(r);(c)->Green=(g);(c)->Blue=(b);(c)->Filter=0.0;}
+#define Make_ColourA(c,r,g,b,a) {(c)->Red=(r);(c)->Green=(g);(c)->Blue=(b);(c)->Filter=(a);}
+#define Make_Vector(v,a,b,c) { (v)->x=(a);(v)->y=(b);(v)->z=(c); }
+#define Destroy_Colour(x) if ((x)!=NULL) free(x)
+#define MAX_COLOUR_MAP_ENTRIES 40
 
 struct Colour_Map_Entry
-{
-   DBL start, end;
-   COLOUR Start_Colour, End_Colour;
-};
-
+  {
+   DBL value;
+   COLOUR Colour;
+  };
 
 struct Colour_Map_Struct
-{
-   int Number_Of_Entries;
+  {
+   int Number_Of_Entries, Transparency_Flag, Users;
    COLOUR_MAP_ENTRY *Colour_Map_Entries;
-   int Transparency_Flag;
-};
+  };
 
-
-struct Transformation_Struct
-{
+struct Transform_Struct
+  {
    MATRIX matrix;
    MATRIX inverse;
-};
+  };
 
+#define Destroy_Transform(x) if ((x)!=NULL) free(x)
 
 /* Types for reading IFF files. */
-typedef struct {
-   unsigned short Red, Green, Blue, Alpha;
-} IMAGE_COLOUR;
+typedef struct {unsigned short Red, Green, Blue, Filter;} IMAGE_COLOUR;
 
 struct Image_Line
-{
+  {
    unsigned char *red, *green, *blue;
-};
+  };
 
 typedef struct Image_Line IMAGE_LINE;
 
+/* Legal image attributes */
+#define GIF_FILE   1
+#define POT_FILE   2
+#define DUMP_FILE  4
+#define IFF_FILE   8
+#define TGA_FILE  16
+#define GRAD_FILE 32
+
+#define IMAGE_FILE    GIF_FILE+DUMP_FILE+IFF_FILE+GRAD_FILE+TGA_FILE
+#define NORMAL_FILE   GIF_FILE+DUMP_FILE+IFF_FILE+GRAD_FILE+TGA_FILE
+#define MATERIAL_FILE GIF_FILE+DUMP_FILE+IFF_FILE+GRAD_FILE+TGA_FILE
+#define HF_FILE       GIF_FILE+POT_FILE+TGA_FILE
+
 struct Image_Struct
-{
-   DBL width, height;
-   int iwidth, iheight;
+  {
    int Map_Type;
+   int File_Type;
    int Interpolation_Type;
    short Once_Flag;
    short Use_Colour_Flag;
-   VECTOR Image_Gradient;
+   VECTOR Gradient;
+   DBL width, height;
+   int iwidth, iheight;
    short Colour_Map_Size;
    IMAGE_COLOUR *Colour_Map;
-   union {
-      IMAGE_LINE *rgb_lines;
-      unsigned char **map_lines;
-   }    data;  
-};
+   union 
+    {
+     IMAGE_LINE *rgb_lines;
+     unsigned char **map_lines;
+    } data;  
+  };
 
-/* Image/Bump Map projection methods */
+/* Texture types */
+#define PNF_TEXTURE     0
+#define TILE_TEXTURE    1
+#define MAT_TEXTURE     2
+
+/* Image/Bump Map projection types */
 #define PLANAR_MAP      0
 #define SPHERICAL_MAP   1
 #define CYLINDRICAL_MAP 2
@@ -331,32 +385,33 @@ struct Image_Struct
 #define NEAREST_NEIGHBOR 1
 #define BILINEAR         2
 #define CUBIC_SPLINE     3
-#define NORMALIZED_DIST  4 
+#define NORMALIZED_DIST  4
 
+/* Coloration pigment list */
+#define NO_PIGMENT               0
+#define COLOUR_PIGMENT           1
+#define BOZO_PIGMENT             2
+#define MARBLE_PIGMENT           3
+#define WOOD_PIGMENT             4
+#define CHECKER_PIGMENT          5
+#define SPOTTED_PIGMENT          6
+#define AGATE_PIGMENT            7
+#define GRANITE_PIGMENT          8
+#define GRADIENT_PIGMENT         9
+#define IMAGE_MAP_PIGMENT       10
+#define PAINTED1_PIGMENT        11 
+#define PAINTED2_PIGMENT        12 
+#define PAINTED3_PIGMENT        13 
+#define ONION_PIGMENT           14 
+#define LEOPARD_PIGMENT         15 
+#define BRICK_PIGMENT           16
+#define MANDEL_PIGMENT          17
+#define HEXAGON_PIGMENT         18
+#define RADIAL_PIGMENT          19
 
-/* Coloration texture list */
-#define NO_TEXTURE               0
-#define COLOUR_TEXTURE           1
-#define BOZO_TEXTURE             2
-#define MARBLE_TEXTURE           3
-#define WOOD_TEXTURE             4
-#define CHECKER_TEXTURE          5
-#define CHECKER_TEXTURE_TEXTURE  6
-#define SPOTTED_TEXTURE          7
-#define AGATE_TEXTURE            8
-#define GRANITE_TEXTURE          9
-#define GRADIENT_TEXTURE        10
-#define IMAGEMAP_TEXTURE        11
-#define PAINTED1_TEXTURE        12 
-#define PAINTED2_TEXTURE        13 
-#define PAINTED3_TEXTURE        14 
-#define ONION_TEXTURE           15 
-#define LEOPARD_TEXTURE         16 
-#define BRICK_TEXTURE           17 /* RHA 2/92 for brick */
-#define MATERIAL_MAP_TEXTURE    99 /* Not really colored, but... CdW */
 
 /* Normal perturbation (bumpy) texture list  */
-#define NO_BUMPS   0
+#define NO_NORMAL  0
 #define WAVES      1
 #define RIPPLES    2
 #define WRINKLES   3
@@ -365,89 +420,134 @@ struct Image_Struct
 #define BUMPY1     6
 #define BUMPY2     7
 #define BUMPY3     8
-#define BUMPMAP    9
+#define BUMP_MAP   9
+
+/* Pattern flags */
+#define NO_FLAGS      0
+#define HAS_FILTER    1
+#define FULL_BLOCKING 2
+#define HAS_TURB      4
+#define POST_DONE     8
+
+#define TPATTERN_FIELDS int Type, Octaves, Flags; VECTOR Turbulence;  \
+  DBL omega, lambda, Frequency, Phase; IMAGE *Image; TRANSFORM *Trans;
+
+#define INIT_TPATTERN_FIELDS(p,t) p->Type=t; p->Octaves=6; p->Image=NULL; \
+ p->Frequency=1.0; p->Phase=0.0;\
+ p->Trans=NULL; p->Flags=NO_FLAGS; p->omega=0.5;p->lambda=2.0; \
+ Make_Vector(&(p->Turbulence),0.0,0.0,0.0);
+
+/* This is an abstract structure that is never actually used.
+   Pigment and Tnormal are descendents of this primative type */
+
+struct Pattern_Struct
+  {
+   TPATTERN_FIELDS
+  };
+
+struct Pigment_Struct
+  {
+   TPATTERN_FIELDS
+   COLOUR *Colour1;
+   COLOUR Quick_Colour;
+   COLOUR_MAP *Colour_Map;
+   VECTOR Colour_Gradient;
+   DBL Mortar, Agate_Turb_Scale;
+   int Iterations; /* mhs 10/92 for fractal textures */
+  };
+
+struct Tnormal_Struct
+  {
+   TPATTERN_FIELDS
+   DBL Amount;
+  };
+
+struct Finish_Struct
+  {
+   DBL Reflection, Ambient, Diffuse, Brilliance, Index_Of_Refraction;
+   DBL Refraction, Specular, Roughness, Phong, Phong_Size;
+   DBL Crand;
+   short Metallic_Flag;
+  };
+
+#define Destroy_Finish(x) if ((x)!=NULL) free(x)
+
+#define TEXTURE_FIELDS unsigned char Type,Flags; TEXTURE *Next_Material; \
+ TEXTURE *Next_Layer;
+#define TRANS_TEXTURE_FIELDS TEXTURE_FIELDS TRANSFORM *Trans;
 
 struct Texture_Struct
-{
-   TEXTURE *Next_Texture;
-   TEXTURE *Next_Material;
-   int Number_Of_Materials;
-   DBL Object_Reflection;
-   DBL Object_Ambient;
-   DBL Object_Diffuse, Object_Brilliance;
-   DBL Object_Index_Of_Refraction;
-   DBL Object_Refraction, Object_Transmit;
-   DBL Object_Specular, Object_Roughness;
-   DBL Object_Phong, Object_PhongSize;
-   DBL Bump_Amount;
-   DBL Texture_Randomness;
-   DBL Frequency;
-   DBL Phase;
-   int Texture_Number;
-   int Bump_Number;
-   int Texture_Index;
-   TRANSFORMATION *Texture_Transformation;
-   COLOUR *Colour1;
-   COLOUR *Colour2;
-   DBL Turbulence;
-   VECTOR Texture_Gradient;
-   COLOUR_MAP *Colour_Map;
+  {
+   TEXTURE_FIELDS
+   PIGMENT *Pigment;
+   TNORMAL *Tnormal;
+   FINISH *Finish;
+  };
+
+struct Tiles_Texture_Struct
+  {
+   TRANS_TEXTURE_FIELDS
+   TEXTURE *Tile1;
+   TEXTURE *Tile2;
+  };
+
+struct Material_Texture_Struct
+  {
+   TRANS_TEXTURE_FIELDS
+   TEXTURE *Materials;
    IMAGE *Image;
-   IMAGE *Bump_Image;
-   IMAGE *Material_Image;
-   short Metallic_Flag, Once_Flag, Constant_Flag;
-   int Octaves; /* dmf, 1/92 for turb */
-   DBL Mortar;  /* rha, 2/92 for brick */
-};
+   int Num_Of_Mats;
+  };
 
-/* Object/shape types */
-#define SPHERE_TYPE            0
-#define TRIANGLE_TYPE          1
-#define SMOOTH_TRIANGLE_TYPE   2
-#define PLANE_TYPE             3
-#define QUADRIC_TYPE           4
-#define POLY_TYPE              5
-#define BICUBIC_PATCH_TYPE     6
-#define COMPOSITE_TYPE         7
-#define OBJECT_TYPE            8
-#define CSG_UNION_TYPE         9
-#define CSG_INTERSECTION_TYPE 10
-#define CSG_DIFFERENCE_TYPE   11
-#define VIEWPOINT_TYPE        12
-#define HEIGHT_FIELD_TYPE     13
-#define POINT_LIGHT_TYPE      14
-#define SPOT_LIGHT_TYPE       15
-#define BOX_TYPE              16
-#define BLOB_TYPE             17
+/* Object types */
+#define BASIC_OBJECT            0
+#define PATCH_OBJECT            1   /* Has no inside, no inverse */
+#define TEXTURED_OBJECT         2   /* Has texture, possibly in children */
 
-struct Object_Struct
-{
-   METHODS *Methods;
-   int Type;
-   struct Object_Struct *Next_Object;
-   /*   struct Object_Struct *Next_Light_Source; */
-   SHAPE *Bounding_Shapes;
-   SHAPE *Clipping_Shapes;
-   SHAPE *Shape;
-   char No_Shadow_Flag;
-   COLOUR *Object_Colour;
-   TEXTURE *Object_Texture;
-};
+#define CHILDREN_FLAGS (PATCH_OBJECT+TEXTURED_OBJECT)
+                                    /* Reverse inherited flags */
 
+#define COMPOUND_OBJECT         4   /* Has children field */
+#define STURM_OK_OBJECT         8   /* STRUM legal */
+#define WATER_LEVEL_OK_OBJECT  16   /* WATER_LEVEL legal */
+#define LIGHT_SOURCE_OBJECT    32   /* link me in frame.light_sources */
+#define BOUNDING_OBJECT        64   /* This is a holder for bounded object */
+#define SMOOTH_OK_OBJECT      128   /* SMOOTH legal */
+#define IS_CHILD_OBJECT       256   /* Object is inside a COMPOUND */
 
-typedef INTERSECTION *(*INTERSECTION_METHOD)PARAMS((OBJECT *, RAY *));
-typedef int (*ALL_INTERSECTIONS_METHOD)PARAMS((OBJECT *, RAY *, PRIOQ *));
+#define COMPOSITE_OBJECT       (BOUNDING_OBJECT)
+#define SPHERE_OBJECT          (BASIC_OBJECT)
+#define PLANE_OBJECT           (BASIC_OBJECT)
+#define QUADRIC_OBJECT         (BASIC_OBJECT)
+#define BOX_OBJECT             (BASIC_OBJECT)
+#define CONE_OBJECT            (BASIC_OBJECT)
+#define DISC_OBJECT            (BASIC_OBJECT)
+#define HEIGHT_FIELD_OBJECT    (BASIC_OBJECT+WATER_LEVEL_OK_OBJECT+SMOOTH_OK_OBJECT)
+#define TRIANGLE_OBJECT        (PATCH_OBJECT)
+#define SMOOTH_TRIANGLE_OBJECT (PATCH_OBJECT)
+#define BICUBIC_PATCH_OBJECT   (PATCH_OBJECT)
+#define UNION_OBJECT           (COMPOUND_OBJECT)
+#define MERGE_OBJECT           (COMPOUND_OBJECT)
+#define INTERSECTION_OBJECT    (COMPOUND_OBJECT)
+#define CUBIC_OBJECT           (STURM_OK_OBJECT)
+#define QUARTIC_OBJECT         (STURM_OK_OBJECT)
+#define POLY_OBJECT            (STURM_OK_OBJECT)
+#define BLOB_OBJECT            (STURM_OK_OBJECT)
+#define LIGHT_OBJECT           (COMPOUND_OBJECT+PATCH_OBJECT+LIGHT_SOURCE_OBJECT)
+
+typedef int (*ALL_INTERSECTIONS_METHOD)PARAMS((OBJECT *, RAY *, ISTACK *));
 typedef int (*INSIDE_METHOD)PARAMS((VECTOR *, OBJECT *));
 typedef void (*NORMAL_METHOD)PARAMS((VECTOR *, OBJECT *, VECTOR *));
 typedef void *(*COPY_METHOD)PARAMS((OBJECT *));
 typedef void (*TRANSLATE_METHOD)PARAMS((OBJECT *, VECTOR *));
 typedef void (*ROTATE_METHOD)PARAMS((OBJECT *, VECTOR *));
 typedef void (*SCALE_METHOD)PARAMS((OBJECT *, VECTOR *));
+typedef void (*TRANSFORM_METHOD)PARAMS((OBJECT *, TRANSFORM *));
 typedef void (*INVERT_METHOD)PARAMS((OBJECT *));
+typedef void (*DESTROY_METHOD)PARAMS((OBJECT *));
 
 struct Method_Struct
-{
-   INTERSECTION_METHOD Intersection_Method;
+  {
    ALL_INTERSECTIONS_METHOD All_Intersections_Method;
    INSIDE_METHOD Inside_Method;
    NORMAL_METHOD Normal_Method;
@@ -455,222 +555,239 @@ struct Method_Struct
    TRANSLATE_METHOD Translate_Method;
    ROTATE_METHOD Rotate_Method;
    SCALE_METHOD Scale_Method;
+   TRANSFORM_METHOD Transform_Method;
    INVERT_METHOD Invert_Method;
-};
-
+   DESTROY_METHOD Destroy_Method;
+  };
 
 #define All_Intersections(x,y,z) ((*((x)->Methods->All_Intersections_Method)) (x,y,z))
-#define Intersection(x,y) ((INTERSECTION *) ((*((x)->Methods->Intersection_Method)) (x,y)))
 #define Inside(x,y) ((*((y)->Methods->Inside_Method)) (x,y))
 #define Normal(x,y,z) ((*((y)->Methods->Normal_Method)) (x,y,z))
 #define Copy(x) ((*((x)->Methods->Copy_Method)) (x))
 #define Translate(x,y) ((*((x)->Methods->Translate_Method)) (x,y))
 #define Scale(x,y) ((*((x)->Methods->Scale_Method)) (x,y))
 #define Rotate(x,y) ((*((x)->Methods->Rotate_Method)) (x,y))
+#define Transform(x,y) ((*((x)->Methods->Transform_Method)) (x,y))
 #define Invert(x) ((*((x)->Methods->Invert_Method)) (x))
+#define Destroy(x) ((*((x)->Methods->Destroy_Method)) (x))
 
-struct Viewpoint_Struct
-{
-   METHODS *Methods;
-   int Type;
+#define Destroy_Camera(x) if ((x)!=NULL) free(x)
+
+struct Camera_Struct
+  {
    VECTOR Location;
    VECTOR Direction;
    VECTOR Up;
    VECTOR Right;
    VECTOR Sky;
-};
+  };
 
+struct Bounding_Box_Struct {
+   VECTOR Lower_Left, Lengths;
+   };
 
-struct Object_Shape
-{
-   METHODS *Methods;
-   int Type;
-   struct Object_Shape *Next_Object;
-   void *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
-};
+/* These fields are common to all objects */
 
+#define OBJECT_FIELDS \
+ METHODS *Methods;\
+ int Type;\
+ OBJECT *Sibling;\
+ TEXTURE *Texture;\
+ OBJECT *Bound;\
+ OBJECT *Clip;\
+ BBOX Bounds;\
+ short No_Shadow_Flag;
 
-struct Sphere_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
+/* These fields are common to all compound objects */
+#define COMPOUND_FIELDS \
+ OBJECT_FIELDS \
+ OBJECT *Children;
+
+#define INIT_OBJECT_FIELDS(o,t,m)\
+ o->Type=t;o->Methods=m;o->Sibling=NULL;o->Texture=NULL;\
+ o->Bound=NULL;o->Clip=NULL;o->No_Shadow_Flag=FALSE;\
+ Make_Vector(&o->Bounds.Lower_Left, -BOUND_HUGE/2, -BOUND_HUGE/2, -BOUND_HUGE/2)\
+ Make_Vector(&o->Bounds.Lengths, BOUND_HUGE, BOUND_HUGE, BOUND_HUGE)
+
+/* This is an abstract structure that is never actually used.
+   All other objects are descendents of this primative type */
+
+struct Object_Struct
+  {
+   OBJECT_FIELDS
+  };
+
+struct CSG_Struct
+  {
+   COMPOUND_FIELDS
+  };
+
+struct Light_Source_Struct
+  {
+   COMPOUND_FIELDS
+   COLOUR Colour;
+   VECTOR Center, Points_At, Axis1, Axis2;
+   DBL Coeff, Radius, Falloff;
+   LIGHT_SOURCE *Next_Light_Source;
+   unsigned char Light_Type, Area_Light, Jitter, Track;
+   int    Area_Size1, Area_Size2;
+   int    Adaptive_Level;
+   COLOUR **Light_Grid;
+   OBJECT *Shadow_Cached_Object;
+  };
+
+/* Light source types */
+#define POINT_SOURCE     1
+#define SPOT_SOURCE      2
+
+#define BUNCHING_FACTOR 4
+struct Composite_Struct
+  {
+   OBJECT_FIELDS
+   unsigned short int Entries;
+   OBJECT *Objects[BUNCHING_FACTOR];
+  };
+
+struct Sphere_Struct
+  {
+   OBJECT_FIELDS
+   TRANSFORM *Trans; 
    VECTOR  Center;
    DBL     Radius;
    DBL     Radius_Squared;
    DBL     Inverse_Radius;
-   VECTOR  VPOtoC;
-   DBL     VPOCSquared;
-   short   VPinside, VPCached, Inverted;
-};
+   VECTOR  CMOtoC;
+   DBL     CMOCSquared;
+   short   CMinside, CMCached, Inverted;
+  };
 
-struct Box_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
-   TRANSFORMATION *Transform;
-   VECTOR bounds[2];
-   short Inverted;
-};
+struct Quadric_Struct
+  {
+   OBJECT_FIELDS
+   VECTOR  Square_Terms;
+   VECTOR  Mixed_Terms;
+   VECTOR  Terms;
+   DBL Constant;
+   DBL CM_Constant;
+   short Constant_Cached;
+   short Non_Zero_Square_Term;
+  };
 
-/* Blob types */
-typedef struct {
-   VECTOR pos;
-   DBL radius2;
-   DBL coeffs[3];
-   DBL tcoeffs[5];
-} Blob_Element;
-
-typedef struct blob_list_struct *blobstackptr;
-struct blob_list_struct {
-   Blob_Element elem;
-   blobstackptr next;
-};
+typedef unsigned short HF_val;
 
 typedef struct {
-   int type, index;
-   DBL bound;
-} Blob_Interval;
-
-struct Blob_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
-   TRANSFORMATION *Transform;
-   short Inverted;
-   int count;
-   DBL threshold;
-   Blob_Element *list;
-   Blob_Interval *intervals;
-   int Sturm_Flag;
-};
-
-struct Light_Source_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
-   VECTOR  Center, Points_At;
-   LIGHT_SHAPE *Next_Light_Source;
-   short Inverted;
-   DBL Coeff, Radius, Falloff;
-};
-
-struct Quadric_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
-   VECTOR  Object_2_Terms;
-   VECTOR  Object_Mixed_Terms;
-   VECTOR  Object_Terms;
-   DBL Object_Constant;
-   DBL Object_VP_Constant;
-   int Constant_Cached;
-   int Non_Zero_Square_Term;
-};
-
-
-#define GIF 0   /* These are the types of image maps which can be used as a */
-#define POT 1   /* height field. */
-#define TGA 2
-
-typedef struct {
-   DBL min_y, max_y;
+   HF_val min_y, max_y;
 } HF_BLOCK;
 
-struct Height_Field_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
-   TRANSFORMATION *Transformation;
+typedef struct {
+        float x, z;
+        VECTOR normal;
+} Cached_Normals;
+
+typedef short HF_Normals[3];
+#define HF_CACHE_SIZE 16
+#define LOWER_TRI 0
+#define UPPER_TRI 1
+
+
+
+struct Height_Field_Struct
+  {
+   OBJECT_FIELDS 
+   TRANSFORM *Trans; 
    BOX *bounding_box;
    DBL Block_Size;
    DBL Inv_Blk_Size;
    HF_BLOCK **Block;
-   float **Map;
-};
+   HF_val **Map;
+   int Inverted;
+   int cache_pos;
+   Cached_Normals Normal_Vector[HF_CACHE_SIZE];
+   int Smoothed;
+   HF_Normals **Normals;
+   };
 
-#define MAX_ORDER 7
-
-struct Poly_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
-   TRANSFORMATION *Transform;
+struct Box_Struct
+  {
+   OBJECT_FIELDS 
+   TRANSFORM *Trans; 
+   VECTOR bounds[2];
    short Inverted;
-   int Order, Sturm_Flag;
-   DBL *Coeffs;
-};
+  };
 
+#define MAX_ORDER 15
+
+#define STURM_FIELDS  OBJECT_FIELDS int Sturm_Flag;
+
+/* Number of coefficients of a three variable polynomial of order x */
+#define term_counts(x) (((x)+1)*((x)+2)*((x)+3)/6)
+
+struct Poly_Struct
+  {
+   STURM_FIELDS
+   TRANSFORM *Trans;
+   short Inverted;
+   int Order;
+   DBL *Coeffs;
+  };
+
+struct Disc_Struct {
+   OBJECT_FIELDS
+   TRANSFORM *Trans; /* Transformation of a Disc object */
+   VECTOR center;    /* Center of the disc */
+   VECTOR normal;    /* Direction perpendicular to the disc (plane normal) */
+   DBL d;            /* The constant part of the plane equation */
+   DBL iradius2;     /* Distance from center to inner circle of the disc */
+   DBL oradius2;     /* Distance from center to outer circle of the disc */
+   short Inverted;
+   };
+
+struct Cone_Struct {
+   OBJECT_FIELDS
+   TRANSFORM *Trans;   /* Transformation of a Cone object */
+   short int cyl_flag; /* Is this a cone or a cylinder? */
+   short int closed;   /* Currently unused - for making caps on the cone */
+   VECTOR apex;        /* Center of the top of the cone */
+   VECTOR base;        /* Center of the bottom of the cone */
+   DBL apex_radius;    /* Radius of the cone at the top */
+   DBL base_radius;    /* Radius of the cone at the bottom */
+   DBL dist;           /* Distance to end of cone in canonical coords */
+   short Inverted;
+   };
 
 typedef struct Bezier_Node_Struct BEZIER_NODE;
 typedef struct Bezier_Child_Struct BEZIER_CHILDREN;
 typedef struct Bezier_Vertices_Struct BEZIER_VERTICES;
 
-
 struct Bezier_Child_Struct
-{
+  {
    BEZIER_NODE *Children[4];
-};
-
+  };
 
 struct Bezier_Vertices_Struct
-{
+  {
+   float uvbnds[4];
    VECTOR Vertices[4];
-};
-
+  };
 
 struct Bezier_Node_Struct
-{
+  {
    int Node_Type;      /* Is this an interior node, or a leaf */
    VECTOR Center;      /* Center of sphere bounding the (sub)patch */
    DBL Radius_Squared; /* Radius of bounding sphere (squared) */
    int Count;          /* # of subpatches associated with this node */
    void *Data_Ptr;     /* Either pointer to vertices or pointer to children */
-};
-
+  };
 
 #define BEZIER_INTERIOR_NODE 0
 #define BEZIER_LEAF_NODE 1
 #define MAX_BICUBIC_INTERSECTIONS 32
 
+#define MAX_PATCH_TYPE 4
 
-struct Bicubic_Patch_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
+struct Bicubic_Patch_Struct
+  {
+   OBJECT_FIELDS
    int Patch_Type, U_Steps, V_Steps;
    VECTOR Control_Points[4][4];
    VECTOR Bounding_Sphere_Center;
@@ -678,102 +795,86 @@ struct Bicubic_Patch_Shape
    DBL Flatness_Value;
    int Intersection_Count;
    VECTOR Normal_Vector[MAX_BICUBIC_INTERSECTIONS];
-   VECTOR Intersection_Point[MAX_BICUBIC_INTERSECTIONS];
+   VECTOR IPoint[MAX_BICUBIC_INTERSECTIONS];
    VECTOR **Interpolated_Grid, **Interpolated_Normals, **Smooth_Normals;
    DBL **Interpolated_D;
    BEZIER_NODE *Node_Tree;
-};
-
-
+  };
+   
 #define X_AXIS 0
 #define Y_AXIS 1
 #define Z_AXIS 2
 
-
-struct Triangle_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
+struct Triangle_Struct
+  {
+   OBJECT_FIELDS
    VECTOR  Normal_Vector;
    DBL     Distance;
-   DBL     VPNormDotOrigin;
-unsigned int  VPCached:1;
-unsigned int  Dominant_Axis:2;
-unsigned int  Inverted:1;
-unsigned int  vAxis:2;  /* used only for smooth triangles */
+   DBL     CMNormDotOrigin;
+   unsigned int  CMCached:1;
+   unsigned int  Dominant_Axis:2;
+   unsigned int  vAxis:2;  /* used only for smooth triangles */
    VECTOR  P1, P2, P3;
    short int Degenerate_Flag;
-};
+  };
 
-
-struct Smooth_Triangle_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
+struct Smooth_Triangle_Struct
+  {
+   OBJECT_FIELDS
    VECTOR  Normal_Vector;
    DBL     Distance;
-   DBL     VPNormDotOrigin;
-unsigned int  VPCached:1;
-unsigned int  Dominant_Axis:2;
-unsigned int  Inverted:1;
-unsigned int  vAxis:2;         /* used only for smooth triangles */
+   DBL     CMNormDotOrigin;
+   unsigned int  CMCached:1;
+   unsigned int  Dominant_Axis:2;
+   unsigned int  vAxis:2;         /* used only for smooth triangles */
    VECTOR  P1, P2, P3;
-   short int Degenerate_Flag;  /* do not move this field */
+   short int Degenerate_Flag;
    VECTOR  N1, N2, N3, Perp;
    DBL  BaseDelta;
-};
+  };
 
-
-
-struct Plane_Shape
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   TEXTURE *Shape_Texture;
-   COLOUR *Shape_Colour;
+struct Plane_Struct
+  {
+   OBJECT_FIELDS
    VECTOR  Normal_Vector;
    DBL     Distance;
-   DBL     VPNormDotOrigin;
-   int     VPCached;
+   DBL     CMNormDotOrigin;
+   int     CMCached;
+  };
+
+typedef struct {
+   VECTOR pos;
+   DBL radius2;
+   DBL coeffs[3];
+   DBL tcoeffs[5];
+   } Blob_Element;
+
+typedef struct blob_list_struct *blobstackptr;
+struct blob_list_struct {
+   Blob_Element elem;
+   blobstackptr next;
+   };
+
+typedef struct {
+   int type, index;
+   DBL bound;
+   } Blob_Interval;
+
+struct Blob_Struct
+   {
+   STURM_FIELDS
+   TRANSFORM *Trans;
+   short Inverted;
+   int count;
+   DBL threshold;
+   Blob_Element **list;
+   Blob_Interval *intervals;
 };
-
-
-struct CSG_Type
-{
-   METHODS *Methods;
-   int Type;
-   SHAPE *Next_Object;
-   OBJECT *Parent_Object;
-   SHAPE *Shapes;
-};
-
-
-struct Composite_Object_Struct
-{
-   METHODS *Methods;
-   int Type;
-   OBJECT *Next_Object;
-   /*   OBJECT *Next_Light_Source;*/
-   SHAPE *Bounding_Shapes;
-   SHAPE *Clipping_Shapes;
-   OBJECT *Objects;
-};
-
 
 #define MAX_CONTAINING_OBJECTS 10
 
 struct Ray_Struct
-{
+  {
    VECTOR Initial;               /*  Xo  Yo  Zo  */
    VECTOR Direction;             /*  Xv  Yv  Zv  */
    VECTOR Initial_2;             /*  Xo^2  Yo^2  Zo^2  */
@@ -786,20 +887,19 @@ struct Ray_Struct
    TEXTURE *Containing_Textures [MAX_CONTAINING_OBJECTS];
    DBL Containing_IORs [MAX_CONTAINING_OBJECTS];
    int Quadric_Constants_Cached;
-};
-
+  };
 
 struct Frame_Struct
-{
-   VIEWPOINT View_Point;
+  {
+   CAMERA *Camera;
    int Screen_Height, Screen_Width;
-   LIGHT_SHAPE *Light_Sources;
+   LIGHT_SOURCE *Light_Sources;
    OBJECT *Objects;
    DBL Atmosphere_IOR, Antialias_Threshold;
    DBL Fog_Distance;
    COLOUR Fog_Colour;
-};
-
+   COLOUR Background_Colour;
+  };
 
 #define DISPLAY 1
 #define VERBOSE 2
@@ -811,258 +911,104 @@ struct Frame_Struct
 #define EXITENABLE 128
 #define CONTINUE_TRACE 256
 #define VERBOSE_FILE 512
+#define JITTER 1024
 
-#define Make_Colour(c,r,g,b) { (c)->Red=(r);(c)->Green=(g);(c)->Blue=(b); (c)->Alpha=0.0; }
+/* Definitions for ISTACK structure */
 
-#define Make_Vector(v,a,b,c) { (v)->x=(a);(v)->y=(b);(v)->z=(c); }
-
-/* Definitions for PRIOQ structure */
-
-struct q_entry
-{
+struct istk_entry
+  {
    DBL Depth;
+   VECTOR IPoint;
    OBJECT *Object;
-   VECTOR Point;
-   SHAPE *Shape;
-};
+  };
 
-struct prioq_struct
-{
-   struct prioq_struct *next_pq;
-   struct q_entry *queue;
-   unsigned int current_entry, queue_size;
-};
+struct istack_struct
+  {
+   struct istack_struct *next;
+   struct istk_entry *istack;
+   unsigned int top_entry;
+  };
 
+#define itop(i) i->istack[i->top_entry]
+#define push_entry(d,v,o,i) itop(i).Depth=d; itop(i).IPoint=v; \
+ itop(i).Object=o; incstack(i);
+#define push_copy(i,e) itop(i)=*e; incstack(i);
+#define pop_entry(i) (i->top_entry > 0)?&(i->istack[--i->top_entry]):NULL
 
-/* Token Definitions for Parser */
-/* This list must have the same number of tokens as list in tokenize.c */
-#define AGATE_TOKEN                  0
-#define ALL_TOKEN                    1
-#define ALPHA_TOKEN                  2
-#define AMBIENT_TOKEN                3
-#define AMPERSAND_TOKEN              4
-#define AT_TOKEN                     5
-#define BACK_QUOTE_TOKEN             6
-#define BACK_SLASH_TOKEN             7
-#define BAR_TOKEN                    8
-#define BICUBIC_PATCH_TOKEN          9
-#define BLUE_TOKEN                  10
-#define BRILLIANCE_TOKEN            11
-#define BOZO_TOKEN                  12
-#define BOUNDED_TOKEN               13
-#define BUMPS_TOKEN                 14
-#define CHECKER_TOKEN               15
-#define CHECKER_TEXTURE_TOKEN       16
-#define CLIPPED_TOKEN               17
-#define COLON_TOKEN                 18
-#define COLOR_TOKEN                 19
-#define COLOUR_TOKEN                20
-#define COLOR_MAP_TOKEN             21
-#define COLOUR_MAP_TOKEN            22
-#define COMMA_TOKEN                 23
-#define COMPOSITE_TOKEN             24
-#define CONCENTRATION_TOKEN         25
-#define CUBIC_TOKEN                 26
-#define DASH_TOKEN                  27
-#define DECLARE_TOKEN               28
-#define DENTS_TOKEN                 29
-#define DIFFERENCE_TOKEN            30
-#define DIFFUSE_TOKEN               31
-#define DIRECTION_TOKEN             32
-#define DOLLAR_TOKEN                33
-#define DUMP_TOKEN                  34
-#define EQUALS_TOKEN                35
-#define EXCLAMATION_TOKEN           36
-#define FLOAT_TOKEN                 37
-#define FOG_TOKEN                   38
-#define FREQUENCY_TOKEN             39
-#define GIF_TOKEN                   40
-#define GRADIENT_TOKEN              41
-#define GRANITE_TOKEN               42
-#define GREEN_TOKEN                 43
-#define HASH_TOKEN                  44
-#define HAT_TOKEN                   45
-#define IDENTIFIER_TOKEN            46
-#define IFF_TOKEN                   47
-#define IMAGEMAP_TOKEN              48
-#define INCLUDE_TOKEN               49
-#define INTERSECTION_TOKEN          50
-#define INVERSE_TOKEN               51
-#define IOR_TOKEN                   52
-#define LEFT_ANGLE_TOKEN            53
-#define LEFT_CURLY_TOKEN            54
-#define LEFT_SQUARE_TOKEN           55
-#define LIGHT_SOURCE_TOKEN          56
-#define LOCATION_TOKEN              57
-#define LOOK_AT_TOKEN               58
-#define MARBLE_TOKEN                59
-#define METALLIC_TOKEN              60
-#define OBJECT_TOKEN                61
-#define ONCE_TOKEN                  62
-#define PERCENT_TOKEN               63
-#define PHASE_TOKEN                 64
-#define PHONG_TOKEN                 65
-#define PHONGSIZE_TOKEN             66
-#define PLANE_TOKEN                 67
-#define PLUS_TOKEN                  68
-#define POINTS_TOKEN                69
-#define POINT_AT_TOKEN              70
-#define POLYGON_TOKEN               71
-#define POLY_TOKEN                  72
-#define QUADRIC_TOKEN               73
-#define QUARTIC_TOKEN               74 
-#define QUESTION_TOKEN              75
-#define RAW_TOKEN                   76
-#define RED_TOKEN                   77
-#define REFLECTION_TOKEN            78 
-#define REFRACTION_TOKEN            79
-#define REVOLVE_TOKEN               80
-#define RIGHT_TOKEN                 81
-#define RIGHT_ANGLE_TOKEN           82
-#define RIGHT_PAREN_TOKEN           83
-#define RIGHT_SQUARE_TOKEN          84
-#define RIPPLES_TOKEN               85
-#define ROTATE_TOKEN                86
-#define ROUGHNESS_TOKEN             87
-#define SCALE_TOKEN                 88
-#define SEMI_COLON_TOKEN            89
-#define SHAPE_TOKEN                 90
-#define SINGLE_QUOTE_TOKEN          91
-#define SIZE_TOKEN                  92
-#define SKY_TOKEN                   93
-#define SLASH_TOKEN                 94
-#define SMOOTH_TRIANGLE_TOKEN       95
-#define SPECULAR_TOKEN              96
-#define SPHERE_TOKEN                97
-#define SPOTLIGHT_TOKEN             98
-#define SPOTTED_TOKEN               99
-#define STAR_TOKEN                  100
-#define STRING_TOKEN                101
-#define STURM_TOKEN                 102
-#define TEXTURE_TOKEN               103
-#define TILDE_TOKEN                 104
-#define TILE2_TOKEN                 105
-#define TRANSLATE_TOKEN             106
-#define TRANSMIT_TOKEN              107
-#define TRIANGLE_TOKEN              108
-#define TURBULENCE_TOKEN            109
-#define UNION_TOKEN                 110
-#define UP_TOKEN                    111
-#define VIEW_POINT_TOKEN            112
-#define WAVES_TOKEN                 113
-#define WOOD_TOKEN                  114
-#define WRINKLES_TOKEN              115 
-#define PAINTED1_TOKEN              116 
-#define PAINTED2_TOKEN              117
-#define PAINTED3_TOKEN              118
-#define BUMPY1_TOKEN                119
-#define BUMPY2_TOKEN                120
-#define BUMPY3_TOKEN                121
-#define BUMPMAP_TOKEN               122
-#define BUMPSIZE_TOKEN              123
-#define MATERIAL_MAP_TOKEN          124 
-#define ONION_TOKEN                 125
-#define LEOPARD_TOKEN               126
-#define DUMMY_TOKEN                 127 /* Dummy token to pad list because some colour_tokens are used twice */
-#define INTERPOLATE_TOKEN           128
-#define HEIGHT_FIELD_TOKEN          129
-#define POT_TOKEN                   130 
-#define WATER_LEVEL_TOKEN           131
-#define USE_COLOUR_TOKEN            132
-#define USE_INDEX_TOKEN             133
-#define MAPTYPE_TOKEN               134
-#define RIGHT_CURLY_TOKEN           135
-#define LEFT_PAREN_TOKEN            136
-#define TGA_TOKEN                   137 /* ARE 11/91 for tga mapp/heights */
-#define CENTER_TOKEN                138 /* ARE 11/91 for spotlight */
-#define FALLOFF_TOKEN               139 /* ARE 11/91 for spotlight */
-#define TIGHTNESS_TOKEN             140 /* ARE 11/91 for spotlight */
-#define RADIUS_TOKEN                141 /* ARE 11/91 for spotlight */
-#define NO_SHADOW_TOKEN             142 /* CEY 12/91 for shadowless objects */
-#define END_OF_FILE_TOKEN           143
-#define MAX_TRACE_LEVEL_TOKEN       144
-#define DEFAULT_TOKEN               145
-#define BOX_TOKEN                   146 /* ARE 1/92 for boxes */
-#define BLOB_TOKEN                  147 /* ARE 1/92 for blobs */
-#define THRESHOLD_TOKEN             148 /* ARE 1/92 for blobs */
-#define COMPONENT_TOKEN             149 /* ARE 1/92 for blobs */
-#define OCTAVES_TOKEN               150 /* DMF 2/92 for turb  */
-#define BRICK_TOKEN                 151 /* RHA 2/92 for brick */
-#define MORTAR_TOKEN                152 /* RHA 2/92 for brick */
-#define LOST_TOKEN                  153
-#define LAST_TOKEN                  154
-
+#define MAX_STRING_INDEX 41 
 
 struct Reserved_Word_Struct
-{                                
+  {
    TOKEN Token_Number;
    char *Token_Name;
-};
+  };
 
 /* Here's where you dump the information on the current token (fm. PARSE.C) */
 
 struct Token_Struct
-{
+  {
    TOKEN Token_Id;
    int Token_Line_No;
    char *Token_String;
    DBL Token_Float;
-   int Identifier_Number;
+   TOKEN Begin_Id;
+   int Constant_Index;
    int Unget_Token, End_Of_File;
-   char *Filename;
-};
+   char *Filename, *Constant_Data;
+  };
 
 /* Types of constants allowed in DECLARE statement (fm. PARSE.C) */
 
-#define OBJECT_CONSTANT            0
-#define VIEW_POINT_CONSTANT        1
-#define VECTOR_CONSTANT            2
-#define FLOAT_CONSTANT             3
-#define COLOUR_CONSTANT            4
-#define QUADRIC_CONSTANT           5
-#define POLY_CONSTANT              6
-#define BICUBIC_PATCH_CONSTANT     7
-#define SPHERE_CONSTANT            8
-#define PLANE_CONSTANT             9
-#define TRIANGLE_CONSTANT         10
-#define SMOOTH_TRIANGLE_CONSTANT  11  
-#define CSG_INTERSECTION_CONSTANT 12   
-#define CSG_UNION_CONSTANT        13
-#define CSG_DIFFERENCE_CONSTANT   14
-#define COMPOSITE_CONSTANT        15
-#define TEXTURE_CONSTANT          16
-#define HEIGHT_FIELD_CONSTANT     17
-#define BOX_CONSTANT              18
-#define BLOB_CONSTANT             19
-#define LIGHT_SOURCE_CONSTANT     20
+#define COLOUR_CONSTANT         0
+#define VECTOR_CONSTANT         1
+#define FLOAT_CONSTANT          2
+#define PIGMENT_CONSTANT        3
+#define TNORMAL_CONSTANT        4
+#define FINISH_CONSTANT         5
+#define TEXTURE_CONSTANT        6
+#define OBJECT_CONSTANT         7
+#define COLOUR_MAP_CONSTANT     8
+#define TRANSFORM_CONSTANT      9
+#define CAMERA_CONSTANT        10
+
+/* CSG types */
+#define CSG_UNION_TYPE             1
+#define CSG_INTERSECTION_TYPE      2
+#define CSG_DIFFERENCE_TYPE        4
+#define CSG_MERGE_TYPE             8
+#define CSG_SINGLE_TYPE           16
 
 struct Constant_Struct
-{
+  {
    int Identifier_Number;
    CONSTANT Constant_Type;
    char *Constant_Data;
-};
+  };
 
-struct Chunk_Header_Struct {
+struct Chunk_Header_Struct 
+  {
    long name;
    long size;
-};
+  };
 
-struct Data_File_Struct {
+struct Data_File_Struct 
+  {
    FILE *File;
    char *Filename;
    int Line_Number;
-};
+  };
 
-struct complex_block {
+struct complex_block 
+  {
    DBL r, c;
-};
+  };
 
 #define READ_MODE 0
 #define WRITE_MODE 1
 #define APPEND_MODE 2
 
-struct file_handle_struct {
+struct file_handle_struct 
+  {
    char *filename;
    int  mode;
    int width, height;
@@ -1071,15 +1017,15 @@ struct file_handle_struct {
    FILE *file;
    char *(*Default_File_Name_p) PARAMS((void));
    int  (*Open_File_p) PARAMS((struct file_handle_struct *handle,
-      char *name, int *width, int *height, int buffer_size,
-      int mode));
+		   char *name, int *width, int *height, int buffer_size,
+		   int mode));
    void (*Write_Line_p) PARAMS((struct file_handle_struct *handle,
-      COLOUR *line_data, int line_number));
+		   COLOUR *line_data, int line_number));
    int  (*Read_Line_p) PARAMS((struct file_handle_struct *handle,
-      COLOUR *line_data, int *line_number));
+		   COLOUR *line_data, int *line_number));
    void (*Read_Image_p) PARAMS((IMAGE *Image, char *filename));
    void (*Close_File_p) PARAMS((struct file_handle_struct *handle));
-};
+  };
 
 typedef struct file_handle_struct FILE_HANDLE;
 
@@ -1089,3 +1035,23 @@ typedef struct file_handle_struct FILE_HANDLE;
 #define Read_Line(h,l,n) ((*((h)->Read_Line_p)) (h, l, n))
 #define Read_Image(h,i) ((*((h)->Read_Image_p)) (h, i))
 #define Close_File(h) ((*((h)->Close_File_p)) (h))
+
+
+#define Q_FULL_AMBIENT 1
+#define Q_QUICKC       2
+#define Q_SHADOW       4
+#define Q_AREA_LIGHT   8
+#define Q_REFRACT     16
+#define Q_REFLECT     32
+#define Q_NORMAL      64
+
+#define QUALITY_0 Q_QUICKC+Q_FULL_AMBIENT
+#define QUALITY_1 QUALITY_0
+#define QUALITY_2 QUALITY_1-Q_FULL_AMBIENT
+#define QUALITY_3 QUALITY_2
+#define QUALITY_4 QUALITY_3+Q_SHADOW
+#define QUALITY_5 QUALITY_4+Q_AREA_LIGHT
+#define QUALITY_6 QUALITY_5-Q_QUICKC+Q_REFRACT
+#define QUALITY_7 QUALITY_6
+#define QUALITY_8 QUALITY_7+Q_REFLECT+Q_NORMAL
+#define QUALITY_9 QUALITY_8

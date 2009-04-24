@@ -4,22 +4,25 @@
 *  This file contains the IBM-PC specific defines. Rename to config.h when 
 *  compiling for IBM-PC.
 *
-*  from Persistence of Vision Raytracer 
-*  Copyright 1992 Persistence of Vision Team
-*---------------------------------------------------------------------------
-*  Copying, distribution and legal info is in the file povlegal.doc which
-*  should be distributed with this file. If povlegal.doc is not available
-*  or for more info please contact:
 *
-*       Drew Wells [POV-Team Leader] 
-*       CIS: 73767,1244  Internet: 73767.1244@compuserve.com
-*       Phone: (213) 254-4041
-* 
+*  from Persistence of Vision Raytracer
+*  Copyright 1993 Persistence of Vision Team
+*---------------------------------------------------------------------------
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other 
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+*  Forum.  The latest version of POV-Ray may be found there as well.
+*
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
 *****************************************************************************/
+
 /* Below are several defines needed by the generic parts of POV.  You
 *   may redefine them as needed in this config.h file.
 *
@@ -107,8 +110,14 @@
 #include <float.h>
 #endif
 
+#ifdef __WATCOMC__			/* Perhaps we should always include */
+#include <float.h>			/* FLOAT.H? What does ANSI say?--CWM */
+#endif
+
 #ifndef GCCDOS
 #include <conio.h>
+#else
+#include <pc.h>
 #endif
 
 #include <stdarg.h>
@@ -162,7 +171,6 @@
 #define READ_ENV_VAR_AFTER     
 #endif
 
-
 /**********************************
 *    The defines below have nothing to do with the generic part of POV.
 *    They are entirely machine specific.  In general do not include them 
@@ -172,10 +180,8 @@
 #ifdef _INTELC32_
  #define COMPILER_VER ".ibmicb"
  #define CONFIG_MATH _control87(MCW_EM, MCW_EM);
-#endif
-
-#ifdef __MSC__
- #define COMPILER_VER ".ibmmsc"
+ #define FINISH_POVRAY exit(0);
+ #define CDECL _cdecl
 #endif
 
 #ifdef __ZTC__
@@ -229,15 +235,6 @@ void main(int, char **);
 #ifndef far
 #define far _far
 #endif
-#ifdef FP_OFF
-#undef FP_OFF
-#endif
-#define FP_OFF(ptr) (unsigned short)(ptr)
-#ifdef FP_SEG
-#undef FP_SEG
-#endif
-#define FP_SEG(ptr) (unsigned short)((unsigned long)ptr >> 16)
-
 #else
 
 
@@ -247,6 +244,7 @@ void main(int, char **);
 #endif
 
 #ifdef __TURBOC__
+ #define CDECL _cdecl
 #ifndef __BORLANDC__
  #define COMPILER_VER ".ibmbtc"
 #endif
@@ -333,6 +331,10 @@ double fabs(double x);
 #ifdef GCCDOS
 double fmod(double, double);
 #define COMPILER_VER ".ibmgcc"
+#endif
+
+#ifndef COMPILER_VER	/* if we haven't figured this out yet... */
+#define COMPILER_VER ".ibmmsc"
 #endif
 
 #define PRINT_CREDITS print_ibm_credits();

@@ -1,69 +1,108 @@
-This file contains the documentation specific to the VAX/VMS version of
-POV-Ray.
+This file contains the documentation specific to the VMS version of POV-Ray.
 
-Differences from original distribution:
-   The original distribution of POV-Ray is in ZIP format.  For VMS,
-   this has been converted to a backup save set.  In addition, the VMS
-   distribution of POV-Ray has CR-LF pairs converted to only CR's for text
-   files.  Otherwise, the VAX/VMS distribution is identical to the ZIP
-   distribution.
-
-Note: PLEASE SEE POVLEGAL.DOC.  The VMS version in backup format is an
+Note: PLEASE SEE POVLEGAL.DOC.  The VMS version in ZIP format is an
    officially supported format and can be distributed as is.  You MAY NOT
    re-package the archive file or distribute any changes to it.  If you
    do post it on a BBS or network, you must provide at least the data
    files and documentation files with the executables.  See POVLEGAL.DOC
    for complete details.
 
-Executables:
+Testing:
+   This version of POV-Ray for the VAX has only been tested on an Alpha AXP 500
+   running OpenVMS. It may need tweaking for your compiler.
 
-   Both object and executable files are provided.  They have been compiled
-   and linked under VMS 5.3-1.  The executable is called POVRAY.EXE.
-   
+Executables:
+   At this stage, no executables are provided.
+   See the note at the end of this file about this subject.
+
 Running POV-Ray:
    Assign a foreign symbol to the executable.  The syntax is:
       povray :== $<your_disk>:[<directory>]povray
    An example symbol might look like:
       povray :== $dua100:[povray.build]povray
+   or
+      povray :== $dua100:[povray.build]povray +w320 +h200 +d +v [for example]
 
+   You may also like to add your include file path to the symbol.
    When running POV-Ray, be sure that you have a large working set.
+   You will need to use the '+d' option for the X version to display anything.
 
 File Formats:
-   The default file format for the Amiga is "dump" format (+fd).  Targa or
-   raw may be specified on the command line or in the povray.def file.
+   The default file format for the Vax is "targa" format (+ft).
+   Dump or raw may be specified on the command line or in the
+   povray.def file. The TGA2GIF program (not included in this archive)
+   may be used to convert the output to a GIF file.
 
 Building the source:
-   POV-Ray was compiled using VAX C version 3.1.  I'm sure that later
-   versions will also work fine.  If you're compiling with another compiler,
-   you may have to edit the build procedure to set the proper compiler
-   options.  As far as that goes, you're on your own.
+   To compile POV-Ray from the original source, follow the following instructions:
+   You will of course need a properly set up C compiler.
 
-   To compile POV-Ray from the original source, follow the following
-   instructions:
+   If you want to use the X version you will need X and the X libraries.
+   You may need to edit the POVRAY.OPT file for your X library path.
+   Motif is NOT needed, as POV runs with X and Xt only.
 
-      1) copy the files in the "source" directory into a "build" directory
-      2) copy the files in [.source.machine.vms] to the build directory
-      3) rename vaxconf.h to config.h
-      4) execute "@vaxbuild"
+   #define X_GETS_ARGS in vaxconf.h if you want to use X options such as 
+   '-display xxx:n.n'. Note that some may conflict with POV options.
+
+     1) create a [.source] directory.
+
+     2) copy the files from POVSRC.ZIP's SOURCE directory into this directory.
+
+     3) copy the files from POVSRC.ZIP's MACHINE\VAX directory into [.source].
+
+     4) rename vaxconf.h to config.h
+
+     5) edit the file 'POVRAY.C'.
+        change the definition of 'main' and 'alt_main' to return 'int'
+        instead of 'void'. you may also like to add a return statement.
+
+     6) edit the file 'tokenize.c'.
+        remove the reference to 'extern Library_Paths []'.
+
+     7) edit the files 'csg.c' and 'objects.c'.
+        remove the reference to 'extern RAY VP_Ray'.
+
+     8) execute "@vaxbuild" for a NON XWindows executable.
+
+     9) execute "@xvaxbld" for an XWindows executable.
+
+   Note that if you switch between X and non-X versions you MUST recompile
+   ALL FILES.
 
 Post-processing Images:
    POV-Ray images can be post-processed using the PBMPLUS utilities.
+   The program TGA2GIF (source available on Compuserve in GRAPHDEV) will run on
+   a VAX and does a nice job of converting Targa output files into GIF files.
 
-Diplaying Images:
-   There are many utilities available for displaying POV-Ray files.  For 
-   myself, I usually convert them to PBMPLUS format and use the xloadimage
-   utility.  I have heard that the xv utility may be able to display 
-   QRT/DKBtrace files (which is what these are) directly.  Both xv and 
-   xloadimage are available via FTP from Black.Cerritos.Edu and 
-   White.Cerritos.Edu.  There is also a mail server available via 
-   MAILSERV@Cerritos.edu.  Place the one line command 'help' in the body of
-   the message for more information.
+Displaying Images:
+   There are various programs around that can display GIF files under X
+   windows. At a later stage I may upload one into GRAPHDEV, so have a look.
+   Some DECwindows systems come with a program called PICT.EXE, which will do a
+   good job of displaying GIF files, also.
 
    For those with a Postscipt printer, you can use PBMPLUS to convert POV-Ray
    files to Postscript and then print them.
 
-Questions and problems in the VAX/VMS version can be directed to the Usenet 
-group COMP.GRAPHICS.
+The VMS X Windows code was developed and tested by Christopher J. Cason under
+DECWindows on a DEC Alpha AXP 500.
 
-Dean Nedelman
-Internet:   sysmgt007@spacm1.spac.spc.com
+Questions and problems in the VAX/VMS version can be directed to Chris Cason on
+Compuserve via mail or in the POV source section of GRAPHDEV. (currently 8).
+
+I will continue to enhance this code and test it other machines.
+If you had to make any modifications to get it to compile, please let me know
+so that I may update this source accordingly. This particularly applies to
+the build files. By doing so, you will be helping others.
+
+If you have any problems getting it to build, you may like to contact me or
+check the POV section of GRAPHDEV on Compuserve to see if there are updated
+files. Try scanning for the keyword VMS or XWINDOWS.
+
+Expect to find a significantly enhanced X version in the near future.
+(Sometime in late 1993 or early 1994). This will include a Motif shell.
+We may also make pre-compiled executables available for VAX and Alpha.
+(But there is no guarantee of this).
+
+Chris Cason.
+CIS:100032,1644
+Internet:100032.1644@compuserve.com

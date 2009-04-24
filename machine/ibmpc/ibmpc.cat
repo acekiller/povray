@@ -1,37 +1,85 @@
-3/92
- Persistence of Vision Raytracer  Ver 1.0
- ------------------------------------------
- IBM-PC specific source files
- ------------------------------
+Persistence of Vision Raytracer POV-Ray 2.0 Catalog file.   
 
- IBMPC.ZIP     - archive of files for IBM-PC's and compatibles
-  ibmconf.h    - IBM-PC's configuration header -- rename to config.h
-  ibm.c        - system-specific code for IBM-PC's under all compilers
+Here is the contents of the \POVSRC\MACHINE\IBMPC directory.
+It contains source files for compiling for IBM-PC compatible 
+systems.
+
+FILES REQUIRED FOR ALL VERSIONS
+
+IBMPC.CAT     list of files in this directory
+IBMCONF.H     IBM-PC's configuration header -- rename to config.h
+IBM.C         system-specific code for IBM-PC's under all compilers
                  for both protected and non-protected modes.  
-  ibmmsc.mak   - makefile for Microsoft C
-  ibmmsc.lnk   - link file for Microsoft C 
-  ibmbc.mak    - makefile for Borland/Turbo-C 
-  ibmbc.lnk    - link file for Borland/Turbo-C 
-  ibmgcc.mak   - makefile for GCC protected mode (386) compiler
-  ibmgcc.lnk   - linkfile for GCC protected mode (386) compiler
-  ibmwat.mak   - makefile for Watcom C 
-  ibmwat.lnk   - link file for Watcom C 
-  ibmwat3.mak  - makefile for protected mode (386) Watcom C 
-  ibmwat3.lnk  - link file for protected mode (386) Watcom C 
-  ibmzor.mak   - makefile for Zortech C/C++
-  ibmzor.lnk   - link file for Zortech C/C++ 
-  ibmzor2.mak  - makefile for 286 extended memory mode Zortech C/C++
-  ibmzor2.lnk  - link file for 286 extended memory mode Zortech C/C++ 
-  ibmzor3.mak  - makefile for 386 protected mode Zortech C/C++
-  ibmzor3.lnk  - link file for 386 protected mode Zortech C/C++ 
-  ztc386.asm   - source asm file for Zortech 386 mode display code
-  ztc386.obj   - object file for Zortech 386 mode display code
-  zpm.def      - misc file for Zortech protected mode
-  rtlink.cfg   - file for use with RTLINK program
-  povpro.mak   - make and link file for Intel Code Builder
-  ai.lib       - needed for TIGA support (Texas Instruments Graphics Adapter)
-  extend.h     - needed for TIGA support (A specialized graphics chip used )
-  tiga.h       - needed for TIGA support (on the Hercules Graphics Station )
-  tigadefs.h   - needed for TIGA support (and some other 24 bit cards. )   
-  ibm.cat      - list of files in IBM.ZIP
 
+A number of subdirectories contain the following support files:
+
+MACHINE\IBMPC\BORLAND
+
+IBMBC.LNK     Link for Borland/Turbo C/C++
+IBMBC.MAK     Make for Borland/Turbo C/C++
+GETBC.BAT     Copies files from working directory to here.
+PUTBC.BAT     Copies files from here to working directory.
+
+
+MACHINE\IBMPC\DJGCC
+
+IBMGCC.LNK    Link for DJGPP/GCC protected mode compiler for MS-DOS
+IBMGCC.MAK    Make for DJGPP/GCC protected mode compiler for MS-DOS
+GETDJC.BAT    Copies files from working directory to here.
+PUTDJC.BAT    Copies files from here to working directory.
+GCCFIX.COM    TSR needed only when using DJGCC & TARGA Hardware
+GCCFIX.ASM    Source code for GCCFIX.COM
+MAKEFIX.BAT   Makes GCCFIX using Masm
+
+MACHINE\IBMPC\INTEL
+
+IBMPCEXE.DOC  Documentation for IBMICB executible
+ICB           Make/link file for Intel Code Builder
+POVMOD.DOC    Documentation for POVMOD utility
+POVMOD.EXE    Utility to adjust VMM disk file size
+Q&A.DOC       General documentation on running the ICB version
+                 on various systems.
+_GET_EBX.OBJ  Object file required for ICB compile
+
+
+MACHINE\IBMPC\MICROSOF
+
+IBMMSC.LNK    Link file for Microsoft 6.00
+IBMMSC.MAK    Make file for Microsoft 6.00
+
+
+MACHINE\IBMPC\TIGA
+
+Note these files can only be used in real mode versions.
+AI.LIB        needed for TIGA support (Texas Instruments Graphics Adapter)
+EXTEND.H      needed for TIGA support (A specialized graphics chip used )
+TIGA.H        needed for TIGA support (on the Hercules Graphics Station )
+TIGADEFS.H    needed for TIGA support (and some other 24 bit cards. )   
+
+
+MACHINE\IBMPC\WATCOM
+
+IBMWAT.LNK    Link for Watcom C
+IBMWAT.MAK    Make for Watcom C
+IBMWAT3.LNK   Link for protected mode 386 Watcom C
+IBMWAT3.MAK   Make for protected mode 386 Watcom C
+
+
+MACHINE\IBMPC\ZORTECH
+
+IBMZOR.LNK    Link for Zortech C/C++
+IBMZOR.MAK    Make for Zortech C/C++
+IBMZOR2.LNK   Link for Zortech C/C++ 286 extended memory mode 
+IBMZOR2.MAK   Make for Zortech C/C++ 286 extended memory mode 
+IBMZOR3.LNK   Link for Zortech C/C++ 386 protected mode
+IBMZOR3.MAK   Make for Zortech C/C++ 386 protected mode 
+ZPM.DEF       misc file for Zortech protected mode
+ZTC386.ASM    source asm file for Zortech 386 mode display code
+
+
+MACHINE\IBMPC\OS2
+
+OS2.C         MACHINE.C file for non-display OS2 version
+OS2CONF.H     CONFIG.H file for non-display OS2 version
+OS2MAK.MAK    IBM Cset2 make file for non-display OS2 version
+IBMCS2.LNK    IBM Cset2 link file for non-display OS2 version

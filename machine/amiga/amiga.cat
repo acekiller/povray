@@ -1,9 +1,11 @@
-This archive contains machine specific files for compiling POV-Ray on Amiga.
-It contains:
+This directory contains machine specific files for compiling POV-Ray on 
+the Amiga.  It contains:
 
-AMIGA.ZIP:
-   amiga.doc    - system-specific documentation for Amiga
-   amigacon.h   - Amiga configuration header -- rename to config.h
-   amiga.c      - system-specific code for Amiga
-   amiga.mak    - makefile for Amiga (Lattice C)
-   amiga.cat    - a list of files in AMIGA.ZIP
+\POVSRC\MACHINE\AMIGA
+   amiga.doc      - system-specific documentation for Amiga.
+   amiga.doc.info - an icon for amiga.doc.
+   amigacon.h     - Amiga configuration header -- rename to "config.h".
+   amiga.c        - system-specific code for Amiga.
+   amiga.mak      - makefile for Amiga (SAS C) -- rename to "makefile".
+   amiga.cat      - this list of files in \POVSRC\MACHINE\AMIGA.
+   amiga.cat.info - an icon for amiga.cat.

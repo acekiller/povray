@@ -28,13 +28,19 @@ Executables:
    systems come bundled with a C compiler, so recompiling the source for
    your target system shouldn't cause a problem. You may not distribute
    an executable that you have compiled. It is for your personal use only.
-   
+
 Display Formats:
    There are two different ways to create a UNIX system.  The first way has
    no display options (i.e., it cannot display the image as it's rendering it).
 
    Alternatively, if you have X-Windows, you can compile in the X-Windows
    drivers.  See the section on building the source.
+
+   Additionally, there is some full-colour X Windows source in the VAX specific
+   files that are part of the POV source. See VAX.C and XWIND.C. You can use
+   VAX.C as a template for a new UNIX.C. XWIND.C is not VMS or MOTIF specific.
+
+   Also see the note at the end of this file.
 
 File Formats:
    The default file format for UNIX is "dump" format (+fd).  Targa or
@@ -78,3 +84,22 @@ Questions and problems in the UNIX version can be directed to David Buck.
 David Buck
 Internet:   dbuck@ccs.carleton.ca
 CompuServe: 70521,1371
+
+Questions and problems with the VAX/VMS X code can be directed to Chris Cason
+on Compuserve via mail or in the POV source section of GRAPHDEV. (currently 8).
+
+He will continue to enhance this code and test it other machines.
+If you had to make any modifications to get it to compile, please let him know
+so that he may update the source accordingly. This particularly applies to
+the build files. By doing so, you will be helping others.
+
+You may like to check the POV section of GRAPHDEV on Compuserve to see if there
+are updated X files, which may occur from time to time.
+Try scanning for the keyword XWINDOWS.
+
+Expect to find a significantly enhanced X version in the near future.
+(Sometime in late 1993 or early 1994). This will include a Motif shell.
+
+Chris Cason.
+CIS:100032,1644
+Internet:100032.1644@compuserve.com

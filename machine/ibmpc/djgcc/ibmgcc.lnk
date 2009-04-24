@@ -1,0 +1,7 @@
+povray.o bezier.o blob.o bound.o boxes.o camera.o colour.o 
+cones.o csg.o discs.o dump.o express.o gifdecod.o gif.o 
+hfield.o ibm.o iff.o image.o lighting.o matrices.o normal.o 
+objects.o parse.o pigment.o planes.o point.o poly.o quadrics.o 
+raw.o ray.o render.o spheres.o targa.o texture.o tokenize.o 
+triangle.o txttest.o vect.o
+-lm -lc -lpc

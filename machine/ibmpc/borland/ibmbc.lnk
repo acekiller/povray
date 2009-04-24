@@ -1,0 +1,6 @@
+povray.obj bezier.obj blob.obj bound.obj boxes.obj camera.obj colour.obj 
+cones.obj csg.obj discs.obj dump.obj express.obj gifdecod.obj gif.obj 
+hfield.obj ibm.obj iff.obj image.obj lighting.obj matrices.obj normal.obj 
+objects.obj parse.obj pigment.obj planes.obj point.obj poly.obj quadrics.obj 
+raw.obj ray.obj render.obj spheres.obj targa.obj texture.obj tokenize.obj 
+triangle.obj txttest.obj vect.obj ai.lib

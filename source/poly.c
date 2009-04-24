@@ -6,17 +6,18 @@
 *  This file was written by Alexander Enzmann.  He wrote the code for
 *  4th - 6th order shapes and generously provided us these enhancements.
 *
-*  from Persistence of Vision Raytracer 
-*  Copyright 1992 Persistence of Vision Team
+*  from Persistence of Vision Raytracer
+*  Copyright 1993 Persistence of Vision Team
 *---------------------------------------------------------------------------
-*  Copying, distribution and legal info is in the file povlegal.doc which
-*  should be distributed with this file. If povlegal.doc is not available
-*  or for more info please contact:
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other 
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+*  Forum.  The latest version of POV-Ray may be found there as well.
 *
-*       Drew Wells [POV-Team Leader] 
-*       CIS: 73767,1244  Internet: 73767.1244@compuserve.com
-*       Phone: (213) 254-4041
-* 
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
@@ -36,783 +37,722 @@
    a27*y*z^2+a28*y*z+a29*y+a30*z^4+a31*z^3+a32*z^2+a33*z+a34
 */
 
+#define POLYNOMIAL_TOLERANCE 1.0e-4
 #define COEFF_LIMIT 1.0e-20
+#define BINOMSIZE 40
 
-#define LEFT_MARGIN 0
-#define RIGHT_MARGIN 72
+/* The following table contains the binomial coefficients up to 15 */
+int binomials[15][15] =
+  {
+    {  
+    1,  0,  0,  0,   0,   0,   0,   0,   0,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  1,  0,  0,   0,   0,   0,   0,   0,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  2,  1,  0,   0,   0,   0,   0,   0,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  3,  3,  1,   0,   0,   0,   0,   0,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  4,  6,  4,   1,   0,   0,   0,   0,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  5, 10, 10,   5,   1,   0,   0,   0,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  6, 15, 20,  15,   6,   1,   0,   0,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  7, 21, 35,  35,  21,   7,   1,   0,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  8, 28, 56,  70,  56,  28,   8,   1,   0,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1,  9, 36, 84, 126, 126,  84,  36,   9,   1,   0,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1, 10, 45,120, 210, 252, 210, 120,  45,  10,   1,  0,  0,  0,  0
+  }
+  ,
+    {  
+    1, 11, 55,165, 330, 462, 462, 330, 165,  55,  11,  1,  0,  0,  0
+  }
+  ,
+    {  
+    1, 12, 66,220, 495, 792, 924, 792, 495, 220,  66, 12,  1,  0,  0
+  }
+  ,
+    {  
+    1, 13, 78,286, 715,1287,1716,1716,1287, 715, 286, 78, 13,  1,  0
+  }
+  ,
+    {  
+    1, 14, 91,364,1001,2002,3003,3432,3003,2002,1001,364, 91, 14,  1
+  }
+  };
 
-int binomial[11][12] = {
-   { 0, 1,  0,  0,   0,   0,   0,   0,   0, 0,  0,  0},
-   { 0, 1,  1,  0,   0,   0,   0,   0,   0, 0,  0,  0},
-   { 0, 1,  2,  1,   0,   0,   0,   0,   0, 0,  0,  0},
-   { 0, 1,  3,  3,   1,   0,   0,   0,   0, 0,  0,  0},
-   { 0, 1,  4,  6,   4,   1,   0,   0,   0, 0,  0,  0},
-   { 0, 1,  5, 10,  10,   5,   1,   0,   0, 0,  0,  0},
-   { 0, 1,  6, 15,  20,  15,   6,   1,   0, 0,  0,  0},
-   { 0, 1,  7, 21,  35,  35,  21,   7,   1, 0,  0,  0},
-   { 0, 1,  8, 28,  56,  70,  56,  28,   8, 1,  0,  0},
-   { 0, 1,  9, 36,  84, 126, 126,  84,  36, 9,  1,  0},
-   { 0, 1, 10, 45, 120, 210, 252, 210, 120, 45, 10, 1}};
-
-int factorials[MAX_ORDER+1] = {1, 1, 2, 6, 24, 120, 720, 5040};
-int term_counts[MAX_ORDER+1] = {1, 4, 10, 20, 35, 56, 84, 120};
+DBL eqn_v[3][MAX_ORDER+1], eqn_vt[3][MAX_ORDER+1];
 
 METHODS Poly_Methods =
-{ Object_Intersect, All_Poly_Intersections,
-   Inside_Poly, Poly_Normal, Copy_Poly,
-   Translate_Poly, Rotate_Poly,
-   Scale_Poly, Invert_Poly};
+  { 
+  All_Poly_Intersections,
+  Inside_Poly, Poly_Normal, Copy_Poly,
+  Translate_Poly, Rotate_Poly,
+  Scale_Poly, Transform_Poly, Invert_Poly, Destroy_Poly
+};
 
 extern long Ray_Poly_Tests, Ray_Poly_Tests_Succeeded;
+extern unsigned int Options;
+extern int Shadow_Test_Flag;
 
-static void transform PARAMS((int order,DBL *Coeffs,MATRIX *q));
-static int roll PARAMS((int order,int x,int y,int z));
-static void unroll PARAMS((int order,int index,int *x,int *y,int *z,int *w));
-/*static void show_poly PARAMS((char *label, int Order, DBL *Coeffs));*/
-static int intersect PARAMS((RAY *Ray, int Order, DBL *Coeffs, DBL *Depths));
-static int intersect_quartic PARAMS((RAY *Ray, POLY *Shape, DBL *Depths));
-static void quartic_normal PARAMS((VECTOR *Result, OBJECT *Object,
-VECTOR *Intersection_Point));
-static DBL inside PARAMS((VECTOR *point, int Order, DBL *Coeffs));
-static void normalp PARAMS((VECTOR *Result, int Order, DBL *Coeffs,
-VECTOR *Intersection_Point));
-static DBL do_partial_term PARAMS((MATRIX *q, int row, int pwr, int i,
-int j, int k, int l));
-
-int All_Poly_Intersections(Object, Ray, Depth_Queue)
-OBJECT *Object;
-RAY *Ray;
-PRIOQ *Depth_Queue;
-{
-   POLY *Shape = (POLY *) Object;
-   DBL Depths[MAX_ORDER], len;
-   VECTOR Intersection_Point, dv;
-   INTERSECTION Local_Element;
-   int cnt, i, j, Intersection_Found;
-   RAY New_Ray;
-
-   /* Transform the ray into the polynomial's space */
-   if (Shape->Transform != NULL) {
-      MInverseTransformVector(&New_Ray.Initial, &Ray->Initial,
-         Shape->Transform);
-      MInvTransVector(&New_Ray.Direction, &Ray->Direction, Shape->Transform);
-   }
-   else {
-      New_Ray.Initial.x = Ray->Initial.x;
-      New_Ray.Initial.y = Ray->Initial.y;
-      New_Ray.Initial.z = Ray->Initial.z;
-      New_Ray.Direction.x = Ray->Direction.x;
-      New_Ray.Direction.y = Ray->Direction.y;
-      New_Ray.Direction.z = Ray->Direction.z;
-   }
-
-      len = sqrt(New_Ray.Direction.x * New_Ray.Direction.x +
-         New_Ray.Direction.y * New_Ray.Direction.y +
-         New_Ray.Direction.z * New_Ray.Direction.z);
-   if (len == 0.0)
-      return 0;
-   else {
-      New_Ray.Direction.x /= len;
-      New_Ray.Direction.y /= len;
-      New_Ray.Direction.z /= len;
-   }
-
-      Intersection_Found = FALSE;
-   Ray_Poly_Tests++;
-   if (Shape->Order == 4)
-      cnt = intersect_quartic(&New_Ray, Shape, Depths);
-   else
-      cnt = intersect(&New_Ray, Shape->Order, Shape->Coeffs, &Depths[0]);
-
-   if (cnt > 0) Ray_Poly_Tests_Succeeded++;
-   for (i=0;i<cnt;i++) {
-      if (Depths[i] < 0) goto l0;
-      for (j=0;j<i;j++)
-         if (Depths[i] == Depths[j]) goto l0;
-      VScale(Intersection_Point, New_Ray.Direction, Depths[j]);
-      VAdd(Intersection_Point, Intersection_Point, New_Ray.Initial);
-      /* Transform the point into world space */
-      if (Shape->Transform != NULL)
-         MTransformVector(&Intersection_Point, &Intersection_Point,
-            Shape->Transform);
-
-      VSub(dv, Intersection_Point, Ray->Initial);
-      VLength(len, dv);
-      Local_Element.Depth = len;
-      Local_Element.Object = Shape->Parent_Object;
-      Local_Element.Point = Intersection_Point;
-      Local_Element.Shape = (SHAPE *)Shape;
-      pq_add (Depth_Queue, &Local_Element);
-      Intersection_Found = TRUE;
-l0:;
-   }
-   return (Intersection_Found);
-}
-
-/* Given the powers return the index into the polynomial */
-static int roll(order, x, y, z)
-int order, x, y, z;
-{
-   int xstart, ystart, zstart;
-   xstart = binomial[order-x+2][order-x];
-   order = order - x;
-   ystart = binomial[order-y+1][order-y];
-   order = order - y;
-   zstart = binomial[order-z][order-z];
-   return xstart+ystart+zstart;
-}
-
-/* Given the index into the polynomial, return the powers. */
-static void unroll(order, index, x, y, z, w)
-int order, index, *x, *y, *z, *w;
-{
-   int i, torder;
-   if (index==0) { *x = order; *y = 0; *z = 0; *w = 0; return; }
-   else if (order==1)
-      if (index == 1) { *x = 0; *y = 1; *z = 0; *w = 0; return; }
-      else { *x = 0; *y = 0; *z = 3 - index; *w = order-(*x+*y+*z); return; }
-   else for (i=0;binomial[3+i][i+1]<=index;i++);
-   torder = order;
-   *x = torder - i; index -= binomial[2+i][i]; torder = i;
-   if (index==0) { *y = torder; *z = 0; *w = 0; return; }
-   else if (torder==1) { *y = 0; *z = 2-index; *w = order-(*x+*y+*z); return; }
-   else for (i=0;binomial[2+i][i+1]<=index;i++);
-   *y = torder - i; index -= binomial[1+i][i]; torder = i;
-   *z = torder - index;
-   *w = order - (*x + *y + *z);
-}
-
-   /* REMOVED UNUSED ROUTINE 3/27/92
-static void show_poly(label, Order, Coeffs)
-   char *label;
-   int Order;
-   DBL *Coeffs;
-{
-   int i,j,cnt,col;
-   int wp, xp, yp, zp;
-   char term[40];
-   j = 0;
-   printf("%s", label);
-   col = strlen(label);
-
-
-   for (i=0;i<term_counts[Order];i++)
-      if (Coeffs[i] != 0.0) {
-	 if (j) cnt = STRLN(sprintf(&term[0], " + %.5lg", Coeffs[i]));
-	 else cnt = STRLN(sprintf(&term[0], "%.5lg", Coeffs[i]));
-	 unroll(Order, i, &xp, &yp, &zp, &wp);
-	 if (xp == 1) cnt += STRLN(sprintf(&term[cnt], "*x"));
-	 else if (xp > 1) cnt += STRLN(sprintf(&term[cnt], "*x^%d", xp));
-	 if (yp == 1) cnt += STRLN(sprintf(&term[cnt], "*y"));
-	 else if (yp > 1) cnt += STRLN(sprintf(&term[cnt], "*y^%d", yp));
-	 if (zp == 1) cnt += STRLN(sprintf(&term[cnt], "*z"));
-	 else if (zp > 1) cnt += STRLN(sprintf(&term[cnt], "*z^%d", zp));
-	 j = 1;
-	 if (col+cnt>RIGHT_MARGIN) { printf("\n"); col=LEFT_MARGIN; }
-	 printf("%s", &term[0]);
-	 col += cnt;
-	 }
-}
+/* unused
+static DBL evaluate_linear PARAMS((VECTOR *P, DBL *a));
+static DBL evaluate_quadratic PARAMS((VECTOR *P, DBL *a));
 */
 
-/* Intersection of a ray and an arbitrary polynomial function */
-static int intersect(Ray, Order, Coeffs, Depths)
+static int intersect PARAMS((RAY *Ray, int Order, DBL *Coeffs, int Sturm_Flag,
+DBL *Depths));
+static void normal0 PARAMS((VECTOR *Result, int Order, DBL *Coeffs,
+VECTOR *IPoint));
+static void normal1 PARAMS((VECTOR *Result, int Order, DBL *Coeffs,
+VECTOR *IPoint));
+static DBL inside PARAMS((VECTOR *IPoint, int Order, DBL *Coeffs));
+static int intersect_linear PARAMS((RAY *ray, DBL *Coeffs, DBL *Depths));
+static int intersect_quadratic PARAMS((RAY *ray, DBL *Coeffs, DBL *Depths));
+static int factor_out PARAMS((int n, int i, int *c, int *s));
+static long binomial PARAMS((int n, int r));
+static void factor1 PARAMS((int n, int *c, int *s));
+
+int All_Poly_Intersections(Object, Ray, Depth_Stack)
+OBJECT *Object;
 RAY *Ray;
-int Order;
-DBL *Coeffs, *Depths;
-{
-   MATRIX q;
-   DBL *a, t[MAX_ORDER+1];
-   int i, j;
-   /* Determine the coefficients of t^n, where the line is represented
-      as (x,y,z) + (xx,yy,zz)*t.  */
-   if ((a = (DBL *)malloc(term_counts[Order] * sizeof(DBL))) == NULL) {
-      printf("Cannot allocate memory for coefficients in poly intersect()\n");
-      exit(1);
-   }
-   for (i=0;i<term_counts[Order];i++)
-      a[i] = Coeffs[i];
-   MZero((MATRIX *)&q[0][0]);
-   q[0][0] = Ray->Direction.x; q[3][0] = Ray->Initial.x;
-   q[0][1] = Ray->Direction.y; q[3][1] = Ray->Initial.y;
-   q[0][2] = Ray->Direction.z; q[3][2] = Ray->Initial.z;
-   transform(Order, a, (MATRIX *)&q[0][0]);
-   /* The equation is now in terms of one variable.  Use numerical
-      techniques to solve the polynomial that represents the intersections. */
-   for (i=0;i<=Order;i++) {
-      t[i] = a[binomial[3+i][4]-1];
-      if (t[i] > -COEFF_LIMIT && t[i] < COEFF_LIMIT)
-         t[i] = 0.0;
-   }
-   free(a);
-   for (i=0,j=Order;i<=Order;i++)
-      if (t[i] != 0.0)
-         break;
-      else
-         j -= 1;
-   if (j > 2)
-      return polysolve(j, &t[i], Depths);
-   else if (j > 0)
-      return solve_quadratic(&t[i], Depths);
-   else
-      return 0;
-}
+ISTACK *Depth_Stack;
+  {
+  POLY *Poly = (POLY *) Object;
+  DBL Depths[MAX_ORDER], len;
+  VECTOR IPoint, dv;
+  int cnt, i, j, Intersection_Found;
+  RAY New_Ray;
 
-static DBL inside(point, Order, Coeffs)
-VECTOR *point;
-int Order;
-DBL *Coeffs;
-{
-   DBL x[MAX_ORDER+1], y[MAX_ORDER+1], z[MAX_ORDER+1], Result;
-   int i, k0, k1, k2, k3;
-   x[0] = 1.0; y[0] = 1.0; z[0] = 1.0;
-   x[1] = point->x; y[1] = point->y; z[1] = point->z;
-   for (i=2;i<=MAX_ORDER;i++) {
-      x[i] = x[1] * x[i-1]; y[i] = y[1] * y[i-1]; z[i] = z[1] * z[i-1];
-   }
-   Result = 0.0;
-   for (i=0;i<term_counts[Order];i++) {
-      unroll(Order, i, &k0, &k1, &k2, &k3);
-      Result += Coeffs[i] * x[k0] * y[k1] * z[k2];
-   }
+  /* Transform the ray into the polynomial's space */
+  if (Poly->Trans != NULL) 
+    {
+    MInvTransPoint(&New_Ray.Initial, &Ray->Initial, Poly->Trans);
+    MInvTransDirection(&New_Ray.Direction, &Ray->Direction, Poly->Trans);
+    }
+  else 
+    {
+    New_Ray.Initial   = Ray->Initial;
+    New_Ray.Direction = Ray->Direction;
+    }
 
-   /* The Epsilon fudge factor is so that points really near the
-      surface are considered inside the surface */
-   return (Result>-EPSILON?(Result<EPSILON?0.0:Result):
-   Result);
-}
+  VDot(len, New_Ray.Direction, New_Ray.Direction);
+  if (len == 0.0)
+    return 0;
+  len = 1.0 / sqrt(len);
+  VScaleEq(New_Ray.Direction, len);
 
-/* Normal to a polynomial */
-static void normalp(Result, Order, Coeffs, Intersection_Point)
-VECTOR *Result;
-int Order;
-DBL *Coeffs;
-VECTOR *Intersection_Point;
+  Intersection_Found = FALSE;
+  Ray_Poly_Tests++;
+
+  if (Poly->Order == 1)
+    cnt = intersect_linear(&New_Ray, Poly->Coeffs, Depths);
+  else if (Poly->Order == 2)
+    cnt = intersect_quadratic(&New_Ray, Poly->Coeffs, Depths);
+  else
+    cnt = intersect(&New_Ray, Poly->Order, Poly->Coeffs, Poly->Sturm_Flag,
+      Depths);
+  if (cnt > 0) Ray_Poly_Tests_Succeeded++;
+
+  for (i=0;i<cnt;i++) 
+    {
+    if (Depths[i] < POLYNOMIAL_TOLERANCE) goto l0;
+    for (j=0;j<i;j++)
+      if (Depths[i] == Depths[j]) goto l0;
+    VScale(IPoint, New_Ray.Direction, Depths[i]);
+    VAddEq(IPoint, New_Ray.Initial);
+    /* Transform the point into world space */
+    if (Poly->Trans != NULL)
+      MTransPoint(&IPoint, &IPoint, Poly->Trans);
+
+    VSub(dv, IPoint, Ray->Initial);
+    VLength(len, dv);
+    if (Point_In_Clip(&IPoint, Object->Clip))
+      {
+      push_entry(len,IPoint,Object,Depth_Stack);
+      Intersection_Found = TRUE;
+      }
+l0:;
+    }
+  return (Intersection_Found);
+  }
+
+/* For speedup of low order polynomials, expand out the terms
+   involved in evaluating the poly. */
+/* unused
+static DBL
+evaluate_linear(P, a)
+   VECTOR *P;
+   DBL *a;
 {
-   int i, xp, yp, zp, wp;
-   DBL *a,x[MAX_ORDER+1],y[MAX_ORDER+1],z[MAX_ORDER+1];
-   x[0] = 1.0; y[0] = 1.0; z[0] = 1.0;
-   x[1] = Intersection_Point->x;
-   y[1] = Intersection_Point->y;
-   z[1] = Intersection_Point->z;
-   for (i=2;i<=Order;i++) {
-      x[i] = Intersection_Point->x * x[i-1];
-      y[i] = Intersection_Point->y * y[i-1];
-      z[i] = Intersection_Point->z * z[i-1];
-   }
-   a = Coeffs;
-   Result->x = 0.0; Result->y = 0.0; Result->z = 0.0;
-   for (i=0;i<term_counts[Order];i++) {
-      unroll(Order, i, &xp, &yp, &zp, &wp);
-      if (xp >= 1) Result->x += xp * a[i] * x[xp-1] * y[yp] * z[zp];
-      if (yp >= 1) Result->y += yp * a[i] * x[xp] * y[yp-1] * z[zp];
-      if (zp >= 1) Result->z += zp * a[i] * x[xp] * y[yp] * z[zp-1];
-   }
-   VTemp = sqrt(Result->x * Result->x +
-      Result->y * Result->y +
-      Result->z * Result->z);
-   if (VTemp > 0.0) {
-      Result->x /= VTemp;
-      Result->y /= VTemp;
-      Result->z /= VTemp;
-   }
-   else {
-      Result->x = 1.0;
-      Result->y = 0.0;
-      Result->z = 0.0;
-   }
+   return (a[0] * P->x) + (a[1] * P->y) + (a[2] * P->z) + a[3];
 }
 
 static DBL
-do_partial_term(q, row, pwr, i, j, k, l)
-MATRIX *q;
-int row, pwr, i, j, k, l;
+evaluate_quadratic(P, a)
+   VECTOR *P;
+   DBL *a;
 {
-   DBL result;
-   int n;
+   DBL x, y, z;
 
-   result = (DBL)(factorials[pwr] /
-      (factorials[i]*factorials[j]*factorials[k]*factorials[l]));
-   if (i>0) for (n=0;n<i;n++) result *= (*q)[0][row];
-   if (j>0) for (n=0;n<j;n++) result *= (*q)[1][row];
-   if (k>0) for (n=0;n<k;n++) result *= (*q)[2][row];
-   if (l>0) for (n=0;n<l;n++) result *= (*q)[3][row];
-   return result;
+   x = P->x; y = P->y; z = P->z;
+   return  a[0] * x * x + a[1] * x * y + a[2] * x * z +
+           a[3] * x     + a[4] * y * y + a[5] * y * z +
+           a[6] * y     + a[7] * z * z + a[8] * z     +
+           a[9];
 }
-
-/* Using the transformation matrix q, transform the general polynomial
-   equation given by a. */
-
-static void transform(order, Coeffs, q)
-int order;
-DBL *Coeffs;
-MATRIX *q;
-{
-   int term_index, partial_index;
-   int ip, i, i0, i1, i2, i3;
-   int jp, j, j0, j1, j2, j3;
-   int kp, k, k0, k1, k2, k3;
-   int wp;
-   DBL *b, partial_term;
-   DBL tempx, tempy, tempz;
-
-   for (i=0;i<4;i++) for (j=0;j<4;j++)
-      if ((*q)[i][j] > -COEFF_LIMIT && (*q)[i][j] < COEFF_LIMIT)
-         (*q)[i][j] = 0.0;
-   if ((b = (DBL *)malloc(term_counts[order] * sizeof(DBL))) == NULL) {
-      printf("Cannot allocate memory for b in poly transform()\n");
-      exit(1);
-   }
-   for (i=0;i<term_counts[order];i++)
-      b[i] = 0.0;
-   for (term_index=0;term_index<term_counts[order];term_index++) {
-      if (Coeffs[term_index] != 0.0) {
-         unroll(order, term_index, &ip, &jp, &kp, &wp);
-         /* Step through terms in: (q[0][0]*x+q[0][1]*y+q[0][2]*z+q[0][3])^i */
-         for (i=0;i<term_counts[ip];i++) {
-            unroll(ip, i, &i0, &i1, &i2, &i3);
-            tempx = do_partial_term(q, 0, ip, i0, i1, i2, i3);
-            if (tempx != 0.0) {
-
-               /* Step through terms in:
-			(q[1][0]*x+q[1][1]*y+q[1][2]*z+q[1][3])^j */
-               for (j=0;j<term_counts[jp];j++) {
-                  unroll(jp, j, &j0, &j1, &j2, &j3);
-                  tempy = do_partial_term(q, 1, jp, j0, j1, j2, j3);
-                  if (tempy != 0.0) {
-
-                     /* Step through terms in:
-			      (q[2][0]*x+q[2][1]*y+q[2][2]*z+q[2][3])^k */
-                     for (k=0;k<term_counts[kp];k++) {
-                        unroll(kp, k, &k0, &k1, &k2, &k3);
-                        tempz = do_partial_term(q, 2, kp, k0, k1, k2, k3);
-                        if (tempz != 0.0) {
-                           /* Figure out it's index, and add into result */
-                           partial_index=roll(order,i0+j0+k0,i1+j1+k1,i2+j2+k2);
-                           partial_term=Coeffs[term_index]*tempx*tempy*tempz;
-                           b[partial_index] += partial_term;
-                        }
-                     }
-                  }
-               }
-            }
-         }
-      }
-   }
-   for (i=0;i<term_counts[order];i++)
-      if (b[i] > -1.0e-4 && b[i] < 1.0e-4)
-         Coeffs[i] = 0.0;
-      else
-         Coeffs[i] = b[i];
-   free(b);
-   /*show_poly("New poly: ", order, Coeffs);
-printf("\n");
 */
-}
+/* Remove all factors of i from n. */
+static int
+factor_out(n, i, c, s)
+int n, i, *c, *s;
+  {
+  while (!(n % i)) 
+    {
+    n /= i;
+    s[(*c)++] = i;
+    }
+  return n;
+  }
 
-/* Intersection of a ray and a quartic */
-static int intersect_quartic(Ray, Shape, Depths)
-RAY *Ray;
-POLY *Shape;
-DBL *Depths;
-{
-   DBL x,y,z,x2,y2,z2,x3,y3,z3,x4,y4,z4;
-   DBL xx,yy,zz,xx2,yy2,zz2,xx3,yy3,zz3,xx4,yy4,zz4;
-   DBL *a, t[5];
-   DBL x_z,x_zz,xx_z,xx_zz,x_y,x_yy,xx_y,xx_yy,y_z,y_zz,yy_z,yy_zz,temp;
+/* Find all prime factors of n. (Note that n must be less than 2^15 */
+static void
+factor1(n, c, s)
+int n, *c, *s;
+  {
+  int i,k;
+  /* First factor out any 2s */
+  n = factor_out(n, 2, c, s);
+  /* Now any odd factors */
+  k = (int)sqrt(n) + 1;
+  for (i=3;n>1 && i<=k;i+=2)
+    if (!(n%i)) 
+    {
+    n = factor_out(n, i, c, s);
+    k = (int)sqrt(n)+1;
+    }
+  if (n>1)
+    s[(*c)++] = n;
+  }
 
-   x = Ray->Initial.x;
-   y = Ray->Initial.y;
-   z = Ray->Initial.z;
-   xx = Ray->Direction.x;
-   yy = Ray->Direction.y;
-   zz = Ray->Direction.z;
-   x2 = x * x;  y2 = y * y;  z2 = z * z;
-   x3 = x * x2; y3 = y * y2; z3 = z * z2;
-   x4 = x * x3; y4 = y * y3; z4 = z * z3;
-   xx2 = xx * xx;  yy2 = yy * yy;  zz2 = zz * zz;
-   xx3 = xx * xx2; yy3 = yy * yy2; zz3 = zz * zz2;
-   xx4 = xx * xx3; yy4 = yy * yy3; zz4 = zz * zz3;
-   a = Shape->Coeffs;
-   x_z = x * z; x_zz = x * zz; xx_z = xx * z; xx_zz = xx * zz;
-   x_y = x * y; x_yy = x * yy; xx_y = xx * y; xx_yy = xx * yy;
-   y_z = y * z; y_zz = y * zz; yy_z = yy * z; yy_zz = yy * zz;
+/* Calculate the binomial coefficent of n,r. */
+static
+long
+binomial(n, r)
+int n, r;
+  {
+  int h,i,j,k,l;
+  unsigned long result;
+  static int stack1[BINOMSIZE], stack2[BINOMSIZE];
+  if (n<0 || r<0 || r>n)
+    result = 0L;
+  else if (r==n)
+    result = 1L;
+  else if (r < 15 && n < 15)
+    result = (long)binomials[n][r];
+  else 
+    {
+    j = 0;
+    for (i=r+1;i<=n;i++)
+      stack1[j++] = i;
+    for (i=2;i<=(n-r);i++) 
+      {
+      h = 0;
+      factor1(i, &h, stack2);
+      for (k=0;k<h;k++) 
+        {
+        for (l=0;l<j;l++)
+          if (!(stack1[l] % stack2[k])) 
+          {
+          stack1[l] /= stack2[k];
+          goto l1;
+          }
+        /* Error if we get here */
+        if (Options & DEBUGGING) 
+          {
+          printf("Failed to factor\n");
+          fflush(stdout);
+          }
+l1:;
+        }
+      }
+    result=1;
+    for (i=0;i<j;i++)
+      result *= stack1[i];
+    }
+  return result;
+  }
 
-   /*
+static DBL
+inside(IPoint, Order, Coeffs)
+VECTOR *IPoint;
+int Order;
+DBL *Coeffs;
+  {
+  DBL x[MAX_ORDER+1], y[MAX_ORDER+1];
+  DBL z[MAX_ORDER+1], c, Result;
+  int i, j, k, term;
+
+  x[0] = 1.0;       y[0] = 1.0;       z[0] = 1.0;
+  x[1] = IPoint->x; y[1] = IPoint->y; z[1] = IPoint->z;
+  for (i=2;i<=Order;i++) 
+    {
+    x[i] = x[1] * x[i-1];
+    y[i] = y[1] * y[i-1];
+    z[i] = z[1] * z[i-1];
+    }
+  Result = 0.0;
+  term = 0;
+  for (i=Order;i>=0;i--)
+    for (j=Order-i;j>=0;j--)
+    for (k=Order-(i+j);k>=0;k--) 
+    {
+    if ((c = Coeffs[term]) != 0.0)
+      Result += c * x[i] * y[j] * z[k];
+    term++;
+    }
+  return Result;
+  }
+
+/* Intersection of a ray and an arbitrary polynomial function */
+static int
+intersect(ray, Order, Coeffs, Sturm_Flag, Depths)
+RAY *ray;
+int Order, Sturm_Flag;
+DBL *Coeffs, *Depths;
+  {
+  DBL eqn[MAX_ORDER+1];
+  DBL t[3][MAX_ORDER+1];
+  VECTOR P, D;
+  DBL val;
+  int h, i, j, k, i1, j1, k1, term;
+  int offset;
+
+  /* First we calculate the values of the individual powers
+      of x, y, and z as they are represented by the ray */
+  P = ray->Initial;
+  D = ray->Direction;
+  for (i=0;i<3;i++) 
+    {
+    eqn_v[i][0]  = 1.0;
+    eqn_vt[i][0] = 1.0;
+    }
+  eqn_v[0][1] = P.x;
+  eqn_v[1][1] = P.y;
+  eqn_v[2][1] = P.z;
+  eqn_vt[0][1] = D.x;
+  eqn_vt[1][1] = D.y;
+  eqn_vt[2][1] = D.z;
+
+  for (i=2;i<=Order;i++)
+    for (j=0;j<3;j++) 
+    {
+    eqn_v[j][i]  = eqn_v[j][1] * eqn_v[j][i-1];
+    eqn_vt[j][i] = eqn_vt[j][1] * eqn_vt[j][i-1];
+    }
+
+  for (i=0;i<=Order;i++)
+    eqn[i] = 0.0;
+
+  /* Now walk through the terms of the polynomial.  As we go
+      we substitute the ray equation for each of the variables. */
+  term = 0;
+  for (i=Order;i>=0;i--) 
+    {
+    for (h=0;h<=i;h++)
+      t[0][h] = binomial(i, h) *
+      eqn_vt[0][i-h] *
+      eqn_v[0][h];
+    for (j=Order-i;j>=0;j--) 
+      {
+      for (h=0;h<=j;h++)
+        t[1][h] = binomial(j, h) *
+        eqn_vt[1][j-h] *
+        eqn_v[1][h];
+      for (k=Order-(i+j);k>=0;k--) 
+        {
+        if (Coeffs[term] != 0) 
+          {
+          for (h=0;h<=k;h++)
+            t[2][h] = binomial(k, h) *
+            eqn_vt[2][k-h] *
+            eqn_v[2][h];
+
+          /* Multiply together the three polynomials */
+          offset = Order - (i + j + k);
+          for (i1=0;i1<=i;i1++)
+            for (j1=0;j1<=j;j1++)
+            for (k1=0;k1<=k;k1++) 
+            {
+            h = offset + i1 + j1 + k1;
+            val = Coeffs[term];
+            val *= t[0][i1];
+            val *= t[1][j1];
+            val *= t[2][k1];
+            eqn[h] += val;
+            }
+          }
+        term++;
+        }
+      }
+    }
+  for (i=0,j=Order;i<=Order;i++)
+    if (eqn[i] != 0.0)
+      break;
+    else
+      j--;
+
+  if (j > 4 || Sturm_Flag)
+    return polysolve(j, &eqn[i], Depths);
+  else if (j == 4)
+    return solve_quartic(&eqn[i], Depths);
+  else if (j==3)
+    return solve_cubic(&eqn[i], Depths);
+  else if (j==2)
+    return solve_quadratic(&eqn[i], Depths);
+  else
+    return 0;
+  }
+
+/* Intersection of a ray and a quadratic */
+static int
+intersect_linear(ray, Coeffs, Depths)
+RAY *ray;
+DBL *Coeffs, *Depths;
+  {
+  DBL t0, t1, *a = Coeffs;
+
+  t0 = a[0] * ray->Initial.x + a[1] * ray->Initial.y + a[2] * ray->Initial.z;
+  t1 = a[0] * ray->Direction.x + a[1] * ray->Direction.y +
+  a[2] * ray->Direction.z;
+  if (fabs(t1) < EPSILON)
+    return 0;
+  Depths[0] = -(a[3] + t0) / t1;
+  return 1;
+  }
+
+/* Intersection of a ray and a quadratic */
+static int
+intersect_quadratic(ray, Coeffs, Depths)
+RAY *ray;
+DBL *Coeffs, *Depths;
+  {
+  DBL x, y, z, x2, y2, z2;
+  DBL xx, yy, zz, xx2, yy2, zz2;
+  DBL *a, ac, bc, cc, d, t;
+
+  x  = ray->Initial.x;
+  y  = ray->Initial.y;
+  z  = ray->Initial.z;
+  xx = ray->Direction.x;
+  yy = ray->Direction.y;
+  zz = ray->Direction.z;
+  x2 = x * x;  y2 = y * y;  z2 = z * z;
+  xx2 = xx * xx;  yy2 = yy * yy;  zz2 = zz * zz;
+  a = Coeffs;
+
+  /*
       Determine the coefficients of t^n, where the line is represented
       as (x,y,z) + (xx,yy,zz)*t.
    */
-   temp =  a[ 0]*xx4;
-   temp += a[ 1]*xx3*yy;
-   temp += a[ 2]*xx3*zz;
-   temp += a[ 4]*xx2*yy2;
-   temp += a[ 5]*xx2*yy_zz;
-   temp += a[ 7]*xx2*zz2;
-   temp += a[10]*xx*yy3;
-   temp += a[11]*xx_zz*yy2;
-   temp += a[13]*xx_yy*zz2;
-   temp += a[16]*xx*zz3;
-   temp += a[20]*yy4;
-   temp += a[21]*yy3*zz;
-   temp += a[23]*yy2*zz2;
-   temp += a[26]*yy*zz3;
-   temp += a[30]*zz4;
+  ac = (a[0]*xx2 + a[1]*xx*yy + a[2]*xx*zz + a[4]*yy2 + a[5]*yy*zz +
+    a[7]*zz2);
+  bc = (2*a[0]*x*xx + a[1]*(x*yy + xx*y) + a[2]*(x*zz + xx*z) +
+    a[3]*xx + 2*a[4]*y*yy + a[5]*(y*zz + yy*z) + a[6]*yy +
+    2*a[7]*z*zz + a[8]*zz);
+  cc = a[0]*x2 + a[1]*x*y + a[2]*x*z + a[3]*x + a[4]*y2 +
+  a[5]*y*z + a[6]*y + a[7]*z2 + a[8]*z + a[9];
 
-   t[0] = temp;
+  if (fabs(ac) < COEFF_LIMIT) 
+    {
+    if (fabs(bc) < COEFF_LIMIT)
+      return 0;
+    Depths[0] = -cc / bc;
+    return 1;
+    }
 
-   temp = 4*a[ 0]*x*xx3;
-   temp += a[ 1]*(3*xx2*x_yy+xx3*y);
-   temp += a[ 2]*(3*xx2*x_zz+xx3*z);
-   temp += a[ 3]*xx3;
-   temp += a[ 4]*(2*x*xx*yy2+2*xx2*y*yy);
-   temp += a[ 5]*(xx2*(y_zz+yy_z)+2*x_yy*xx_zz);
-   temp += a[ 6]*xx2*yy;
-   temp += a[ 7]*(2*x*xx*zz2+2*xx2*z*zz);
-   temp += a[ 8]*xx2*zz;
-   temp += a[10]*(x*yy3+3*xx_y*yy2);
-   temp += a[11]*(xx*(2*y*yy_zz+yy2*z)+x_zz*yy2);
-   temp += a[12]*xx*yy2;
-   temp += a[13]*(xx*(y*zz2+2*yy_z*zz)+x_yy*zz2);
-   temp += a[14]*xx_yy*zz;
-   temp += a[16]*(x*zz3+3*xx_z*zz2);
-   temp += a[17]*xx*zz2;
-   temp += 4*a[20]*y*yy3;
-   temp += a[21]*(3*yy2*y_zz+yy3*z);
-   temp += a[22]*yy3;
-   temp += zz*(2*a[23]*yy*(y_zz+yy_z)+
-      a[24]*yy2+
-      zz*(a[26]*(y_zz+3*yy_z)+
-      a[27]*yy+zz*(4*a[30]*z+a[31])));
-   t[1] = temp;
+  /* Solve the quadratic formula & return results that are
+      within the correct interval. */
+  d = bc * bc - 4.0 * ac * cc;
+  if (d < 0.0) return 0;
+  d = sqrt(d);
+  bc = -bc;
+  t = 2.0 * ac;
+  Depths[0] = (bc + d) / t;
+  Depths[1] = (bc - d) / t;
+  return 2;
+  }
 
-   temp = 6*a[ 0]*x2*xx2;
-   temp += 3*a[ 1]*x*xx*(x_yy+xx_y);
-   temp += 3*a[ 2]*x*xx*(x_zz+xx_z);
-   temp += 3*a[ 3]*x*xx2;
-   temp += a[ 4]*(x2*yy2+4*x_yy*xx_y+xx2*y2);
-   temp += a[ 5]*(x2*yy_zz+2*x*xx*(y_zz+yy_z)+xx2*y_z);
-   temp += a[ 6]*(2*x*xx_yy+xx2*y);
-   temp += a[ 7]*(x2*zz2+4*x_zz*xx_z+xx2*z2);
-   temp += a[ 8]*(2*x*xx_zz+xx2*z);
-   temp += a[ 9]*xx2;
-   temp += a[10]*(3*x_y*yy2+3*xx_yy*y2);
-   temp += a[11]*(x_yy*(2*y_zz+yy_z)+xx*(y2*zz+2*y*yy_z));
-   temp += a[12]*(x*yy2+2*xx_y*yy);
-   temp += a[13]*(x_zz*(y_zz+2*yy_z)+xx*(2*y_z*zz+yy*z2));
-   temp += a[14]*(x_yy*zz+xx*(y_zz+yy_z));
-   temp += a[15]*xx_yy;
-   temp += a[16]*(3*x_z*zz2+3*xx_zz*z2);
-   temp += a[17]*(x*zz2+2*xx_z*zz);
-   temp += a[18]*xx_zz;
-   temp += 6*a[20]*y2*yy2;
-   temp += 3*a[21]*y*yy*(y_zz+yy_z);
-   temp += 3*a[22]*y*yy2;
-   temp += a[23]*(y2*zz2+4*y_zz*yy_z+yy2*z2);
-   temp += a[24]*(2*y*yy_zz+yy2*z);
-   temp += a[25]*yy2;
-   temp += zz*(3*a[26]*z*(y_zz+yy_z)+
-      a[27]*(y_zz+2*yy_z)+
-      a[28]*yy+
-      6*a[30]*z2*zz+
-      3*a[31]*z*zz+
-      a[32]*zz);
-   t[2] = temp;
+/* Normal to a polynomial (used for polynomials with order > 4) */
+static void normal0(Result, Order, Coeffs, IPoint)
+VECTOR *Result;
+int Order;
+DBL *Coeffs;
+VECTOR *IPoint;
+  {
+  int i, j, k, term;
+  DBL val, *a, x[MAX_ORDER+1], y[MAX_ORDER+1], z[MAX_ORDER+1];
 
-   temp = 4*a[ 0]*x3*xx;
-   temp += a[ 1]*x2*(x_yy+3*xx_y);
-   temp += a[ 2]*x2*(x_zz+3*xx_z);
-   temp += 3*a[ 3]*x2*xx;
-   temp += 2*a[ 4]*x_y*(x_yy+xx_y);
-   temp += a[ 5]*x*(x*(y_zz+yy_z)+2*xx_y*z);
-   temp += a[ 6]*x*(x_yy+2*xx_y);
-   temp += 2*a[ 7]*x_z*(x_zz+xx_z);
-   temp += a[ 8]*x*(x_zz+2*xx_z);
-   temp += 2*a[ 9]*x*xx;
-   temp += a[10]*(3*x_yy*y2-xx*y3);
-   temp += a[11]*(x_y*(y_zz+2*yy_z)+xx_z*y2);
-   temp += a[12]*(2*x_y*yy+xx*y2);
-   temp += a[13]*(x_z*(2*y_zz+yy_z)+xx_y*z2);
-   temp += a[14]*(x*(y_zz+yy_z)+xx_y*z);
-   temp += a[15]*(x_yy+xx_y);
-   temp += a[16]*(3*x_zz*z2+xx*z3);
-   temp += a[17]*(2*x_z*zz+xx*z2);
-   temp += a[18]*(x_zz+xx_z);
-   temp += a[19]*xx;
-   temp += 4*a[20]*y3*yy;
-   temp += a[21]*y2*(y_zz+3*yy_z);
-   temp += 3*a[22]*y2*yy;
-   temp += 2*a[23]*y_z*(y_zz+yy_z);
-   temp += a[24]*y*(y_zz+2*yy_z);
-   temp += 2*a[25]*y*yy;
-   temp += a[26]*(3*y_zz*z2+yy*z3);
-   temp += a[27]*(2*y_z*zz+yy*z2);
-   temp += a[28]*(y_zz+yy_z);
-   temp += a[29]*yy;
-   temp += zz*(4*a[30]*z3+3*a[31]*z2+2*a[32]*z+a[33]);
-   t[3] = temp;
+  x[0] = 1.0; y[0] = 1.0; z[0] = 1.0;
+  x[1] = IPoint->x;
+  y[1] = IPoint->y;
+  z[1] = IPoint->z;
+  for (i=2;i<=Order;i++) 
+    {
+    x[i] = IPoint->x * x[i-1];
+    y[i] = IPoint->y * y[i-1];
+    z[i] = IPoint->z * z[i-1];
+    }
+  a = Coeffs;
+  term = 0;
+  Make_Vector(Result, 0, 0, 0);
+  for (i=Order;i>=0;i--)
+    for (j=Order-i;j>=0;j--)
+    for (k=Order-(i+j);k>=0;k--) 
+    {
+    if (i >= 1) 
+      {
+      val = x[i-1] * y[j] * z[k];
+      Result->x += i * a[term] * val;
+      }
+    if (j >= 1) 
+      {
+      val = x[i] * y[j-1] * z[k];
+      Result->y += j * a[term] * val;
+      }
+    if (k >= 1) 
+      {
+      val = x[i] * y[j] * z[k-1];
+      Result->z += k * a[term] * val;
+      }
+    term++;
+    }
+  }
 
-   temp = a[ 0]*x4;
-   temp += a[ 1]*x3*y;
-   temp += a[ 2]*x3*z;
-   temp += a[ 3]*x3;
-   temp += a[ 4]*x2*y2;
-   temp += a[ 5]*x2*y_z;
-   temp += a[ 6]*x2*y;
-   temp += a[ 7]*x2*z2;
-   temp += a[ 8]*x2*z;
-   temp += a[ 9]*x2;
-   temp += a[10]*x*y3;
-   temp += a[11]*x*y2*z;
-   temp += a[12]*x*y2;
-   temp += a[13]*x_y*z2;
-   temp += a[14]*x_y*z;
-   temp += a[15]*x_y;
-   temp += a[16]*x*z3;
-   temp += a[17]*x*z2;
-   temp += a[18]*x_z;
-   temp += a[19]*x;
-   temp += a[20]*y4;
-   temp += a[21]*y3*z;
-   temp += a[22]*y3;
-   temp += a[23]*y2*z2;
-   temp += a[24]*y2*z;
-   temp += a[25]*y2;
-   temp += a[26]*y*z3;
-   temp += a[27]*y*z2;
-   temp += a[28]*y_z;
-   temp += a[29]*y;
-   temp += a[30]*z4;
-   temp += a[31]*z3;
-   temp += a[32]*z2;
-   temp += a[33]*z;
-   temp += a[34];
-   t[4] = temp;
+/* Normal to a polynomial (for polynomials of order <= 4) */
+static void
+normal1(Result, Order, Coeffs, IPoint)
+VECTOR *Result;
+int Order;
+DBL *Coeffs;
+VECTOR *IPoint;
+  {
+  DBL *a, x, y, z, x2, y2, z2, x3, y3, z3;
 
-   if (Shape->Sturm_Flag)
-      if (t[0] == 0.0)
-         if (t[1] == 0.0)
-            return solve_quadratic(&t[2], Depths);
-         else
-            return polysolve(3, &t[1], Depths);
-      else
-         return polysolve(4, &t[0], Depths);
-   else
-      return solve_quartic(&t[0], Depths);
+  a = Coeffs;
+  x = IPoint->x;
+  y = IPoint->y;
+  z = IPoint->z;
+
+  if (Order == 1)
+    /* Linear partial derivatives */
+    Make_Vector(Result, a[0], a[1], a[2])
+else if (Order == 2) 
+  {
+  /* Quadratic partial derivatives */
+  Result->x = 2*a[0]*x+a[1]*y+a[2]*z+a[3];
+  Result->y = a[1]*x+2*a[4]*y+a[5]*z+a[6];
+  Result->z = a[2]*x+a[5]*y+2*a[7]*z+a[8];
+  }
+else if (Order == 3) 
+  {
+  x2 = x * x;  y2 = y * y;  z2 = z * z;
+  /* Cubic partial derivatives */
+  Result->x = 3*a[0]*x2 + 2*x*(a[1]*y + a[2]*z + a[3]) + a[4]*y2 +
+  y*(a[5]*z + a[6]) + a[7]*z2 + a[8]*z + a[9];
+  Result->y = a[1]*x2 + x*(2*a[4]*y + a[5]*z + a[6]) + 3*a[10]*y2 +
+  2*y*(a[11]*z + a[12]) + a[13]*z2 + a[14]*z + a[15];
+  Result->z = a[2]*x2 + x*(a[5]*y + 2*a[7]*z + a[8]) + a[11]*y2 +
+  y*(2*a[13]*z + a[14]) + 3*a[16]*z2 + 2*a[17]*z + a[18];
+  }
+else 
+  {
+  /* Quartic partial derivatives */
+    x2 = x * x;  y2 = y * y;  z2 = z * z;
+  x3 = x * x2; y3 = y * y2; z3 = z * z2;
+  Result->x = 4*a[ 0]*x3+3*x2*(a[ 1]*y+a[ 2]*z+a[ 3])+
+  2*x*(a[ 4]*y2+y*(a[ 5]*z+a[ 6])+a[ 7]*z2+a[ 8]*z+a[ 9])+
+  a[10]*y3+y2*(a[11]*z+a[12])+y*(a[13]*z2+a[14]*z+a[15])+
+  a[16]*z3+a[17]*z2+a[18]*z+a[19];
+  Result->y = a[ 1]*x3+x2*(2*a[ 4]*y+a[ 5]*z+a[ 6])+
+  x*(3*a[10]*y2+2*y*(a[11]*z+a[12])+a[13]*z2+a[14]*z+a[15])+
+  4*a[20]*y3+3*y2*(a[21]*z+a[22])+2*y*(a[23]*z2+a[24]*z+a[25])+
+  a[26]*z3+a[27]*z2+a[28]*z+a[29];
+  Result->z = a[ 2]*x3+x2*(a[ 5]*y+2*a[ 7]*z+a[ 8])+
+  x*(a[11]*y2+y*(2*a[13]*z+a[14])+3*a[16]*z2+2*a[17]*z+a[18])+
+  a[21]*y3+y2*(2*a[23]*z+a[24])+y*(3*a[26]*z2+2*a[27]*z+a[28])+
+  4*a[30]*z3+3*a[31]*z2+2*a[32]*z+a[33];
+  }
 }
 
-#ifdef TEST
-/* Normal to a quartic */
-static void quartic_normal(Result, Object, Intersection_Point)
-VECTOR *Result, *Intersection_Point;
+int Inside_Poly (IPoint, Object)
+VECTOR *IPoint;
 OBJECT *Object;
 {
-   POLY *Shape = (POLY *) Object;
-   DBL *a,x,y,z,x2,y2,z2,x3,y3,z3,temp;
+VECTOR New_Point;
+DBL Result;
 
-   a = Shape->Coeffs;
-   x = Intersection_Point->x;
-   y = Intersection_Point->y;
-   z = Intersection_Point->z;
-   x2 = x * x;  y2 = y * y;  z2 = z * z;
-   x3 = x * x2; y3 = y * y2; z3 = z * z2;
+/* Transform the point into polynomial's space */
+if (((POLY *)Object)->Trans != NULL)
+MInvTransPoint(&New_Point, IPoint, ((POLY *)Object)->Trans);
+else
+  New_Point = *IPoint;
 
-   temp = a[ 4]*y2+y*(a[ 5]*z+a[ 6])+a[ 7]*z2+a[ 8]*z+a[ 9];
-   Result->x = 4*a[ 0]*x3+3*x2*(a[ 1]*y+a[ 2]*z+a[ 3])+
-   2*x*(temp)+
-   a[10]*y3+y2*(a[11]*z+a[12])+y*(a[13]*z2+a[14]*z+a[15])+
-   a[16]*z3+a[17]*z2+a[18]*z+a[19];
-
-   temp = 3*a[10]*y2+2*y*(a[11]*z+a[12])+a[13]*z2+a[14]*z+a[15];
-   Result->y = a[ 1]*x3+x2*(2*a[ 4]*y+a[ 5]*z+a[ 6])+
-   x*(temp)+
-   4*a[20]*y3+3*y2*(a[21]*z+a[22])+2*y*(a[23]*z2+a[24]*z+a[25])+
-   a[26]*z3+a[27]*z2+a[28]*z+a[29];
-
-   temp = a[11]*y2+y*(2*a[13]*z+a[14])+3*a[16]*z2+2*a[17]*z+a[18];
-   Result->z = a[ 2]*x3+x2*(a[ 5]*y+2*a[ 7]*z+a[ 8])+
-   x*(temp)+
-   a[21]*y3+y2*(2*a[23]*z+a[24])+y*(3*a[26]*z2+2*a[27]*z+a[28])+
-   4*a[30]*z3+3*a[31]*z2+2*a[32]*z+a[33];
-
-   VTemp=Result->x * Result->x + Result->y * Result->y + Result->z * Result->z;
-   VTemp=sqrt(VTemp);
-   if (VTemp > 0.0) {
-      Result->x /= VTemp;
-      Result->y /= VTemp;
-      Result->z /= VTemp;
-   }
-   else {
-      Result->x = 1.0;
-      Result->y = 0.0;
-      Result->z = 0.0;
-   }
-}
-#endif
-
-/* Normal to a quartic */
-static void quartic_normal(Result, Object, Intersection_Point)
-VECTOR *Result, *Intersection_Point;
-OBJECT *Object;
-{
-   POLY *Shape = (POLY *) Object;
-   DBL *a,x,y,z,x2,y2,z2,x3,y3,z3;
-
-   a = Shape->Coeffs;
-   x = Intersection_Point->x;
-   y = Intersection_Point->y;
-   z = Intersection_Point->z;
-   x2 = x * x;  y2 = y * y;  z2 = z * z;
-   x3 = x * x2; y3 = y * y2; z3 = z * z2;
-
-   Result->x = 4*a[ 0]*x3+3*x2*(a[ 1]*y+a[ 2]*z+a[ 3])+
-   2*x*(a[ 4]*y2+y*(a[ 5]*z+a[ 6])+a[ 7]*z2+a[ 8]*z+a[ 9])+
-   a[10]*y3+y2*(a[11]*z+a[12])+y*(a[13]*z2+a[14]*z+a[15])+
-   a[16]*z3+a[17]*z2+a[18]*z+a[19];
-
-   Result->y = a[ 1]*x3+x2*(2*a[ 4]*y+a[ 5]*z+a[ 6])+
-   x*(3*a[10]*y2+2*y*(a[11]*z+a[12])+a[13]*z2+a[14]*z+a[15])+
-   4*a[20]*y3+3*y2*(a[21]*z+a[22])+2*y*(a[23]*z2+a[24]*z+a[25])+
-   a[26]*z3+a[27]*z2+a[28]*z+a[29];
-
-   Result->z = a[ 2]*x3+x2*(a[ 5]*y+2*a[ 7]*z+a[ 8])+
-   x*(a[11]*y2+y*(2*a[13]*z+a[14])+3*a[16]*z2+2*a[17]*z+a[18])+
-   a[21]*y3+y2*(2*a[23]*z+a[24])+y*(3*a[26]*z2+2*a[27]*z+a[28])+
-   4*a[30]*z3+3*a[31]*z2+2*a[32]*z+a[33];
-   VTemp = sqrt(Result->x*Result->x+Result->y*Result->y+Result->z*Result->z);
-   if (VTemp > 0.0) {
-      Result->x /= VTemp;
-      Result->y /= VTemp;
-      Result->z /= VTemp;
-   }
-   else {
-      Result->x = 1.0;
-      Result->y = 0.0;
-      Result->z = 0.0;
-   }
-}
-
-int Inside_Poly (Test_Point, Object)
-VECTOR *Test_Point;
-OBJECT *Object;
-{
-   VECTOR New_Point;
-   POLY *Shape = (POLY *) Object;
-   DBL Result;
-
-   /* Transform the point into polynomial's space */
-   if (Shape->Transform != NULL)
-      MInverseTransformVector(&New_Point, Test_Point, Shape->Transform);
-   else
-      New_Point = *Test_Point;
-
-   Result = inside(&New_Point, Shape->Order, Shape->Coeffs);
-   if (Result < Small_Tolerance)
-      return ((int)(1-Shape->Inverted));
-   else
-      return ((int)Shape->Inverted);
+Result = inside(&New_Point, ((POLY *)Object)->Order, ((POLY *)Object)->Coeffs);
+if (Result < Small_Tolerance)
+return ((int)(1-((POLY *)Object)->Inverted));
+else
+  return ((int)((POLY *)Object)->Inverted);
 }
 
 /* Normal to a polynomial */
-void Poly_Normal(Result, Object, Intersection_Point)
-VECTOR *Result, *Intersection_Point;
+void Poly_Normal(Result, Object, IPoint)
+VECTOR *Result, *IPoint;
 OBJECT *Object;
 {
-   POLY *Shape = (POLY *) Object;
-   VECTOR New_Point;
+DBL val;
+VECTOR New_Point;
+POLY *Shape = (POLY *)Object;
 
-   /* Transform the point into the polynomials space */
-   if (Shape->Transform != NULL)
-      MInverseTransformVector(&New_Point, Intersection_Point, Shape->Transform);
-   else {
-      New_Point.x = Intersection_Point->x;
-      New_Point.y = Intersection_Point->y;
-      New_Point.z = Intersection_Point->z;
-   }
+/* Transform the point into the polynomials space */
+if (Shape->Trans != NULL)
+MInvTransPoint(&New_Point, IPoint, Shape->Trans);
+else
+  New_Point = *IPoint;
 
-      if (Shape->Order == 4)
-         quartic_normal(Result, Object, &New_Point);
-      else
-         normalp(Result, Shape->Order, Shape->Coeffs, &New_Point);
+if (((POLY *)Object)->Order > 4)
+normal0(Result, Shape->Order, Shape->Coeffs, &New_Point);
+else
+  normal1(Result, Shape->Order, Shape->Coeffs, &New_Point);
 
-   /* Transform back to world space */
-   if (Shape->Transform != NULL)
-      MTransNormal(Result, Result, Shape->Transform);
-   VNormalize(*Result, *Result);
-}
+/* Transform back to world space */
+if (Shape->Trans != NULL)
+MTransNormal(Result, Result, Shape->Trans);
 
-/* Make a copy of a polynomial object */
-void *Copy_Poly(Object)
-OBJECT *Object;
+/* Normalize (accounting for the possibility of a 0 length normal) */
+VDot(val, *Result, *Result);
+if (val > 0.0) 
+  {
+  val = 1.0 / sqrt(val);
+  VScaleEq(*Result, val);
+  }
+else
+  Make_Vector(Result, 1, 0, 0)
+    }
+
+  /* Make a copy of a polynomial object */
+  void *Copy_Poly(Object)
+    OBJECT *Object;
 {
-   POLY *Shape = (POLY *)Object;
-   POLY *New_Shape = Get_Poly_Shape(Shape->Order);
-   int i;
+POLY *New;
+int i;
 
-   New_Shape->Shape_Texture = Shape->Shape_Texture;
-   New_Shape->Shape_Colour = Shape->Shape_Colour;
-   New_Shape->Next_Object = NULL;
-   New_Shape->Sturm_Flag = Shape->Sturm_Flag;
-   New_Shape->Inverted = Shape->Inverted;
+New = Create_Poly (((POLY *)Object)->Order);
+New->Sturm_Flag = ((POLY *)Object)->Sturm_Flag;
+New->Inverted = ((POLY *)Object)->Inverted;
 
-   /* Copy any associated transformation */
-   if (Shape->Transform != NULL) {
-      New_Shape->Transform = Get_Transformation();
-      memcpy(New_Shape->Transform, Shape->Transform, sizeof(TRANSFORMATION));
-   }
-   for (i=0;i<term_counts[New_Shape->Order];i++)
-      New_Shape->Coeffs[i] = Shape->Coeffs[i];
+New->Trans = Copy_Transform(((POLY *)Object)->Trans);
 
-   /* Copy any associated texture */
-   if (Shape->Shape_Texture != NULL)
-      New_Shape->Shape_Texture = Copy_Texture (Shape->Shape_Texture);
-
-   return (void *)(New_Shape);
+for (i=0;i<term_counts(New->Order);i++)
+New->Coeffs[i] = ((POLY *)Object)->Coeffs[i];
+return (New);
 }
 
 void Translate_Poly (Object, Vector)
 OBJECT *Object;
 VECTOR *Vector;
 {
-   TRANSFORMATION Transform;
-   POLY *Shape = (POLY *)Object;
-   if (Shape->Transform == NULL)
-      Shape->Transform = Get_Transformation();
-   Get_Translation_Transformation(&Transform, Vector);
-   Compose_Transformations(Shape->Transform, &Transform);
-
-   Translate_Texture (&Shape->Shape_Texture, Vector);
+TRANSFORM Trans;
+Compute_Translation_Transform(&Trans, Vector);
+Transform_Poly(Object, &Trans);
 }
 
 void Rotate_Poly (Object, Vector)
 OBJECT *Object;
 VECTOR *Vector;
 {
-   TRANSFORMATION Transform;
-   POLY *Shape = (POLY *)Object;
-   if (Shape->Transform == NULL)
-      Shape->Transform = Get_Transformation();
-   Get_Rotation_Transformation(&Transform, Vector);
-   Compose_Transformations(Shape->Transform, &Transform);
-
-   Rotate_Texture (&Shape->Shape_Texture, Vector);
+TRANSFORM Trans;
+Compute_Rotation_Transform(&Trans, Vector);
+Transform_Poly(Object, &Trans);
 }
 
 void Scale_Poly (Object, Vector)
 OBJECT *Object;
 VECTOR *Vector;
 {
-   TRANSFORMATION Transform;
-   POLY *Shape = (POLY *)Object;
-   if (Shape->Transform == NULL)
-      Shape->Transform = Get_Transformation();
-   Get_Scaling_Transformation(&Transform, Vector);
-   Compose_Transformations(Shape->Transform, &Transform);
-
-   Scale_Texture (&Shape->Shape_Texture, Vector);
+TRANSFORM Trans;
+Compute_Scaling_Transform(&Trans, Vector);
+Transform_Poly(Object, &Trans);
 }
 
-void Invert_Poly (Object)
+void Transform_Poly(Object,Trans)
+OBJECT *Object;
+TRANSFORM *Trans;
+{
+if (((POLY *)Object)->Trans == NULL)
+((POLY *)Object)->Trans = Create_Transform();
+recompute_bbox(&Object->Bounds, Trans);
+Compose_Transforms(((POLY *)Object)->Trans, Trans);
+}
+
+void Invert_Poly(Object)
 OBJECT *Object;
 {
-   ((POLY *) Object)->Inverted = 1 - ((POLY *)Object)->Inverted;
+((POLY *) Object)->Inverted = 1 - ((POLY *)Object)->Inverted;
 }
+
+POLY *Create_Poly(Order)
+int Order;
+{
+POLY *New;
+int i;
+
+if ((New = (POLY *) malloc (sizeof (POLY))) == NULL)
+MAError ("poly");
+
+INIT_OBJECT_FIELDS(New,POLY_OBJECT, &Poly_Methods);
+New->Order = Order;
+New->Sturm_Flag = FALSE;
+New->Trans = NULL;
+New->Inverted = FALSE;
+New->Coeffs = (DBL *)malloc(term_counts(Order) * sizeof(DBL));
+if (New->Coeffs == NULL)
+MAError("coefficients for POLY");
+for (i=0;i<term_counts(Order);i++)
+New->Coeffs[i] = 0.0;
+
+return (New);
+}
+
+void Destroy_Poly(Object)
+OBJECT *Object;
+{
+Destroy_Transform (((POLY *)Object)->Trans);
+free (((POLY *)Object)->Coeffs);
+free (Object);
+}
+

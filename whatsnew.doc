@@ -1,0 +1,72 @@
+    What's New in POV-Ray 2.0
+    -------------------------
+    The following is not intended to be an all-inclusive list of every
+    new feature, but should give experienced users a pretty good guide
+    of what has been changed and what has been added.  Please refer to
+    POVRAY.DOC for details.
+
+
+    General:
+    -------
+  - Automatic bounding slabs for greatly enhanced rendering speed of
+    most scenes.
+  - Adding, subtracting, multiplying & dividing of floats & vectors.
+  - Clock global variable for external animation support.
+  - X, Y, and Z global vector constants.
+  - Improved antialiasing routine with new commandline options.
+
+    Commandline options:
+    -------------------
+  - Version switch for backwards compatibility.
+  - Starting/ending column/row switches for trace window.
+  - Relative/absolute values for trace window switches.
+  - Antialiasing jitter scale value and toggle.
+  - Number of antialiasing rays to shoot.
+  - Internal "clock" setting for animations.
+
+
+    Objects:
+    -------
+  - Soft penumbral shadows from extended area lights.
+  - Smoother Bezier patches.
+  - New simplified torus syntax.
+  - Heightfield water_level now uses range 0-1 instead of 0-255.
+  - Heightfields can now be clipped and used in CSG operations.
+  - Heightfields can be phong-shaded with the "smooth" option.
+  - New, improved finite cylinders, cones, and discs, with
+    optional "capping" of cones and cylinders.
+  - More versatile CSG unions have replaced the need for composites.
+  - CSG texturing has been made much more flexible.
+  - New "merge" removes internal boundaries between transparent
+    unioned objects.
+
+    Textures:
+    --------
+  - Hexagon pigment texture.
+  - Radial pigment texture.
+  - Mandelbrot pigment texture.
+  - Texture attributes grouped into 3 independently scalable groups:
+    pigment, normal, and finish.
+  - TIR (Total Internal Reflection) for more realistic refraction.
+  - Fractional Brownian Motion (fbm) turbulence controls.
+  - Turbulence can now be used independently with any pigment or normal
+    texture.
+  - Optional vector-style turbulence values.
+  - Background coloring.
+  - Color maps can now be declared.
+  - Frequency, phase keywords now available for use with color_maps.
+  - Filter keyword replaces "alpha", letting us reserve alpha for other
+    uses in the future.
+  - Less restrictive distribution policy.  See POVLEGAL.DOC for
+    details.
+
+    IBM PC Video:
+    ------------
+  - VESA 1.2 spec implemented for preview graphics in the IBM DOS version.
+    Gives VESA support in most 8/15/24 bit modes.
+    Should support: 1024 x 768 x 256 color palette
+                     800 x 600 x  15 bit high color
+                     640x4 480 x  24 bit true color
+  - Diamond 24X 15 and 24 bit mode support added.
+  - Preview reduced to fit selected video screen size if necessary.
+

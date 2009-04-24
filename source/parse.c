@@ -3,3990 +3,3244 @@
 *
 *  This module implements a parser for the scene description files.
 *
-*  from Persistence of Vision Raytracer 
-*  Copyright 1992 Persistence of Vision Team
+*  from Persistence of Vision Raytracer
+*  Copyright 1993 Persistence of Vision Team
 *---------------------------------------------------------------------------
-*  Copying, distribution and legal info is in the file povlegal.doc which
-*  should be distributed with this file. If povlegal.doc is not available
-*  or for more info please contact:
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other 
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+*  Forum.  The latest version of POV-Ray may be found there as well.
 *
-*       Drew Wells [POV-Team Leader] 
-*       CIS: 73767,1244  Internet: 73767.1244@compuserve.com
-*       Phone: (213) 254-4041
-* 
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
 *****************************************************************************/
 
-
 #include "frame.h"
 #include "vector.h"
 #include "povproto.h"
-
-
+#include "parse.h"
 
 /* This file implements a simple recursive-descent parser for reading the
 input file.  */
 
-static void Link_Shapes PARAMS((LIGHT_SHAPE *New_Object,LIGHT_SHAPE **Field,LIGHT_SHAPE **Old_Object_List));
-static void Post_Process_Object PARAMS((OBJECT *Object));
-static void Post_Process_Shape PARAMS((SHAPE *Shape));
-
-
-
 extern DBL Max_Trace_Level;
 extern char VerboseFormat;
 extern unsigned int Options;
+extern int Use_Slabs;
 extern char Stat_File_Name[FILE_NAME_LENGTH];
-
-
-FRAME *Parsing_Frame_Ptr;
-
-extern METHODS Composite_Methods;
-extern METHODS Basic_Object_Methods;
-extern METHODS Sphere_Methods;
-extern METHODS Point_Methods;
-extern METHODS Quadric_Methods;
-extern METHODS Poly_Methods;
-extern METHODS Box_Methods;
-extern METHODS Blob_Methods;
-extern METHODS Bicubic_Patch_Methods;
-extern METHODS Viewpoint_Methods;
-extern METHODS Plane_Methods;
-extern METHODS Triangle_Methods;
-extern METHODS Smooth_Triangle_Methods;
-extern METHODS CSG_Union_Methods;
-extern METHODS CSG_Intersection_Methods;
-extern METHODS Height_Field_Methods;
 
 extern struct Reserved_Word_Struct Reserved_Words [];
 extern DBL Antialias_Threshold;
 
-extern int term_counts[MAX_ORDER+1];
 extern struct Token_Struct Token;
+extern char String[MAX_STRING_INDEX];
 
-COLOUR_MAP_ENTRY *Construction_Map = NULL; /* moved here to allow reinitialization */
+extern COLOUR_MAP_ENTRY *Build_Entries;
+extern FRAME Frame;
+extern DBL Clock_Value;
+extern char **Symbol_Table;
+extern int Max_Intersections;
+extern DBL Language_Version;
+extern METHODS Csg_Height_Field_Methods;
+extern METHODS CSG_Union_Methods;
 
-struct Constant_Struct Constants[MAX_CONSTANTS];
+static void Parse_Image_Map PARAMS((PIGMENT *Pigment));
+static void Parse_Bump_Map PARAMS((TNORMAL *Tnormal));
+static void Parse_Pigment PARAMS((PIGMENT **Pigment_Ptr));
+static void Parse_Tnormal PARAMS((TNORMAL **Tnormal_Ptr));
+static void Parse_Finish PARAMS((FINISH **Finish_Ptr));
+static TEXTURE *Parse_Texture PARAMS((void));
+static void Token_Init PARAMS((void));
+static void Frame_Init PARAMS((void));
+static void Parse_Coeffs PARAMS((int order, DBL *Coeffs));
+static IMAGE *Parse_Image PARAMS((int Legal));
+static TRANSFORM *Parse_Transform PARAMS((void));
+static void Parse_Object_Mods PARAMS((OBJECT *Object));
+static OBJECT *Parse_Bicubic_Patch PARAMS((void));
+static OBJECT *Parse_Blob PARAMS((void));
+static OBJECT *Parse_Box PARAMS((void));
+static OBJECT *Parse_Cone PARAMS((void));
+static OBJECT *Parse_Cylinder PARAMS((void));
+static OBJECT *Parse_Disc PARAMS((void));
+static OBJECT *Parse_Height_Field PARAMS((void));
+static OBJECT *Parse_Plane PARAMS((void));
+static OBJECT *Parse_Poly PARAMS((int order));
+static OBJECT *Parse_Quadric PARAMS((void));
+static OBJECT *Parse_Smooth_Triangle PARAMS((void));
+static OBJECT *Parse_Sphere PARAMS((void));
+static OBJECT *Parse_Torus PARAMS((void));
+static OBJECT *Parse_Triangle PARAMS((void));
+static OBJECT *Parse_CSG PARAMS((int CSG_Type));
+static OBJECT *Parse_Light_Source PARAMS((void));
+static OBJECT *Parse_Object PARAMS((void));
+static void Parse_Fog PARAMS((void));
+static void Parse_Frame PARAMS((void));
+static void Parse_Camera PARAMS((CAMERA **Camera_Ptr));
+static void Parse_Declare PARAMS((void));
+static void Link PARAMS((OBJECT *New_Object,OBJECT **Field,OBJECT **Old_Object_List));
+static void Link_Textures PARAMS((TEXTURE **Old_Texture, TEXTURE *New_Texture));
+static char *Get_Token_String PARAMS((TOKEN Token_Id));
+static void Where_Error PARAMS((void));
+static int Test_Redefine PARAMS((int a));
+static OBJECT *Parse_Bound_Clip PARAMS((void));
+static void Found_Instead PARAMS((void));
+/*static void Parse_Warn PARAMS((TOKEN Token_Id));*/
+static void Warn_State PARAMS((TOKEN Token_Id, TOKEN Type));
+static void Post_Process PARAMS((OBJECT *Object, OBJECT *Parent));
+static void Destroy_Constants PARAMS((void));
+static OBJECT *Parse_Object_Id PARAMS((void));
+static void Link_To_Frame PARAMS((OBJECT *Object));
+
+extern struct Constant_Struct Constants[MAX_CONSTANTS];
+
 int Number_Of_Constants;
+int Previous;
+short Have_Vector;
+short Not_In_Default;
+
+TOKEN *Brace_Stack;
+int Brace_Index;
+
 TEXTURE *Default_Texture;
-int Degenerate_Triangles;
+CAMERA *Default_Camera;
 
-/* Here we create our own little language for doing the parsing.  It
-makes the code easier to read. */
+/* Parse the file. */
+void Parse ()
+  {
+   Build_Entries  = NULL;
+   if ((Brace_Stack = (TOKEN *) malloc(MAX_BRACES*sizeof (TOKEN))) == NULL)
+     MAError ("brace stack");
+   Brace_Index = 0;
+   Token_Init ();
+   Default_Camera = Create_Camera();
+   Default_Texture = Create_PNF_Texture();
+   Default_Texture->Pigment = Create_Pigment();
+   Default_Texture->Tnormal = NULL;
+   Default_Texture->Finish  = Create_Finish();
+   Not_In_Default = TRUE;
+   Frame_Init ();
+   Parse_Frame ();
+   if (Frame.Objects==NULL)
+     Error("No objects in scene");
+   Destroy_Constants ();
+   Destroy_Textures(Default_Texture);
+   Destroy_Camera(Default_Camera);
+   if (Build_Entries != NULL)
+     free (Build_Entries);
+   free (Brace_Stack);
+  }
 
-#define EXPECT { int Exit_Flag; Exit_Flag = FALSE; \
-while (!Exit_Flag) {Get_Token();  switch (Token.Token_Id) {
-#define CASE(x) case x:
-#define CASE2(x, y) case x: case y:
-#define CASE3(x, y, z) case x: case y: case z:
-#define CASE4(w, x, y, z) case w: case x: case y: case z:
-#define CASE5(v, w, x, y, z) case v: case w: case x: case y: case z:
-#define CASE6(u, v, w, x, y, z) case u: case v: case w: case x: case y: case z:
-#define END_CASE break;
-#define EXIT Exit_Flag = TRUE;
-#define OTHERWISE default:
-#define END_EXPECT } } }
-#define GET(x) Get_Token(); if (Token.Token_Id != x) Parse_Error (x)
-#define UNGET Unget_Token();
+static void Token_Init ()
+  {
+   Number_Of_Constants = 0;
+  }
 
-      /*
+/* Set up the fields in the frame to default values. */
+static
+void Frame_Init ()
+  {
+   Frame.Camera = Copy_Camera(Default_Camera);
+   Frame.Light_Sources = NULL;
+   Frame.Objects = NULL;
+   Frame.Atmosphere_IOR = 1.0;
+   Frame.Antialias_Threshold = Antialias_Threshold;
+   Frame.Fog_Distance = 0.0;
+   Make_Colour (&(Frame.Fog_Colour), 0.0, 0.0, 0.0);
+  }
 
-char *Coeff_terms[35] = {
-   "x^4", "x^3*y", "x^3*z", "x^3", "x^2*y^2", "x^2*y*z", "x^2*y", "x^2*z^2",
-   "x^2*z", "x^2", "x*y^3", "x*y^2*z", "x*y^2", "x*y*z^2", "x*y*z", "x*y",
-   "x*z^3", "x*z^2", "x*z", "x", "y^4", "y^3*z", "y^3", "y^2*z^2", "y^2*z",
-   "y^2", "y*z^3", "y*z^2", "y*z", "y", "z^4", "z^3", "z^2", "z", ""
-   };
+void Parse_Begin ()
+  {
+   char *front;
 
-void show_quartic(Coeffs)
-DBL *Coeffs;
-{
-   int i,j;
-   for (i=0,j=0;i<35;i++)
-      if (Coeffs[i] != 0.0) {
-	 if (j) printf(" + ");
-	 printf("%.5Lg %s", Coeffs[i], Coeff_terms[i]);
-	 j = 1;
-	 }
+   Brace_Stack[++Brace_Index]=Token.Token_Id;
+   Get_Token ();
+
+   if (Token.Token_Id == LEFT_CURLY_TOKEN)
+     return;
+
+   Where_Error ();
+
+   front = Get_Token_String (Brace_Stack[Brace_Index]);
+   fprintf (stderr, "Missing { after %s, ", front);
+   Found_Instead ();
+   exit (1);
+  }
+
+void Parse_End ()
+  {
+   char *front;
+
+   Get_Token ();
+
+   if (Token.Token_Id == RIGHT_CURLY_TOKEN)
+     {
+      Brace_Index--;
+      return;
+     }
+
+   Where_Error ();
+
+   front = Get_Token_String (Brace_Stack[Brace_Index]);
+   fprintf (stderr, "No matching } in %s,", front);
+   Found_Instead ();
+   exit (1);
+  }
+
+static OBJECT *Parse_Object_Id ()
+  {
+   OBJECT *Object;
+   
+   EXPECT
+     CASE (OBJECT_ID_TOKEN)
+       Warn_State(OBJECT_ID_TOKEN, OBJECT_TOKEN);
+       Object = Copy_Object((OBJECT *) Token.Constant_Data);
+       Parse_Object_Mods (Object);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       Object = NULL;
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   return (Object);
+  }
+
+void Parse_Comma ()
+  {
+   Get_Token();
+   if (Token.Token_Id != COMMA_TOKEN)
+     {
+      UNGET;
+     }
+  }
+
+static void Parse_Coeffs(order, Coeffs)
+  int order;
+  DBL *Coeffs;
+  {
+   int i;
+
+   EXPECT
+     CASE (LEFT_ANGLE_TOKEN)
+       Coeffs[0] = Parse_Float();
+       for (i = 1; i < term_counts(order); i++)
+         {
+          Parse_Comma();
+          Coeffs[i] = Parse_Float();
+         }
+       GET (RIGHT_ANGLE_TOKEN);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       Parse_Error (LEFT_ANGLE_TOKEN);
+     END_CASE
+   END_EXPECT
+  }
+
+static
+IMAGE *Parse_Image (Legal)
+  int Legal;
+  {
+   IMAGE *Image;
+   VECTOR Local_Vector;
+
+   Image = Create_Image ();
+
+   if (Legal & GRAD_FILE)
+     {
+      EXPECT
+        CASE_VECTOR
+          Warn("Should use map_type keyword and/or eliminate orientation.",1.5);
+          Have_Vector = FALSE;
+          Parse_Vector_Float (&Local_Vector);
+          if (Have_Vector)
+            Image->Gradient = Local_Vector;
+          else
+            Image->Map_Type = (int)Local_Vector.x;
+        END_CASE
+
+        OTHERWISE
+          UNGET
+          EXIT
+        END_CASE
+      END_EXPECT
+     }
+
+   EXPECT
+     CASE (IFF_TOKEN)
+       Image->File_Type = IFF_FILE;
+       GET (STRING_TOKEN);
+       Read_Iff_Image (Image, Token.Token_String);
+       EXIT
+     END_CASE
+
+     CASE (GIF_TOKEN)
+       Image->File_Type = GIF_FILE;
+       GET (STRING_TOKEN);
+       Read_Gif_Image(Image, Token.Token_String);
+       EXIT
+     END_CASE
+
+     CASE (POT_TOKEN)
+       Image->File_Type = POT_FILE;
+       GET (STRING_TOKEN);
+       Read_Gif_Image(Image, Token.Token_String);
+       EXIT
+     END_CASE
+
+     CASE (DUMP_TOKEN)
+       Image->File_Type = DUMP_FILE;
+       GET (STRING_TOKEN);
+       Read_Dump_Image(Image, Token.Token_String);
+       EXIT
+     END_CASE
+
+     CASE (TGA_TOKEN)
+       Image->File_Type = TGA_FILE;
+       GET (STRING_TOKEN);
+       Read_Targa_Image(Image, Token.Token_String);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       Parse_Error_Str ("map file spec");
+     END_CASE
+   END_EXPECT
+
+   if (!(Image->File_Type & Legal))
+     Error ("File type not supported here");
+   return (Image);
+  }
+
+static void Parse_Image_Map (Pigment)
+  PIGMENT *Pigment;
+  {
+   int reg;
+
+   Pigment->Type = IMAGE_MAP_PIGMENT;
+
+   Parse_Begin ();
+
+   Pigment->Image = Parse_Image (IMAGE_FILE);
+   Pigment->Image->Use_Colour_Flag = TRUE;
+
+   EXPECT                   /* Look for image_attribs */
+     CASE (ONCE_TOKEN)
+       Pigment->Image->Once_Flag=TRUE;
+     END_CASE
+
+     CASE (INTERPOLATE_TOKEN)
+       Pigment->Image->Interpolation_Type = (int)Parse_Float();
+     END_CASE
+
+     CASE (MAP_TYPE_TOKEN)
+       Pigment->Image->Map_Type = (int) Parse_Float ();
+     END_CASE
+
+     CASE (USE_COLOUR_TOKEN)
+       Pigment->Image->Use_Colour_Flag = TRUE;
+     END_CASE
+
+     CASE (USE_INDEX_TOKEN)
+       Pigment->Image->Use_Colour_Flag = FALSE;
+     END_CASE
+
+     CASE (ALPHA_TOKEN)
+       Warn("Keyword ALPHA discontinued.  Use FILTER instead.",1.55);
+         
+     CASE (FILTER_TOKEN)
+       EXPECT
+         CASE (ALL_TOKEN)
+           {
+            DBL filter;
+            filter = Parse_Float();
+            for (reg = 0 ; reg < Pigment->Image->Colour_Map_Size ; reg++)
+              Pigment->Image->Colour_Map[reg].Filter
+                  = (unsigned short) (filter *255.0);
+           }
+           EXIT
+         END_CASE
+
+         OTHERWISE
+           UNGET
+           reg = (int)(Parse_Float() + 0.01);
+           if (Pigment->Image->Colour_Map == NULL)
+             Error ("Can't apply FILTER to a non colour-mapped image\n");
+           if ((reg < 0) || (reg >= Pigment->Image->Colour_Map_Size))
+             Error ("FILTER colour register value out of range.\n");
+
+           Parse_Comma();
+           Pigment->Image->Colour_Map[reg].Filter
+                  = (unsigned short) (255.0 * Parse_Float());
+           EXIT
+         END_CASE
+
+       END_EXPECT
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   Parse_End ();
 }
 
-*/
-
-      /* Parse the file into the given frame. */
-      void Parse (Frame_Ptr)
-         FRAME *Frame_Ptr;
-      {
-         OBJECT *Object;
-         Parsing_Frame_Ptr = Frame_Ptr;
-
-         Degenerate_Triangles = FALSE;
-         Token_Init ();
-         Frame_Init ();
-         Parse_Frame ();
-         for (Object = Parsing_Frame_Ptr->Objects;
-            	Object != NULL;
-            	Object = Object->Next_Object)
-            Post_Process_Object (Object);
-         if (Degenerate_Triangles) {
-            fprintf (stderr, "Degenerate triangles were found and are being ignored.\n");
-            /* exit(1); Let's ignore degen tri instead of blowing up. CdW */
-         }
-      }
-
-      void Token_Init ()
-      {
-         Number_Of_Constants = 0;
-         /*
-  Constants = (struct Constant_Struct *)malloc(
-	  sizeof(struct Constant_Struct) *MAX_CONSTANTS);
-  */
-      }
-
-
-      /* Set up the fields in the frame to default values. */
-      void Frame_Init ()
-      {
-         Default_Texture = Get_Texture();
-         Init_Viewpoint(&(Parsing_Frame_Ptr -> View_Point));
-         Parsing_Frame_Ptr -> Light_Sources = NULL;
-         Parsing_Frame_Ptr -> Objects = NULL;
-         Parsing_Frame_Ptr -> Atmosphere_IOR = 1.0;
-         Parsing_Frame_Ptr -> Antialias_Threshold = Antialias_Threshold;
-         Parsing_Frame_Ptr -> Fog_Distance = 0.0;
-         Make_Colour (&(Parsing_Frame_Ptr->Fog_Colour), 0.0, 0.0, 0.0);
-      }
-
-      /* Allocate and initialize a composite object. */
-      COMPOSITE *Get_Composite_Object()
-      {
-         COMPOSITE *New_Composite;
-
-         if ((New_Composite = (COMPOSITE *) malloc (sizeof (COMPOSITE)))
-            == NULL)
-            Error ("Out of memory. Cannot allocate object");
-
-         New_Composite -> Objects = NULL;
-         New_Composite -> Next_Object = NULL;
-         /*  New_Composite -> Next_Light_Source = NULL;*/
-         New_Composite -> Bounding_Shapes = NULL;
-         New_Composite -> Clipping_Shapes = NULL;
-         New_Composite -> Type = COMPOSITE_TYPE;
-         New_Composite -> Methods = &Composite_Methods;
-         return (New_Composite);
-      }
-
-      /* Allocate and initialize a sphere. */
-      SPHERE *Get_Sphere_Shape()
-      {
-         SPHERE *New_Shape;
-
-         if ((New_Shape = (SPHERE *) malloc (sizeof (SPHERE))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         Make_Vector (&(New_Shape -> Center), 0.0, 0.0, 0.0);
-         New_Shape->Radius = 1.0;
-         New_Shape->Radius_Squared = 1.0;
-         New_Shape->Inverse_Radius = 1.0;
-         New_Shape -> Type = SPHERE_TYPE;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Methods = &Sphere_Methods;
-         New_Shape -> VPCached = FALSE;
-         New_Shape -> Inverted = FALSE;
-         New_Shape -> Shape_Texture = NULL;
-         New_Shape -> Shape_Colour = NULL;
-         return (New_Shape);
-      }
-
-      /* Allocate and initialize a light source. */
-      /* A point light source has no shape, but we'll treat it like it does */
-
-      LIGHT_SHAPE *Get_Light_Source_Shape()
-      {
-         LIGHT_SHAPE *New_Shape;
-
-         if ((New_Shape = (LIGHT_SHAPE *) malloc (sizeof (LIGHT_SHAPE))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-         Make_Vector (&(New_Shape -> Center), 0.0, 0.0, 0.0);
-         Make_Vector (&(New_Shape -> Points_At), 0.0, 0.0, 1.0);
-         New_Shape -> Type = POINT_LIGHT_TYPE;
-         New_Shape -> Methods = &Point_Methods;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Inverted = FALSE; /* needed so CSG routines don't blow up */
-         New_Shape -> Shape_Texture = NULL; /* always NULL */
-         New_Shape -> Shape_Colour = Get_Colour();  /* becomes light colour */
-         Make_Colour(New_Shape->Shape_Colour, 1.0, 1.0, 1.0);
-         New_Shape->Shape_Colour->Alpha = 0.0;
-         New_Shape -> Coeff   = 10.0;
-         New_Shape -> Radius  = 0.35;
-         New_Shape -> Falloff = 0.35;
-         return (New_Shape);
-      }
-
-      /* Allocate and initialize a quadric surface. */
-      QUADRIC *Get_Quadric_Shape()
-      {
-         QUADRIC *New_Shape;
-
-         if ((New_Shape = (QUADRIC *) malloc (sizeof (QUADRIC))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         Make_Vector (&(New_Shape -> Object_2_Terms), 1.0, 1.0, 1.0);
-         Make_Vector (&(New_Shape -> Object_Mixed_Terms), 0.0, 0.0, 0.0);
-         Make_Vector (&(New_Shape -> Object_Terms), 0.0, 0.0, 0.0);
-         New_Shape -> Object_Constant = 1.0;
-         New_Shape -> Object_VP_Constant = HUGE_VAL;
-         New_Shape -> Constant_Cached = FALSE;
-         New_Shape -> Non_Zero_Square_Term = FALSE;
-         New_Shape -> Type = QUADRIC_TYPE;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Methods = &Quadric_Methods;
-         New_Shape -> Shape_Texture = NULL;
-         New_Shape -> Shape_Colour = NULL;
-         return (New_Shape);
-      }
-      /* Allocate and initialize a polynomial surface. */
-      POLY *Get_Poly_Shape(order)
-         int order;
-      {
-         POLY *New_Shape;
-         int i;
-
-         if ((New_Shape = (POLY *) malloc (sizeof (POLY))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         New_Shape->Type = POLY_TYPE;
-         New_Shape->Next_Object = NULL;
-         New_Shape->Methods = &Poly_Methods;
-         New_Shape->Shape_Texture = NULL;
-         New_Shape->Shape_Colour = NULL;
-         New_Shape->Transform = NULL;
-         New_Shape->Inverted = 0;
-         New_Shape->Order = order;
-         New_Shape->Sturm_Flag = 0;
-         New_Shape->Coeffs = (DBL *)malloc(term_counts[order] * sizeof(DBL));
-         if (New_Shape->Coeffs == NULL)
-            Error("Out of memory. Cannot allocate coefficients for POLY");
-         for (i=0;i<term_counts[order];i++)
-            New_Shape->Coeffs[i] = 0.0;
-         return (New_Shape);
-      }
-
-      /* Allocate and initialize a box. */
-      BOX *Get_Box_Shape()
-      {
-         BOX *New_Shape;
-
-         if ((New_Shape = (BOX *) malloc (sizeof (BOX))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         Make_Vector(&(New_Shape->bounds[0]), -1.0, -1.0, -1.0);
-         Make_Vector(&(New_Shape->bounds[1]),  1.0,  1.0,  1.0);
-         New_Shape -> Transform = NULL;
-         New_Shape -> Type = BOX_TYPE;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Methods = &Box_Methods;
-         New_Shape -> Inverted = FALSE;
-         New_Shape -> Shape_Texture = NULL;
-         New_Shape -> Shape_Colour = NULL;
-         return (New_Shape);
-      }
-
-      /* Allocate a blob. */
-      BLOB *Get_Blob_Shape()
-      {
-         BLOB *New_Shape;
-
-         if ((New_Shape = (BLOB *) malloc (sizeof (BLOB))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         New_Shape -> Transform = NULL;
-         New_Shape -> Type = BLOB_TYPE;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Methods = &Blob_Methods;
-         New_Shape -> Inverted = FALSE;
-         New_Shape -> Shape_Texture = NULL;
-         New_Shape -> Shape_Colour = NULL;
-         return (New_Shape);
-      }
-
-      /* Allocate and initialize a bicubic patch surface. */
-      BICUBIC_PATCH *Get_Bicubic_Patch_Shape()
-      {
-         BICUBIC_PATCH *New_Shape;
-
-         if ((New_Shape = (BICUBIC_PATCH *) malloc (sizeof (BICUBIC_PATCH))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         New_Shape->Type = BICUBIC_PATCH_TYPE;
-         New_Shape->Next_Object = NULL;
-         New_Shape->Methods = &Bicubic_Patch_Methods;
-         New_Shape->Shape_Texture = NULL;
-         New_Shape->Shape_Colour = NULL;
-         New_Shape->U_Steps = 0;
-         New_Shape->V_Steps = 0;
-         New_Shape->Intersection_Count = 0;
-         New_Shape->Interpolated_Grid = (VECTOR **)NULL;
-         New_Shape->Interpolated_Normals = (VECTOR **)NULL;
-         New_Shape->Smooth_Normals = (VECTOR **)NULL;
-         New_Shape->Interpolated_D = (DBL **)NULL;
-         return (New_Shape);
-      }       
-
-      /* Allocate and intialize a Height Field */
-      HEIGHT_FIELD *Get_Height_Field_Shape()
-      {
-         HEIGHT_FIELD *New_Shape;
-
-         if((New_Shape = (HEIGHT_FIELD *) malloc (sizeof(HEIGHT_FIELD))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-         New_Shape -> bounding_box = Get_Box_Shape();
-         New_Shape -> Map = NULL;
-         New_Shape -> Transformation = Get_Transformation();
-         New_Shape -> Type = HEIGHT_FIELD_TYPE;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Methods = &Height_Field_Methods;
-         New_Shape -> Shape_Texture = NULL;
-         New_Shape -> Shape_Colour = NULL;
-         return(New_Shape);
-      }
-
-
-      /* Allocate and initialize a plane. */
-      PLANE *Get_Plane_Shape()
-      {
-         PLANE *New_Shape;
-
-         if ((New_Shape = (PLANE *) malloc (sizeof (PLANE))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         Make_Vector (&(New_Shape -> Normal_Vector), 0.0, 1.0, 0.0);
-         New_Shape->Distance = 0.0;
-         New_Shape -> Type = PLANE_TYPE;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Methods = &Plane_Methods;
-         New_Shape -> VPCached = 0;
-         New_Shape -> Shape_Texture = NULL;
-         New_Shape -> Shape_Colour = NULL;
-         return (New_Shape);
-      }
-
-      /* Allocate and initialize a triangle. */
-      TRIANGLE *Get_Triangle_Shape()
-      {
-         TRIANGLE *New_Shape;
-
-         if ((New_Shape = (TRIANGLE *) malloc (sizeof (TRIANGLE))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         Make_Vector (&(New_Shape -> Normal_Vector), 0.0, 1.0, 0.0);
-         Make_Vector (&(New_Shape -> P1), 0.0, 0.0, 0.0);
-         Make_Vector (&(New_Shape -> P2), 1.0, 0.0, 0.0);
-         Make_Vector (&(New_Shape -> P3), 0.0, 1.0, 0.0);
-         New_Shape->Distance = 0.0;
-         New_Shape->Inverted = FALSE;
-         New_Shape -> Type = TRIANGLE_TYPE;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Methods = &Triangle_Methods;
-         New_Shape -> VPCached = FALSE;
-         New_Shape -> Shape_Texture = NULL;
-         New_Shape -> Shape_Colour = NULL;
-         New_Shape -> Degenerate_Flag = FALSE;
-         return (New_Shape);
-      }
-
-      /* Allocate and initialize a smooth triangle. */
-      SMOOTH_TRIANGLE *Get_Smooth_Triangle_Shape()
-      {
-         SMOOTH_TRIANGLE *New_Shape;
-
-         if ((New_Shape = (SMOOTH_TRIANGLE *) malloc (sizeof (SMOOTH_TRIANGLE))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         Make_Vector (&(New_Shape -> Normal_Vector), 0.0, 1.0, 0.0);
-         Make_Vector (&(New_Shape -> P1), 0.0, 0.0, 0.0);
-         Make_Vector (&(New_Shape -> P2), 1.0, 0.0, 0.0);
-         Make_Vector (&(New_Shape -> P3), 0.0, 1.0, 0.0);
-         Make_Vector (&(New_Shape -> N1), 0.0, 1.0, 0.0);
-         Make_Vector (&(New_Shape -> N2), 0.0, 1.0, 0.0);
-         Make_Vector (&(New_Shape -> N3), 0.0, 1.0, 0.0);
-         New_Shape->Distance = 0.0;
-         New_Shape -> Type = SMOOTH_TRIANGLE_TYPE;
-         New_Shape->Inverted = FALSE;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Methods = &Smooth_Triangle_Methods;
-         New_Shape -> VPCached = 0;
-         New_Shape -> Shape_Texture = NULL;
-         New_Shape -> Shape_Colour = NULL;
-         New_Shape -> Degenerate_Flag = FALSE;
-         return (New_Shape);
-      }
-
-      CSG_SHAPE *Get_CSG_Shape()
-      {
-         CSG_SHAPE *New_Shape;
-
-         if ((New_Shape = (CSG_SHAPE *) malloc (sizeof (CSG_SHAPE))) == NULL)
-            Error ("Out of memory. Cannot allocate shape");
-
-         New_Shape -> Parent_Object = NULL;
-         New_Shape -> Next_Object = NULL;
-         New_Shape -> Shapes = NULL;
-         return (New_Shape);
-      }
-
-      CSG_SHAPE *Get_CSG_Union()
-      {
-         CSG_SHAPE *New_Shape;
-
-         New_Shape = Get_CSG_Shape();
-         New_Shape -> Methods = &CSG_Union_Methods;
-         New_Shape -> Type = CSG_UNION_TYPE;
-         return (New_Shape);
-      }
-
-      CSG_SHAPE *Get_CSG_Intersection()
-      {
-         CSG_SHAPE *New_Shape;
-
-         New_Shape = Get_CSG_Shape();
-         New_Shape -> Methods = &CSG_Intersection_Methods;
-         New_Shape -> Type = CSG_INTERSECTION_TYPE;
-         return (New_Shape);
-      }
-
-      OBJECT *Get_Object ()
-      {
-         OBJECT *New_Object;
-
-         if ((New_Object = (OBJECT *) malloc (sizeof (OBJECT))) == NULL)
-            Error ("Out of memory. Cannot allocate object");
-
-         New_Object -> Next_Object = NULL;
-         /*  New_Object -> Next_Light_Source = NULL;*/
-         New_Object -> Shape = NULL;
-         New_Object -> Bounding_Shapes = NULL;
-         New_Object -> Clipping_Shapes = NULL;
-         New_Object -> Object_Texture = Default_Texture;
-
-         New_Object->Object_Colour = NULL;
-
-         New_Object -> No_Shadow_Flag = FALSE;
-         New_Object -> Type = OBJECT_TYPE;
-         New_Object -> Methods = &Basic_Object_Methods;
-         return (New_Object);
-      }
-
-      TEXTURE *Get_Texture ()
-      {
-         TEXTURE *New_Texture;
-
-         if ((New_Texture = (TEXTURE *) malloc (sizeof (TEXTURE))) == NULL)
-            Error ("Out of memory. Cannot allocate object");
-
-         New_Texture -> Next_Texture = NULL;
-         New_Texture -> Next_Material = NULL;
-         New_Texture -> Number_Of_Materials = 0;
-         New_Texture -> Object_Reflection = 0.0;
-         New_Texture -> Object_Ambient = 0.1;
-         New_Texture -> Object_Diffuse = 0.6;
-         New_Texture -> Object_Brilliance = 1.0;
-         New_Texture -> Object_Specular = 0.0;
-         New_Texture -> Object_Roughness = 0.05;
-         New_Texture -> Object_Phong = 0.0;
-         New_Texture -> Object_PhongSize = 40;
-
-         New_Texture -> Texture_Randomness= 0.0;
-         New_Texture -> Bump_Amount = 0.0;
-         New_Texture -> Phase = 0.0;
-         New_Texture -> Frequency = 1.0;
-         New_Texture -> Texture_Number = NO_TEXTURE;
-         New_Texture -> Texture_Transformation = NULL;
-         New_Texture -> Bump_Number = NO_BUMPS;
-         New_Texture -> Turbulence = 0.0;
-         New_Texture -> Colour_Map = NULL;
-         New_Texture -> Once_Flag = FALSE;
-         New_Texture -> Metallic_Flag = FALSE;
-         New_Texture -> Octaves = 6;         /* dmf, for turbulence functs */
-         New_Texture -> Mortar = 0.2;        /* rha, for brick texture */
-
-         New_Texture -> Constant_Flag = TRUE;
-         New_Texture -> Colour1 = NULL;
-         New_Texture -> Colour2 = NULL;
-         Make_Vector (&New_Texture->Texture_Gradient, 0.0, 0.0, 0.0);
-
-         New_Texture -> Object_Index_Of_Refraction = 1.0;
-         New_Texture -> Object_Transmit = 0.0;
-         New_Texture -> Object_Refraction = 0.0;
-         return (New_Texture);
-      }
-
-
-      VIEWPOINT *Get_Viewpoint ()
-      {
-         VIEWPOINT *New_Viewpoint;
-
-         if ((New_Viewpoint = (VIEWPOINT *)malloc (sizeof (VIEWPOINT)))
-            == NULL)
-            Error ("Out of memory. Cannot allocate viewpoint");
-
-         Init_Viewpoint (New_Viewpoint);
-         return (New_Viewpoint);
-      }
-
-      COLOUR *Get_Colour ()
-      {
-         COLOUR *New_Colour;
-
-         if ((New_Colour = (COLOUR *) malloc (sizeof (COLOUR))) == NULL)
-            Error ("Out of memory. Cannot allocate colour");
-
-         Make_Colour (New_Colour, 0.0, 0.0, 0.0);
-         return (New_Colour);
-      }
-
-      VECTOR *Get_Vector ()
-      {
-         VECTOR *New_Vector;
-
-         if ((New_Vector = (VECTOR *) malloc (sizeof (VECTOR))) == NULL)
-            Error ("Out of memory. Cannot allocate vector");
-
-         New_Vector -> x = 0.0;
-         New_Vector -> y = 0.0;
-         New_Vector -> z = 0.0;
-         return (New_Vector);
-      }
-
-      DBL *Get_Float ()
-      {
-         DBL *New_Float;
-
-         if ((New_Float = (DBL *) malloc (sizeof (DBL))) == NULL)
-            Error ("Out of memory. Cannot allocate float");
-
-         *New_Float = 0.0;
-         return (New_Float);
-      }
-
-      TRANSFORMATION *Get_Transformation()
-      {
-         TRANSFORMATION *New_Transformation;
-
-         if ((New_Transformation =
-            (TRANSFORMATION *) malloc (sizeof (TRANSFORMATION))) == NULL)
-            Error ("Out of memory. Cannot allocate transformation");
-
-         MIdentity ((MATRIX *) &(New_Transformation -> matrix[0][0]));
-         MIdentity ((MATRIX *) &(New_Transformation -> inverse[0][0]));
-         return (New_Transformation);
-      }
-
-      /* Parse a float.  Doesn't handle exponentiation. */
-      DBL Parse_Float ()
-      {
-         DBL Local_Float = 0.0;
-         CONSTANT Constant_Id;
-         register int Negative, Sign_Parsed;
-
-         Negative = FALSE;
-         Sign_Parsed = FALSE;
-
-         EXPECT
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == FLOAT_CONSTANT)
-               {
-                  Local_Float = *((DBL *) Constants[(int)Constant_Id].Constant_Data);
-                  if (Negative)
-                     Local_Float *= -1.0;
-               }
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         CASE (PLUS_TOKEN)
-            if (Sign_Parsed)
-               Parse_Error (FLOAT_TOKEN);
-         Sign_Parsed = TRUE;
-         END_CASE
-
-         CASE (DASH_TOKEN)
-            if (Sign_Parsed)
-               Parse_Error (FLOAT_TOKEN);
-         Negative = TRUE;
-         Sign_Parsed = TRUE;
-         END_CASE
-
-         CASE (FLOAT_TOKEN)
-            Local_Float = Token.Token_Float;
-         if (Negative)
-            Local_Float *= -1.0;
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (FLOAT_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return (Local_Float);
-      }
-
-      void Parse_Vector (Given_Vector)
-         VECTOR *Given_Vector;
-      {
-         CONSTANT Constant_Id;
-
-         EXPECT
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == VECTOR_CONSTANT)
-                  *Given_Vector = *((VECTOR *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         CASE (LEFT_ANGLE_TOKEN)
-            (Given_Vector -> x) = Parse_Float();
-         (Given_Vector -> y) = Parse_Float();
-         (Given_Vector -> z) = Parse_Float();
-         GET (RIGHT_ANGLE_TOKEN);
-         EXIT
-         END_CASE
-
-         OTHERWISE 
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
-      }
-
-      void Parse_Coeffs(order, Given_Coeffs)
-         int order;
-      DBL *Given_Coeffs;
-      {
-         int i;
-
-         EXPECT
-         CASE (LEFT_ANGLE_TOKEN)
-            for (i = 0; i < term_counts[order]; i++)
-               Given_Coeffs[i] = Parse_Float();
-         GET (RIGHT_ANGLE_TOKEN);
-         EXIT
-         END_CASE
-
-         OTHERWISE 
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
-      }
-
-      void Parse_Colour (Given_Colour)
-         COLOUR *Given_Colour;
-      {
-         CONSTANT Constant_Id;
-         Make_Colour (Given_Colour, 0.0, 0.0, 0.0);
-         EXPECT
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == COLOUR_CONSTANT)
-                  *Given_Colour = *((COLOUR *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         END_CASE
-
-         CASE (RED_TOKEN)
-            (Given_Colour -> Red) = Parse_Float();
-         END_CASE
-
-         CASE (GREEN_TOKEN)
-            (Given_Colour -> Green) = Parse_Float();
-         END_CASE
-
-         CASE (BLUE_TOKEN)
-            (Given_Colour -> Blue) = Parse_Float();
-         END_CASE
-
-         CASE (ALPHA_TOKEN)
-            (Given_Colour -> Alpha) = Parse_Float();
+static void Parse_Bump_Map (Tnormal)
+  TNORMAL *Tnormal;
+  {
+   Tnormal->Type = BUMP_MAP;
+
+   Parse_Begin ();
+
+   Tnormal->Image = Parse_Image (NORMAL_FILE);
+
+   Tnormal->Image->Use_Colour_Flag = TRUE;
+
+   EXPECT
+     CASE (ONCE_TOKEN)
+       Tnormal->Image->Once_Flag=TRUE;
+     END_CASE
+
+     CASE (MAP_TYPE_TOKEN)
+       Tnormal->Image->Map_Type = (int) Parse_Float ();
+     END_CASE
+
+     CASE (INTERPOLATE_TOKEN)
+       Tnormal->Image->Interpolation_Type = (int)Parse_Float();
+     END_CASE
+
+     CASE (BUMP_SIZE_TOKEN)
+       Tnormal->Amount = Parse_Float ();
+     END_CASE
+
+     CASE (USE_COLOUR_TOKEN)
+       Tnormal->Image->Use_Colour_Flag = TRUE;
+     END_CASE
+
+     CASE (USE_INDEX_TOKEN)
+       Tnormal->Image->Use_Colour_Flag = FALSE;
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+   Parse_End ();
+}
+
+static void Parse_Pigment (Pigment_Ptr)
+  PIGMENT **Pigment_Ptr;
+  {
+   PIGMENT *New;
+   VECTOR Local_Vector;
+
+   Parse_Begin ();
+
+   EXPECT            /* Look for [pigment_id] */
+     CASE (PIGMENT_ID_TOKEN)
+       Destroy_Pigment(*Pigment_Ptr);
+       *Pigment_Ptr = Copy_Pigment ((PIGMENT *) Token.Constant_Data);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT    /* End pigment_id */
+
+   New = *Pigment_Ptr;
+
+   EXPECT
+     CASE (AGATE_TOKEN)
+       New->Type = AGATE_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (BOZO_TOKEN)
+       New->Type = BOZO_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (GRANITE_TOKEN)
+       New->Type = GRANITE_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (LEOPARD_TOKEN)
+       New->Type = LEOPARD_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (MARBLE_TOKEN)
+       New->Type = MARBLE_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (MANDEL_TOKEN)
+       New->Type = MANDEL_PIGMENT;
+       New->Iterations = (int)Parse_Float();
+       EXIT
+     END_CASE
+
+     CASE (ONION_TOKEN)
+       New->Type = ONION_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (PAINTED1_TOKEN)
+       New->Type = PAINTED1_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (PAINTED2_TOKEN)
+       New->Type = PAINTED2_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (PAINTED3_TOKEN)
+       New->Type = PAINTED2_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (SPOTTED_TOKEN)
+       New->Type = SPOTTED_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (WOOD_TOKEN)
+       New->Type = WOOD_PIGMENT;
+       EXIT
+     END_CASE
+
+     CASE (GRADIENT_TOKEN)
+       New->Type = GRADIENT_PIGMENT;
+       Parse_Vector (&(New->Colour_Gradient));
+       EXIT
+     END_CASE
+
+     CASE (RADIAL_TOKEN)
+       New->Type = RADIAL_PIGMENT;
+     END_CASE
+
+     CASE (COLOUR_TOKEN)
+       New->Type = COLOUR_PIGMENT;
+       New->Colour1 = Create_Colour ();
+       Parse_Colour (New->Colour1);
+       New->Quick_Colour = *New->Colour1;
+       EXIT
+     END_CASE
+
+     CASE5 (COLOUR_ID_TOKEN, RGB_TOKEN, RGBF_TOKEN, RED_TOKEN, BLUE_TOKEN)
+     CASE3 (GREEN_TOKEN, ALPHA_TOKEN, FILTER_TOKEN)
+       UNGET
+       New->Type = COLOUR_PIGMENT;
+       New->Colour1 = Create_Colour ();
+       Parse_Colour (New->Colour1);
+       New->Quick_Colour = *New->Colour1;
+       EXIT
+     END_CASE
+
+     CASE (CHECKER_TOKEN)
+       New->Type = CHECKER_PIGMENT;
+       New->Colour_Map = Parse_Colour_List(2);
+       EXIT
+     END_CASE
+
+     CASE (HEXAGON_TOKEN)
+       New->Type = HEXAGON_PIGMENT;
+       New->Colour_Map = Parse_Colour_List(3);
+       EXIT
+     END_CASE
+
+     CASE (IMAGE_MAP_TOKEN)
+       Parse_Image_Map (New);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT     /* Concludes pigment_body */
+
+   EXPECT         /* Look for pigment_modifier */
+     CASE (TURBULENCE_TOKEN)
+       Parse_Vector_Float(&(New->Turbulence));
+       if ((New->Turbulence.x !=0.0) || (New->Turbulence.y !=0.0) ||
+           (New->Turbulence.z !=0.0))
+          New->Flags |= HAS_TURB;
+     END_CASE
+
+     CASE (COLOUR_MAP_TOKEN)
+       if (New->Type == CHECKER_PIGMENT ||
+           New->Type == HEXAGON_PIGMENT ||
+           New->Type == COLOUR_PIGMENT ||
+           New->Type == IMAGE_MAP_PIGMENT)
+         Warn ("Cannot use color map with this pigment type",1.5);
+       New->Colour_Map = Parse_Colour_Map ();
+     END_CASE
+
+     CASE (QUICK_COLOUR_TOKEN)
+       Parse_Colour (&New->Quick_Colour);
+     END_CASE
+
+     CASE (OCTAVES_TOKEN)
+       New->Octaves = (int)Parse_Float();
+         if(New->Octaves < 1)
+            New->Octaves = 1;
+         if(New->Octaves > 10)  /* Avoid DOMAIN errors */
+            New->Octaves = 10;
+     END_CASE
+
+     CASE (OMEGA_TOKEN)
+       New->omega = Parse_Float();
+     END_CASE
+
+     CASE (LAMBDA_TOKEN)
+       New->lambda = Parse_Float();
+     END_CASE
+
+     CASE (FREQUENCY_TOKEN)
+       New->Frequency = Parse_Float();
+     END_CASE
+
+     CASE (PHASE_TOKEN)
+       New->Phase = Parse_Float();
+     END_CASE
+
+     CASE (AGATE_TURB_TOKEN)
+       if (Not_In_Default && (New->Type != AGATE_PIGMENT))
+          Warn("Attempt to use agate_turb on non-agate",1.9);
+       New->Agate_Turb_Scale = Parse_Float();
+     END_CASE
+
+     CASE (TRANSLATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Translate_Pigment (New, &Local_Vector);
+     END_CASE
+
+     CASE (ROTATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Rotate_Pigment (New, &Local_Vector);
+     END_CASE
+
+     CASE (SCALE_TOKEN)
+       Parse_Scale_Vector (&Local_Vector);
+       Scale_Pigment (New, &Local_Vector);
+     END_CASE
+
+     CASE (TRANSFORM_TOKEN)
+       GET(TRANSFORM_ID_TOKEN)
+       Transform_Pigment (New, (TRANSFORM *)Token.Constant_Data);
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   if (Not_In_Default && (New->Type == NO_PIGMENT))
+     Warn("Pigment type unspecified or not 1st item",1.7);
+
+   Parse_End ();
+  }
+
+static void Parse_Tnormal (Tnormal_Ptr)
+  TNORMAL **Tnormal_Ptr;
+  {
+   TNORMAL *New;
+   VECTOR Local_Vector;
+
+   Parse_Begin ();
+
+   EXPECT            /* Look for [tnormal_id] */
+     CASE (TNORMAL_ID_TOKEN)
+       Destroy_Tnormal(*Tnormal_Ptr);
+       *Tnormal_Ptr = Copy_Tnormal ((TNORMAL *) Token.Constant_Data);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT    /* End [tnormal_id] */
+
+   if (*Tnormal_Ptr == NULL)
+     if ((Default_Texture->Tnormal) != NULL)
+       *Tnormal_Ptr = Copy_Tnormal ((Default_Texture->Tnormal));
+     else
+       *Tnormal_Ptr = Create_Tnormal ();
+
+   New = *Tnormal_Ptr;
+
+   EXPECT  /* [tnormal_body] */
+     CASE (BUMPS_TOKEN)
+       New->Type = BUMPS;
+       New->Amount = Parse_Float ();
+       EXIT
+     END_CASE
+
+     CASE (BUMPY1_TOKEN)
+       New->Type = BUMPY1;
+       New->Amount = Parse_Float ();
+       EXIT
+     END_CASE
+
+     CASE (BUMPY2_TOKEN)
+       New->Type = BUMPY2;
+       New->Amount = Parse_Float ();
+       EXIT
+     END_CASE
+
+     CASE (BUMPY3_TOKEN)
+       New->Type = BUMPY3;
+       New->Amount = Parse_Float ();
+       EXIT
+     END_CASE
+
+     CASE (DENTS_TOKEN)
+       New->Type = DENTS;
+       New->Amount = Parse_Float ();
+       EXIT
+     END_CASE
+
+     CASE (RIPPLES_TOKEN)
+       New->Type = RIPPLES;
+       New->Amount = Parse_Float ();
+       EXIT
+     END_CASE
+
+     CASE (WAVES_TOKEN)
+       New->Type = WAVES;
+       New->Amount = Parse_Float ();
+       EXIT
+     END_CASE
+
+     CASE (WRINKLES_TOKEN)
+       New->Type = WRINKLES;
+       New->Amount = Parse_Float ();
+       EXIT
+     END_CASE
+
+     CASE (BUMP_MAP_TOKEN)
+       Parse_Bump_Map (New);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       if (Not_In_Default && (New->Type == NO_NORMAL))
+         Parse_Error_Str("normal body");
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT    /* End of tnormal_body */
+
+   EXPECT        /* Look for tnormal_mods */
+
+     CASE (TURBULENCE_TOKEN)
+       Parse_Vector_Float(&(New->Turbulence));
+       if ((New->Turbulence.x !=0.0) || (New->Turbulence.y !=0.0) ||
+           (New->Turbulence.z !=0.0))
+          New->Flags |= HAS_TURB;
+     END_CASE
+
+     CASE (OCTAVES_TOKEN)
+       New->Octaves = (int)Parse_Float();
+     END_CASE
+
+     CASE (OMEGA_TOKEN)
+       New->omega = Parse_Float();
+     END_CASE
+
+     CASE (LAMBDA_TOKEN)
+       New->lambda = Parse_Float();
+     END_CASE
+
+     CASE (FREQUENCY_TOKEN)
+       if (!(New->Type == RIPPLES || New->Type == WAVES))
+         if (Language_Version >= 1.5)
+           Warn ("Cannot use frequency with this normal",1.5);
+       New->Frequency = Parse_Float();
+     END_CASE
+
+     CASE (PHASE_TOKEN)
+       if (!(New->Type == RIPPLES || New->Type == WAVES))
+         if (Language_Version >= 1.5)
+            Warn ("Cannot use phase with this normal",1.5);
+       New->Phase = Parse_Float();
+     END_CASE
+
+     CASE (TRANSLATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Translate_Tnormal (New, &Local_Vector);
+     END_CASE
+
+     CASE (ROTATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Rotate_Tnormal (New, &Local_Vector);
+     END_CASE
+
+     CASE (SCALE_TOKEN)
+       Parse_Scale_Vector (&Local_Vector);
+       Scale_Tnormal (New, &Local_Vector);
+     END_CASE
+
+     CASE (TRANSFORM_TOKEN)
+       GET(TRANSFORM_ID_TOKEN)
+       Transform_Tnormal (New, (TRANSFORM *)Token.Constant_Data);
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT    /* End of tnormal_mods */
+
+   Parse_End ();
+  }
+
+static void Parse_Finish (Finish_Ptr)
+  FINISH **Finish_Ptr;
+  {
+   FINISH *New;
+
+   Parse_Begin ();
+
+   EXPECT        /* Look for zero or one finish_id */
+     CASE (FINISH_ID_TOKEN)
+       Destroy_Finish(*Finish_Ptr);
+       *Finish_Ptr = Copy_Finish ((FINISH *) Token.Constant_Data);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT    /* End finish_id */
+
+   New = *Finish_Ptr;
+
+   EXPECT        /* Look for zero or more finish_body */
+     CASE (AMBIENT_TOKEN)
+       New->Ambient = Parse_Float ();
+     END_CASE
+
+     CASE (BRILLIANCE_TOKEN)
+       New->Brilliance = Parse_Float ();
+     END_CASE
+
+     CASE (DIFFUSE_TOKEN)
+       New->Diffuse = Parse_Float ();
+     END_CASE
+
+     CASE (REFLECTION_TOKEN)
+       New->Reflection = Parse_Float ();
+     END_CASE
+
+     CASE (REFRACTION_TOKEN)
+       New->Refraction = Parse_Float ();
+     END_CASE
+
+     CASE (IOR_TOKEN)
+       New->Index_Of_Refraction = Parse_Float ();
+     END_CASE
+
+     CASE (PHONG_TOKEN)
+       New->Phong = Parse_Float ();
+     END_CASE
+
+     CASE (PHONG_SIZE_TOKEN)
+       New->Phong_Size = Parse_Float ();
+/*     if (New->Phong_Size < 1.0)
+           New->Phong_Size = 1.0;
+       if (New->Phong_Size > 100)
+           New->Phong_Size = 100; */
+     END_CASE
+
+     CASE (SPECULAR_TOKEN)
+       New->Specular = Parse_Float ();
+     END_CASE
+
+     CASE (ROUGHNESS_TOKEN)
+       New->Roughness = Parse_Float ();
+/*     if (New->Roughness > 1.0)
+           New->Roughness = 1.0;
+       if (New->Roughness < 0.001)
+           New->Roughness = 0.001;  */
+       New->Roughness = 1.0/New->Roughness; /* CEY 12/92 */
+     END_CASE
+
+     CASE (METALLIC_TOKEN)
+       New->Metallic_Flag = TRUE;
+     END_CASE
+
+     CASE (CRAND_TOKEN)
+       New->Crand = Parse_Float();
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT    /* End of finish_body */
+
+   EXPECT        /* Look for finish_mods */
+
+/*   CASE none implemented
+     END_CASE     */
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT    /* End of finish_mods */
+
+   Parse_End ();
+  }
+
+#define ADD_TNORMAL if (Tnormal == NULL) {if ((Default_Texture->Tnormal) != NULL) \
+ Tnormal = Copy_Tnormal ((Default_Texture->Tnormal)); else Tnormal = Create_Tnormal ();\
+ Texture->Tnormal=Tnormal;};
+
+static
+TEXTURE *Parse_Texture ()
+  {
+   VECTOR Local_Vector;
+   TEXTURE *Texture, *Local_Texture;
+   PIGMENT *Pigment;
+   TNORMAL *Tnormal;
+   FINISH *Finish;
+
+   Parse_Begin ();
+
+   EXPECT                      /* Look for texture_body */
+     CASE (TILES_TOKEN)
+       Parse_Begin ();
+
+       Texture = (TEXTURE *)Create_Tiles_Texture ();
+
+       EXPECT
+         CASE (TEXTURE_TOKEN)
+           Local_Texture = Parse_Texture ();
+           Link_Textures(&(((TILES *)Texture)->Tile1),Local_Texture);
          END_CASE
 
          OTHERWISE
-         UNGET
-         EXIT
+           UNGET
+           EXIT
          END_CASE
-         END_EXPECT
-      }
+       END_EXPECT
 
-      COLOUR_MAP *Parse_Colour_Map ()
-      {
-#define MAX_ENTRIES 20
-         COLOUR_MAP *New_Colour_Map;
+       GET (TILE2_TOKEN);
 
-
-         register int i, j;
-
-         if ((New_Colour_Map = (COLOUR_MAP *) malloc (sizeof (COLOUR_MAP))) == NULL)
-            Error ("Not enough memory for colour map.");
-
-
-         if (Construction_Map == NULL)
-            if ((Construction_Map = (COLOUR_MAP_ENTRY *)
-               malloc(MAX_ENTRIES * sizeof (COLOUR_MAP_ENTRY))) == NULL)
-               Error ("Not enough memory for colour map.");
-
-         i = 0;
-         New_Colour_Map->Transparency_Flag = FALSE;
-         GET(LEFT_CURLY_TOKEN);
-         EXPECT
-         CASE (LEFT_SQUARE_TOKEN)
-            Construction_Map [i].start = Parse_Float();
-         Construction_Map [i].end = Parse_Float();
-
-         GET (COLOUR_TOKEN);
-         Parse_Colour (&(Construction_Map[i].Start_Colour));
-         if (Construction_Map[i].Start_Colour.Alpha != 0.0)
-            New_Colour_Map->Transparency_Flag = TRUE;
-
-         GET (COLOUR_TOKEN);
-         Parse_Colour (&(Construction_Map[i].End_Colour));
-         if (Construction_Map[i].End_Colour.Alpha != 0.0)
-            New_Colour_Map->Transparency_Flag = TRUE;
-
-         i++;
-         if (i > MAX_ENTRIES)
-            Error ("Colour_Map too long.");
-         GET (RIGHT_SQUARE_TOKEN);
-         END_CASE
-
-         CASE (RIGHT_CURLY_TOKEN)
-            New_Colour_Map -> Number_Of_Entries = i;
-
-         if ((New_Colour_Map -> Colour_Map_Entries = (COLOUR_MAP_ENTRY *)
-            malloc(sizeof(COLOUR_MAP_ENTRY) * i)) == NULL)
-            Error ("Not enough memory for colour map.");
-
-         for (j = 0 ; j < i ; j++)
-            New_Colour_Map->Colour_Map_Entries[j] = Construction_Map[j];
-
-         EXIT
+       EXPECT
+         CASE (TEXTURE_TOKEN)
+           Local_Texture = Parse_Texture ();
+           Link_Textures(&(((TILES *)Texture)->Tile2),Local_Texture);
          END_CASE
 
          OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
+           UNGET
+           EXIT
          END_CASE
-         END_EXPECT
+       END_EXPECT
+       Parse_End ();
+       EXIT
+     END_CASE
 
-         return (New_Colour_Map);
-      }
+     CASE (MATERIAL_MAP_TOKEN)
+       Parse_Begin ();
 
-      TEXTURE *Copy_Texture (Texture)
-         TEXTURE *Texture;
-      {
-         TEXTURE *New_Texture, *Local_Texture, *First_Texture, *Previous_Texture;
+       Texture = (TEXTURE *)Create_Material_Texture ();
 
-         Previous_Texture = First_Texture = NULL;
+       ((MATERIAL *)Texture)->Image = Parse_Image(MATERIAL_FILE);
+       ((MATERIAL *)Texture)->Image->Use_Colour_Flag = FALSE;
 
-         for (Local_Texture = Texture ; Local_Texture != NULL ; Local_Texture = Local_Texture->Next_Texture)  {
-            New_Texture = Get_Texture();
-            *New_Texture = *Local_Texture;
-
-            if (First_Texture == NULL)
-               First_Texture = New_Texture;
-
-            if (Previous_Texture != NULL)
-               Previous_Texture->Next_Texture = New_Texture;
-
-            if (New_Texture->Texture_Transformation) {
-               if ((New_Texture->Texture_Transformation = (TRANSFORMATION *) malloc (sizeof (TRANSFORMATION))) == NULL)
-                  Error("Out of memory. Cannot allocate texture transformation");
-               *New_Texture->Texture_Transformation = *Local_Texture->Texture_Transformation;
-            }
-            New_Texture->Constant_Flag = FALSE;
-            Previous_Texture = New_Texture;
-         }            
-         return (First_Texture);
-      }
-
-      TEXTURE *Parse_Texture ()
-      {
-         VECTOR Local_Vector;
-         TRANSFORMATION Local_Transformation;
-         CONSTANT Constant_Id;
-         TEXTURE *Texture, *Local_Texture, *First_Texture;
-         TEXTURE *temp_texture;
-         int reg;
-
-         Texture = Default_Texture;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == TEXTURE_CONSTANT) {
-                  Texture = ((TEXTURE *) Constants[(int)Constant_Id].Constant_Data);
-               }
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         END_CASE
-
-         CASE (FLOAT_TOKEN)
-            UNGET
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture(Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Randomness = Parse_Float();
-         END_CASE
-
+       EXPECT
          CASE (ONCE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture(Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture->Once_Flag = TRUE;
+           ((MATERIAL *)Texture)->Image->Once_Flag=TRUE;
          END_CASE
 
-         CASE (TURBULENCE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture(Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Turbulence = Parse_Float();
+         CASE (INTERPOLATE_TOKEN)
+           ((MATERIAL *)Texture)->Image->Interpolation_Type=(int)Parse_Float();
          END_CASE
 
-         CASE (OCTAVES_TOKEN)                  /* dmf 02/05 for turb */
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture(Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture->Octaves = (int) Parse_Float();
-         if(Texture->Octaves < 1)
-            Texture->Octaves = 6;
-         if(Texture->Octaves > 10)  /* Avoid DOMAIN errors */
-            Texture->Octaves = 10;
+         CASE (MAP_TYPE_TOKEN)
+           ((MATERIAL *)Texture)->Image->Map_Type = (int) Parse_Float ();
+         END_CASE
+
+         OTHERWISE
+           UNGET
+           EXIT
+         END_CASE
+       END_EXPECT
+
+       GET (TEXTURE_TOKEN)                /* First material */
+       ((MATERIAL *)Texture)->Materials = Local_Texture = Parse_Texture ();
+       ((MATERIAL *)Texture)->Num_Of_Mats++;
+
+       EXPECT                             /* Subsequent materials */
+         CASE (TEXTURE_TOKEN)
+           Local_Texture->Next_Material = Parse_Texture ();
+           Local_Texture = Local_Texture->Next_Material;
+           ((MATERIAL *)Texture)->Num_Of_Mats++;
+         END_CASE
+
+         OTHERWISE
+           UNGET
+           EXIT
+         END_CASE
+       END_EXPECT
+       Parse_End ();
+       EXIT
+     END_CASE
+
+     OTHERWISE  /* Look for [pnf_texture] */
+       UNGET
+
+       Texture = Copy_Textures (Default_Texture);
+
+       EXPECT   /* Look for [tpnf_ids] */
+         CASE (TEXTURE_ID_TOKEN)
+           Destroy_Textures(Texture);
+           Texture = Copy_Textures((TEXTURE *) Token.Constant_Data);
+         END_CASE
+
+         CASE (PIGMENT_ID_TOKEN)
+           Destroy_Pigment(Texture->Pigment);
+           Texture->Pigment = Copy_Pigment ((PIGMENT *) Token.Constant_Data);
+         END_CASE
+
+         CASE (TNORMAL_ID_TOKEN)
+           Destroy_Tnormal(Texture->Tnormal);
+           Texture->Tnormal = Copy_Tnormal ((TNORMAL *) Token.Constant_Data);
+         END_CASE
+
+         CASE (FINISH_ID_TOKEN)
+           Destroy_Finish(Texture->Finish);
+           Texture->Finish = Copy_Finish ((FINISH *) Token.Constant_Data);
+         END_CASE
+
+         OTHERWISE
+           UNGET
+           EXIT
+         END_CASE
+       END_EXPECT
+
+       Pigment = Texture->Pigment;
+       Tnormal = Texture->Tnormal;
+       Finish  = Texture->Finish;
+
+       EXPECT
+         CASE (PIGMENT_TOKEN)
+           Parse_Pigment ( &(Texture->Pigment) );
+         END_CASE
+
+         CASE (TNORMAL_TOKEN)
+           Parse_Tnormal ( &(Texture->Tnormal) );
+         END_CASE
+
+         CASE (FINISH_TOKEN)
+           Parse_Finish ( &(Texture->Finish) );
+         END_CASE
+
+/***********************************************************************
+ PIGMENT STUFF OUTSIDE PIGMENT{}
+***********************************************************************/
+         CASE (AGATE_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = AGATE_PIGMENT;
          END_CASE
 
          CASE (BOZO_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = BOZO_TEXTURE;
-         END_CASE
-
-         CASE (MORTAR_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture->Mortar = Parse_Float();
-         if (Texture->Mortar < 0)
-            Texture->Mortar = 0.2;
-         END_CASE
-
-         CASE (BRICK_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = BRICK_TEXTURE;
-         EXPECT
-         CASE (COLOUR_TOKEN)
-            Texture->Colour1 = Get_Colour();
-         Texture->Colour2 = Get_Colour();
-         Parse_Colour (Texture -> Colour1);
-         GET (COLOUR_TOKEN);
-         Parse_Colour (Texture -> Colour2);
-         END_CASE
-
-         OTHERWISE
-         UNGET
-         EXIT
-         END_CASE
-         END_EXPECT
-         END_CASE
-
-         CASE (CHECKER_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = CHECKER_TEXTURE;
-         EXPECT
-         CASE (COLOUR_TOKEN)
-            Texture->Colour1 = Get_Colour();
-         Texture->Colour2 = Get_Colour();
-         Parse_Colour (Texture -> Colour1);
-         GET (COLOUR_TOKEN);
-         Parse_Colour (Texture -> Colour2);
-         END_CASE
-
-         OTHERWISE
-         UNGET
-         EXIT
-         END_CASE
-         END_EXPECT
-         END_CASE
-
-         CASE (CHECKER_TEXTURE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = CHECKER_TEXTURE_TEXTURE;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         {
-            for (temp_texture = Local_Texture ;
-               		    temp_texture->Next_Texture != NULL ;
-               		    temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = (TEXTURE *) Texture->Colour1;
-            Texture->Colour1 = (COLOUR *) Local_Texture;
-         }
-         END_CASE
-         OTHERWISE
-         UNGET
-         EXIT
-         END_CASE
-         END_EXPECT
-
-         GET (TILE2_TOKEN);
-         EXPECT
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         {
-            for (temp_texture = Local_Texture ;
-               		    temp_texture->Next_Texture != NULL ;
-               		    temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = (TEXTURE *) Texture->Colour2;
-            Texture->Colour2 = (COLOUR *) Local_Texture;
-         }
-         END_CASE
-         OTHERWISE
-         UNGET
-         EXIT
-         END_CASE
-         END_EXPECT
-         GET (RIGHT_CURLY_TOKEN);
-         END_CASE
-
-         CASE (MARBLE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = MARBLE_TEXTURE;
-         END_CASE
-
-         CASE (WOOD_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = WOOD_TEXTURE;
-         END_CASE
-
-         CASE (SPOTTED_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = SPOTTED_TEXTURE;
-         END_CASE
-
-         CASE (AGATE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = AGATE_TEXTURE;
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = BOZO_PIGMENT;
          END_CASE
 
          CASE (GRANITE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = GRANITE_TEXTURE;
-         END_CASE
-
-         CASE (GRADIENT_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = GRADIENT_TEXTURE;
-         Parse_Vector (&(Texture -> Texture_Gradient));
-         END_CASE
-
-         CASE (AMBIENT_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Ambient) = Parse_Float ();
-         END_CASE
-
-         CASE (BRILLIANCE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Brilliance) = Parse_Float ();
-         END_CASE
-
-         CASE (ROUGHNESS_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Roughness) = Parse_Float ();
-         /* No training wheels */
-         /* if (Texture -> Object_Roughness > 1.0)
-	    Texture -> Object_Roughness = 1.0;
-	 if (Texture -> Object_Roughness < 0.001)
-	    Texture -> Object_Roughness = 0.001; */
-         END_CASE
-
-         CASE (PHONGSIZE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_PhongSize) = Parse_Float ();
-         /* No training wheels */
-         /*if (Texture -> Object_PhongSize < 1.0)
-	    Texture -> Object_PhongSize = 1.0;
-	 if (Texture -> Object_PhongSize > 100)
-	    Texture -> Object_PhongSize = 100; */
-         END_CASE
-
-         CASE (DIFFUSE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Diffuse) = Parse_Float ();
-         END_CASE
-
-         CASE (SPECULAR_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Specular) = Parse_Float ();
-         END_CASE
-
-         CASE (PHONG_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Phong) = Parse_Float ();
-         END_CASE
-
-         CASE (METALLIC_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Metallic_Flag = TRUE;
-         END_CASE
-
-         CASE (IOR_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Index_Of_Refraction) = Parse_Float ();
-         END_CASE
-
-         CASE (REFRACTION_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Refraction) = Parse_Float ();
-         END_CASE
-
-         CASE (TRANSMIT_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Transmit) = Parse_Float ();
-         END_CASE
-
-         CASE (REFLECTION_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         (Texture -> Object_Reflection) = Parse_Float ();
-         END_CASE
-
-         CASE (IMAGEMAP_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture->Texture_Number = IMAGEMAP_TEXTURE;
-         if ((Texture->Image = (IMAGE *)malloc(sizeof(IMAGE))) == NULL)
-            Error("Out of memory. Cannot allocate imagemap texture");
-         Make_Vector (&Texture->Image->Image_Gradient, 1.0, -1.0, 0.0);
-         Texture->Image->Map_Type = PLANAR_MAP;  
-         Texture->Image->Interpolation_Type = NO_INTERPOLATION;
-         Texture->Image->Once_Flag = FALSE;
-         Texture->Image->Use_Colour_Flag= TRUE;
-
-         GET(LEFT_CURLY_TOKEN);   
-
-         EXPECT
-         CASE3 (DASH_TOKEN, PLUS_TOKEN, FLOAT_TOKEN)
-            UNGET
-            (Texture->Image->Map_Type) = (int) Parse_Float ();
-         END_CASE
-
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Parse_Vector (&(Texture -> Image->Image_Gradient));
-         END_CASE
-
-         CASE (IFF_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Iff_Image(Texture->Image, Token.Token_String);
-         EXIT
-         END_CASE
-
-         CASE (GIF_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Gif_Image(Texture->Image, Token.Token_String);
-         EXIT
-         END_CASE
-
-         CASE (TGA_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Targa_Image(Texture->Image, Token.Token_String);
-         EXIT
-         END_CASE
-
-         CASE (DUMP_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Dump_Image(Texture->Image, Token.Token_String);
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (GIF_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (ONCE_TOKEN)
-            Texture->Image->Once_Flag=TRUE;
-         END_CASE
-
-         CASE (INTERPOLATE_TOKEN)
-            Texture->Image->Interpolation_Type = (int)Parse_Float();
-         END_CASE
-
-         CASE (MAPTYPE_TOKEN)
-            (Texture->Image->Map_Type) = (int) Parse_Float ();
-         END_CASE
-
-         CASE (USE_COLOUR_TOKEN)
-            Texture ->Image->Use_Colour_Flag = TRUE;
-         END_CASE  
-
-         CASE (USE_INDEX_TOKEN)
-            Texture ->Image->Use_Colour_Flag = FALSE;
-         END_CASE  
-
-         CASE (ALPHA_TOKEN)
-            EXPECT
-            CASE (FLOAT_TOKEN)
-               reg = (int)(Token.Token_Float + 0.01);
-         if (Texture->Image->Colour_Map == NULL)
-            Error ("Can't apply ALPHA to a non colour-mapped image\n");
-
-         if ((reg < 0) || (reg >= Texture->Image->Colour_Map_Size))
-            Error ("ALPHA colour register value out of range.\n");
-
-         Texture->Image->Colour_Map[reg].Alpha = (unsigned short) (255.0 * Parse_Float());
-         EXIT
-         END_CASE
-
-         CASE (ALL_TOKEN)
-         {
-            DBL alpha;
-            alpha = Parse_Float();
-
-            for (reg = 0 ; reg < Texture->Image->Colour_Map_Size ; reg++)
-               Texture->Image->Colour_Map[reg].Alpha = (unsigned short) (alpha *255.0);
-            EXIT
-         }
-
-         END_CASE
-         END_EXPECT
-         END_CASE
-
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-         END_CASE
-
-         CASE (WAVES_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = WAVES;
-         Texture -> Bump_Amount = Parse_Float ();
-         EXPECT
-         CASE (PHASE_TOKEN)
-            Texture -> Phase = Parse_Float();
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         UNGET
-         EXIT
-         END_CASE
-         END_EXPECT
-         END_CASE
-
-         CASE (FREQUENCY_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Frequency = Parse_Float();
-         END_CASE
-
-         CASE (PHASE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Phase = Parse_Float();
-         END_CASE
-
-         CASE (RIPPLES_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = RIPPLES;
-         Texture -> Bump_Amount = Parse_Float ();
-         END_CASE
-
-         CASE (WRINKLES_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = WRINKLES;
-         Texture -> Bump_Amount = Parse_Float ();
-         END_CASE
-
-         CASE (BUMPS_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = BUMPS;
-         Texture -> Bump_Amount = Parse_Float ();
-         END_CASE
-
-         CASE (DENTS_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = DENTS;
-         Texture -> Bump_Amount = Parse_Float ();
-         END_CASE
-
-         CASE (TRANSLATE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Parse_Vector (&Local_Vector);
-         Translate_Texture (&Texture, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Parse_Vector (&Local_Vector);
-         Rotate_Texture (&Texture, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Parse_Vector (&Local_Vector);
-         Scale_Texture (&Texture, &Local_Vector);
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture->Colour1 = Get_Colour();
-         Parse_Colour (Texture -> Colour1);
-         Texture -> Texture_Number = COLOUR_TEXTURE;
-         END_CASE
-
-         CASE (COLOUR_MAP_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Colour_Map = Parse_Colour_Map();
-         END_CASE
-
-         CASE (ONION_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = ONION_TEXTURE;
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = GRANITE_PIGMENT;
          END_CASE
 
          CASE (LEOPARD_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = LEOPARD_TEXTURE;
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = LEOPARD_PIGMENT;
          END_CASE
 
+         CASE (MARBLE_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = MARBLE_PIGMENT;
+         END_CASE
 
+         CASE (MANDEL_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = MANDEL_PIGMENT;
+           Pigment->Iterations = (int)Parse_Float();
+         END_CASE
 
-         /* New Texture Parsing - Cdw */
+         CASE (ONION_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = ONION_PIGMENT;
+         END_CASE
+
          CASE (PAINTED1_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = PAINTED1_TEXTURE;
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = PAINTED1_PIGMENT;
          END_CASE
 
          CASE (PAINTED2_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = PAINTED2_TEXTURE;
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = PAINTED2_PIGMENT;
          END_CASE
 
          CASE (PAINTED3_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = PAINTED3_TEXTURE;
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = PAINTED2_PIGMENT;
+         END_CASE
+
+         CASE (SPOTTED_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = SPOTTED_PIGMENT;
+         END_CASE
+
+         CASE (WOOD_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = WOOD_PIGMENT;
+         END_CASE
+
+         CASE (GRADIENT_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = GRADIENT_PIGMENT;
+           Parse_Vector (&(Pigment->Colour_Gradient));
+         END_CASE
+
+         CASE (COLOUR_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = COLOUR_PIGMENT;
+           Pigment->Colour1 = Create_Colour ();
+           Parse_Colour (Pigment->Colour1);
+           Pigment->Quick_Colour = *Pigment->Colour1;
+         END_CASE
+
+         CASE5 (COLOUR_ID_TOKEN, RGB_TOKEN, RGBF_TOKEN, RED_TOKEN, BLUE_TOKEN)
+         CASE3 (GREEN_TOKEN, ALPHA_TOKEN, FILTER_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           UNGET
+           Pigment->Type = COLOUR_PIGMENT;
+           Pigment->Colour1 = Create_Colour ();
+           Parse_Colour (Pigment->Colour1);
+           Pigment->Quick_Colour = *Pigment->Colour1;
+         END_CASE
+
+         CASE (CHECKER_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = CHECKER_PIGMENT;
+           Pigment->Colour_Map = Parse_Colour_List(2);
+         END_CASE
+
+         CASE (HEXAGON_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Pigment->Type = HEXAGON_PIGMENT;
+           Pigment->Colour_Map = Parse_Colour_List(3);
+         END_CASE
+
+         CASE (IMAGE_MAP_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Parse_Image_Map (Pigment);
+         END_CASE
+
+         CASE (TURBULENCE_TOKEN)
+           Parse_Vector_Float(&(Pigment->Turbulence));
+           if ((Pigment->Turbulence.x !=0.0) ||
+               (Pigment->Turbulence.y !=0.0) ||
+               (Pigment->Turbulence.z !=0.0))
+             Pigment->Flags |= HAS_TURB;
+         END_CASE
+
+         CASE (COLOUR_MAP_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);
+           if (Pigment->Type == CHECKER_PIGMENT ||
+               Pigment->Type == HEXAGON_PIGMENT ||
+               Pigment->Type == COLOUR_PIGMENT ||
+               Pigment->Type == IMAGE_MAP_PIGMENT)
+             Warn ("Cannot use color map with this pigment type",1.5);
+           Pigment->Colour_Map = Parse_Colour_Map ();
+         END_CASE
+
+         CASE (QUICK_COLOUR_TOKEN)
+           Warn_State(Token.Token_Id, PIGMENT_TOKEN);           
+           Parse_Colour (&Pigment->Quick_Colour);
+         END_CASE
+
+         CASE (OCTAVES_TOKEN)
+           Pigment->Octaves = (int)Parse_Float();
+             if(Pigment->Octaves < 1)
+                Pigment->Octaves = 1;
+             if(Pigment->Octaves > 10)  /* Avoid DOMAIN errors */
+                Pigment->Octaves = 10;
+         END_CASE
+
+         CASE (OMEGA_TOKEN)
+           Pigment->omega = Parse_Float();
+         END_CASE
+
+         CASE (LAMBDA_TOKEN)
+           Pigment->lambda = Parse_Float();
+         END_CASE
+
+/***********************************************************************
+TNORMAL STUFF OUTSIDE NORMAL{}
+***********************************************************************/
+         CASE (BUMPS_TOKEN)
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Tnormal->Type = BUMPS;
+           Tnormal->Amount = Parse_Float ();
          END_CASE
 
          CASE (BUMPY1_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = BUMPY1;
-         Texture -> Bump_Amount = Parse_Float ();
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Tnormal->Type = BUMPY1;
+           Tnormal->Amount = Parse_Float ();
          END_CASE
 
          CASE (BUMPY2_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = BUMPY2;
-         Texture -> Bump_Amount = Parse_Float ();
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Tnormal->Type = BUMPY2;
+           Tnormal->Amount = Parse_Float ();
          END_CASE
 
          CASE (BUMPY3_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = BUMPY3;
-         Texture -> Bump_Amount = Parse_Float ();
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Tnormal->Type = BUMPY3;
+           Tnormal->Amount = Parse_Float ();
+         END_CASE
+
+         CASE (DENTS_TOKEN)
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Tnormal->Type = DENTS;
+           Tnormal->Amount = Parse_Float ();
+         END_CASE
+
+         CASE (RIPPLES_TOKEN)
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Tnormal->Type = RIPPLES;
+           Tnormal->Amount = Parse_Float ();
+         END_CASE
+
+         CASE (WAVES_TOKEN)
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Tnormal->Type = WAVES;
+           Tnormal->Amount = Parse_Float ();
+         END_CASE
+
+         CASE (WRINKLES_TOKEN)
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Tnormal->Type = WRINKLES;
+           Tnormal->Amount = Parse_Float ();
+         END_CASE
+
+         CASE (BUMP_MAP_TOKEN)
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           Parse_Bump_Map (Tnormal);
+         END_CASE
+
+         CASE (FREQUENCY_TOKEN)
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           if (!(Tnormal->Type == RIPPLES || Tnormal->Type == WAVES))
+             if (Language_Version >= 1.5)
+               Warn ("Cannot use frequency with this normal",1.5);
+           Tnormal->Frequency = Parse_Float();
+         END_CASE
+
+         CASE (PHASE_TOKEN)
+           Warn_State(Token.Token_Id, TNORMAL_TOKEN);           
+           ADD_TNORMAL
+           if (!(Tnormal->Type == RIPPLES || Tnormal->Type == WAVES))
+             if (Language_Version >= 1.5)
+               Warn ("Cannot use phase with this normal",1.5);
+           Tnormal->Phase = Parse_Float();
          END_CASE
 
 
-         CASE (BUMPMAP_TOKEN)
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Bump_Number = BUMPMAP;
-         if ((Texture->Bump_Image = (IMAGE *)malloc(sizeof(IMAGE))) == NULL)
-            Error("Out of memory. Cannot allocate bumpmap texture");
-         Make_Vector (&Texture->Bump_Image->Image_Gradient, 1.0, -1.0, 0.0);
-         Texture->Bump_Image->Map_Type = PLANAR_MAP;  
-         Texture->Bump_Image->Interpolation_Type = NO_INTERPOLATION;
-         Texture->Bump_Image->Once_Flag = FALSE;
-         Texture->Bump_Image->Use_Colour_Flag = TRUE;
-
-         GET(LEFT_CURLY_TOKEN);    
-
-         EXPECT
-         CASE3 (DASH_TOKEN, PLUS_TOKEN, FLOAT_TOKEN)
-            UNGET
-            (Texture->Bump_Image->Map_Type) = (int) Parse_Float ();
-         END_CASE            
-
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Parse_Vector (&(Texture ->Bump_Image->Image_Gradient));
+/***********************************************************************
+FINISH STUFF OUTSIDE FINISH{}
+***********************************************************************/
+         CASE (AMBIENT_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Ambient = Parse_Float ();
          END_CASE
 
-         CASE (IFF_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Iff_Image(Texture->Bump_Image, Token.Token_String);
-         EXIT
+         CASE (BRILLIANCE_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Brilliance = Parse_Float ();
          END_CASE
 
-         CASE (GIF_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Gif_Image(Texture->Bump_Image, Token.Token_String);
-         EXIT
+         CASE (DIFFUSE_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Diffuse = Parse_Float ();
          END_CASE
 
-         CASE (TGA_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Targa_Image(Texture->Bump_Image, Token.Token_String);
-         EXIT
+         CASE (REFLECTION_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Reflection = Parse_Float ();
          END_CASE
 
-         CASE (DUMP_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Dump_Image(Texture->Bump_Image, Token.Token_String);
-         EXIT
+         CASE (REFRACTION_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Refraction = Parse_Float ();
          END_CASE
 
-         OTHERWISE
-         Parse_Error (GIF_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (ONCE_TOKEN)
-            Texture->Bump_Image->Once_Flag=TRUE;
-         END_CASE          
-
-         CASE (MAPTYPE_TOKEN)
-            (Texture->Bump_Image->Map_Type) = (int) Parse_Float ();
+         CASE (IOR_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Index_Of_Refraction = Parse_Float ();
          END_CASE
 
-         CASE (INTERPOLATE_TOKEN)
-            Texture->Bump_Image->Interpolation_Type = (int)Parse_Float();
+         CASE (PHONG_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Phong = Parse_Float ();
          END_CASE
 
-         CASE (BUMPSIZE_TOKEN)
-            Texture -> Bump_Amount = Parse_Float ();
-         END_CASE  
-
-         CASE (USE_COLOUR_TOKEN)
-            Texture ->Bump_Image->Use_Colour_Flag = TRUE;
-         END_CASE  
-         CASE (USE_INDEX_TOKEN)
-            Texture ->Bump_Image->Use_Colour_Flag = FALSE;
-         END_CASE  
-
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
+         CASE (PHONG_SIZE_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Phong_Size = Parse_Float ();
+    /*     if (Finish->Phong_Size < 1.0)
+               Finish->Phong_Size = 1.0;
+           if (Finish->Phong_Size > 100)
+               Finish->Phong_Size = 100; */
          END_CASE
 
-
-         CASE (MATERIAL_MAP_TOKEN)
-
-            if (Texture->Constant_Flag) {
-               Texture = Copy_Texture (Texture);
-               Texture->Constant_Flag = FALSE;
-            }
-         Texture -> Texture_Number = MATERIAL_MAP_TEXTURE;
-         if ((Texture->Material_Image=(IMAGE *)malloc(sizeof(IMAGE))) == NULL)
-            Error("Out of memory. Cannot allocate material map texture");
-         Make_Vector (&Texture->Texture_Gradient, 1.0, -1.0, 0.0);
-         Texture->Material_Image->Map_Type = PLANAR_MAP;  
-         Texture->Material_Image->Interpolation_Type = NO_INTERPOLATION;
-         Texture->Material_Image->Once_Flag = FALSE;
-         Texture->Material_Image->Use_Colour_Flag = FALSE; 
-
-         GET(LEFT_CURLY_TOKEN);    
-
-         EXPECT
-         CASE3 (DASH_TOKEN, PLUS_TOKEN, FLOAT_TOKEN)
-            UNGET
-            (Texture->Image->Map_Type) = (int) Parse_Float ();
+         CASE (SPECULAR_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Specular = Parse_Float ();
          END_CASE
 
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Parse_Vector (&(Texture ->Material_Image->Image_Gradient));
+         CASE (ROUGHNESS_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Roughness = Parse_Float ();
+    /*     if (Finish->Roughness > 1.0)
+               Finish->Roughness = 1.0;
+           if (Finish->Roughness < 0.001)
+               Finish->Roughness = 0.001;  */
+           Finish->Roughness = 1.0/Finish->Roughness; /* CEY 12/92 */
          END_CASE
 
-         CASE (IFF_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Iff_Image(Texture->Material_Image, Token.Token_String);
-         EXIT
+         CASE (METALLIC_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Metallic_Flag = TRUE;
          END_CASE
 
-         CASE (GIF_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Gif_Image(Texture->Material_Image, Token.Token_String);
-         EXIT
+         CASE (CRAND_TOKEN)
+           Warn_State(Token.Token_Id, FINISH_TOKEN);           
+           Finish->Crand = Parse_Float();
          END_CASE
 
-         CASE (TGA_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Targa_Image(Texture->Material_Image, Token.Token_String);
-         EXIT
-         END_CASE
-
-         CASE (DUMP_TOKEN)
-            GET (STRING_TOKEN);
-         Read_Dump_Image(Texture->Material_Image, Token.Token_String);
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (GIF_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         /* remember where the First_Texture is */
-         First_Texture = Texture; 
-
-         EXPECT
-
-         CASE (MAPTYPE_TOKEN)
-            (Texture->Material_Image->Map_Type) = (int) Parse_Float ();
-         END_CASE
-
-         CASE (INTERPOLATE_TOKEN)
-            Texture->Material_Image->Interpolation_Type=(int)Parse_Float();
-         END_CASE
-
-         CASE (ONCE_TOKEN)
-            Texture->Material_Image->Once_Flag=TRUE;
-         END_CASE          
-
-
-         CASE (TEXTURE_TOKEN) {
-            Texture->Next_Material = Parse_Texture (); 
-            First_Texture->Number_Of_Materials++;
-            Texture = Texture->Next_Material;
-         }
-
-         END_CASE
-
-         CASE (RIGHT_CURLY_TOKEN){
-            Texture->Next_Material = NULL; 
-            Texture = First_Texture; 
-            EXIT
-         }
-         END_CASE  
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-         END_CASE
-
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-         return (Texture);
-      }
-
-      SHAPE *Parse_Light_Source ()
-      {
-         LIGHT_SHAPE *Local_Shape;
-         VECTOR Local_Vector;
-         CONSTANT Constant_Id;
-
-
-         GET (LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Local_Shape = Get_Light_Source_Shape();
-         Parse_Vector(&(Local_Shape->Center));
-         Local_Shape->Shape_Colour = Get_Colour();
-         Make_Colour(Local_Shape->Shape_Colour, 1.0, 1.0, 1.0);
-         Local_Shape->Shape_Colour->Alpha = 0.0;
-         GET (COLOUR_TOKEN);
-         Parse_Colour (Local_Shape->Shape_Colour);
-         EXIT
-         END_CASE
-
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == LIGHT_SOURCE_CONSTANT)
-                  Local_Shape = (LIGHT_SHAPE *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else 
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         /* Point that the spot is pointed at */
-         CASE (POINT_AT_TOKEN)
-            Parse_Vector(&(Local_Shape -> Points_At));
-         END_CASE
-
-         CASE (TIGHTNESS_TOKEN)
-            Local_Shape -> Coeff = Parse_Float();
-         END_CASE
-
-         CASE (RADIUS_TOKEN)
-            Local_Shape -> Radius = cos(Parse_Float() * M_PI / 180.0);
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
-
-
-         CASE (FALLOFF_TOKEN)
-            Local_Shape -> Falloff = cos(Parse_Float() * M_PI / 180.0);
-         END_CASE
-
-         CASE (SPOTLIGHT_TOKEN)
-            Local_Shape -> Type = SPOT_LIGHT_TYPE;
-         END_CASE
-
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-
-         END_EXPECT
-         /*  Link_Shapes (Local_Shape, &(Local_Shape -> Next_Light_Source),
-	       &(Parsing_Frame_Ptr -> Light_Sources));
-*/
-         return ((SHAPE *) Local_Shape);
-      }
-
-
-
-
-      SHAPE *Parse_Sphere ()
-      {
-         SPHERE *Local_Shape;
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
-
-         Local_Shape = NULL;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Local_Shape = Get_Sphere_Shape();
-         Parse_Vector(&(Local_Shape -> Center));
-         Local_Shape -> Radius = Parse_Float();
-         Local_Shape -> Radius_Squared = Local_Shape -> Radius * Local_Shape -> Radius;
-         Local_Shape -> Inverse_Radius = 1.0 / Local_Shape -> Radius;
-         EXIT
-         END_CASE
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == SPHERE_CONSTANT)
-                  Local_Shape = (SPHERE *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         {
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = Local_Shape->Shape_Texture;
-            Local_Shape->Shape_Texture = Local_Texture;
-         }
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
-
-
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((SHAPE *) Local_Shape);
-      }
-
-      SHAPE *Parse_Plane ()
-      {
-         PLANE *Local_Shape;
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
-
-         Local_Shape = NULL;
-
-         GET(LEFT_CURLY_TOKEN);
-
-
-         EXPECT
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Local_Shape = Get_Plane_Shape();
-         Parse_Vector(&(Local_Shape -> Normal_Vector));
-         Local_Shape->Distance = Parse_Float();
-         Local_Shape->Distance *= -1.0;
-         EXIT
-         END_CASE
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == PLANE_CONSTANT)
-                  Local_Shape = (PLANE *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         {
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = Local_Shape->Shape_Texture;
-            Local_Shape->Shape_Texture = Local_Texture;
-         }
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
-
-
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((SHAPE *) Local_Shape);
-      }
-
-      SHAPE *Parse_Height_Field ()
-      {
-         HEIGHT_FIELD *Local_Shape;
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector;
-         TEXTURE *Local_Texture;
-         IMAGE *Image;
-         int Image_Type;
-
-         Local_Shape = NULL;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT  /* This should be modified to include other image types - CdW */
-         CASE (GIF_TOKEN)
-            Image_Type = GIF;
-         Local_Shape = Get_Height_Field_Shape();
-         if((Image = (IMAGE *) malloc(sizeof(IMAGE))) == NULL)
-            Error("Out of memory. Cannot allocate space for Height Field (1st message).");
-         GET(STRING_TOKEN); 
-         Read_Gif_Image(Image,Token.Token_String);
-         Local_Shape -> bounding_box -> bounds[0].x = 1.0;
-         Local_Shape -> bounding_box -> bounds[0].y = 0.0;
-         Local_Shape -> bounding_box -> bounds[0].z = 1.0;
-         Local_Shape -> bounding_box -> bounds[1].x = Image -> width - 2.0;
-         Local_Shape -> bounding_box -> bounds[1].y = 256.0;
-         Local_Shape -> bounding_box -> bounds[1].z = Image -> height - 2.0;
-         Make_Vector(&Local_Vector,1.0/(Image->width),1.0/256.0,1.0/(Image->height));
-         Get_Scaling_Transformation(Local_Shape->Transformation,&Local_Vector);
-         EXIT
-         END_CASE
-
-         CASE (POT_TOKEN)
-            Image_Type = POT;
-         Local_Shape = Get_Height_Field_Shape();
-         if((Image = (IMAGE *) malloc(sizeof(IMAGE))) == NULL)
-            Error("Out of memory. Cannot allocate space for Height Field (1st message).");
-         GET(STRING_TOKEN); 
-         Read_Gif_Image(Image,Token.Token_String);
-         Local_Shape -> bounding_box -> bounds[0].x = 1.0;
-         Local_Shape -> bounding_box -> bounds[0].y = 0.0;
-         Local_Shape -> bounding_box -> bounds[0].z = 1.0;
-         Local_Shape -> bounding_box -> bounds[1].x = Image -> width/2.0 - 2.0;
-         Local_Shape -> bounding_box -> bounds[1].y = 256.0;
-         Local_Shape -> bounding_box -> bounds[1].z = Image -> height - 2.0;
-         Make_Vector(&Local_Vector,2.0/Image->width,1.0/256.0,1.0/Image->height);
-         Get_Scaling_Transformation(Local_Shape->Transformation,&Local_Vector);
-         EXIT
-         END_CASE
-
-         CASE (TGA_TOKEN)
-            Image_Type = TGA;
-         Local_Shape = Get_Height_Field_Shape();
-         if((Image = (IMAGE *) malloc(sizeof(IMAGE))) == NULL)
-            Error("Cannot allocate space for Height Field (1st message).");
-         GET(STRING_TOKEN); 
-         Read_Targa_Image(Image,Token.Token_String);
-         Local_Shape -> bounding_box -> bounds[0].x = 1.0;
-         Local_Shape -> bounding_box -> bounds[0].y = 0.0;
-         Local_Shape -> bounding_box -> bounds[0].z = 1.0;
-         Local_Shape -> bounding_box -> bounds[1].x = Image -> width - 2.0;
-         Local_Shape -> bounding_box -> bounds[1].y = 256.0;
-         Local_Shape -> bounding_box -> bounds[1].z = Image -> height - 2.0;
-         Make_Vector(&Local_Vector,1.0/Image->width,1.0/256.0,1.0/Image->height);
-         Get_Scaling_Transformation(Local_Shape->Transformation,&Local_Vector);  
-         EXIT
-         END_CASE
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == HEIGHT_FIELD_CONSTANT)
-                  Local_Shape = (HEIGHT_FIELD *)Copy((OBJECT *)Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (GIF_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (WATER_LEVEL_TOKEN)
-               Local_Shape -> bounding_box -> bounds[0].y = Parse_Float(); 
+         CASE_FLOAT
+           Finish->Crand = Parse_Float();
+           Warn("Should use crand keyword in finish statement.",1.5);           
          END_CASE
 
          CASE (TRANSLATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
+           Parse_Vector (&Local_Vector);
+           Translate_Textures (Texture, &Local_Vector);
          END_CASE
 
          CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
+           Parse_Vector (&Local_Vector);
+           Rotate_Textures (Texture, &Local_Vector);
          END_CASE
 
          CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
+           Parse_Scale_Vector (&Local_Vector);
+           Scale_Textures (Texture, &Local_Vector);
          END_CASE
 
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
+         CASE (TRANSFORM_TOKEN)
+           GET(TRANSFORM_ID_TOKEN)
+           Transform_Textures (Texture, (TRANSFORM *)Token.Constant_Data);
          END_CASE
 
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         {
-            TEXTURE *temp_texture;
-
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = Local_Shape->Shape_Texture;
-            Local_Shape->Shape_Texture = Local_Texture;
-         }
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
-
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         Find_Hf_Min_Max(Local_Shape, Image, Image_Type);
-         return ((SHAPE *) Local_Shape);
-      }        
-
-
-      SHAPE *Parse_Triangle ()
-      {
-         TRIANGLE *Local_Shape;
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
-
-         Local_Shape = NULL;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Local_Shape = Get_Triangle_Shape();
-         Parse_Vector (&Local_Shape->P1);
-         Parse_Vector (&Local_Shape->P2);
-         Parse_Vector (&Local_Shape->P3);
-         if (!Compute_Triangle (Local_Shape)) {
-            fprintf (stderr, "Degenerate triangle on line %d.  Please remove.\n",
-               Token.Token_Line_No);
-            Degenerate_Triangles = TRUE;
-         }
-         EXIT
-         END_CASE
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == TRIANGLE_CONSTANT)
-                  Local_Shape = (TRIANGLE *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
+         CASE (TEXTURE_ID_TOKEN)
+           Warn("Texture identifier overwriting previous values.",0);
+           Destroy_Textures(Texture);
+           Texture = Copy_Textures((TEXTURE *) Token.Constant_Data);
+           Pigment = Texture->Pigment;
+           Tnormal = Texture->Tnormal;
+           Finish  = Texture->Finish;
          END_CASE
 
          OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
+           UNGET
+           EXIT
          END_CASE
-         END_EXPECT
+/***********************************************************************/
 
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
+       END_EXPECT
 
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
+       if (Not_In_Default && (Texture->Pigment->Type == NO_PIGMENT) &&
+           !(Language_Version < 1.5))
+         Parse_Error(PIGMENT_ID_TOKEN);
 
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
+       EXIT
+     END_CASE        /* End of pnf texture */
 
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
+   END_EXPECT       /* End of texture_body */
 
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
+   EXPECT            /* Look for texture_mods */
+     CASE (TRANSLATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Translate_Textures (Texture, &Local_Vector);
+     END_CASE
 
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
+     CASE (ROTATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Rotate_Textures (Texture, &Local_Vector);
+     END_CASE
 
-         {
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
+     CASE (SCALE_TOKEN)
+       Parse_Scale_Vector (&Local_Vector);
+       Scale_Textures (Texture, &Local_Vector);
+     END_CASE
 
-            temp_texture->Next_Texture = Local_Shape->Shape_Texture;
-            Local_Shape->Shape_Texture = Local_Texture;
-         }
-         END_CASE
+     CASE (TRANSFORM_TOKEN)
+       GET(TRANSFORM_ID_TOKEN)
+       Transform_Textures (Texture, (TRANSFORM *)Token.Constant_Data);
+     END_CASE
 
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT        /* End of texture */
 
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
+   Parse_End ();
+   return (Texture);
+  }
 
-         return ((SHAPE *) Local_Shape);
-      }
+static
+OBJECT *Parse_Bound_Clip ()
+  {
+   VECTOR Local_Vector;
+   OBJECT *First, *Current, *Prev;
 
-      SHAPE *Parse_Smooth_Triangle ()
-      {
-         SMOOTH_TRIANGLE *Local_Shape;
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
+   First = Prev = NULL;
 
-         Local_Shape = NULL;
+   while ((Current = Parse_Object ()) != NULL)
+     {
+      if (Current->Type & (TEXTURED_OBJECT+PATCH_OBJECT))
+        Error ("Illegal texture or patch in clip or bound");
+      if (First == NULL)
+        First = Current;
+      if (Prev != NULL)
+        Prev->Sibling = Current;
+      Prev = Current;
+     }
 
-         GET(LEFT_CURLY_TOKEN);
+   EXPECT
+     CASE (TRANSLATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       for (Current = First;
+            Current != NULL;
+            Current = Current->Sibling)
+         Translate_Object (Current, &Local_Vector);
+     END_CASE
 
-         EXPECT
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Local_Shape = (SMOOTH_TRIANGLE *) Get_Smooth_Triangle_Shape();
-         Parse_Vector (&Local_Shape->P1);
-         Parse_Vector (&Local_Shape->N1);
-         VNormalize (Local_Shape->N1, Local_Shape->N1)
-            Parse_Vector (&Local_Shape->P2);
-         Parse_Vector (&Local_Shape->N2);
-         VNormalize (Local_Shape->N2, Local_Shape->N2)
-            Parse_Vector (&Local_Shape->P3);
-         Parse_Vector (&Local_Shape->N3);
-         VNormalize (Local_Shape->N3, Local_Shape->N3)
-            if (!Compute_Triangle ((TRIANGLE *) Local_Shape)) {
-               fprintf (stderr, "Degenerate triangle on line %d.  Please remove.\n",
-                  Token.Token_Line_No);
-               Degenerate_Triangles = TRUE;
-            }
-         EXIT
-         END_CASE
+     CASE (ROTATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       for (Current = First;
+            Current != NULL;
+            Current = Current->Sibling)
+         Rotate_Object (Current, &Local_Vector);
+     END_CASE
 
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == SMOOTH_TRIANGLE_CONSTANT)
-                  Local_Shape = (SMOOTH_TRIANGLE *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
+     CASE (SCALE_TOKEN)
+       Parse_Scale_Vector (&Local_Vector);
+       for (Current = First;
+            Current != NULL;
+            Current = Current->Sibling)
+         Scale_Object (Current, &Local_Vector);
+     END_CASE
 
-         OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
+     CASE (TRANSFORM_TOKEN)
+       GET(TRANSFORM_ID_TOKEN)
+       for (Current = First;
+            Current != NULL;
+            Current = Current->Sibling)
+       Transform_Object (Current, (TRANSFORM *)Token.Constant_Data);
+     END_CASE
 
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
 
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
+   return (First);
+  }
 
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
+static void Parse_Object_Mods (Object)
+  OBJECT *Object;
+  {
+   VECTOR Local_Vector;
+   TEXTURE *Local_Texture;
+   COLOUR Local_Colour;
 
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
+   EXPECT
+     CASE (COLOUR_TOKEN)
+       Parse_Colour (&Local_Colour);
+       if (Language_Version < 1.5)
+         if (Object->Texture != NULL) 
+           if (Object->Texture->Type == PNF_TEXTURE)
+             {
+              Object->Texture->Pigment->Quick_Colour = Local_Colour;
+              break;  /* acts like END_CASE */
+             }
+       Warn("Quick color belongs in texture.  Color ignored.",0.0);
+     END_CASE
 
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
+     CASE (TRANSLATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Translate_Object (Object, &Local_Vector);
+     END_CASE
 
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
+     CASE (ROTATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Rotate_Object (Object, &Local_Vector);
+     END_CASE
 
-         {
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
+     CASE (SCALE_TOKEN)
+       Parse_Scale_Vector (&Local_Vector);
+       Scale_Object (Object, &Local_Vector);
+     END_CASE
 
-            temp_texture->Next_Texture = Local_Shape->Shape_Texture;
-            Local_Shape->Shape_Texture = Local_Texture;
-         }
-         END_CASE
+     CASE (TRANSFORM_TOKEN)
+       GET(TRANSFORM_ID_TOKEN)
+       Transform_Object (Object, (TRANSFORM *)Token.Constant_Data);
+     END_CASE
 
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
+     CASE (BOUNDED_BY_TOKEN)
+       Parse_Begin ();
+       if (Object->Bound != NULL)
+         Error ("Cannot have more than one BOUNDED_BY {} per object");
 
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((SHAPE *) Local_Shape);
-      }
-
-      SHAPE *Parse_Quadric ()
-      {
-         QUADRIC *Local_Shape;
-         VECTOR Local_Vector;
-         CONSTANT Constant_Id;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
-
-         Local_Shape = NULL;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Local_Shape = Get_Quadric_Shape();
-         Parse_Vector(&(Local_Shape -> Object_2_Terms));
-         Parse_Vector(&(Local_Shape -> Object_Mixed_Terms));
-         Parse_Vector(&(Local_Shape -> Object_Terms));
-         (Local_Shape -> Object_Constant) = Parse_Float();
-         Local_Shape -> Non_Zero_Square_Term = 
-         !((Local_Shape -> Object_2_Terms.x == 0.0)
-            && (Local_Shape -> Object_2_Terms.y == 0.0)
-            && (Local_Shape -> Object_2_Terms.z == 0.0)
-            && (Local_Shape -> Object_Mixed_Terms.x == 0.0)
-            && (Local_Shape -> Object_Mixed_Terms.y == 0.0)
-            && (Local_Shape -> Object_Mixed_Terms.z == 0.0));
-         EXIT
-         END_CASE
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == QUADRIC_CONSTANT)
-                  Local_Shape = (QUADRIC *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
+       EXPECT
+         CASE (CLIPPED_BY_TOKEN)
+           Object->Bound = Object->Clip;
+           EXIT
          END_CASE
 
          OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
+           UNGET
+           Object->Bound = Parse_Bound_Clip ();
+           EXIT
          END_CASE
-         END_EXPECT
+       END_EXPECT
+       
+       Parse_End ();
+     END_CASE
 
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
+     CASE (CLIPPED_BY_TOKEN)
+       Parse_Begin ();
+       if (Object->Clip != NULL)
+         Error ("Cannot have more than one CLIPPED_BY {} per object");
 
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         {
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = Local_Shape->Shape_Texture;
-            Local_Shape->Shape_Texture = Local_Texture;
-         }
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
+       EXPECT
+         CASE (BOUNDED_BY_TOKEN)
+           Object->Clip = Object->Bound;
+           EXIT
          END_CASE
 
          OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
+           UNGET
+           Object->Clip = Parse_Bound_Clip ();
+           EXIT
          END_CASE
-         END_EXPECT
+       END_EXPECT
 
-         return ((SHAPE *) Local_Shape);
-      }
+       Parse_End ();
+     END_CASE
 
-      SHAPE *Parse_Poly (known_order)
-         int known_order;
-      {
-         POLY *Local_Shape;
-         VECTOR Local_Vector;
-         CONSTANT Constant_Id;
-         int order;
-         TEXTURE *Local_Texture;
+     CASE (TEXTURE_TOKEN)
+       Object->Type |= TEXTURED_OBJECT;
+       Local_Texture = Parse_Texture ();
+       Link_Textures(&(Object->Texture), Local_Texture);
+     END_CASE
 
-         if (known_order > 0)
-            Local_Shape = Get_Poly_Shape(known_order);
-         else
-            Local_Shape = NULL;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE3 (DASH_TOKEN, PLUS_TOKEN, FLOAT_TOKEN)
-            UNGET
-            if (Local_Shape != NULL)
-               Error("The order of a polynomial may not be specified twice");
-         order = (int)Parse_Float();
-         if (order < 2 || order > MAX_ORDER)
-            Error("Order of Poly is out of range");
-         Local_Shape = Get_Poly_Shape(order);
+     CASE3 (PIGMENT_TOKEN, TNORMAL_TOKEN, FINISH_TOKEN)
+       Object->Type |= TEXTURED_OBJECT;
+       if (Object->Texture == NULL)
+         Object->Texture = Copy_Textures(Default_Texture);
+       else
+         if (Object->Texture->Type != PNF_TEXTURE)
+           Link_Textures(&(Object->Texture), Copy_Textures(Default_Texture));
+       UNGET
+       EXPECT
+         CASE (PIGMENT_TOKEN)
+           Parse_Pigment ( &(Object->Texture->Pigment) );
          END_CASE
 
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            if (Local_Shape == NULL)
-               printf("Need the order of the Poly");
-         Parse_Coeffs(Local_Shape->Order, &(Local_Shape->Coeffs[0]));
-         EXIT
+         CASE (TNORMAL_TOKEN)
+           Parse_Tnormal ( &(Object->Texture->Tnormal) );
          END_CASE
 
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == POLY_CONSTANT)
-                  Local_Shape = (POLY *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
+         CASE (FINISH_TOKEN)
+           Parse_Finish ( &(Object->Texture->Finish) );
          END_CASE
 
          OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (STURM_TOKEN)
-               Local_Shape->Sturm_Flag = 1;
-         END_CASE
-
-         CASE (TRANSLATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         Link ((OBJECT *) Local_Texture,
-            (OBJECT **) &Local_Texture->Next_Texture,
-            (OBJECT **) &Local_Shape->Shape_Texture);
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((SHAPE *) Local_Shape);
-      }
-
-      SHAPE *Parse_Bicubic_Patch ()
-      {
-         BICUBIC_PATCH *Local_Shape;
-         VECTOR Local_Vector;
-         CONSTANT Constant_Id;
-         TEXTURE *Local_Texture;
-         int i, j;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE3 (DASH_TOKEN, PLUS_TOKEN, FLOAT_TOKEN)
-            UNGET
-            Local_Shape = Get_Bicubic_Patch_Shape();
-         Local_Shape->Patch_Type = (int)Parse_Float();
-         if (Local_Shape->Patch_Type == 2 ||
-            Local_Shape->Patch_Type == 3)
-            Local_Shape->Flatness_Value = Parse_Float();
-         else
-            Local_Shape->Flatness_Value = 0.1;
-         Local_Shape->U_Steps = (int)Parse_Float();
-         Local_Shape->V_Steps = (int)Parse_Float();
-         for (i=0;i<4;i++) for (j=0;j<4;j++)
-            Parse_Vector(&(Local_Shape -> Control_Points[i][j]));
-         Precompute_Patch_Values(Local_Shape); /* interpolated mesh coords */
-         EXIT
-         END_CASE
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type==BICUBIC_PATCH_CONSTANT)
-                  Local_Shape = (BICUBIC_PATCH *) Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         Link ((OBJECT *) Local_Texture,
-            (OBJECT **) &Local_Texture->Next_Texture,
-            (OBJECT **) &Local_Shape->Shape_Texture);
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
-
-
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((SHAPE *) Local_Shape);
-      }
-
-      SHAPE *Parse_Box ()
-      {
-         BOX *Local_Shape;
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
-
-         Local_Shape = NULL;
-         EXPECT
-         CASE (LEFT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-            OTHERWISE
-            Parse_Error (LEFT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Local_Shape = Get_Box_Shape();
-         Parse_Vector(&(Local_Shape->bounds[0]));
-         Parse_Vector(&(Local_Shape->bounds[1]));
-         EXIT
-         END_CASE
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == BOX_CONSTANT)
-                  Local_Shape = (BOX *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (LEFT_ANGLE_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         {
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = Local_Shape->Shape_Texture;
-            Local_Shape->Shape_Texture = Local_Texture;
-         }
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((SHAPE *) Local_Shape);
-      }
-
-      SHAPE *Parse_Blob ()
-      {
-         BLOB *Local_Shape;
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
-         DBL threshold;
-         int npoints;
-         blobstackptr blob_components, blob_component;
-
-         Local_Shape = NULL;
-         EXPECT
-         CASE (LEFT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-            OTHERWISE
-            Parse_Error (LEFT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE2 (THRESHOLD_TOKEN, COMPONENT_TOKEN)
-            UNGET
-            Local_Shape = Get_Blob_Shape();
-         blob_components = NULL;
-         npoints = 0;
-         threshold = 1.0;
-
-         /* Here is where we get the blob coefficients */
-         EXPECT
-         CASE (THRESHOLD_TOKEN)
-            threshold = Parse_Float();
-         END_CASE
-
-         CASE (COMPONENT_TOKEN)
-            blob_component = (blobstackptr) malloc(sizeof(struct
-               blob_list_struct));
-         if (blob_component == NULL)
-            Error("Out of Memory! Cannot allocate blob component");
-         blob_component->elem.coeffs[2] = Parse_Float();
-         blob_component->elem.radius2   = Parse_Float();
-         Parse_Vector(&blob_component->elem.pos);
-         blob_component->next = blob_components;
-         blob_components = blob_component;
-         npoints++;
-         END_CASE
-
-         OTHERWISE
-         UNGET
-         EXIT
-         END_CASE
-         END_EXPECT
-
-         /* Finally, process the information */
-         MakeBlob((OBJECT *)Local_Shape, threshold, blob_components, npoints, 0);
-         EXIT
-         END_CASE
-
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == BLOB_CONSTANT)
-                  Local_Shape = (BLOB *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (FLOAT_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (STURM_TOKEN)
-               Local_Shape->Sturm_Flag = 1;
-         END_CASE
-
-         CASE (TRANSLATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Shape, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Shape);
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         {
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = Local_Shape->Shape_Texture;
-            Local_Shape->Shape_Texture = Local_Texture;
-         }
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Local_Shape->Shape_Colour = Get_Colour();
-         Parse_Colour (Local_Shape->Shape_Colour);
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((SHAPE *) Local_Shape);
-      }
-
-
-      CSG_SHAPE *Parse_CSG (type, Parent_Object)
-         int type;
-      OBJECT *Parent_Object;
-      {
-         CSG_SHAPE *Container = NULL;
-         SHAPE *Local_Shape;
-         VECTOR Local_Vector;
-         CONSTANT Constant_Id;
-         int First_Shape_Parsed = FALSE;
-
-         if (type == CSG_UNION_TYPE)
-            Container = Get_CSG_Union ();
-
-         else if ((type == CSG_INTERSECTION_TYPE) || (type == CSG_DIFFERENCE_TYPE))
-            Container = Get_CSG_Intersection ();
-
-         Container -> Parent_Object = Parent_Object;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if ((Constants[(int)Constant_Id].Constant_Type == CSG_INTERSECTION_CONSTANT)
-                  || (Constants[(int)Constant_Id].Constant_Type == CSG_UNION_CONSTANT)
-                  || (Constants[(int)Constant_Id].Constant_Type == CSG_DIFFERENCE_CONSTANT)) {
-                  free (Container);
-                  Container = (CSG_SHAPE *) Copy ((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-                  Set_CSG_Parents(Container, Parent_Object);
-               }
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         END_CASE          
-
-         CASE (LIGHT_SOURCE_TOKEN)
-            Local_Shape = Parse_Light_Source ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (SPHERE_TOKEN)
-            Local_Shape = Parse_Sphere ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (PLANE_TOKEN)
-            Local_Shape = Parse_Plane ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (TRIANGLE_TOKEN)
-            Local_Shape = Parse_Triangle ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (SMOOTH_TRIANGLE_TOKEN)
-            Local_Shape = Parse_Smooth_Triangle ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (QUADRIC_TOKEN)
-            Local_Shape = Parse_Quadric ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (HEIGHT_FIELD_TOKEN)
-            Local_Shape = Parse_Height_Field ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape-> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-
-         CASE (CUBIC_TOKEN)
-            Local_Shape = Parse_Poly (3);
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (QUARTIC_TOKEN)
-            Local_Shape = Parse_Poly (4);
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (POLY_TOKEN)
-            Local_Shape = Parse_Poly (0);
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (BOX_TOKEN)
-            Local_Shape = Parse_Box ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (BLOB_TOKEN)
-            Local_Shape = Parse_Blob ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (BICUBIC_PATCH_TOKEN)
-            Local_Shape = Parse_Bicubic_Patch ();
-         Local_Shape -> Parent_Object = Parent_Object;
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (UNION_TOKEN)
-            Local_Shape = (SHAPE *) Parse_CSG (CSG_UNION_TYPE, Parent_Object);
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (INTERSECTION_TOKEN)
-            Local_Shape = (SHAPE *) Parse_CSG (CSG_INTERSECTION_TYPE, Parent_Object);
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         CASE (DIFFERENCE_TOKEN)
-            Local_Shape = (SHAPE *) Parse_CSG (CSG_DIFFERENCE_TYPE, Parent_Object);
-         if ((type == CSG_DIFFERENCE_TYPE) && First_Shape_Parsed)
-            Invert ((OBJECT *) Local_Shape);
-         First_Shape_Parsed = TRUE;
-         Link((OBJECT *) Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Container -> Shapes));
-         END_CASE
-
-         OTHERWISE
-         UNGET
-         EXIT
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (TRANSLATE_TOKEN)
-               Parse_Vector (&Local_Vector);
-         Translate((OBJECT *) Container, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Container, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Container, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Container);
-         END_CASE
-
-         OTHERWISE
-         if (type == CSG_UNION_TYPE)
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         else if (type == CSG_INTERSECTION_TYPE)
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         else
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((CSG_SHAPE *) Container);
-      }
-
-      SHAPE *Parse_Shape (Object)
-         OBJECT *Object;
-      {
-         SHAPE *Local_Shape = NULL;
-
-         EXPECT
-         CASE (LIGHT_SOURCE_TOKEN)
-            Local_Shape = Parse_Light_Source ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-
-         CASE (SPHERE_TOKEN)
-            Local_Shape = Parse_Sphere ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (PLANE_TOKEN)
-            Local_Shape = Parse_Plane ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (TRIANGLE_TOKEN)
-            Local_Shape = Parse_Triangle ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (SMOOTH_TRIANGLE_TOKEN)
-            Local_Shape = Parse_Smooth_Triangle ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (QUADRIC_TOKEN)
-            Local_Shape = Parse_Quadric ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (HEIGHT_FIELD_TOKEN)
-            Local_Shape = Parse_Height_Field ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (CUBIC_TOKEN)
-            Local_Shape = Parse_Poly (3);
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (QUARTIC_TOKEN)
-            Local_Shape = Parse_Poly (4);
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (POLY_TOKEN)
-            Local_Shape = Parse_Poly (0);
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (BOX_TOKEN)
-            Local_Shape = Parse_Box ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (BLOB_TOKEN)
-            Local_Shape = Parse_Blob ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (BICUBIC_PATCH_TOKEN)
-            Local_Shape = Parse_Bicubic_Patch ();
-         Local_Shape -> Parent_Object = Object;
-         EXIT
-         END_CASE
-
-         CASE (UNION_TOKEN)
-            Local_Shape = (SHAPE *) Parse_CSG (CSG_UNION_TYPE, Object);
-         EXIT
-         END_CASE
-
-         CASE (INTERSECTION_TOKEN)
-            Local_Shape = (SHAPE *) Parse_CSG (CSG_INTERSECTION_TYPE, Object);
-         EXIT
-         END_CASE
-
-         CASE (DIFFERENCE_TOKEN)
-            Local_Shape = (SHAPE *) Parse_CSG (CSG_DIFFERENCE_TYPE, Object);
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (QUADRIC_TOKEN);
-         END_CASE
-         END_EXPECT
-         return (Local_Shape);
-      }
-
-      OBJECT *Parse_Object ()
-      {
-         OBJECT *Object;
-         SHAPE *Local_Shape;
-         VECTOR Local_Vector;
-         CONSTANT Constant_Id;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
-
-         Object = NULL;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == OBJECT_CONSTANT)
-                  Object = (OBJECT *) Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         EXIT
-         END_CASE
-
-         CASE6 (SPHERE_TOKEN, QUADRIC_TOKEN, QUARTIC_TOKEN, UNION_TOKEN,
-            INTERSECTION_TOKEN, DIFFERENCE_TOKEN)
-            CASE6 (TRIANGLE_TOKEN, SMOOTH_TRIANGLE_TOKEN, PLANE_TOKEN, CUBIC_TOKEN,
-               POLY_TOKEN, BICUBIC_PATCH_TOKEN)
-               CASE4  (HEIGHT_FIELD_TOKEN, LIGHT_SOURCE_TOKEN, BOX_TOKEN, BLOB_TOKEN)
-                  UNGET
-                  if (Object == NULL)
-                     Object = Get_Object();
-
-         Local_Shape = Parse_Shape(Object);
-         Link((OBJECT *)Local_Shape, (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Object -> Shape));
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (SHAPE_TOKEN);
-         EXIT
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (BOUNDED_TOKEN)
-
-            GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            UNGET
-            Local_Shape = Parse_Shape(Object);
-         Link((OBJECT *) Local_Shape,
-            (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Object -> Bounding_Shapes));
-         END_CASE
-         END_EXPECT       
-         END_CASE
-
-         CASE (CLIPPED_TOKEN)
-
-            GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            UNGET
-            Local_Shape = Parse_Shape(Object);
-         Link((OBJECT *) Local_Shape,
-            (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Object -> Clipping_Shapes));
-         END_CASE
-         END_EXPECT       
-         END_CASE
-
-         CASE (COLOUR_TOKEN)
-            Object->Object_Colour = Get_Colour();
-         Parse_Colour (Object -> Object_Colour);
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         if (Object->Object_Texture == Default_Texture)
-            Object->Object_Texture = Local_Texture;
-         else
-         {
-            for (temp_texture = Local_Texture ;
-               	     temp_texture->Next_Texture != NULL ;
-               	     temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = Object->Object_Texture;
-            Object->Object_Texture = Local_Texture;
-         }
-         END_CASE
-
-         CASE (NO_SHADOW_TOKEN)
-            Object -> No_Shadow_Flag = TRUE;
-         END_CASE
-
-         CASE (LIGHT_SOURCE_TOKEN)
-            Error("Light source must be defined using new syntax");
-         END_CASE
-
-         CASE (TRANSLATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Translate (Object, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate (Object, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale (Object, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert (Object);
-         END_CASE
-
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-
-         END_EXPECT
-
-         return (Object);
-      }
-
-      OBJECT *Parse_Composite ()
-      {
-         COMPOSITE *Local_Composite;
-         OBJECT *Local_Object;
-         SHAPE *Local_Shape;
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector;
-
-         Local_Composite = NULL;
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == COMPOSITE_CONSTANT)
-                  Local_Composite = (COMPOSITE *)Copy((OBJECT *) Constants[(int)Constant_Id].Constant_Data);
-               else          
-                  Type_Error ();
-            else
-               Undeclared ();
-         END_CASE
-
-         CASE (COMPOSITE_TOKEN)
-            if (Local_Composite == NULL)       
-               Local_Composite = Get_Composite_Object();
-
-         Local_Object = Parse_Composite();
-         Link((OBJECT *) Local_Object,(OBJECT **) &(Local_Object -> Next_Object),
-            (OBJECT **) &(Local_Composite -> Objects));
-         END_CASE
-
-         CASE (OBJECT_TOKEN)
-            if (Local_Composite == NULL)       
-               Local_Composite = Get_Composite_Object();
-
-         Local_Object = Parse_Object();
-         Link(Local_Object, &(Local_Object -> Next_Object),
-            &(Local_Composite -> Objects));
-         END_CASE
-
-         CASE (RIGHT_CURLY_TOKEN)
-            UNGET
-            if (Local_Composite == NULL)       
-               Local_Composite = Get_Composite_Object();
-
-         EXIT
-         END_CASE
-
-         OTHERWISE
-         UNGET
-         EXIT
-         END_CASE
-         END_EXPECT
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            CASE (BOUNDED_TOKEN)
-
-               GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            UNGET
-            Local_Shape = Parse_Shape((OBJECT *) Local_Composite);
-         Link((OBJECT *) Local_Shape,
-            (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Local_Composite -> Bounding_Shapes));
-         END_CASE
-         END_EXPECT       
-         END_CASE
-
-         CASE (CLIPPED_TOKEN)
-
-            GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            UNGET
-            Local_Shape = Parse_Shape((OBJECT *) Local_Composite);
-         Link((OBJECT *) Local_Shape,
-            (OBJECT **) &(Local_Shape -> Next_Object),
-            (OBJECT **) &(Local_Composite -> Clipping_Shapes));
-         END_CASE
-         END_EXPECT       
-         END_CASE
-
-         CASE (TRANSLATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Local_Composite, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Local_Composite, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Local_Composite, &Local_Vector);
-         END_CASE
-
-         CASE (INVERSE_TOKEN)
-            Invert ((OBJECT *) Local_Composite);
-         END_CASE
-
-         OTHERWISE
-         Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-
-         return ((OBJECT *) Local_Composite);
-      }
-
-      void Parse_Fog ()
-      {   
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (COLOUR_TOKEN)
-            Parse_Colour (&Parsing_Frame_Ptr->Fog_Colour);
-         END_CASE
-
-         CASE (FLOAT_TOKEN)
-            Parsing_Frame_Ptr->Fog_Distance = Token.Token_Float;
-         END_CASE
-
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-      }
-
-      /*
+           UNGET
+           EXIT
+         END_CASE
+       END_EXPECT
+     END_CASE
+
+     CASE (INVERSE_TOKEN)
+       if (Object->Type & PATCH_OBJECT)
+         Warn ("Cannot invert a patch object",0.0);
+       Invert_Object (Object);
+     END_CASE
+
+     CASE (STURM_TOKEN)
+       if (!(Object->Type & STURM_OK_OBJECT))
+         Error ("Cannot use STRUM here");
+       ((POLY *) Object)->Sturm_Flag = TRUE;
+     END_CASE
+
+     CASE (WATER_LEVEL_TOKEN)
+       if (!(Object->Type & WATER_LEVEL_OK_OBJECT))
+         Error ("Cannot use WATER_LEVEL here");
+       ((HEIGHT_FIELD *) Object)->bounding_box->bounds[0].y = 65536.0 * Parse_Float();
+     END_CASE
+
+     CASE (SMOOTH_TOKEN)
+       if (!(Object->Type & SMOOTH_OK_OBJECT))
+         Error ("Cannot use SMOOTH here");
+       ((HEIGHT_FIELD *) Object)->Smoothed = TRUE;
+     END_CASE
+
+     CASE (NO_SHADOW_TOKEN)
+       Object->No_Shadow_Flag = TRUE;
+     END_CASE
+
+     CASE (LIGHT_SOURCE_TOKEN)
+       Error("Light source must be defined using new syntax");
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   if (Object->Bound != NULL)
+     {
+      Object->Bounds.Lower_Left = Object->Bound->Bounds.Lower_Left;
+      Object->Bounds.Lengths    = Object->Bound->Bounds.Lengths;
+     }
+   Parse_End ();
+  }
+
+static
+OBJECT *Parse_Sphere ()
+  {
+   SPHERE *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (SPHERE *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Sphere();
+
+   Parse_Vector(&(Object -> Center));   Parse_Comma();
+   Object -> Radius = Parse_Float();
+   Object -> Radius_Squared = Object -> Radius * Object -> Radius;
+   Object -> Inverse_Radius = 1.0 / Object -> Radius;
+
+   Make_Vector(&Object->Bounds.Lower_Left,
+	       Object->Center.x - Object->Radius,
+	       Object->Center.y - Object->Radius,
+	       Object->Center.z - Object->Radius);
+   Make_Vector(&Object->Bounds.Lengths,
+	       2.0 * Object->Radius,
+	       2.0 * Object->Radius,
+	       2.0 * Object->Radius);
+
+   Parse_Object_Mods ((OBJECT *) Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Plane ()
+  {
+   PLANE *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (PLANE *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Plane();
+
+   Parse_Vector(&(Object -> Normal_Vector));   Parse_Comma();
+   VNormalize(Object->Normal_Vector, Object->Normal_Vector);
+   Object->Distance = -Parse_Float();
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Height_Field ()
+  {
+   HEIGHT_FIELD *Object;
+   VECTOR Local_Vector;
+   IMAGE *Image;
+
+   Parse_Begin ();
+
+   if ( (Object = (HEIGHT_FIELD *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Height_Field();
+
+   Image = Parse_Image (HF_FILE);
+   Image->Use_Colour_Flag = FALSE;
+
+   Object->bounding_box->bounds[0].x = 1.0;
+   Object->bounding_box->bounds[0].y = 0.0;
+   Object->bounding_box->bounds[0].z = 1.0;
+   if (Image->File_Type == POT_FILE)
+     {
+      Object->bounding_box->bounds[1].x = Image -> width/2.0 - 2.0;
+      Make_Vector(&Local_Vector,2.0/Image->width,1.0/65536.0,1.0/Image->height);
+     }
+   else
+     {
+      Object->bounding_box->bounds[1].x = Image -> width - 2.0;
+      Make_Vector(&Local_Vector,1.0/(Image->width),1.0/65536.0,1.0/(Image->height));
+     }
+   Object->bounding_box->bounds[1].y = 65536.0;
+   Object->bounding_box->bounds[1].z = Image -> height - 2.0;
+   Compute_Scaling_Transform(Object->Trans,&Local_Vector);
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   Find_Hf_Min_Max(Object, Image);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Triangle ()
+  {
+   TRIANGLE *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (TRIANGLE *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Triangle();
+
+   Parse_Vector (&Object->P1);    Parse_Comma();
+   Parse_Vector (&Object->P2);    Parse_Comma();
+   Parse_Vector (&Object->P3);
+   if (!Compute_Triangle (Object,FALSE))
+     fprintf (stdout, "Degenerate triangle on line %d.  Please remove.\n",
+              Token.Token_Line_No+1);
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Smooth_Triangle ()
+  {
+   SMOOTH_TRIANGLE *Object;
+   short degen;                                                   /* LSK */
+   DBL vlen;                                                      /* LSK */
+
+   degen=FALSE;
+
+   Parse_Begin ();
+
+   if ( (Object = (SMOOTH_TRIANGLE *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+
+   Object = Create_Smooth_Triangle();
+
+   Parse_Vector (&Object->P1);    Parse_Comma();
+   Parse_Vector (&Object->N1);    Parse_Comma();
+
+   VLength(vlen,Object->N1);                                     /* LSK */
+   if (vlen<1E-09)                                               /* LSK */
+     degen=TRUE;                                                 /* LSK */
+   else                                                          /* LSK */
+     VNormalize (Object->N1, Object->N1);
+
+   Parse_Vector (&Object->P2);    Parse_Comma();
+   Parse_Vector (&Object->N2);    Parse_Comma();
+
+   VLength(vlen,Object->N2);                                     /* LSK */
+   if (vlen<1E-09)                                               /* LSK */
+     degen=TRUE;                                                 /* LSK */
+   else                                                          /* LSK */
+     VNormalize (Object->N2, Object->N2);
+
+   Parse_Vector (&Object->P3);    Parse_Comma();
+   Parse_Vector (&Object->N3);
+
+   VLength(vlen,Object->N3);                                     /* LSK */
+   if (vlen<1E-09)                                               /* LSK */
+     degen=TRUE;                                                 /* LSK */
+   else                                                          /* LSK */
+     VNormalize (Object->N3, Object->N3);
+
+   if (!degen) {                                                 /* LSK */
+     degen=!Compute_Triangle ((TRIANGLE *) Object,TRUE);         /* LSK */
    }
-*/
 
-      void Parse_Frame ()
-      {
-         OBJECT *Local_Object;
+   if (degen)                                                    /* LSK */
+     fprintf (stdout, "Degenerate triangle on line %d.  Please remove.\n",
+              Token.Token_Line_No+1);
 
-         EXPECT
-         CASE (FOG_TOKEN)
-            Parse_Fog();
-         END_CASE
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+ }
+
+static
+OBJECT *Parse_Quadric ()
+  {
+   QUADRIC *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (QUADRIC *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Quadric();
+
+   Parse_Vector(&(Object -> Square_Terms));     Parse_Comma();
+   Parse_Vector(&(Object -> Mixed_Terms));      Parse_Comma();
+   Parse_Vector(&(Object -> Terms));            Parse_Comma();
+   Object -> Constant = Parse_Float();
+   Object -> Non_Zero_Square_Term =
+     !( (Object -> Square_Terms.x == 0.0)
+     && (Object -> Square_Terms.y == 0.0)
+     && (Object -> Square_Terms.z == 0.0)
+     && (Object -> Mixed_Terms.x == 0.0)
+     && (Object -> Mixed_Terms.y == 0.0)
+     && (Object -> Mixed_Terms.z == 0.0));
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Box ()
+  {
+   BOX *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (BOX *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Box();
+
+   Parse_Vector(&(Object->bounds[0]));     Parse_Comma();
+   Parse_Vector(&(Object->bounds[1]));
+   
+   Object->Bounds.Lower_Left=Object->bounds[0];
+   VSub(Object->Bounds.Lengths, Object->bounds[1],Object->bounds[0]);
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Disc ()
+  {
+   DISC *Object;
+   DBL tmpf;
+   VECTOR lengths;
+
+   Parse_Begin ();
+
+   if ( (Object = (DISC *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Disc();
+
+   Parse_Vector(&(Object->center)); Parse_Comma ();
+   Parse_Vector(&(Object->normal)); Parse_Comma ();
+   VNormalize(Object->normal, Object->normal);
+
+   tmpf = Parse_Float(); Parse_Comma ();
+   Object->oradius2 = tmpf * tmpf;
+
+   EXPECT
+     CASE_FLOAT
+       tmpf = Parse_Float();
+       Object->iradius2 = tmpf * tmpf;
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   /* Calculate info needed for ray-disc intersections */
+   VDot(tmpf, Object->center, Object->normal);
+   Object->d = -tmpf;
+
+   /* Calculate the bounds */
+   tmpf = sqrt(Object->oradius2);
+   Make_Vector(&lengths, tmpf, tmpf, tmpf);
+   VSub(Object->Bounds.Lower_Left, Object->center, lengths);
+   VScale(Object->Bounds.Lengths, lengths, 2.0);
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Cylinder ()
+  {
+   CONE *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (CONE *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Cylinder();
+
+   Parse_Vector(&(Object->apex));  Parse_Comma ();
+   Parse_Vector(&(Object->base));  Parse_Comma ();
+   Object->apex_radius = Parse_Float();
+   Object->base_radius = Object->apex_radius;
+
+   EXPECT
+     CASE(OPEN_TOKEN)
+       Object->closed = 0;
+       EXIT
+     END_CASE
+     
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   Compute_Cylinder_Data((OBJECT *)Object);
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Cone ()
+  {
+   CONE *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (CONE *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Cone();
+
+   Parse_Vector(&(Object->apex));  Parse_Comma ();
+   Object->apex_radius = Parse_Float();  Parse_Comma ();
+
+   Parse_Vector(&(Object->base));  Parse_Comma ();
+   Object->base_radius = Parse_Float();
+   
+   EXPECT
+     CASE(OPEN_TOKEN)
+       Object->closed = 0;
+       EXIT
+     END_CASE
+     
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   /* Compute run-time values for the cone */
+   Compute_Cone_Data((OBJECT *)Object);
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Blob ()
+  {
+   BLOB *Object;
+   DBL threshold;
+   int npoints;
+   blobstackptr blob_components, blob_component;
+
+   Parse_Begin ();
+
+   if ( (Object = (BLOB *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Blob();
+
+   blob_components = NULL;
+   npoints = 0;
+   threshold = 1.0;
+
+   EXPECT
+     CASE (THRESHOLD_TOKEN)
+       threshold = Parse_Float();
+     END_CASE
+
+     CASE (COMPONENT_TOKEN)
+       blob_component = (blobstackptr) malloc(sizeof(struct blob_list_struct));
+       if (blob_component == NULL)
+          MAError("blob component");
+       blob_component->elem.coeffs[2] = Parse_Float(); Parse_Comma();
+       blob_component->elem.radius2   = Parse_Float(); Parse_Comma();
+       Parse_Vector(&blob_component->elem.pos);
+       blob_component->next = blob_components;
+       blob_components = blob_component;
+       npoints++;
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   /* Finally, process the information */
+   MakeBlob(Object, threshold, blob_components, npoints, 0);
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Torus ()
+  {
+   POLY *Object;
+   DBL iradius, oradius, *Coeffs;
+
+   Parse_Begin ();
+
+   if ( (Object = (POLY *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Poly(4);
+
+   /* Read in the two radii */
+   iradius = Parse_Float(); /* Big radius */
+   Parse_Comma();
+   oradius = Parse_Float(); /* Little radius */
+
+   /* Build the coefficients of a torus lying in the x-z plane */
+   Coeffs = Object->Coeffs;
+   Coeffs[ 0] =  1.0;
+   Coeffs[ 4] =  2.0;
+   Coeffs[ 7] =  2.0;
+   Coeffs[ 9] = -2.0 * (iradius * iradius + oradius * oradius);
+   Coeffs[20] =  1.0;
+   Coeffs[23] =  2.0;
+   Coeffs[25] =  2.0 * (iradius * iradius - oradius * oradius);
+   Coeffs[30] =  1.0;
+   Coeffs[32] = -2.0 * (iradius * iradius + oradius * oradius);
+   Coeffs[34] = (iradius * iradius - oradius * oradius) *
+	        (iradius * iradius - oradius * oradius);
+
+   Make_Vector(&Object->Bounds.Lower_Left, -(iradius + oradius),
+	       -iradius, -(iradius + oradius))
+   Make_Vector(&Object->Bounds.Lengths, 2.0 * (iradius + oradius),
+	       2.0 * iradius, 2.0 * (iradius + oradius));
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Poly (order)
+  int order;
+  {
+   POLY *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (POLY *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   if (order == 0)
+     {
+      order = (int)Parse_Float();      Parse_Comma();
+      if (order < 2 || order > MAX_ORDER)
+        Error("Order of poly is out of range");
+     }
+
+   Object = Create_Poly(order);
+
+   Parse_Coeffs(Object->Order, &(Object->Coeffs[0]));
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Bicubic_Patch ()
+  {
+   BICUBIC_PATCH *Object;
+   int i, j;
+
+   Parse_Begin ();
+
+   if ( (Object = (BICUBIC_PATCH *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Bicubic_Patch();
+
+   EXPECT
+     CASE_FLOAT
+       Warn("Should use keywords for bicubic parameters.",1.5);
+       Object->Patch_Type = (int)Parse_Float();
+       if (Object->Patch_Type == 2 ||
+           Object->Patch_Type == 3)
+           Object->Flatness_Value = Parse_Float();
+         else
+           Object->Flatness_Value = 0.1;
+       Object->U_Steps = (int)Parse_Float();
+       Object->V_Steps = (int)Parse_Float();
+       EXIT
+     END_CASE       
+       
+     CASE (TYPE_TOKEN)
+       Object->Patch_Type = (int)Parse_Float();
+     END_CASE
+
+     CASE (FLATNESS_TOKEN)
+       Object->Flatness_Value = Parse_Float();
+     END_CASE
+
+     CASE (V_STEPS_TOKEN)
+       Object->V_Steps = (int)Parse_Float();
+     END_CASE
+
+     CASE (U_STEPS_TOKEN)
+       Object->U_Steps = (int)Parse_Float();
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   if (Object->Patch_Type > 1)
+     {
+      Object->Patch_Type = 1;
+      Warn("Patch type no longer supported. Using type 1.",0.0);
+     }
+
+   if ((Object->Patch_Type < 0) || (Object->Patch_Type > MAX_PATCH_TYPE))
+     Error("Undefined bicubic patch type");
+
+   Parse_Comma();
+   for (i=0;i<4;i++)
+     for (j=0;j<4;j++)
+       {
+        Parse_Vector(&(Object -> Control_Points[i][j]));
+        if (!((i==3)&&(j==3)))
+          Parse_Comma();
+       };
+   Precompute_Patch_Values(Object); /* interpolated mesh coords */
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_CSG (CSG_Type)
+  int CSG_Type;
+  {
+   CSG *Object;
+   OBJECT *Local;
+   int Object_Count = 0;
+
+   Parse_Begin ();
+
+   if ( (Object = (CSG *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   if (CSG_Type & CSG_UNION_TYPE)
+     Object = Create_CSG_Union ();
+   else
+     if (CSG_Type & CSG_MERGE_TYPE)
+       Object = Create_CSG_Merge ();
+     else
+       Object = Create_CSG_Intersection ();
+
+   Object->Children = NULL;
+
+   while ((Local = Parse_Object ()) != NULL)
+     {
+      if ((CSG_Type & CSG_INTERSECTION_TYPE) && (Local->Type & PATCH_OBJECT))
+        Warn ("Patch objects not allowed in intersection",0.0);
+      Object_Count++;
+      if ((CSG_Type & CSG_DIFFERENCE_TYPE) && (Object_Count > 1))
+        Invert_Object (Local);
+      Object->Type |=  (Local->Type & CHILDREN_FLAGS);
+      Local->Type |= IS_CHILD_OBJECT;
+      Link(Local, &Local->Sibling, &Object->Children);
+     };
+
+   if ((Object_Count < 2) && (Language_Version >= 1.5))
+     Warn ("Should have at least 2 objects in csg",1.5);
+   Compute_CSG_Bounds((OBJECT *)Object);
+
+   Parse_Object_Mods ((OBJECT *)Object);
+
+   return ((OBJECT *) Object);
+  }
+
+static
+OBJECT *Parse_Light_Source ()
+  {
+   VECTOR Local_Vector;
+   LIGHT_SOURCE *Object;
+
+   Parse_Begin ();
+
+   if ( (Object = (LIGHT_SOURCE *)Parse_Object_Id()) != NULL)
+      return ((OBJECT *) Object);
+      
+   Object = Create_Light_Source ();
+
+   Parse_Vector(&Object->Center);
+
+   GET (COLOUR_TOKEN)
+
+   Parse_Colour (&Object->Colour);
+
+   EXPECT
+     CASE (LOOKS_LIKE_TOKEN)
+       if (Object->Children != NULL)
+         Error("Only one looks_like allowed per light_source");
+       Parse_Begin ();
+       Object->Type &= ~(int)PATCH_OBJECT;
+       if ((Object->Children = Parse_Object ()) == NULL)
+         Parse_Error_Str ("object");
+       Translate_Object (Object->Children, &Object->Center);
+       Parse_Object_Mods (Object->Children);
+       Object->Children->No_Shadow_Flag = TRUE;
+       Object->No_Shadow_Flag = TRUE;
+       Object->Type |= (Object->Children->Type & CHILDREN_FLAGS);
+     END_CASE
+
+     CASE (SPOTLIGHT_TOKEN)
+       Object->Light_Type = SPOT_SOURCE;
+     END_CASE
+
+     CASE (POINT_AT_TOKEN)
+       if (Object->Light_Type == SPOT_SOURCE)
+         Parse_Vector(&Object->Points_At);
+       else
+         Error("Spotlight param illegal in standard light source");
+     END_CASE
+
+     CASE (TIGHTNESS_TOKEN)
+       if (Object->Light_Type == SPOT_SOURCE)
+         Object->Coeff = Parse_Float();
+       else
+         Error("Spotlight param illegal in standard light source");
+     END_CASE
+
+     CASE (RADIUS_TOKEN)
+       if (Object->Light_Type == SPOT_SOURCE)
+         Object->Radius = cos(Parse_Float() * M_PI / 180.0);
+       else
+         Error("Spotlight param illegal in standard light source");
+     END_CASE
+
+     CASE (FALLOFF_TOKEN)
+       if (Object->Light_Type == SPOT_SOURCE)
+         Object->Falloff = cos(Parse_Float() * M_PI / 180.0);
+       else
+         Error("Spotlight param illegal in standard light source");
+     END_CASE
+
+     CASE (AREA_LIGHT_TOKEN)
+       Object -> Area_Light = TRUE;
+       Parse_Vector (&(Object -> Axis1)); Parse_Comma ();
+       Parse_Vector (&(Object -> Axis2)); Parse_Comma ();
+       Object -> Area_Size1 = (int)Parse_Float(); Parse_Comma ();
+       Object -> Area_Size2 = (int)Parse_Float();
+       Object -> Light_Grid = Create_Light_Grid (Object -> Area_Size1,
+            Object -> Area_Size2);
+     END_CASE
+
+     CASE (JITTER_TOKEN)
+       Object -> Jitter = TRUE;
+     END_CASE
+
+     CASE (TRACK_TOKEN)
+       Object -> Track = TRUE;
+     END_CASE
+
+     CASE (ADAPTIVE_TOKEN)
+       Object -> Adaptive_Level = (int)Parse_Float();
+     END_CASE
+
+     CASE (TRANSLATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Translate_Object ((OBJECT *)Object, &Local_Vector);
+     END_CASE
+
+     CASE (ROTATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Rotate_Object ((OBJECT *)Object, &Local_Vector);
+     END_CASE
+
+     CASE (SCALE_TOKEN)
+       Parse_Scale_Vector (&Local_Vector);
+       Scale_Object ((OBJECT *)Object, &Local_Vector);
+     END_CASE
+
+     CASE (TRANSFORM_TOKEN)
+       GET(TRANSFORM_ID_TOKEN)
+       Transform_Object ((OBJECT *)Object, (TRANSFORM *)Token.Constant_Data);
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   Parse_End ();
+
+   return ((OBJECT *)Object);
+  }
 
 
-         CASE (DEFAULT_TOKEN)
-            GET(LEFT_CURLY_TOKEN);
-         EXPECT    
+static
+OBJECT *Parse_Object ()
+  {
+   OBJECT *Object = NULL;
+
+   EXPECT
+     CASE (SPHERE_TOKEN)
+       Object = Parse_Sphere ();
+       EXIT
+     END_CASE
+
+     CASE (PLANE_TOKEN)
+       Object = Parse_Plane ();
+       EXIT
+     END_CASE
+
+     CASE (CONE_TOKEN)
+       Object = Parse_Cone ();
+       EXIT
+     END_CASE
+
+     CASE (CYLINDER_TOKEN)
+       Object = Parse_Cylinder ();
+       EXIT
+     END_CASE
+
+     CASE (DISC_TOKEN)
+       Object = Parse_Disc ();
+       EXIT
+     END_CASE
+
+     CASE (QUADRIC_TOKEN)
+       Object = Parse_Quadric ();
+       EXIT
+     END_CASE
+
+     CASE (CUBIC_TOKEN)
+       Object = Parse_Poly (3);
+       EXIT
+     END_CASE
+
+     CASE (QUARTIC_TOKEN)
+       Object = Parse_Poly (4);
+       EXIT
+     END_CASE
+
+     CASE (POLY_TOKEN)
+       Object = Parse_Poly (0);
+       EXIT
+     END_CASE
+
+     CASE (TORUS_TOKEN)
+       Object = Parse_Torus ();
+       EXIT
+     END_CASE
+
+     CASE (OBJECT_ID_TOKEN)
+       Object = Copy_Object((OBJECT *) Token.Constant_Data);
+       EXIT
+     END_CASE
+
+     CASE (UNION_TOKEN)
+       Object = Parse_CSG (CSG_UNION_TYPE);
+       EXIT
+     END_CASE
+
+     CASE (COMPOSITE_TOKEN)
+       Warn("Use union instead of composite",1.5);
+       Object = Parse_CSG (CSG_UNION_TYPE);
+       EXIT
+     END_CASE
+
+     CASE (MERGE_TOKEN)
+       Object = Parse_CSG (CSG_MERGE_TYPE);
+       EXIT
+     END_CASE
+
+     CASE (INTERSECTION_TOKEN)
+       Object = Parse_CSG (CSG_INTERSECTION_TYPE);
+       EXIT
+     END_CASE
+
+     CASE (DIFFERENCE_TOKEN)
+       Object = Parse_CSG (CSG_DIFFERENCE_TYPE+CSG_INTERSECTION_TYPE);
+       EXIT
+     END_CASE
+
+     CASE (BICUBIC_PATCH_TOKEN)
+       Object = Parse_Bicubic_Patch ();
+       EXIT
+     END_CASE
+
+     CASE (TRIANGLE_TOKEN)
+       Object = Parse_Triangle ();
+       EXIT
+     END_CASE
+
+     CASE (SMOOTH_TRIANGLE_TOKEN)
+       Object = Parse_Smooth_Triangle ();
+       EXIT
+     END_CASE
+
+     CASE (HEIGHT_FIELD_TOKEN)
+       Object = Parse_Height_Field ();
+       EXIT
+     END_CASE
+
+     CASE (BOX_TOKEN)
+       Object = Parse_Box ();
+       EXIT
+     END_CASE
+
+     CASE (BLOB_TOKEN)
+       Object = Parse_Blob ();
+       EXIT
+     END_CASE
+
+     CASE (LIGHT_SOURCE_TOKEN)
+       Object = Parse_Light_Source ();
+       EXIT
+     END_CASE
+
+     CASE (OBJECT_TOKEN)
+       Parse_Begin ();
+       Object = Parse_Object ();
+       if (!Object)
+         Parse_Error_Str ("object");
+       Parse_Object_Mods ((OBJECT *)Object);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   return ((OBJECT *) Object);
+  }
+
+static void Parse_Fog ()
+  {
+   Parse_Begin ();
+
+   EXPECT
+     CASE (COLOUR_TOKEN)
+       Parse_Colour (&Frame.Fog_Colour);
+     END_CASE
+
+     CASE (DISTANCE_TOKEN)
+       Frame.Fog_Distance = Parse_Float ();
+     END_CASE
+
+     CASE_FLOAT
+       Warn("Should use distance keyword.",1.5);
+       Frame.Fog_Distance = Parse_Float ();
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+   Parse_End ();
+  }
+
+static void Parse_Frame ()
+  {
+   OBJECT *Object;
+   TEXTURE *Local_Texture;
+   PIGMENT *Local_Pigment;
+   TNORMAL *Local_Tnormal;
+   FINISH  *Local_Finish;
+
+   EXPECT
+     CASE (FOG_TOKEN)
+       Parse_Fog();
+     END_CASE
+
+     CASE (BACKGROUND_TOKEN)
+       Parse_Begin();
+       GET (COLOUR_TOKEN)
+       Parse_Colour (&Frame.Background_Colour);
+       Parse_End();
+     END_CASE
+
+     CASE (CAMERA_TOKEN)
+       Parse_Camera (&Frame.Camera);
+     END_CASE
+
+     CASE (DECLARE_TOKEN)
+       Parse_Declare ();
+     END_CASE
+
+     CASE (MAX_TRACE_LEVEL_TOKEN)
+       Max_Trace_Level = Parse_Float ();
+     END_CASE
+
+     CASE (VERSION_TOKEN)
+       Language_Version = Parse_Float ();
+     END_CASE
+
+     CASE (MAX_INTERSECTIONS)
+       Max_Intersections = (int)Parse_Float ();
+     END_CASE
+
+     CASE (DEFAULT_TOKEN)
+       Not_In_Default = FALSE;
+       Parse_Begin();
+       EXPECT
          CASE (TEXTURE_TOKEN)
-            Default_Texture->Constant_Flag = FALSE;
-         Default_Texture = Parse_Texture ();
-         Default_Texture->Constant_Flag = TRUE;
-         END_CASE        
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT      
+           Local_Texture = Default_Texture;
+           Default_Texture = Parse_Texture();
+           if (Default_Texture->Type != PNF_TEXTURE)
+             Error("Default texture cannot be material map or tiles");
+           if (Default_Texture->Next_Layer != NULL)
+             Error("Default texture cannot be layered");
+           Destroy_Textures(Local_Texture);
          END_CASE
 
-
-         CASE (MAX_TRACE_LEVEL_TOKEN)
-            Max_Trace_Level = Parse_Float ();
-         END_CASE        
-
-         CASE (OBJECT_TOKEN)
-            Local_Object = Parse_Object();
-         Link(Local_Object, &(Local_Object -> Next_Object),
-            &(Parsing_Frame_Ptr -> Objects));
-
-         /* light sources are now linked in object parsing */
-         /* if (Local_Object -> Light_Source_Flag)
-	 Link(Local_Object, &(Local_Object -> Next_Light_Source),
-	       &(Parsing_Frame_Ptr -> Light_Sources)); */
+         CASE (PIGMENT_TOKEN)
+           Local_Pigment = Copy_Pigment((Default_Texture->Pigment));
+           Parse_Pigment (&Local_Pigment);
+           Destroy_Pigment(Default_Texture->Pigment);
+           Default_Texture->Pigment = Local_Pigment;
          END_CASE
 
-         CASE (COMPOSITE_TOKEN)
-            Local_Object = Parse_Composite();
-         Link(Local_Object, &(Local_Object -> Next_Object),
-            &(Parsing_Frame_Ptr -> Objects));
-
-         /*      Add_Composite_Light_Source ((COMPOSITE *)Local_Object);*/
+         CASE (TNORMAL_TOKEN)
+           Local_Tnormal = Copy_Tnormal((Default_Texture->Tnormal));
+           Parse_Tnormal (&Local_Tnormal);
+           Destroy_Tnormal(Default_Texture->Tnormal);
+           Default_Texture->Tnormal = Local_Tnormal;
          END_CASE
 
-         CASE (VIEW_POINT_TOKEN)
-            Parse_Viewpoint(&(Parsing_Frame_Ptr -> View_Point));
+         CASE (FINISH_TOKEN)
+           Local_Finish = Copy_Finish((Default_Texture->Finish));
+           Parse_Finish (&Local_Finish);
+           Destroy_Finish(Default_Texture->Finish);
+           Default_Texture->Finish = Local_Finish;
          END_CASE
 
-         CASE (DECLARE_TOKEN)
-            Parse_Declare ();
-         END_CASE
-
-         CASE (END_OF_FILE_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE 
-            Parse_Error (OBJECT_TOKEN);
-         END_CASE
-         END_EXPECT
-      }
-
-      void Parse_Viewpoint (Given_Vp)
-         VIEWPOINT *Given_Vp;
-      {
-         CONSTANT Constant_Id;
-         VECTOR Local_Vector, Temp_Vector;
-         DBL Direction_Length, Up_Length, Right_Length, Handedness;
-
-         Init_Viewpoint (Given_Vp);
-
-         GET(LEFT_CURLY_TOKEN);
-
-         EXPECT
-         CASE (IDENTIFIER_TOKEN)
-            if ((Constant_Id = Find_Constant()) != -1)
-               if (Constants[(int)Constant_Id].Constant_Type == VIEW_POINT_CONSTANT)
-                  *Given_Vp = 
-                  *((VIEWPOINT*) Constants[(int)Constant_Id].Constant_Data);
-               else
-                  Type_Error ();
-            else
-               Undeclared ();
-         END_CASE
-
-         CASE (LOCATION_TOKEN)
-            Parse_Vector(&(Given_Vp -> Location));
-         END_CASE
-
-         CASE (DIRECTION_TOKEN)
-            Parse_Vector(&(Given_Vp -> Direction));
-         END_CASE
-
-         CASE (UP_TOKEN)
-            Parse_Vector(&(Given_Vp -> Up));
-         END_CASE
-
-         CASE (RIGHT_TOKEN)
-            Parse_Vector(&(Given_Vp -> Right));
-         END_CASE
-
-         CASE (SKY_TOKEN)
-            Parse_Vector(&(Given_Vp -> Sky));
-         END_CASE
-
-         CASE (LOOK_AT_TOKEN)
-            VLength (Direction_Length, Given_Vp->Direction);
-         VLength (Up_Length, Given_Vp->Up);
-         VLength (Right_Length, Given_Vp->Right);
-         VCross (Temp_Vector, Given_Vp->Direction, Given_Vp->Up);
-         VDot (Handedness, Temp_Vector, Given_Vp->Right);
-         Parse_Vector(&Given_Vp->Direction);
-
-         VSub (Given_Vp->Direction, Given_Vp->Direction, Given_Vp->Location);
-         VNormalize (Given_Vp->Direction, Given_Vp->Direction);
-         VCross(Given_Vp->Right, Given_Vp->Direction, Given_Vp->Sky);
-         VNormalize (Given_Vp->Right, Given_Vp->Right);
-         VCross (Given_Vp->Up, Given_Vp->Right, Given_Vp->Direction);
-         VScale (Given_Vp->Direction, Given_Vp->Direction, Direction_Length);
-         if (Handedness >= 0.0) {
-            VScale (Given_Vp->Right, Given_Vp->Right, Right_Length);
-         }
-         else {
-            VScale (Given_Vp->Right, Given_Vp->Right, -Right_Length);
-         }
-
-            VScale (Given_Vp->Up, Given_Vp->Up, Up_Length);       
-         END_CASE
-
-         CASE (TRANSLATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Translate ((OBJECT *) Given_Vp, &Local_Vector);
-         END_CASE
-
-         CASE (ROTATE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Rotate ((OBJECT *) Given_Vp, &Local_Vector);
-         END_CASE
-
-         CASE (SCALE_TOKEN)
-            Parse_Vector (&Local_Vector);
-         Scale ((OBJECT *) Given_Vp, &Local_Vector);
-         END_CASE
-
-         CASE (RIGHT_CURLY_TOKEN)
-            EXIT
-            END_CASE
-
-            OTHERWISE
-            Parse_Error (RIGHT_CURLY_TOKEN);
-         END_CASE
-         END_EXPECT
-      }
-
-      void Parse_Declare ()
-      {
-         CONSTANT Constant_Id;
-         TEXTURE *Local_Texture;
-         TEXTURE *temp_texture;
-         struct Constant_Struct *Constant_Ptr;
-
-         GET (IDENTIFIER_TOKEN);
-         if ((Constant_Id = Find_Constant()) == -1)
-            if (++Number_Of_Constants >= MAX_CONSTANTS)
-               Error ("Too many constants \"declared\"");
-            else
-               Constant_Id = Number_Of_Constants;
-
-         Constant_Ptr = &(Constants[(int)Constant_Id]);
-         GET (EQUALS_TOKEN);
-
-         EXPECT
-         CASE (OBJECT_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Object();
-         Constant_Ptr -> Constant_Type = OBJECT_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (SPHERE_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Sphere ();
-         Constant_Ptr -> Constant_Type = SPHERE_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (PLANE_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Plane ();
-         Constant_Ptr -> Constant_Type = PLANE_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (TRIANGLE_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Triangle ();
-         Constant_Ptr -> Constant_Type = TRIANGLE_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (SMOOTH_TRIANGLE_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Smooth_Triangle ();
-         Constant_Ptr -> Constant_Type = SMOOTH_TRIANGLE_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (QUADRIC_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Quadric ();
-         Constant_Ptr -> Constant_Type = QUADRIC_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (CUBIC_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Poly (3);
-         Constant_Ptr -> Constant_Type = POLY_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (QUARTIC_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Poly (4);
-         Constant_Ptr -> Constant_Type = POLY_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (HEIGHT_FIELD_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Height_Field ();
-         Constant_Ptr -> Constant_Type = HEIGHT_FIELD_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (POLY_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Poly (0);
-         Constant_Ptr -> Constant_Type = POLY_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (BOX_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Box ();
-         Constant_Ptr -> Constant_Type = BOX_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (BLOB_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Blob ();
-         Constant_Ptr -> Constant_Type = BLOB_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (BICUBIC_PATCH_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Bicubic_Patch ();
-         Constant_Ptr -> Constant_Type = BICUBIC_PATCH_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (INTERSECTION_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_CSG(CSG_INTERSECTION_TYPE, NULL);
-         Constant_Ptr -> Constant_Type = CSG_INTERSECTION_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (UNION_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_CSG(CSG_UNION_TYPE, NULL);
-         Constant_Ptr -> Constant_Type = CSG_UNION_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (DIFFERENCE_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_CSG(CSG_DIFFERENCE_TYPE, NULL);
-         Constant_Ptr -> Constant_Type = CSG_DIFFERENCE_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (COMPOSITE_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Composite();
-         Constant_Ptr -> Constant_Type = COMPOSITE_CONSTANT;
-         EXIT
-         END_CASE
-
-         CASE (TEXTURE_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Local_Texture = NULL;
-         Constant_Ptr -> Constant_Data = (char *) Local_Texture;
-         Constant_Ptr -> Constant_Type = TEXTURE_CONSTANT;
-         UNGET
-         EXPECT
-         CASE (TEXTURE_TOKEN)
-            Local_Texture = Default_Texture;
-         Local_Texture = Parse_Texture ();
-         if (Local_Texture->Constant_Flag)
-            Local_Texture = Copy_Texture(Local_Texture);
-
-         Local_Texture -> Constant_Flag = TRUE;
-
-         {
-            for (temp_texture = Local_Texture ;
-               		 temp_texture->Next_Texture != NULL ;
-               		 temp_texture = temp_texture->Next_Texture)
-            {}
-
-            temp_texture->Next_Texture = (TEXTURE *) Constant_Ptr->Constant_Data;
-            Constant_Ptr->Constant_Data = (char *) Local_Texture;
-         }
+         CASE (CAMERA_TOKEN)
+           Parse_Camera (&Default_Camera);
          END_CASE
 
          OTHERWISE
-         UNGET
-         EXIT
+           UNGET
+           EXIT
          END_CASE
-         END_EXPECT
-         EXIT
-         END_CASE
+       END_EXPECT
+       Parse_End();
+       Not_In_Default = TRUE;
+     END_CASE
 
-         CASE (VIEW_POINT_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Get_Viewpoint();
-         Constant_Ptr -> Constant_Type = VIEW_POINT_CONSTANT;
-         Parse_Viewpoint((VIEWPOINT *) Constant_Ptr -> Constant_Data);
-         EXIT
-         END_CASE
+     CASE (END_OF_FILE_TOKEN)
+       EXIT
+     END_CASE
 
-         CASE (COLOUR_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Get_Colour();
-         Constant_Ptr -> Constant_Type = COLOUR_CONSTANT;
-         Parse_Colour ((COLOUR *) Constant_Ptr -> Constant_Data);
-         EXIT
-         END_CASE
+     OTHERWISE
+       UNGET
+       Object = Parse_Object();
+       if (Object == NULL)
+         Parse_Error_Str ("object or directive");
+       Post_Process (Object, NULL);
+       Link_To_Frame (Object);
+     END_CASE
+   END_EXPECT
+  }
 
-         CASE (LIGHT_SOURCE_TOKEN)
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Parse_Light_Source ();
-         Constant_Ptr -> Constant_Type = LIGHT_SOURCE_CONSTANT;
-         EXIT
-         END_CASE
+static void Parse_Camera (Camera_Ptr)
+  CAMERA **Camera_Ptr;
+  {
+   VECTOR Local_Vector, Temp_Vector;
+   DBL Direction_Length, Up_Length, Right_Length, Handedness;
+   CAMERA *New;
 
+   Parse_Begin ();
 
-         CASE (LEFT_ANGLE_TOKEN)
-            UNGET
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Get_Vector();
+   EXPECT
+     CASE (CAMERA_ID_TOKEN)
+       Destroy_Camera(*Camera_Ptr);
+       *Camera_Ptr = Copy_Camera ((CAMERA *) Token.Constant_Data);
+       EXIT
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   New = *Camera_Ptr;
+
+   EXPECT
+     CASE (LOCATION_TOKEN)
+       Parse_Vector(&(New->Location));
+     END_CASE
+
+     CASE (DIRECTION_TOKEN)
+       Parse_Vector(&(New->Direction));
+     END_CASE
+
+     CASE (UP_TOKEN)
+       Parse_Vector(&(New->Up));
+     END_CASE
+
+     CASE (RIGHT_TOKEN)
+       Parse_Vector(&(New->Right));
+     END_CASE
+
+     CASE (SKY_TOKEN)
+       Parse_Vector(&(New->Sky));
+     END_CASE
+
+     CASE (LOOK_AT_TOKEN)
+       VLength (Direction_Length, New->Direction);
+       VLength (Up_Length,        New->Up);
+       VLength (Right_Length,     New->Right);
+       VCross  (Temp_Vector,      New->Direction, New->Up);
+       VDot    (Handedness,       Temp_Vector,   New->Right);
+
+       Parse_Vector (&New->Direction);
+
+       VSub       (New->Direction, New->Direction, New->Location);
+       VNormalize (New->Direction, New->Direction);
+       VCross     (New->Right,     New->Direction, New->Sky);
+       VNormalize (New->Right,     New->Right);
+       VCross     (New->Up,        New->Right,     New->Direction);
+       VScale     (New->Direction, New->Direction, Direction_Length);
+
+       if (Handedness >= 0.0)
+         VScale (New->Right, New->Right, Right_Length)
+       else
+         VScale (New->Right, New->Right, -Right_Length);
+
+       VScale (New->Up, New->Up, Up_Length);
+     END_CASE
+
+     CASE (TRANSLATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Translate_Camera (New, &Local_Vector);
+     END_CASE
+
+     CASE (ROTATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Rotate_Camera (New, &Local_Vector);
+     END_CASE
+
+     CASE (SCALE_TOKEN)
+       Parse_Scale_Vector (&Local_Vector);
+       Scale_Camera (New, &Local_Vector);
+     END_CASE
+
+     CASE (TRANSFORM_TOKEN)
+       GET(TRANSFORM_ID_TOKEN)
+       Transform_Camera (New, (TRANSFORM *)Token.Constant_Data);
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+   Parse_End ();
+  }
+
+static
+TRANSFORM *Parse_Transform ()
+  {
+   TRANSFORM *New, Local_Trans;
+   VECTOR Local_Vector;
+
+   Parse_Begin ();
+   New = Create_Transform ();
+
+   EXPECT
+     CASE(TRANSFORM_ID_TOKEN)
+       Compose_Transforms (New, (TRANSFORM *)Token.Constant_Data);
+       EXIT
+     END_CASE
+
+     CASE (TRANSLATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Compute_Translation_Transform(&Local_Trans, &Local_Vector);
+       Compose_Transforms (New, &Local_Trans);
+     END_CASE
+
+     CASE (ROTATE_TOKEN)
+       Parse_Vector (&Local_Vector);
+       Compute_Rotation_Transform(&Local_Trans, &Local_Vector);
+       Compose_Transforms (New, &Local_Trans);
+     END_CASE
+
+     CASE (SCALE_TOKEN)
+       Parse_Scale_Vector (&Local_Vector);
+       Compute_Scaling_Transform(&Local_Trans, &Local_Vector);
+       Compose_Transforms (New, &Local_Trans);
+     END_CASE
+
+     OTHERWISE
+       UNGET
+       EXIT
+     END_CASE
+   END_EXPECT
+
+   Parse_End ();
+   return (New);
+  }
+
+static void Parse_Declare ()
+  {
+  VECTOR Local_Vector;
+  COLOUR *Local_Colour;
+  PIGMENT *Local_Pigment;
+  TNORMAL *Local_Tnormal;
+  FINISH *Local_Finish;
+  TEXTURE *Local_Texture;
+  COLOUR_MAP *Local_Colour_Map;
+  TRANSFORM *Local_Trans;
+  OBJECT *Local_Object;
+  CAMERA *Local_Camera;
+
+  struct Constant_Struct *Constant_Ptr;
+
+  EXPECT
+    CASE (IDENTIFIER_TOKEN)
+      if (++Number_Of_Constants >= MAX_CONSTANTS)
+        Error ("Too many constants \"DECLARED\"");
+      else
+        Constant_Ptr = &(Constants[Number_Of_Constants]);
+      EXIT
+    END_CASE
+
+    CASE4 (COLOUR_ID_TOKEN, VECTOR_ID_TOKEN, FLOAT_ID_TOKEN, PIGMENT_ID_TOKEN)
+    CASE4 (TNORMAL_ID_TOKEN, FINISH_ID_TOKEN, TEXTURE_ID_TOKEN, OBJECT_ID_TOKEN)
+    CASE3 (COLOUR_MAP_ID_TOKEN, TRANSFORM_ID_TOKEN, CAMERA_ID_TOKEN)
+      Constant_Ptr = &(Constants[Token.Constant_Index]);
+      EXIT
+    END_CASE
+
+    OTHERWISE
+      Parse_Error(IDENTIFIER_TOKEN);
+    END_CASE
+  END_EXPECT
+
+  Previous = Token.Token_Id;
+
+  GET (EQUALS_TOKEN);
+
+  EXPECT
+    CASE (COLOUR_TOKEN)
+      if (Test_Redefine(COLOUR_ID_TOKEN))
+        Destroy_Colour((COLOUR *)Constant_Ptr->Constant_Data);
+      Local_Colour = Create_Colour();
+      Parse_Colour (Local_Colour);
+      Constant_Ptr -> Constant_Data = (char *) Local_Colour;
+      Constant_Ptr -> Constant_Type = COLOUR_CONSTANT;
+      EXIT
+    END_CASE
+
+    CASE_VECTOR
+      Have_Vector = FALSE;
+      Parse_Vector_Float (&Local_Vector);
+      if (Have_Vector)
+        {
+         if (Test_Redefine(VECTOR_ID_TOKEN))
+           Destroy_Vector((VECTOR *)Constant_Ptr->Constant_Data);
          Constant_Ptr -> Constant_Type = VECTOR_CONSTANT;
-         Parse_Vector((VECTOR *) Constant_Ptr -> Constant_Data);
-         EXIT
-         END_CASE
-
-         CASE3 (DASH_TOKEN, PLUS_TOKEN, FLOAT_TOKEN)
-            UNGET
-            Constant_Ptr -> Identifier_Number = Token.Identifier_Number;
-         Constant_Ptr -> Constant_Data = (char *) Get_Float();
+         Constant_Ptr -> Constant_Data = (char *) Create_Vector();
+         *((VECTOR *)Constant_Ptr -> Constant_Data) = Local_Vector;
+        }
+      else
+        {
+         if (Test_Redefine(FLOAT_ID_TOKEN))
+           Destroy_Float((DBL *)Constant_Ptr->Constant_Data);
          Constant_Ptr -> Constant_Type = FLOAT_CONSTANT;
-         *((DBL *) Constant_Ptr -> Constant_Data) = Parse_Float();
-         EXIT
-         END_CASE
+         Constant_Ptr -> Constant_Data = (char *) Create_Float();
+         *((DBL *) Constant_Ptr -> Constant_Data) = Local_Vector.x;
+        }
+      EXIT
+    END_CASE
 
-         OTHERWISE
-         Parse_Error (OBJECT_TOKEN);
-         END_CASE
-         END_EXPECT
-      }
+    CASE (PIGMENT_TOKEN)
+      if (Test_Redefine(PIGMENT_ID_TOKEN))
+        Destroy_Pigment((PIGMENT *)Constant_Ptr->Constant_Data);
+      Local_Pigment = Copy_Pigment((Default_Texture->Pigment));
+      Parse_Pigment (&Local_Pigment);
+      Constant_Ptr -> Constant_Type = PIGMENT_CONSTANT;
+      Constant_Ptr -> Constant_Data = (char *)Local_Pigment;
+      EXIT
+    END_CASE
 
-      void Init_Viewpoint (vp)
-         VIEWPOINT *vp;
-      {
-         vp -> Methods = (void *) &Viewpoint_Methods;
-         vp -> Type = VIEWPOINT_TYPE;
-         Make_Vector (&vp->Location, 0.0, 0.0, 0.0);
-         Make_Vector (&vp->Direction, 0.0, 0.0, 1.0);
-         Make_Vector (&vp->Up, 0.0, 1.0, 0.0);
-         Make_Vector (&vp->Right, 1.33, 0.0, 0.0);
-         Make_Vector (&vp->Sky, 0.0, 1.0, 0.0);
-      }
+    CASE (TNORMAL_TOKEN)
+      if (Test_Redefine(TNORMAL_ID_TOKEN))
+        Destroy_Tnormal((TNORMAL *)Constant_Ptr->Constant_Data);
+      Local_Tnormal = Copy_Tnormal((Default_Texture->Tnormal));
+      Parse_Tnormal (&Local_Tnormal);
+      Constant_Ptr -> Constant_Type = TNORMAL_CONSTANT;
+      Constant_Ptr -> Constant_Data = (char *) Local_Tnormal;
+      EXIT
+    END_CASE
 
-      void Link (New_Object, Field, Old_Object_List)
-         OBJECT *New_Object, **Field, **Old_Object_List;
-      {
-         *Field = *Old_Object_List;
-         *Old_Object_List = New_Object;
-      }
-      static void Link_Shapes (New_Object, Field, Old_Object_List)
-         LIGHT_SHAPE *New_Object, **Field, **Old_Object_List;
-      {
-         *Field = *Old_Object_List;
-         *Old_Object_List = New_Object;
-      }
+    CASE (FINISH_TOKEN)
+      if (Test_Redefine(FINISH_ID_TOKEN))
+        Destroy_Finish((FINISH *)Constant_Ptr->Constant_Data);
+      Local_Finish = Copy_Finish((Default_Texture->Finish));
+      Parse_Finish (&Local_Finish);
+      Constant_Ptr -> Constant_Type = FINISH_CONSTANT;
+      Constant_Ptr -> Constant_Data = (char *) Local_Finish;
+      EXIT
+    END_CASE
 
+    CASE (CAMERA_TOKEN)
+      if (Test_Redefine(CAMERA_ID_TOKEN))
+        Destroy_Camera((CAMERA *)Constant_Ptr->Constant_Data);
+      Local_Camera = Copy_Camera(Default_Camera);
+      Parse_Camera (&Local_Camera);
+      Constant_Ptr -> Constant_Type = CAMERA_CONSTANT;
+      Constant_Ptr -> Constant_Data = (char *) Local_Camera;
+      EXIT
+    END_CASE
 
-      CONSTANT Find_Constant()
-      {
-         register int i;
+    CASE (TEXTURE_TOKEN)
+      if (Test_Redefine(TEXTURE_ID_TOKEN))
+        Destroy_Textures((TEXTURE *)Constant_Ptr->Constant_Data);
+      Local_Texture = Parse_Texture ();
+      Constant_Ptr -> Constant_Type = TEXTURE_CONSTANT;
+      Constant_Ptr -> Constant_Data = NULL;
+      Link_Textures((TEXTURE **) &Constant_Ptr->Constant_Data, Local_Texture);
+      EXPECT
+        CASE (TEXTURE_TOKEN)
+          Local_Texture = Parse_Texture ();
+          Link_Textures((TEXTURE **) &Constant_Ptr->Constant_Data, Local_Texture);
+        END_CASE
 
-         for (i = 1 ; i <= Number_Of_Constants ; i++)
-            if (Constants [i].Identifier_Number == Token.Identifier_Number)
-               return (i);
+        OTHERWISE
+          UNGET
+          EXIT
+        END_CASE
+      END_EXPECT
+      EXIT
+    END_CASE
 
-         return (-1);
-      }
+    CASE (COLOUR_MAP_TOKEN)
+      if (Test_Redefine(COLOUR_MAP_ID_TOKEN))
+        Destroy_Colour_Map((COLOUR_MAP *)Constant_Ptr->Constant_Data);
+      Local_Colour_Map = Parse_Colour_Map ();
+      Constant_Ptr -> Constant_Type = COLOUR_MAP_CONSTANT;
+      Constant_Ptr -> Constant_Data = (char *) Local_Colour_Map;
+      EXIT
+    END_CASE
 
+    CASE (TRANSFORM_TOKEN)
+      if (Test_Redefine(TRANSFORM_ID_TOKEN))
+        Destroy_Transform((TRANSFORM *)Constant_Ptr->Constant_Data);
+      Local_Trans = Parse_Transform ();
+      Constant_Ptr -> Constant_Type = TRANSFORM_CONSTANT;
+      Constant_Ptr -> Constant_Data = (char *) Local_Trans;
+      EXIT
+    END_CASE
 
-      char *Get_Token_String (Token_Id)
-         TOKEN Token_Id;
-      {
-         register int i;
+    OTHERWISE
+      UNGET
+      if (Test_Redefine(OBJECT_ID_TOKEN))
+        Destroy_Object((OBJECT *)Constant_Ptr->Constant_Data);
+      Local_Object = Parse_Object ();
+      Constant_Ptr -> Constant_Type = OBJECT_CONSTANT;
+      Constant_Ptr -> Constant_Data = (char *) Local_Object;
+      EXIT
+    END_CASE
 
-         for (i = 0 ; i < LAST_TOKEN ; i++)
-            if (Reserved_Words[i].Token_Number == Token_Id)
-               return (Reserved_Words[i].Token_Name);
-         return ("");
-      }
+  END_EXPECT
+  }
 
-      void Parse_Error (Token_Id)
-         TOKEN Token_Id;
-      {
-         char *expected, *found;
-         FILE *stat_file;
-         fprintf (stderr, "Error in file %s line %d\n", Token.Filename,
-            Token.Token_Line_No+1);
-         expected = Get_Token_String (Token_Id);
-         found = Get_Token_String (Token.Token_Id);
-         fprintf (stderr, "%s expected but %s found instead\n", expected, found);
-         if (Options & VERBOSE_FILE){
-            stat_file = fopen(Stat_File_Name,"w+t");
-            fprintf (stat_file, "%s expected but %s found instead\n", expected, found);
-            fclose(stat_file);
-         }
+static void Link (New_Object, Field, Old_Object_List)
+  OBJECT *New_Object, **Field, **Old_Object_List;
+  {
+  *Field = *Old_Object_List;
+  *Old_Object_List = New_Object;
+  }
 
-         exit(1);
-      }
+static void Link_Textures (Old_Textures, New_Textures)
+  TEXTURE **Old_Textures;
+  TEXTURE  *New_Textures;
+  {
+   TEXTURE *Layer;
 
-      void Type_Error ()
-      {
-         FILE *stat_file;
-         fprintf (stderr, "Error in file %s line %d\n", Token.Filename,
-            Token.Token_Line_No+1);
-         fprintf (stderr, "Identifier %s is the wrong type\n", Token.Token_String);
-         if (Options & VERBOSE_FILE){
-            stat_file = fopen(Stat_File_Name,"w+t");
-            fprintf (stat_file, "Error in file %s line %d\n", Token.Filename,
-               Token.Token_Line_No+1);
-            fprintf (stat_file, "Identifier %s is the wrong type\n", Token.Token_String);
+   for (Layer = New_Textures ;
+        Layer->Next_Layer != NULL ;
+        Layer = Layer->Next_Layer)
+     {}
+        Layer->Next_Layer = *Old_Textures;
+        *Old_Textures = New_Textures;
+  }
 
-            fclose(stat_file);
-         }
+static
+char *Get_Token_String (Token_Id)
+  TOKEN Token_Id;
+  {
+  register int i;
 
-         exit (1);
-      }
+  for (i = 0 ; i < LAST_TOKEN ; i++)
+     if (Reserved_Words[i].Token_Number == Token_Id)
+        return (Reserved_Words[i].Token_Name);
+  return ("");
+  }
 
-      void Undeclared ()
-      {
-         FILE *stat_file;
-         fprintf (stderr, "Error in file %s line %d\n", Token.Filename,
-            Token.Token_Line_No+1);
-         fprintf (stderr, "Undeclared identifier %s\n", Token.Token_String);
-         if (Options & VERBOSE_FILE){
-            stat_file = fopen(Stat_File_Name,"w+t");
-            fprintf (stat_file, "Error in file %s line %d\n", Token.Filename,
-               Token.Token_Line_No+1);
-            fprintf (stat_file, "Undeclared identifier %s\n", Token.Token_String);
-            fclose(stat_file);
-         }
+static
+void Where_Error ()
+  {
+  fprintf (stderr, "\nError in file %s line %d\n", Token.Filename,
+                                                 Token.Token_Line_No+1);
+  }
 
-         exit (1);
-      }
+static int Test_Redefine(a)
+  int a;
+  {
+  char *old, *new;
 
-      void Error (str)
-         char *str;
-      {
-         FILE *stat_file;
-         fprintf (stderr, "Error in file %s line %d\n", Token.Filename,
-            Token.Token_Line_No+1);
-         fprintf (stderr,"%s\n",str);
+  if (Previous == IDENTIFIER_TOKEN)
+    return (FALSE);
+  if (Previous != a)
+    {old = Get_Token_String (Previous);
+     new = Get_Token_String (a);
+     Where_Error ();
+     fprintf (stderr, "Attempted to redefine %s as %s", old, new);
+     exit (1);
+    }
+  return (TRUE);
+  }
 
-         if (Options & VERBOSE_FILE){
-            stat_file = fopen(Stat_File_Name,"w+t");
-            fprintf (stat_file, "Error in file %s line %d\n", Token.Filename,
-               Token.Token_Line_No+1);
-            fprintf (stat_file,"%s\n",str);
-            fclose(stat_file);
-         }
-         exit (1);
-      }
+void Parse_Error (Token_Id)
+  TOKEN Token_Id;
+  {
+  char *expected;
 
-      static void Post_Process_Object (Object)
-         OBJECT *Object;
-      {
-         OBJECT *Temp;
+  expected = Get_Token_String (Token_Id);
+  Parse_Error_Str(expected);
+  }
 
-         if (Object->Type == COMPOSITE_TYPE)
-            for (Temp = ((COMPOSITE *)Object) -> Objects;
-               	  Temp != NULL ; 
-               	  Temp = Temp->Next_Object) 
-               Post_Process_Object (Temp);
-         else
-            Post_Process_Shape (Object->Shape);
-      }
+void Parse_Error_Str (str)
+  char *str;
+  {
+   Where_Error ();
+   fprintf (stderr, "%s expected but", str);
+   Found_Instead ();
+   exit (1);
+  }
 
-      static void Post_Process_Shape (Shape)
-         SHAPE *Shape;
-      {
-         SHAPE *Temp_Shape;
+static void Found_Instead ()
+  {
+  char *found;
 
-         if ((Shape->Type == CSG_UNION_TYPE) 
-            || (Shape->Type == CSG_INTERSECTION_TYPE)
-            || (Shape->Type == CSG_DIFFERENCE_TYPE))
-            for (Temp_Shape = ((CSG_SHAPE *)Shape)->Shapes;
-               	  Temp_Shape != NULL ; 
-               	  Temp_Shape = Temp_Shape->Next_Object)
-               Post_Process_Shape(Temp_Shape);
-         else
-            if ((Shape->Type == POINT_LIGHT_TYPE)
-               ||(Shape->Type == SPOT_LIGHT_TYPE))
-               Link_Shapes ((LIGHT_SHAPE *)Shape, 
-                  &(((LIGHT_SHAPE *)Shape)->Next_Light_Source),
-                  &(Parsing_Frame_Ptr -> Light_Sources));
-      }
+  if (Token.Token_Id == IDENTIFIER_TOKEN)
+    fprintf (stderr,
+      " undeclared identifier '%s' found instead.\n", Token.Token_String);
+  else
+   {
+    found = Get_Token_String (Token.Token_Id);
+    fprintf (stderr, " %s found instead.\n", found);
+   }
+  }
+/*
+static void Parse_Warn (Token_Id)
+  TOKEN Token_Id;
+  {
+  char *expected;
+
+  fprintf (stderr, "\nWarning in file %s line %d\n", Token.Filename,
+                                                   Token.Token_Line_No+1);
+  expected = Get_Token_String (Token_Id);
+  fprintf (stderr, "%s expected but", expected);
+  Found_Instead ();
+  }
+*/
+static void Warn_State (Token_Id,Type)
+  TOKEN Token_Id, Type;
+  {
+  char *found;
+  char *should;
+
+  if (Language_Version < 1.5)
+     return;
+
+  fprintf (stderr, "\nWarning in file %s line %d\n", Token.Filename,
+                                                   Token.Token_Line_No+1);
+  found = Get_Token_String (Token_Id);
+  should = Get_Token_String (Type);
+  fprintf (stderr, "Found %s that should be in %s statement", found, should);
+  }
+
+void Warn (str,Level)
+  char *str;
+  DBL Level;
+  {
+  if (Language_Version < Level)
+    return;
+    
+  fprintf (stdout, "\nWarning in file %s line %d\n", Token.Filename,
+                                                   Token.Token_Line_No+1);
+  fputs (str, stdout);
+  }
+
+void Error (str)
+  char *str;
+  {
+  Where_Error ();
+  fputs (str, stderr);
+  exit (1);
+  }
+
+void MAError (str)
+  char *str;
+  {
+  Where_Error ();
+  fprintf (stderr, "Out of memory.  Cannot allocate %s.\n",str);
+  exit (1);
+  }
+
+/* Write a token out to the token file */
+
+void Write_Token (Token_Id, Data_File)
+  TOKEN Token_Id;
+  DATA_FILE *Data_File;
+
+  {
+   Token.Token_Id = Token_Id;
+   Token.Token_Line_No = Data_File->Line_Number;
+   Token.Filename = Data_File->Filename;
+   Token.Token_String = String;
+   Token.Constant_Data = NULL;
+   Token.Constant_Index = (int) Token.Token_Id - (int) LAST_TOKEN;
+
+   if (Token.Constant_Index >= 0)
+     {if (Token.Constant_Index <= Number_Of_Constants)
+        {Token.Constant_Data = Constants[Token.Constant_Index].Constant_Data;
+         switch (Constants[Token.Constant_Index].Constant_Type)
+           {CASEID(COLOUR_CONSTANT,     COLOUR_ID_TOKEN)
+            CASEID(VECTOR_CONSTANT,     VECTOR_ID_TOKEN)
+            CASEID(FLOAT_CONSTANT,      FLOAT_ID_TOKEN)
+            CASEID(PIGMENT_CONSTANT,    PIGMENT_ID_TOKEN)
+            CASEID(TNORMAL_CONSTANT,    TNORMAL_ID_TOKEN)
+            CASEID(FINISH_CONSTANT,     FINISH_ID_TOKEN)
+            CASEID(TEXTURE_CONSTANT,    TEXTURE_ID_TOKEN)
+            CASEID(OBJECT_CONSTANT,     OBJECT_ID_TOKEN)
+            CASEID(COLOUR_MAP_CONSTANT, COLOUR_MAP_ID_TOKEN)
+            CASEID(TRANSFORM_CONSTANT,  TRANSFORM_ID_TOKEN)
+            CASEID(CAMERA_CONSTANT,     CAMERA_ID_TOKEN)
+           }
+        }
+      else Token.Token_Id = IDENTIFIER_TOKEN;
+     }
+  }
+
+static void Post_Process (Object,Parent)
+  OBJECT *Object, *Parent;
+  {
+   OBJECT *Sib;
+
+   if (Object == NULL)
+     return;
+
+   if (Parent != NULL)
+     {
+      if (Object->Texture == NULL)
+        Object->Texture = Parent->Texture;
+/*
+      else
+        if (Parent->Texture != NULL)
+          {Local_Texture = Copy_Textures (Parent->Texture);
+           Link_Textures (&(Object->Texture), Local_Texture);
+          }
+*/ /* Removed for backward compat with 1.0.  May put back in. CEY 12/92 */
+      Object->No_Shadow_Flag |= Parent->No_Shadow_Flag;
+     }
+     
+   if (     (Object->Texture == NULL) 
+        && !(Object->Type & TEXTURED_OBJECT) 
+        && !(Object->Type & LIGHT_SOURCE_OBJECT))
+     Object->Texture = Copy_Textures(Default_Texture);
+
+   if (Object->Type & COMPOUND_OBJECT)
+     {
+      if (Object->Type & LIGHT_SOURCE_OBJECT)
+        {
+         ((LIGHT_SOURCE *)Object)->Next_Light_Source = Frame.Light_Sources;
+         Frame.Light_Sources = (LIGHT_SOURCE *)Object;
+        }
+      for (Sib = ((CSG *)Object)->Children;
+           Sib != NULL;
+           Sib = Sib->Sibling)
+        Post_Process(Sib, Object);
+     }
+   else
+     if (Object->Texture == NULL)
+       Object->Texture = Copy_Textures(Default_Texture);
+   Post_Textures (Object->Texture);
+   if ((Object->Type & WATER_LEVEL_OK_OBJECT) &&
+       (Object->Type & IS_CHILD_OBJECT))
+     Object->Methods = &Csg_Height_Field_Methods;
+  }
+
+static void Destroy_Constants ()
+  {
+   int i;
+   char *Ptr;
+
+   for (i=1; i <= Number_Of_Constants; i++)
+     {
+      Ptr = Constants[i].Constant_Data;
+      switch (Constants[i].Constant_Type)
+        {
+         case COLOUR_CONSTANT:
+           Destroy_Colour((COLOUR *)Ptr);
+           break;
+         case VECTOR_CONSTANT:
+           Destroy_Vector((VECTOR *)Ptr);
+           break;
+         case FLOAT_CONSTANT:
+           Destroy_Float((DBL *)Ptr);
+           break;
+         case PIGMENT_CONSTANT:
+           Destroy_Pigment((PIGMENT *)Ptr);
+           break;
+         case TNORMAL_CONSTANT:
+           Destroy_Tnormal((TNORMAL *)Ptr);
+           break;
+         case FINISH_CONSTANT:
+           Destroy_Finish((FINISH *)Ptr);
+           break;
+         case TEXTURE_CONSTANT:
+           Destroy_Textures((TEXTURE *)Ptr);
+           break;
+         case OBJECT_CONSTANT:
+           Destroy_Object((OBJECT *)Ptr);
+           break;
+         case COLOUR_MAP_CONSTANT:
+           Destroy_Colour_Map((COLOUR_MAP *)Ptr);
+           break;
+         case TRANSFORM_CONSTANT:
+           Destroy_Transform((TRANSFORM *)Ptr);
+           break;
+         case CAMERA_CONSTANT:
+           Destroy_Camera((CAMERA *)Ptr);
+           break;
+        }
+     }
+  }
+
+static void Link_To_Frame (Object)
+ OBJECT *Object;
+ {
+  OBJECT *This_Sib, *Next_Sib;
+  
+  if ((Object->Methods != &CSG_Union_Methods) ||
+      (Object->Bound != NULL) ||
+      (Object->Clip != NULL) ||
+      (!Use_Slabs))
+    {
+     Link(Object, &(Object -> Sibling), &(Frame.Objects));
+     return;
+    }
+  
+  for (This_Sib = ((CSG *)Object)->Children;
+       This_Sib != NULL;
+       This_Sib = Next_Sib)
+       {
+        Next_Sib = This_Sib->Sibling; /*L2F changes Sibling so save it */
+        Link_To_Frame (This_Sib);
+       }
+  Object->Texture = NULL;
+  Object->Sibling = NULL;
+  ((CSG *)Object)->Children = NULL;
+  Destroy_Object (Object);
+ }

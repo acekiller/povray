@@ -2,19 +2,19 @@
 *                   texture.h
 *
 *  This file contains defines and variables for the txt*.c files
-*  
 *
-*  from Persistence of Vision Raytracer 
-*  Copyright 1992 Persistence of Vision Team
+*  from Persistence of Vision Raytracer
+*  Copyright 1993 Persistence of Vision Team
 *---------------------------------------------------------------------------
-*  Copying, distribution and legal info is in the file povlegal.doc which
-*  should be distributed with this file. If povlegal.doc is not available
-*  or for more info please contact:
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other 
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+*  Forum.  The latest version of POV-Ray may be found there as well.
 *
-*       Drew Wells [POV-Team Leader] 
-*       CIS: 73767,1244  Internet: 73767.1244@compuserve.com
-*       Phone: (213) 254-4041
-* 
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
@@ -29,7 +29,7 @@ extern long Calls_To_Noise, Calls_To_DNoise;
 
 #define MAXSIZE 267
 #define RNDMASK 0x7FFF
-#define RNDDIVISOR (float) RNDMASK
+#define RNDDIVISOR (DBL) RNDMASK
 #define NUMBER_OF_WAVES 10
 #define SINTABSIZE 1000
 
@@ -37,11 +37,16 @@ extern long Calls_To_Noise, Calls_To_DNoise;
 #define FABS(x) ((x) < 0.0 ? (0.0 - x) : (x))
 #define SCURVE(a) ((a)*(a)*(3.0-2.0*(a)))
 #define REALSCALE ( 2.0 / 65535.0 )
-#define Hash3d(a,b,c) hashTable[(int)(hashTable[(int)(hashTable[(int)((a) & 0xfffL)] ^ ((b) & 0xfffL))] ^ ((c) & 0xfffL))]
+#define Hash3d(a,b,c) hashTable[(int)(hashTable[(int)(hashTable[(int)((a) & 0xfffL)] \
+						 ^ ((b) & 0xfffL))] ^ ((c) & 0xfffL))]
+#define Hash2d(a,b) hashTable[(int)(hashTable[(int)((a) & 0xfffL)] ^ ((b) & 0xfffL))]
+#define Hash1d(a,b) hashTable[(int)(a) ^ ((b) & 0xfffL)]  
 #define INCRSUM(m,s,x,y,z)	((s)*(RTable[m]*0.5		\
-+ RTable[m+1]*(x)	\
+					+ RTable[m+1]*(x)	\
 					+ RTable[m+2]*(y)	\
 					+ RTable[m+3]*(z)))
+
+#define INCRSUMP(mp,s,x,y,z) ((s)*((mp[0])*0.5 + (mp[1])*(x) + (mp[2])*(y) + (mp[3])*(z)))
 
 extern int Options;
 extern DBL *sintab;

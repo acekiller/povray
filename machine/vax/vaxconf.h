@@ -2,29 +2,31 @@
 *                vaxconf.h
 *
 *  This header file contains all constants and types required to run on a
-*  VAX/VMS 5.3 system.
+*  VAX/VMS 5.3 and OpenVMS for Alpha systems.
 *
-*  from Persistence of Vision Raytracer 
-*  Copyright 1991 Persistence of Vision Team
+*  from Persistence of Vision Raytracer
+*  Copyright 1993 Persistence of Vision Team
 *---------------------------------------------------------------------------
-*  Copying, distribution and legal info is in the file povlegal.doc which
-*  should be distributed with this file. If povlegal.doc is not available
-*  or for more info please contact:
+*  NOTICE: This source code file is provided so that users may experiment
+*  with enhancements to POV-Ray and to port the software to platforms other
+*  than those supported by the POV-Ray Team.  There are strict rules under
+*  which you are permitted to use this file.  The rules are in the file
+*  named POVLEGAL.DOC which should be distributed with this file. If
+*  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
+*  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
+*  Forum.  The latest version of POV-Ray may be found there as well.
 *
-*       Drew Wells [POV-Team Leader] 
-*       CIS: 73767,1244  Internet: 73767.1244@compuserve.com
-*       Phone: (213) 254-4041
-* 
 * This program is based on the popular DKB raytracer version 2.12.
 * DKBTrace was originally written by David K. Buck.
 * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 *
 *****************************************************************************/
+
 /* Below are several defines needed by the generic parts of POV.  You
 *   may redefine them as needed in this config.h file.
 *
 *   The following constants are needed by various POV modules.  Each has
-*   a default (shown below) which is will be defined in frame.h if you don't 
+*   a default (shown below) which is will be defined in frame.h if you don't
 *   define them here.
 *
 *   #define EPSILON 1.0e-10               - a small value used for POLY
@@ -39,23 +41,23 @@
 *   #define FILENAME_SEPARATOR "/"        - the character that separates names
 *                                           in a path.
 *   #define CASE_SENSITIVE_DEFAULT 2     - controls case sensitivity in DAT files
-*   #define READ_FILE_STRING "rb"        - special binary (raw, uncooked) 
+*   #define READ_FILE_STRING "rb"        - special binary (raw, uncooked)
 *   #define WRITE_FILE_STRING "wb"         modes of fopen()
 *   #define APPEND_FILE_STRING "ab"
-*   #define NORMAL '0'                   - machine-specific PaletteOption settings 
+*   #define NORMAL '0'                   - machine-specific PaletteOption settings
 *   #define GREY   'G'
 *
-*   These routines are required by POV to compute trace times.  The defaults 
+*   These routines are required by POV to compute trace times.  The defaults
 *   shown below are defined in most versions of C.  You may redefine them if
-*   your compiler doesn't support these.  If time is completely unsupported 
+*   your compiler doesn't support these.  If time is completely unsupported
 *   define them as 0.
 *
-*   #define START_TIME time(&tstart);     
+*   #define START_TIME time(&tstart);
 *   #define STOP_TIME  time(&tstop);
 *   #define TIME_ELAPSED difftime (tstop, tstart);
 *
-*   Note difftime can be replaced with: #define TIME_ELAPSED (tstop - tstart); 
-*   in some cases. 
+*   Note difftime can be replaced with: #define TIME_ELAPSED (tstop - tstart);
+*   in some cases.
 *
 *   These are optional routines that POV calls.  You may define them
 *   or if undefined they will be defined as empty in frame.h.
@@ -68,9 +70,9 @@
 *                                           (called on each pixel)
 *   #define FINISH_POVRAY              - last statement before exiting normally
 *   #define COOPERATE                    - called for multi-tasking
-*  
+*
 *   These items are standard on some C compilers.  If they are not defined
-*   on your compiler or are called something different you may define your 
+*   on your compiler or are called something different you may define your
 *   own or use the defaults supplied in frame.h as shown below.
 *
 *   #define DBL double                    - floating point precision
@@ -91,7 +93,7 @@
 *                                           not critical to the raytracer.  It
 *                                           just buffers disk accesses.
 *   This macro controls prototyping and is required by POV.  Choose one
-*   of the two options below or if left undefined it will default to ANSI 
+*   of the two options below or if left undefined it will default to ANSI
 *   in frame.h
 *
 *   #define PARAMS (x) x                  - do ANSI prototyping
@@ -116,4 +118,18 @@
 char *getenv PARAMS((char *name));
 char *malloc PARAMS((int size));
 void free PARAMS((void *));
-#define MAIN_TYPE int
+
+#define MAIN_TYPE                 int
+#define FILENAME_SEPARATOR        ""
+#define DEFAULT_OUTPUT_FORMAT     't'
+
+/* this is for VMS C on the Alpha. comment it out if your compiler complains  */
+/* strictly speaking, no compiler should complain about a pragma it does not  */
+/* recognise, but nevertheless, some compiler manufacturers have managed to ! */
+#pragma message disable IMPLICITFUNC
+
+#ifdef XWINDOWS
+void XTraceEventHandler (void) ;
+#define COOPERATE                 XTraceEventHandler () ;
+#define ALTMAIN                   1
+#endif
