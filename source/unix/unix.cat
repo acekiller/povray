@@ -1,0 +1,30 @@
+This archive contains machine specific files for compiling POV on Unix.
+These files are fairly generic and can be used as the base for other ports.
+   CMPL_Unix.doc - Instructions on compiling the Unix versions of pov-Ray.
+   README.unix   - Description of Unix specific features and instructions.
+   gamma.gif     - An image for finding out the correct Display_Gamma.
+   gamma.gif.txt - Instructions for using gamma.gif correctly.
+   makefile      - makefile for all Unix versions.
+   povray.1      - Unix man page for POV-Ray
+   povrayrc      - Sample POV-Ray INI file (should be copied to $HOME/.povrayrc)
+   svgaconf.h    - Linux SVGAlib configuration header.  Also needs unixconf.h
+   svga.c        - system specific routines for the Linux SVGAlib POV-Ray.
+                   Supports preview displays in 8-, 15-, and 24- bit modes
+                   up to 1280x1024 pixels.  Also needs unix.c.
+   unixconf.h    - Unix configuration header (used by all Unix versions)
+   unix.c        - system specific routines for all Unix POV-Ray versions
+   xwinconf.h    - Additional X Windows configuration header.  Also needs
+                   the basic configuration from unixconf.h
+   xwindows.c    - Additional X Windows code for Unix systems.  Also needs
+                   the code from unix.c.  This has been tested with
+                   1-, 2-, 4-, and 8-bit StaticGray, 4- and 8-bit GrayScale,
+                   4- and 8-bit PseudoColor, 4- and 8-bit StaticColor,
+                   8-, 12-, 16-, and 24-bit TrueColor displays, and 8-bit
+                   DirectColor, although it should work with any depth/visual
+                   combination.  There are many other enhancements from the
+                   POV-Ray 2.2 X Windows code.
+   xpovicon.xbm  - the black & white icon for X Windows.  Only needed at
+                   compile time.
+   xpovmask.xbm  - transparency mask for xpovicon.xbm.  Only needed at
+                   compile time.
+   xpovicon.xpm  - color X Windows icon for fvwm.

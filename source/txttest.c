@@ -4,10 +4,10 @@
 *  This module implements "fill-in-the-blank" pre-programmed texture 
 *  functions for easy modification and testing. Create new textures here.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
-*  NOTICE: This source code file is provided so that users may experiment
+*  NOTICE: This source code file is provided so that patterns may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
@@ -23,121 +23,304 @@
 *****************************************************************************/
 
 /*
-   Some texture ideas garnered from SIGGRAPH '85 Volume 19 Number 3, 
-   "An Image Synthesizer" By Ken Perlin.
-   Further Ideas Garnered from "The RenderMan Companion" (Addison Wesley)
-*/
+ * Some texture ideas garnered from SIGGRAPH '85 Volume 19 Number 3,
+ * "An Image Synthesizer" By Ken Perlin.
+ *
+ * Further Ideas Garnered from "The RenderMan Companion" (Addison Wesley)
+ */
 
 #include "frame.h"
 #include "vector.h"
 #include "povproto.h"
 #include "texture.h"
+#include "povray.h"    /* [DB 9/94] */
+#include "txttest.h"   /* [DB 9/94] */
+#include "pattern.h"   /* [CY 10/94] */
 
-/* Test new textures in the routines that follow */
 
-/* The painted routines take an x,y,z point on an object and a pointer to the*/
-/* object's texture description and return the color at that point           */
-/* Similar routines are granite, agate, marble. See txtcolor.c for examples. */ 
 
-void painted1 (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
+
+
+
+/*****************************************************************************
+* Local typedefs
+******************************************************************************/
+
+
+
+/*****************************************************************************
+* Local variables
+******************************************************************************/
+
+
+
+/*****************************************************************************
+* Static functions
+******************************************************************************/
+
+
+
+/*
+ * Test new textures in the routines that follow.
+ */
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   pattern1
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   The pattern routines take an x,y,z point on an object and a pointer to
+*   the object's texture description and return the color at that point
+*   Similar routines are granite, agate, marble. See txtcolor.c for examples.
+*
+* CHANGES
+*
+******************************************************************************/
+
+DBL pattern1 (EPoint, TPat)
+VECTOR EPoint;
+TPATTERN *TPat;
+{
+  DBL value;
   /* YOUR NAME HERE */
-  VECTOR Colour_Vector;   
 
-  if (Options & DEBUGGING)
-    printf ("painted1 %g %g %g\n", x, y, z);
+  TPat=TPat;
 
-  DNoise(&Colour_Vector,x,y,z);
-  colour ->Red += Colour_Vector.x;
-  colour ->Green += Colour_Vector.y;
-  colour ->Blue += Colour_Vector.z;
-  return;
-  }
-void painted2 (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  int brkindx;
-  COLOUR Colour1, Colour2;
+  value = Noise(EPoint);
 
-  /* You could change the parser to take two colors after PAINTED2,           */
-  /* but since the colormap is already parsed it's easier to use it during    */
-  /* testing. If the texture works out right you can change the parser later. */
-  if (Pigment -> Colour_Map != NULL)
-    {
-    Compute_Colour (&Colour1, Pigment, 0.1);
-    Compute_Colour (&Colour2, Pigment, 0.9);
-    }
-  else
-    {
-    Make_Colour (&Colour1, 1.0, 1.0, 1.0);
-    Colour1.Filter = 0.0;
-    Make_Colour (&Colour2, 0.0, 1.0, 0.0);
-    Colour2.Filter = 0.0;
-    }
+  return(value);
+
+}
 
 
 
-  brkindx = (int) FLOOR(x) + (int) FLOOR(z);
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   pattern2
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   The pattern routines take an x,y,z point on an object and a pointer to
+*   the object's texture description and return the color at that point
+*   Similar routines are granite, agate, marble. See txtcolor.c for examples.
+*
+* CHANGES
+*
+******************************************************************************/
 
-  if (Options & DEBUGGING)
-    printf ("checker %g %g %g\n", x, y, z);
-
-  if (brkindx & 1)
-    {
-    colour->Red = Colour1.Red;
-    colour->Green = Colour1.Green;
-    colour->Blue = Colour1.Blue;
-    colour->Filter = Colour1.Filter;
-    }
-    else{
-    colour->Red = Colour2.Red;
-    colour->Green = Colour2.Green;
-    colour->Blue = Colour2.Blue;
-    colour->Filter = Colour2.Filter;
-    }
-  return;
-  }
-void painted3 (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
+DBL pattern2 (EPoint, TPat)
+VECTOR EPoint;
+TPATTERN *TPat;
+{
+  DBL value;
   /* YOUR NAME HERE */
-  ;
-  }
+  TPat=TPat;
 
-/* The bumpy routines take a point on an object,  a pointer to the          */
-/* object's texture description and the surface normal at that point and    */
-/* return a peturb surface normal to create the illusion that the surface   */
-/* has been displaced.                                                      */
-/* Similar routines are ripples, dents, bumps. See txtbump.c for examples.  */ 
+  value = Noise(EPoint);
 
-void bumpy1 (x, y, z, Tnormal, normal)
-DBL x, y, z;
+  return(value);
+
+}
+
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   pattern3
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   The pattern routines take an x,y,z point on an object and a pointer to
+*   the object's texture description and return the color at that point
+*   Similar routines are granite, agate, marble. See txtcolor.c for examples.
+*
+* CHANGES
+*
+******************************************************************************/
+
+DBL pattern3 (EPoint, TPat)
+VECTOR EPoint;
+TPATTERN *TPat;
+{
+  DBL value;
+  /* YOUR NAME HERE */
+  TPat=TPat;
+
+  value = Noise(EPoint);
+
+  return(value);
+
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   bumpy1
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   The bumpy routines take a point on an object,  a pointer to the
+*   object's texture description and the surface normal at that point and
+*   return a peturb surface normal to create the illusion that the surface
+*   has been displaced.
+*
+*   Similar routines are ripples, dents, bumps. See txtbump.c for examples.
+*
+* CHANGES
+*
+******************************************************************************/
+
+void bumpy1 (EPoint, Tnormal, normal)
+VECTOR EPoint;
 TNORMAL *Tnormal;
-VECTOR *normal;
-  {
+VECTOR normal;
+{
   /* YOUR NAME HERE */
+  EPoint=EPoint;
 
-  }
+  Tnormal = Tnormal;
 
-void bumpy2 (x, y, z, Tnormal, normal)
-DBL x, y, z;
+  Assign_Vector(normal, normal);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   bumpy2
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   The bumpy routines take a point on an object,  a pointer to the
+*   object's texture description and the surface normal at that point and
+*   return a peturb surface normal to create the illusion that the surface
+*   has been displaced.
+*
+*   Similar routines are ripples, dents, bumps. See txtbump.c for examples.
+*
+* CHANGES
+*
+******************************************************************************/
+
+void bumpy2 (EPoint, Tnormal, normal)
+VECTOR EPoint;
 TNORMAL *Tnormal;
-VECTOR *normal;
-  {
+VECTOR normal;
+{
   /* YOUR NAME HERE */
-  ;
-  }
-void bumpy3 (x, y, z, Tnormal, normal)
-DBL x, y, z;
+  EPoint=EPoint;
+
+  Tnormal = Tnormal;
+
+  Assign_Vector(normal, normal);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   bumpy3
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   The bumpy routines take a point on an object,  a pointer to the
+*   object's texture description and the surface normal at that point and
+*   return a peturb surface normal to create the illusion that the surface
+*   has been displaced.
+*
+*   Similar routines are ripples, dents, bumps. See txtbump.c for examples.
+*
+* CHANGES
+*
+******************************************************************************/
+
+void bumpy3 (EPoint, Tnormal, normal)
+VECTOR EPoint;
 TNORMAL *Tnormal;
-VECTOR *normal;
-  {
-  ;
-  }
+VECTOR normal;
+{
+  /* YOUR NAME HERE */
+  EPoint=EPoint;
+
+  Tnormal = Tnormal;
+
+  Assign_Vector(normal, normal);
+}

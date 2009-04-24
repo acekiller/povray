@@ -1,0 +1,31 @@
+             Directions for How To Find Display Gamma
+
+Before viewing the gamma image dim the lights in the room and set the
+monitor brightness and contrast to maximum.  While viewing a black screen,
+lower the brightness gradually until the "background" is no longer
+noticable (ie when it just fades from view).  This may be difficult
+on monitors that use overscanning, unless you change the viewable
+area settings.
+
+Now, lower the contrast until the alternating white and black bars
+on the left edge of each column are equal in width.  This is trying
+to get a 50% gray by using half white and half black.  If this is
+not possible, choose a contrast setting which is about in the middle.
+While viewing the image from a distance, or with squinted eyes, one
+of the numbered "swatches" will best match the gray value approximated
+by the white and black bars.  The number in this "swatch" is your
+display's actual gamma value.
+
+Normal display gamma values are in the range 2.0 to 2.6, and the commonly
+accepted value for most monitors is 2.2.  If your monitor is usually used
+in a dim environment, we often use a gamma value that is 15% - 25% lower
+than the actual display gamma to give the images more contrast.  Some
+systems, such as Macs and SGIs, already do gamma correction, so they may
+have display gammas of 1.0 or 1.8.
+
+Whatever display gamma that you determine is that of your monitor
+should be set in your povray.ini file with the statement:
+
+Display_Gamma = 2.2
+
+or whatever your actual gamma value is.

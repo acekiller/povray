@@ -8,18 +8,18 @@
 *    follows the line from one intersection point to the other, testing the
 *    two triangles which form the pixel for an intersection with the ray at
 *    each step.
-*        height field added by Doug Muir
-*        with lots of advice and support from David Buck 
-*            and Drew Wells.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*    height field added by Doug Muir with lots of advice and support
+*    from David Buck and Drew Wells.
+*
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
-*  with enhancements to POV-Ray and to port the software to platforms other 
+*  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  named POVLEGAL.DOC which should be distributed with this file. If
 *  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
 *  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
 *  Forum.  The latest version of POV-Ray may be found there as well.
@@ -30,1804 +30,2264 @@
 *
 *****************************************************************************/
 
+/****************************************************************************
+*
+*  Explanation:
+*
+*    -
+*
+*  Syntax:
+*
+*  ---
+*
+*  Aug 1994 : Merged functions for CSG height fields into functions for
+*             non-CSG height fiels. Moved all height field map related
+*             data into one data structure. Fixed memory problems. [DB]
+*
+*  Feb 1995 : Major rewrite of the height field intersection tests. [DB]
+*
+*****************************************************************************/
+
 #include "frame.h"
+#include "povray.h"
 #include "vector.h"
 #include "povproto.h"
+#include "hfield.h"
+#include "matrices.h"
+#include "objects.h"
 
-#define sign(x) (((x) > 0.0) ? 1: (((x) < 0.0) ? -1: 0))
 
-#ifndef min_value
-#define min_value(x,y) ((x) > (y) ? (y) : (x))
-#endif
-#ifndef max_value
-#define max_value(x,y) ((x) < (y) ? (y) : (x))
-#endif
 
-METHODS Height_Field_Methods = 
-  {
-  All_HeightFld_Intersections,
-  Inside_HeightFld, HeightFld_Normal,
-  Copy_HeightFld,    Translate_HeightFld, Rotate_HeightFld,
-  Scale_HeightFld, Transform_HeightFld, Invert_HeightFld,Destroy_HeightFld
-};
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
 
-METHODS Csg_Height_Field_Methods = 
-  {
-  All_Csg_HeightFld_Intersections,
-  Inside_HeightFld, HeightFld_Normal,
-  Copy_HeightFld,
-  Translate_HeightFld, Rotate_HeightFld,
-  Scale_HeightFld, Transform_HeightFld, Invert_HeightFld,Destroy_HeightFld
-};
+#define sign(x) (((x) >= 0.0) ? 1.0 : -1.0)
 
-extern long Ray_Ht_Field_Tests, Ray_Ht_Field_Tests_Succeeded;
-extern long Ray_Ht_Field_Box_Tests, Ray_HField_Box_Tests_Succeeded;
-extern int Options;
+#define Get_Height(x, z, HField) ((DBL)(HField)->Data->Map[(z)][(x)])
 
-int isdx, isdz, X_Dom;
-DBL Gdx, Gdy, Gdz, Block_Size, Inv_Blk_Size;
-DBL Myx, Mxz, Mzx, Myz;
-ISTACK *Hf_Stack;
-RAY *RRay;
-DBL mindist, maxdist;
+/* Small offest. */
 
-#define Get_Height(x, z, H_Field) ((DBL)(H_Field)->Map[(z)][(x)])
+#define HFIELD_OFFSET 0.001
 
-static DBL Normalize PARAMS(( VECTOR *A, VECTOR *B ));
+
+
+/*****************************************************************************
+* Static functions
+******************************************************************************/
+
+static DBL normalize PARAMS((VECTOR A, VECTOR B));
+
 static DBL stretch PARAMS((DBL x));
-static int Intersect_Csg_Sub_Block PARAMS((HF_BLOCK *Block, RAY *Ray,
-HEIGHT_FIELD *H_Field, VECTOR *start, VECTOR *end));
-static int Intersect_Csg_Hf_Node PARAMS((RAY *Ray, HEIGHT_FIELD *H_Field,
-VECTOR *start, VECTOR *end));
-static DBL Normalize PARAMS(( VECTOR *A, VECTOR *B ));
-static int add_single_normal PARAMS((HF_val **data, int xsize, int zsize,
-int x0, int z0,int x1, int z1,int x2, int z2,VECTOR *N));
-static void smooth_height_field PARAMS((HEIGHT_FIELD *hf, int xsize, int zsize));
 
-static DBL
-Normalize(A, B)
-VECTOR *A, *B;
-  {
-  DBL VTemp = sqrt(B->x * B->x + B->y * B->y + B->z * B->z);
-  if (fabs(VTemp) > EPSILON) 
-    {
-    A->x = B->x / VTemp;
-    A->y = B->y / VTemp;
-    A->z = B->z / VTemp;
-    }
-  else 
-    {
-    A->x = 0.0;
-    A->y = 1.0;
-    A->z = 0.0;
-    }
-  return VTemp;
-  }
-
-  int Intersect_Pixel(x, z, Ray, H_Field, height1, height2)
-    int x;
-int z;
-RAY *Ray;
-HEIGHT_FIELD *H_Field;
-DBL height1;
-DBL height2;
-  {
-  VECTOR T1V1,T1V2,T1V3,T2V1,T2V2,T2V3,Local_Normal,N1;
-  DBL pos1,pos2,dot,depth1,depth2,s,t,y1,y2,y3,y4;
-  DBL max_height, min_height;
-  int Found = FALSE;
-
-  y1 = Get_Height(x,z,H_Field);
-  y2 = Get_Height(x+1,z,H_Field);
-  y3 = Get_Height(x,z+1,H_Field);
-  y4 = Get_Height(x+1,z+1,H_Field);
-
-  Make_Vector(&T1V1,(DBL)x,y1,(DBL)z);
-  Make_Vector(&T1V2,1.0,y2-y1,0.0);
-  Make_Vector(&T1V3,0.0,y3-y1,1.0);
-  Make_Vector(&T2V1,(DBL)(x+1),y4,(DBL)(z+1));
-  Make_Vector(&T2V2,-1.0,y3-y4,0.0);
-  Make_Vector(&T2V3,0.0,y2-y4,-1.0);
-
-  /*
-     * first, we check to see if it is even possible for the ray to
-     * intersect the triangle.
-     */
-
-  max_height = max_value(y1,max_value(y2,y3));
-  min_height = min_value(y1,min_value(y2,y3));
-  if((max_height >= height1) && (min_height <= height2))
-    {
-    VCross(Local_Normal,T1V3,T1V2);
-    VDot(dot,Local_Normal,Ray->Direction);
-
-    if((dot > EPSILON) || (dot < -EPSILON))
-      {
-      VDot(pos1,Local_Normal,T1V1);
-      VDot(pos2,Local_Normal,Ray->Initial);
-
-      pos1 -= pos2;
-
-      depth1 = pos1 / dot;
-
-      if((depth1 >= mindist) && (depth1 <= maxdist)) 
-        {
-        s = Ray->Initial.x+(depth1*Ray->Direction.x)-(DBL)x;
-        t = Ray->Initial.z+(depth1*Ray->Direction.z)-(DBL)z;
-
-        if((s>=-0.0001) && (t>=-0.0001) && ((s+t)<=1.0001)) 
-          {
-          if (!H_Field->Smoothed) 
-            {
-            N1 = Local_Normal;
-            if (H_Field->cache_pos < HF_CACHE_SIZE) 
-              {
-              H_Field->Normal_Vector[H_Field->cache_pos].normal = N1;
-              H_Field->Normal_Vector[H_Field->cache_pos].x = x + s;
-              H_Field->Normal_Vector[H_Field->cache_pos].z = z + t;
-              H_Field->cache_pos += 1;
-              }
-            }
-
-          VScale (T1V1, RRay -> Direction, depth1);
-          VAddEq (T1V1, RRay -> Initial);
-          if (Point_In_Clip (&T1V1, H_Field->Clip))
-            {
-            push_entry(depth1,T1V1,(OBJECT *)H_Field,Hf_Stack);
-            Found = TRUE;
-            Ray_Ht_Field_Tests_Succeeded++;
-            }
-          }
-        }
-      }
-    }
-
-  /*
-	 * first, we check to see if it is even possible for the ray to
-	 * intersect the triangle.
-	   Rewritten to get around Code Builder FP stack problem.
-	   Original code:
-              if((max_value(y4,max_value(y2,y3)) >= height1) && 
-	      (min_value(y4,min_value(y2,y3)) <= height2))            */
-
-  max_height = max_value(y4,max_value(y2,y3));
-  min_height = min_value(y4,min_value(y2,y3));
-  if((max_height >= height1) && (min_height <= height2))
-    {
-    VCross(Local_Normal,T2V3,T2V2);
-    VDot(dot,Local_Normal,Ray->Direction);
-
-    if((dot > EPSILON) || (dot < -EPSILON))
-      {
-      VDot(pos1,Local_Normal,T2V1);
-
-      VDot(pos2,Local_Normal,Ray->Initial);
-      pos1 -= pos2;
-
-      depth2 = pos1 / dot;
-
-      if((depth2 >=mindist) && (depth2 <=maxdist))
-        {
-        s = Ray->Initial.x+(depth2*Ray->Direction.x)-(DBL)x;
-        t = Ray->Initial.z+(depth2*Ray->Direction.z)-(DBL)z;
-
-        if((s<=1.0001) && (t<=1.0001) && ((s+t)>0.9999)) 
-          {
-          if (!H_Field->Smoothed) 
-            {
-            N1 = Local_Normal;
-            if (H_Field->cache_pos < HF_CACHE_SIZE) 
-              {
-              H_Field->Normal_Vector[H_Field->cache_pos].normal = N1;
-              H_Field->Normal_Vector[H_Field->cache_pos].x = x + s;
-              H_Field->Normal_Vector[H_Field->cache_pos].z = z + t;
-              H_Field->cache_pos += 1;
-              }
-            }
-
-          VScale (T1V1, RRay -> Direction, depth2);
-          VAddEq (T1V1, RRay -> Initial);
-          if (Point_In_Clip (&T1V1, H_Field->Clip))
-            {
-            push_entry(depth2,T1V1,(OBJECT *)H_Field,Hf_Stack);
-            Found = TRUE;
-            Ray_Ht_Field_Tests_Succeeded++;
-            }
-          }
-        }
-      }
-    }
-
-  return(Found);
-  }
-
-int Intersect_Sub_Block(Block, Ray, H_Field, start, end)
-HF_BLOCK *Block;
-RAY *Ray;
-HEIGHT_FIELD *H_Field;
-VECTOR *start, *end;
-  {
-  DBL y1, y2;
-  DBL sx, sy, sz, ex, ez, f, tx, tz;
-  int ix, iz, length, i;
-
-  if(min_value(start->y,end->y) > (DBL)Block->max_y)
-    return(FALSE);
-
-  if(max_value(start->y,end->y) < (DBL)Block->min_y)
-    return(FALSE);
-
-  sx = start->x;
-  ex = end->x;
-  sz = start->z;
-  ez = end->z;
-  sy = start->y;
-
-  if(X_Dom) 
-    {
-    if(isdx >= 0) 
-      {
-      f = floor(sx) - sx;
-      sx = floor(sx);
-      sy += Myx * f;
-      sz += Mzx * f;
-      ex = ceil(ex) - 1.0;
-      ix = (int)sx;
-      }
-    else 
-      {
-      f = ceil(sx) - sx;
-      sx = ceil(sx) - 1.0;
-      sy += Myx * f;
-      sz += Mzx * f;
-      ex = floor(ex);
-      ix = (int)sx;
-      }
-
-      length = (int)abs((int)ex - (int)sx);
-
-    if (isdz >= 0) 
-      {
-      tz = floor(start->z) + 1.0;
-      iz = (int)start->z;
-      f = sz - tz;
-      }
-    else 
-      {
-      tz = ceil(start->z) - 1.0;
-      iz = (int)tz;
-      f = tz - sz;
-      }
-
-      if(Gdy >= 0.0) 
-      {
-      y1 = sy;
-      y2 = sy + Gdy;
-      }
-      else 
-      {
-      y1 = sy + Gdy;
-      y2 = sy;
-      }
-
-      for(i=0;i<=length;i++) 
-      {
-      if(Intersect_Pixel(ix,iz,Ray,H_Field,y1,y2))
-        return(TRUE);
-      f += Gdz;
-      if(f>0.0) 
-        {
-        iz += isdz;
-        if(Intersect_Pixel(ix,iz,Ray,H_Field,y1,y2))
-          return(TRUE);
-        f -= 1.0;
-        }
-      ix += isdx;
-      y1 += Gdy;
-      y2 += Gdy;
-      }
-    }
-  else 
-    {
-    if(isdz >= 0) 
-      {
-      f = floor(sz) - sz;
-      sz = floor(sz);
-      sy += Myz * f;
-      sx += Mxz * f;
-      ez = ceil(ez) - 1.0;
-      iz = (int)sz;
-      }
-    else 
-      {
-      f = ceil(sz) - sz;
-      sz = ceil(sz) - 1.0;
-      sy += Myz * f;
-      sx += Mxz * f;
-      ez = floor(ez);
-      iz = (int)sz;
-      }             
-
-      length = (int)abs((int)ez - (int)sz);
-
-    if (isdx >= 0) 
-      {
-      tx = floor(start->x) + 1.0;
-      ix = (int)start->x;
-      f = sx - tx;
-      }
-    else 
-      {
-      tx = ceil(start->x) - 1.0;
-      ix = (int)tx;
-      f = tx - sx;
-      }
-
-      if(Gdy >= 0.0) 
-      {
-      y1 = sy;
-      y2 = sy + Gdy;
-      }
-      else 
-      {
-      y1 = sy + Gdy;
-      y2 = sy;
-      }
-
-      for(i=0;i<=length;i++) 
-      {
-      if(Intersect_Pixel(ix,iz,Ray,H_Field,y1,y2))
-        return(TRUE);
-      f += Gdx;
-      if(f>0.0) 
-        {
-        ix += isdx;
-        if(Intersect_Pixel(ix,iz,Ray,H_Field,y1,y2))
-          return(TRUE);
-        f -= 1.0;
-        }
-      iz += isdz;
-      y1 += Gdy;
-      y2 += Gdy;
-      }
-    }
-  return (FALSE);
-  }
-
-static int Intersect_Csg_Sub_Block(Block, Ray, H_Field, start, end)
-HF_BLOCK *Block;
-RAY *Ray;
-HEIGHT_FIELD *H_Field;
-VECTOR *start, *end;
-  {
-  DBL y1, y2;
-  DBL sx, sy, sz, ex, ez, f, tx, tz;
-  int ix, iz, length, i, retval;
-
-  if(min_value(start->y,end->y) > (DBL)Block->max_y)
-    return(FALSE);
-
-  if(max_value(start->y,end->y) < (DBL)Block->min_y)
-    return(FALSE);
-
-  retval = FALSE;
-  sx = start->x;
-  ex = end->x;
-  sz = start->z;
-  ez = end->z;
-  sy = start->y;
-
-  if(X_Dom) 
-    {
-    if(isdx >= 0) 
-      {
-      f = floor(sx) - sx;
-      sx = floor(sx);
-      sy += Myx * f;
-      sz += Mzx * f;
-      ex = ceil(ex) - 1.0;
-      ix = (int)sx;
-      }
-    else 
-      {
-      f = ceil(sx) - sx;
-      sx = ceil(sx) - 1.0;
-      sy += Myx * f;
-      sz += Mzx * f;
-      ex = floor(ex);
-      ix = (int)sx;
-      }
-
-      length = (int) abs((int)ex - (int)sx);
-
-    if (isdz >= 0) 
-      {
-      tz = floor(start->z) + 1.0;
-      iz = (int)start->z;
-      f = sz - tz;
-      }
-    else 
-      {
-      tz = ceil(start->z) - 1.0;
-      iz = (int)tz;
-      f = tz - sz;
-      }
-
-      if(Gdy >= 0.0) 
-      {
-      y1 = sy;
-      y2 = sy + Gdy;
-      }
-      else 
-      {
-      y1 = sy + Gdy;
-      y2 = sy;
-      }
-
-      for(i=0;i<=length;i++) 
-      {
-      if(Intersect_Pixel(ix,iz,Ray,H_Field,y1,y2))
-        retval = TRUE;
-      f += Gdz;
-      if(f>0.0) 
-        {
-        iz += isdz;
-        if(Intersect_Pixel(ix,iz,Ray,H_Field,y1,y2))
-          retval = TRUE;
-        f -= 1.0;
-        }
-      ix += isdx;
-      y1 += Gdy;
-      y2 += Gdy;
-      }
-    }
-  else 
-    {
-    if(isdz >= 0) 
-      {
-      f = floor(sz) - sz;
-      sz = floor(sz);
-      sy += Myz * f;
-      sx += Mxz * f;
-      ez = ceil(ez) - 1.0;
-      iz = (int)sz;
-      }
-    else 
-      {
-      f = ceil(sz) - sz;
-      sz = ceil(sz) - 1.0;
-      sy += Myz * f;
-      sx += Mxz * f;
-      ez = floor(ez);
-      iz = (int)sz;
-      }             
-
-      length = (int)abs((int)ez - (int)sz);
-
-    if (isdx >= 0) 
-      {
-      tx = floor(start->x) + 1.0;
-      ix = (int)start->x;
-      f = sx - tx;
-      }
-    else 
-      {
-      tx = ceil(start->x) - 1.0;
-      ix = (int)tx;
-      f = tx - sx;
-      }
-
-      if(Gdy >= 0.0) 
-      {
-      y1 = sy;
-      y2 = sy + Gdy;
-      }
-      else 
-      {
-      y1 = sy + Gdy;
-      y2 = sy;
-      }
-
-      for(i=0;i<=length;i++) 
-      {
-      if(Intersect_Pixel(ix,iz,Ray,H_Field,y1,y2))
-        retval = TRUE;
-      f += Gdx;
-      if(f>0.0) 
-        {
-        ix += isdx;
-        if(Intersect_Pixel(ix,iz,Ray,H_Field,y1,y2))
-          retval = TRUE;
-        f -= 1.0;
-        }
-      iz += isdz;
-      y1 += Gdy;
-      y2 += Gdy;
-      }
-    }
-  return (retval);
-  }
-
-int Intersect_Hf_Node(Ray, H_Field, start, end)
-RAY *Ray;
-HEIGHT_FIELD *H_Field;
-VECTOR *start, *end;
-  {
-  VECTOR *curr, *next, *temp, temp1, temp2;
-  DBL sx, sy, sz, ex, ey, ez, x, y, z;
-  DBL tnear, tfar, t, bsx, bsz, bex, bez;
-  int ix, iz, x_size, z_size, length, i;
-
-  x = sx = start->x;
-  y = sy = start->y;
-  z = sz = start->z;
-  ex = end->x;
-  ey = end->y;
-  ez = end->z;
-
-  bsx = sx * Inv_Blk_Size;
-  bsz = sz * Inv_Blk_Size;
-  bex = ex * Inv_Blk_Size;
-  bez = ez * Inv_Blk_Size;
-
-  if (isdx >= 0) 
-    {
-    bsx = floor(bsx);
-    bex = ceil(bex) - 1.0;
-    }
-  else 
-    {
-    bsx = ceil(bsx) - 1.0;
-    bex = floor(bex);
-    }
-
-    if (isdz >= 0) 
-    {
-    bsz = floor(bsz);
-    bez = ceil(bez) - 1.0;
-    }
-    else 
-    {
-    bsz = ceil(bsz) - 1.0;
-    bez = floor(bez);
-    }
-
-    x_size = abs((int)bex - (int)bsx);
-  z_size = abs((int)bez - (int)bsz);
-
-  length = x_size + z_size;
-
-  curr = &temp1;
-  next = &temp2;
-  Make_Vector(curr, x, y, z);
-  t = 0.0;
-
-  if(X_Dom) 
-    {
-    if(isdx >= 0) 
-      {
-      ix = (int)floor(sx*Inv_Blk_Size);
-      tnear = Block_Size*(ix+1) - sx;
-
-      if (isdz >= 0) 
-        {
-        iz = (int)floor(sz*Inv_Blk_Size);
-        tfar = Gdx * (Block_Size*(iz+1) - sz);
-        }
-      else 
-        {
-        iz = (int)ceil(sz*Inv_Blk_Size) - 1;
-        tfar = Gdx * (sz - Block_Size*(iz));
-        }                        
-      for (i = 0; i < length; i++) 
-        {
-        if(tfar < tnear) 
-          {
-          t = tfar;
-          x = sx + t;
-          y = sy + Myx * t;
-          z = sz + Mzx * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            return(TRUE);
-          temp = curr;
-          curr = next;
-          next = temp;
-          iz += isdz;
-          if (isdz >= 0) 
-            tfar = Gdx * (Block_Size*(iz+1) - sz);
-          else 
-            tfar = Gdx * (sz - Block_Size*(iz));
-          }
-        else 
-          {
-          t = tnear;
-          x = sx + t;
-          y = sy + Myx * t;
-          z = sz + Mzx * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            return(TRUE);
-          temp = curr;
-          curr = next;
-          next = temp;
-          ix++;
-          tnear = Block_Size*(ix+1) - sx;
-          }
-        }
-      }
-    else 
-      {                          
-      ix = (int)ceil(sx*Inv_Blk_Size) - 1;
-      tnear = sx - Block_Size*(ix);
-
-        if (isdz >= 0) 
-        {
-        iz = (int)floor(sz*Inv_Blk_Size);
-        tfar = Gdx * (Block_Size*(iz+1) - sz);
-        }
-        else 
-        {
-        iz = (int)ceil(sz*Inv_Blk_Size) - 1;
-        tfar = Gdx * (sz - Block_Size*(iz));
-        }
-
-        for (i = 0; i < length; i++) 
-        {
-        if(tfar < tnear) 
-          {
-          t = tfar;
-          x = sx - t;
-          y = sy - Myx * t;
-          z = sz - Mzx * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            return(TRUE);
-          temp = curr;
-          curr = next;
-          next = temp;
-          iz += isdz;
-          if (isdz >= 0) 
-            tfar = Gdx * (Block_Size*(iz+1) - sz);
-          else 
-            tfar = Gdx * (sz - Block_Size*(iz));
-          }
-        else 
-          {
-          t = tnear;
-          x = sx - t;
-          y = sy - Myx * t;
-          z = sz - Mzx * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            return(TRUE);
-          temp = curr;
-          curr = next;
-          next = temp;
-          ix--;
-          tnear = sx - Block_Size*(ix);
-          }
-        }
-      }                             
-    }
-  else 
-    {
-    if(isdz >= 0) 
-      {
-      iz = (int)floor(sz*Inv_Blk_Size);
-      tnear = Block_Size*(iz+1) - sz;
-
-      if (isdx >= 0) 
-        {
-        ix = (int)floor(sx*Inv_Blk_Size);       
-        tfar = Gdz * (Block_Size*(ix+1) - sx);
-        }
-      else 
-        {
-        ix = (int)ceil(sx*Inv_Blk_Size) - 1;
-        tfar = Gdz * (sx - Block_Size*(ix));
-        }
-      for (i = 0; i < length; i++) 
-        {
-        if(tfar < tnear) 
-          {
-          t = tfar;
-          z = sz + t;
-          y = sy + Myz * t;
-          x = sx + Mxz * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            return(TRUE);
-          temp = curr;
-          curr = next;
-          next = temp;
-          ix += isdx;
-          if (isdx >= 0) 
-            tfar = Gdz * (Block_Size*(ix+1) - sx);
-          else 
-            tfar = Gdz * (sx - Block_Size*(ix));
-          }
-        else 
-          {
-          t = tnear;
-          z = sz + t;
-          y = sy + Myz * t;
-          x = sx + Mxz * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            return(TRUE);
-          temp = curr;
-          curr = next;
-          next = temp;
-          iz++;
-          tnear = Block_Size*(iz+1) - sz;
-          }
-        }
-      }
-    else 
-      {                          
-      iz = (int)ceil(sz*Inv_Blk_Size) - 1;
-      tnear = sz - Block_Size*(iz);
-
-        if (isdx >= 0) 
-        {
-        ix = (int)floor(sx*Inv_Blk_Size);
-        tfar = Gdz * (Block_Size*(ix+1) - sx);
-        }
-        else 
-        {
-        ix = (int)ceil(sx*Inv_Blk_Size) - 1;
-        tfar = Gdz * (sx - Block_Size*(ix));
-        }                                   
-      for (i = 0; i < length; i++) 
-        {
-        if(tfar < tnear) 
-          {
-          t = tfar;
-          z = sz - t;
-          y = sy - Myz * t;
-          x = sx - Mxz * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            return(TRUE);
-          temp = curr;
-          curr = next;
-          next = temp;
-          ix += isdx;
-          if (isdx >= 0) 
-            tfar = Gdz * (Block_Size*(ix+1) - sx);
-          else
-            tfar = Gdz * (sx - Block_Size*(ix));
-          }
-        else 
-          {
-          t = tnear;
-          z = sz - t;
-          y = sy - Myz * t;
-          x = sx - Mxz * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            return(TRUE);
-          temp = curr;
-          curr = next;
-          next = temp;
-          iz--;
-          tnear = sz - Block_Size*iz;
-          }
-        }
-      }                                     
-    }
-  Make_Vector(next,ex,ey,ez);
-  if(isdx >= 0)
-    ix = (int)ceil(ex*Inv_Blk_Size) - 1;
-  else
-    ix = (int)floor(ex*Inv_Blk_Size);
-  if(isdz >= 0)
-    iz = (int)ceil(ez*Inv_Blk_Size) - 1;
-  else
-    iz = (int)floor(ez*Inv_Blk_Size);
-  if(Intersect_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-    return(TRUE);
-  return (FALSE);
-  }
-
-static int Intersect_Csg_Hf_Node(Ray, H_Field, start, end)
-RAY *Ray;
-HEIGHT_FIELD *H_Field;
-VECTOR *start, *end;
-  {
-  VECTOR *curr, *next, *temp, temp1, temp2;
-  DBL sx, sy, sz, ex, ey, ez, x, y, z;
-  DBL tnear, tfar, t, bsx, bsz, bex, bez;
-  int ix, iz, x_size, z_size, length, i, retval;
-
-  retval = FALSE;
-  x = sx = start->x;
-  y = sy = start->y;
-  z = sz = start->z;
-  ex = end->x;
-  ey = end->y;
-  ez = end->z;
-
-  bsx = sx * Inv_Blk_Size;
-  bsz = sz * Inv_Blk_Size;
-  bex = ex * Inv_Blk_Size;
-  bez = ez * Inv_Blk_Size;
-
-  if (isdx >= 0) 
-    {
-    bsx = floor(bsx);
-    bex = ceil(bex) - 1.0;
-    }
-  else 
-    {
-    bsx = ceil(bsx) - 1.0;
-    bex = floor(bex);
-    }
-
-    if (isdz >= 0) 
-    {
-    bsz = floor(bsz);
-    bez = ceil(bez) - 1.0;
-    }
-    else 
-    {
-    bsz = ceil(bsz) - 1.0;
-    bez = floor(bez);
-    }
-
-    x_size = abs((int)bex - (int)bsx);
-  z_size = abs((int)bez - (int)bsz);
-
-  length = x_size + z_size;
-
-  curr = &temp1;
-  next = &temp2;
-  Make_Vector(curr, x, y, z);
-  t = 0.0;
-
-  if(X_Dom) 
-    {
-    if(isdx >= 0) 
-      {
-      ix = (int)floor(sx*Inv_Blk_Size);
-      tnear = Block_Size*(ix+1) - sx;
-
-      if (isdz >= 0) 
-        {
-        iz = (int)floor(sz*Inv_Blk_Size);
-        tfar = Gdx * (Block_Size*(iz+1) - sz);
-        }
-      else 
-        {
-        iz = (int)ceil(sz*Inv_Blk_Size) - 1;
-        tfar = Gdx * (sz - Block_Size*(iz));
-        }                        
-      for (i = 0; i < length; i++) 
-        {
-        if(tfar < tnear) 
-          {
-          t = tfar;
-          x = sx + t;
-          y = sy + Myx * t;
-          z = sz + Mzx * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            retval = TRUE;
-          temp = curr;
-          curr = next;
-          next = temp;
-          iz += isdz;
-          if (isdz >= 0) 
-            tfar = Gdx * (Block_Size*(iz+1) - sz);
-          else 
-            tfar = Gdx * (sz - Block_Size*(iz));
-          }
-        else 
-          {
-          t = tnear;
-          x = sx + t;
-          y = sy + Myx * t;
-          z = sz + Mzx * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            retval = TRUE;
-          temp = curr;
-          curr = next;
-          next = temp;
-          ix++;
-          tnear = Block_Size*(ix+1) - sx;
-          }
-        }
-      }
-    else 
-      {                          
-      ix = (int)ceil(sx*Inv_Blk_Size) - 1;
-      tnear = sx - Block_Size*(ix);
-
-        if (isdz >= 0) 
-        {
-        iz = (int)floor(sz*Inv_Blk_Size);
-        tfar = Gdx * (Block_Size*(iz+1) - sz);
-        }
-        else 
-        {
-        iz = (int)ceil(sz*Inv_Blk_Size) - 1;
-        tfar = Gdx * (sz - Block_Size*(iz));
-        }
-
-        for (i = 0; i < length; i++) 
-        {
-        if(tfar < tnear) 
-          {
-          t = tfar;
-          x = sx - t;
-          y = sy - Myx * t;
-          z = sz - Mzx * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            retval = TRUE;
-          temp = curr;
-          curr = next;
-          next = temp;
-          iz += isdz;
-          if (isdz >= 0) 
-            tfar = Gdx * (Block_Size*(iz+1) - sz);
-          else 
-            tfar = Gdx * (sz - Block_Size*(iz));
-          }
-        else 
-          {
-          t = tnear;
-          x = sx - t;
-          y = sy - Myx * t;
-          z = sz - Mzx * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            retval = TRUE;
-          temp = curr;
-          curr = next;
-          next = temp;
-          ix--;
-          tnear = sx - Block_Size*(ix);
-          }
-        }
-      }                             
-    }
-  else 
-    {
-    if(isdz >= 0) 
-      {
-      iz = (int)floor(sz*Inv_Blk_Size);
-      tnear = Block_Size*(iz+1) - sz;
-
-      if (isdx >= 0) 
-        {
-        ix = (int)floor(sx*Inv_Blk_Size);       
-        tfar = Gdz * (Block_Size*(ix+1) - sx);
-        }
-      else 
-        {
-        ix = (int)ceil(sx*Inv_Blk_Size) - 1;
-        tfar = Gdz * (sx - Block_Size*(ix));
-        }
-      for (i = 0; i < length; i++) 
-        {
-        if(tfar < tnear) 
-          {
-          t = tfar;
-          z = sz + t;
-          y = sy + Myz * t;
-          x = sx + Mxz * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            retval = TRUE;
-          temp = curr;
-          curr = next;
-          next = temp;
-          ix += isdx;
-          if (isdx >= 0) 
-            tfar = Gdz * (Block_Size*(ix+1) - sx);
-          else 
-            tfar = Gdz * (sx - Block_Size*(ix));
-          }
-        else 
-          {
-          t = tnear;
-          z = sz + t;
-          y = sy + Myz * t;
-          x = sx + Mxz * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            retval = TRUE;
-          temp = curr;
-          curr = next;
-          next = temp;
-          iz++;
-          tnear = Block_Size*(iz+1) - sz;
-          }
-        }
-      }
-    else 
-      {                          
-      iz = (int)ceil(sz*Inv_Blk_Size) - 1;
-      tnear = sz - Block_Size*(iz);
-
-        if (isdx >= 0) 
-        {
-        ix = (int)floor(sx*Inv_Blk_Size);
-        tfar = Gdz * (Block_Size*(ix+1) - sx);
-        }
-        else 
-        {
-        ix = (int)ceil(sx*Inv_Blk_Size) - 1;
-        tfar = Gdz * (sx - Block_Size*(ix));
-        }                                   
-      for (i = 0; i < length; i++) 
-        {
-        if(tfar < tnear) 
-          {
-          t = tfar;
-          z = sz - t;
-          y = sy - Myz * t;
-          x = sx - Mxz * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            retval = TRUE;
-          temp = curr;
-          curr = next;
-          next = temp;
-          ix += isdx;
-          if (isdx >= 0) 
-            tfar = Gdz * (Block_Size*(ix+1) - sx);
-          else 
-            tfar = Gdz * (sx - Block_Size*(ix));
-          }
-        else 
-          {
-          t = tnear;
-          z = sz - t;
-          y = sy - Myz * t;
-          x = sx - Mxz * t;
-          Make_Vector(next, x, y, z);
-          if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-            retval = TRUE;
-          temp = curr;
-          curr = next;
-          next = temp;
-          iz--;
-          tnear = sz - Block_Size*iz;
-          }
-        }
-      }                                     
-    }
-  Make_Vector(next,ex,ey,ez);
-  if(isdx >= 0)
-    ix = (int)ceil(ex*Inv_Blk_Size) - 1;
-  else
-    ix = (int)floor(ex*Inv_Blk_Size);
-  if(isdz >= 0)
-    iz = (int)ceil(ez*Inv_Blk_Size) - 1;
-  else
-    iz = (int)floor(ez*Inv_Blk_Size);
-  if(Intersect_Csg_Sub_Block(&(H_Field->Block[ix][iz]),Ray,H_Field,curr,next))
-    retval = TRUE;
-  return (retval);
-  }
-
-static int
-add_single_normal(data, xsize, zsize, x0, z0, x1, z1, x2, z2, N)
-  HF_val **data;
-  int xsize,zsize,x0,z0,x1,z1,x2,z2;
-  VECTOR *N;
-  {
-  VECTOR v0, v1, v2, t0, t1, Nt;
-
-  if (x0 < 0 || z0 < 0 ||
-    x1 < 0 || z1 < 0 ||
-    x2 < 0 || z2 < 0 ||
-    x0 > xsize || z0 > zsize ||
-    x1 > xsize || z1 > zsize ||
-    x2 > xsize || z2 > zsize) 
-    {
-    return 0;
-    }
-  else 
-    {
-    Make_Vector(&v0, x0, (DBL)data[z0][x0], z0);
-    Make_Vector(&v1, x1, (DBL)data[z1][x1], z1);
-    Make_Vector(&v2, x2, (DBL)data[z2][x2], z2);
-    VSub(t0, v2, v0);
-    VSub(t1, v1, v0);
-    VCross(Nt, t0, t1);
-    Normalize(&Nt, &Nt);
-    if(Nt.y < 0.0) 
-      {
-      VScale(Nt,Nt,-1.0);
-      }
-    VAdd(*N, *N, Nt);
-    return 1;
-    }
-  }
-
-/* Given a height field that only contains an elevation grid, this
-   routine will walk through the data and produce averaged normals
-   for all points on the grid. */
-static void
-smooth_height_field(hf, xsize, zsize)
-  HEIGHT_FIELD *hf;
-  int xsize;
-  int zsize;
-  {
-  int i, j, k;
-  VECTOR N;
-  HF_val **map = hf->Map;
-
-  /* First off, allocate all the memory needed to store the
-      normal information */
-  hf->Normals = (HF_Normals **)malloc((zsize+1) * sizeof(HF_Normals *));
-  if (hf->Normals == NULL) 
-    {
-    fprintf(stderr, "Failed to allocate hf->norm\n");
-    exit(1);
-    }
-  for (i=0; i<=zsize; i++) 
-    {
-    hf->Normals[i] = (HF_Normals *)malloc((xsize+1) * sizeof(HF_Normals));
-    if (hf->Normals[i] == NULL) 
-      {
-      fprintf(stderr, "Failed to allocate hf->norm[%d]\n", i);
-      exit(1);
-      }
-    }
-
-  /* For now we will do it the hard way - by generating the normals
-      individually for each elevation point */
-  for (i=0;i<=zsize;i++) 
-    {
-    COOPERATE 
-    if((i%(int)Block_Size) == 0) fprintf(stderr,".");
-    for (j=0;j<=xsize;j++) 
-      {
-      Make_Vector(&N, 0.0, 0.0, 0.0);
-      k = 0;
-      /*
-         k += add_single_normal(map, xsize, zsize, j, i, j+1, i, j, i+1, &N);
-         k += add_single_normal(map, xsize, zsize, j+1, i+1, j, i+1, j+1, i, &N);
-         k += add_single_normal(map, xsize, zsize, j, i+1, j-1, i+1, j, i, &N);
-         k += add_single_normal(map, xsize, zsize, j-1, i, j, i, j-1, i+1, &N);
-         k += add_single_normal(map, xsize, zsize, j, i, j-1, i, j, i-1, &N);
-         k += add_single_normal(map, xsize, zsize, j-1, i-1, j, i-1, j-1, i, &N);
-         k += add_single_normal(map, xsize, zsize, j, i-1, j+1, i-1, j, i, &N);
-         k += add_single_normal(map, xsize, zsize, j+1, i, j, i, j+1, i-1, &N);
-*/
-      k += add_single_normal(map, xsize, zsize, j, i, j+1, i, j, i+1, &N);
-      k += add_single_normal(map, xsize, zsize, j, i, j, i+1, j-1, i, &N);
-      k += add_single_normal(map, xsize, zsize, j, i, j-1, i, j, i-1, &N);
-      k += add_single_normal(map, xsize, zsize, j, i, j, i-1, j+1, i, &N);
-
-      if (k == 0) 
-        {
-        fprintf(stderr, "Failed to find any normals at: (%d, %d)\n", i, j);
-        exit(1);
-        }
-      Normalize(&N, &N);
-      hf->Normals[i][j][0] = (short)(32767 * N.x);
-      hf->Normals[i][j][1] = (short)(32767 * N.y);
-      hf->Normals[i][j][2] = (short)(32767 * N.z);
-      /* printf("n[%d,%d]: <%g %g %g>\n", j, i, N.x, N.y, N.z); */
-      }
-    }
-  }   
-
-void Find_Hf_Min_Max(H_Field, Image)
-HEIGHT_FIELD *H_Field;
-IMAGE *Image;
-  {
-  int n, i, i2, j, j2, x, z, w, h, max_x, max_z, temp1, temp2;
-  DBL size;
-  HF_val temp_y;
-
-  max_x = Image->iwidth;
-  if(Image->File_Type == POT_FILE) max_x = max_x/2;
-  max_z = Image->iheight;
-
-  size = (DBL)max_value(max_x, max_z);
-  H_Field->Block_Size  = Block_Size = ceil(sqrt(size+1.0));
-  H_Field->Inv_Blk_Size = Inv_Blk_Size = 1.0/Block_Size;
-  n = (int)Block_Size;
-
-  w = (int)ceil((max_x+1.0)*Inv_Blk_Size);
-  h = (int)ceil((max_z+1.0)*Inv_Blk_Size);
-
-  H_Field->Map = (HF_val **)calloc(max_z+1, sizeof(HF_val *));
-  if (H_Field->Map == NULL)
-    fprintf(stderr,"Cannot allocate memory for height field\n");
-
-  H_Field->Block = (HF_BLOCK **)calloc(w,sizeof(HF_BLOCK *));
-  if(H_Field->Block == NULL)
-    fprintf(stderr, "Cannot allocate memory for height field buffer\n");
-  for(i=0; i<w; i++) 
-    {
-    H_Field->Block[i] = (HF_BLOCK *)calloc(h,sizeof(HF_BLOCK));
-    if (H_Field->Block[i] == NULL)
-      fprintf(stderr, "Cannot allocate memory for height field buffer line\n"
-        );
-    for(j=0; j<h; j++) 
-      {
-      H_Field->Block[i][j].min_y = 65535;
-      H_Field->Block[i][j].max_y = 0;
-      }
-    }
-
-  H_Field->Map[0] = (HF_val *)calloc(max_x+1,sizeof(HF_val));
-  if (H_Field->Map[0] == NULL)
-    fprintf(stderr,"Cannot allocate memory for height field\n");
-
-  for(j=0; j < h; j++)
-    {
-    for(j2=0;(j2 <= n) && (j*n+j2 <= max_z);j2++)
-      {
-      z = j*n+j2;
-      if(j2!=0)
-        {
-        H_Field->Map[z] = (HF_val *)calloc(max_x+1,sizeof(HF_val));
-        if (H_Field->Map[z] == NULL)
-          fprintf(stderr, "Cannot allocate memory for height field\n");
-        }
-
-      COOPERATE 
-      for(i=0; i < w; i++)
-        {
-        for(i2=0;(i2 <= n)&&(i*n+i2 <= max_x);i2++)
-          {
-          x = i*n+i2;
-          if((x >= 0) && (x < max_x) && (z >= 0) && (z < max_z)) 
-            {
-            switch(Image->File_Type) 
-            {
-            case GIF_FILE:
-              temp1 = Image->data.map_lines[max_z - z - 1][x];
-              temp_y = (HF_val)(256*temp1);
-              break;
-            case POT_FILE:
-              temp1 = Image->data.map_lines[max_z - z - 1][x];
-              temp2 = Image->data.map_lines[max_z - z - 1][x + max_x];
-              temp_y = (HF_val)(256*temp1 + temp2);
-              break;
-            case TGA_FILE:
-              if (Image->Colour_Map == NULL) 
-                {
-                temp1 = Image->data.rgb_lines[max_z - z - 1].red[x];
-                temp2 = Image->data.rgb_lines[max_z - z - 1].green[x];
-                }
-              else 
-                {
-                temp1 = Image->data.map_lines[max_z - z - 1][x];
-                temp2 = 0;
-                }
-              temp_y = (HF_val)(256*temp1 + temp2);
-              break;
-            }
-            H_Field->Map[z][x] = temp_y;
-            }
-          else 
-            {
-            if (z == max_z) 
-              {
-              H_Field->Map[z][x] = H_Field->Map[z-1][x];
-              }
-            if (x == max_x) 
-              {
-              H_Field->Map[z][x] = H_Field->Map[z][x-1];
-              }
-            temp_y = H_Field->Map[z][x];
-            }
-
-          if(temp_y < H_Field->Block[i][j].min_y)
-            H_Field->Block[i][j].min_y = temp_y;
-          if(temp_y > H_Field->Block[i][j].max_y)
-            H_Field->Block[i][j].max_y = temp_y;
-          }
-        }
-      if((z >= 0) && (z < max_z) && (j2!=n)) 
-        {
-        switch (Image->File_Type) 
-        {
-        case GIF_FILE: 
-          free(Image->data.map_lines[max_z - z - 1]); break;
-        case POT_FILE: 
-          free(Image->data.map_lines[max_z - z - 1]); break;
-        case TGA_FILE:
-          if (Image->Colour_Map == NULL) 
-            {
-            free(Image->data.rgb_lines[max_z - z - 1].blue);
-            free(Image->data.rgb_lines[max_z - z - 1].green);
-            free(Image->data.rgb_lines[max_z - z - 1].red);
-            }
-          else 
-            {
-            free(Image->data.map_lines[max_z - z - 1]);
-            }
-          break;
-        }
-        }
-      }
-    }
-
-    /* If this is a smoothed height field, then allocate storage for
-      the normals & compute them */
-    if (H_Field->Smoothed)
-      smooth_height_field(H_Field, max_x, max_z);
-
-  }
-
-int All_HeightFld_Intersections(Object, Ray, Depth_Stack)
+static void smooth_height_field PARAMS((HFIELD *HField, int xsize, int zsize));
+
+static int intersect_pixel PARAMS((int x,int z,RAY *Ray,HFIELD *HField,DBL height1,DBL height2));
+
+static int add_single_normal PARAMS((HF_VAL **data, int xsize, int zsize,
+  int x0, int z0,int x1, int z1,int x2, int z2,VECTOR N));
+
+static int  All_HField_Intersections PARAMS((OBJECT *Object,RAY *Ray,ISTACK *Depth_Stack));
+static int  Inside_HField PARAMS((VECTOR IPoint,OBJECT *Object));
+static void HField_Normal PARAMS((VECTOR Result,OBJECT *Object,INTERSECTION *Inter));
+static void Translate_HField PARAMS((OBJECT *Object,VECTOR Vector, TRANSFORM *Trans));
+static void Rotate_HField PARAMS((OBJECT *Object,VECTOR Vector, TRANSFORM *Trans));
+static void Scale_HField PARAMS((OBJECT *Object,VECTOR Vector, TRANSFORM *Trans));
+static void Invert_HField PARAMS((OBJECT *Object));
+static void Transform_HField PARAMS((OBJECT *Object,TRANSFORM *Trans));
+static void *Copy_HField PARAMS((OBJECT *Object));
+static void Destroy_HField PARAMS((OBJECT *Object));
+
+static int dda_traversal PARAMS((RAY *Ray, HFIELD *HField, VECTOR Start, HFIELD_BLOCK *Block));
+static int block_traversal PARAMS((RAY *Ray, HFIELD *HField, VECTOR Start));
+static void build_hfield_blocks PARAMS((HFIELD *HField));
+
+
+
+/*****************************************************************************
+* Local variables
+******************************************************************************/
+
+METHODS HField_Methods =
+{
+  All_HField_Intersections,
+  Inside_HField, HField_Normal,
+  Copy_HField, Translate_HField, Rotate_HField,
+  Scale_HField, Transform_HField, Invert_HField, Destroy_HField
+};
+
+static ISTACK *HField_Stack;
+static RAY *RRay;
+static DBL mindist, maxdist;
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   All_HField_Intersections
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   Feb 1995 : Modified to work with new intersection functions. [DB]
+*
+******************************************************************************/
+
+static int All_HField_Intersections(Object, Ray, Depth_Stack)
 OBJECT *Object;
 RAY *Ray;
 ISTACK *Depth_Stack;
-  {
-  VECTOR Temp1, Temp2;
+{
+  int Side1, Side2;
+  VECTOR Start;
   RAY Temp_Ray;
   DBL depth1, depth2;
-  int ret_val = FALSE;
-  HEIGHT_FIELD *H_Field = (HEIGHT_FIELD *) Object;
+  HFIELD *HField = (HFIELD *) Object;
 
-  Ray_Ht_Field_Tests++;
+  Increase_Counter(stats[Ray_HField_Tests]);
 
-  MInvTransPoint(&(Temp_Ray.Initial),&(Ray->Initial),H_Field->Trans);
-  MInvTransDirection(&(Temp_Ray.Direction),&(Ray->Direction),H_Field->Trans);
+  MInvTransPoint(Temp_Ray.Initial, Ray->Initial, HField->Trans);
+  MInvTransDirection(Temp_Ray.Direction, Ray->Direction, HField->Trans);
 
-  if(!Intersect_Boxx(&Temp_Ray,H_Field->bounding_box,&depth1,&depth2))
-    return(FALSE);     
+#ifdef HFIELD_EXTRA_STATS
+  Increase_Counter(stats[Ray_HField_Box_Tests]);
+#endif
 
-  H_Field->cache_pos = 0;
-  Block_Size = H_Field->Block_Size;
-  Inv_Blk_Size = H_Field->Inv_Blk_Size;
+  if (!Intersect_Box(&Temp_Ray,HField->bounding_box,&depth1,&depth2,&Side1,&Side2))
+  {
+    return(FALSE);
+  }
 
-  if( depth1 == depth2) 
+#ifdef HFIELD_EXTRA_STATS
+  Increase_Counter(stats[Ray_HField_Box_Tests_Succeeded]);
+#endif
+
+  HField->Data->cache_pos = 0;
+
+  if (depth1 < EPSILON)
+  {
+    depth1 = EPSILON;
+
+    if (depth1 > depth2)
     {
-    depth1 = Small_Tolerance;
-    VScale(Temp1,Temp_Ray.Direction,depth1);
-    VAddEq(Temp1,Temp_Ray.Initial);
-    VScale(Temp2,Temp_Ray.Direction,depth2);
-    VAddEq(Temp2,Temp_Ray.Initial);
+      return(FALSE);
     }
-  else 
-    {
-    VScale(Temp1,Temp_Ray.Direction,depth1);
-    VAddEq(Temp1,Temp_Ray.Initial);
-    VScale(Temp2,Temp_Ray.Direction,depth2);
-    VAddEq(Temp2,Temp_Ray.Initial);        
-    }
+  }
+
+  VEvaluateRay(Start, Temp_Ray.Initial, depth1, Temp_Ray.Direction);
 
   mindist = depth1;
   maxdist = depth2;
 
-  if(fabs(Temp_Ray.Direction.x) > EPSILON) 
-    {
-    Mzx = Temp_Ray.Direction.z/Temp_Ray.Direction.x;
-    Myx = Temp_Ray.Direction.y/Temp_Ray.Direction.x;
-    }
-  else 
-    {
-    Mzx = Temp_Ray.Direction.z/EPSILON;
-    Myx = Temp_Ray.Direction.y/EPSILON;
-    }
-  if(fabs(Temp_Ray.Direction.z) > EPSILON) 
-    {
-    Mxz = Temp_Ray.Direction.x/Temp_Ray.Direction.z;
-    Myz = Temp_Ray.Direction.y/Temp_Ray.Direction.z;
-    }
-  else 
-    {
-    Mxz = Temp_Ray.Direction.x/EPSILON;
-    Myz = Temp_Ray.Direction.y/EPSILON;
-    }
+  HField_Stack = Depth_Stack;
 
-  Hf_Stack = Depth_Stack;
   RRay = Ray;
 
-  isdx = sign(Temp_Ray.Direction.x);
-  isdz = sign(Temp_Ray.Direction.z);
-
-  X_Dom = FALSE;
-  if(fabs(Temp_Ray.Direction.x) >= fabs(Temp_Ray.Direction.z))
-    X_Dom = TRUE;
-
-  Gdx = fabs(Mxz);
-  Gdz = fabs(Mzx);
-  if(X_Dom) 
-    {
-    Gdy = Myx * (DBL)isdx;
-    }
-  else 
-    {
-    Gdy = Myz * (DBL)isdz;
-    }
-
-  if(Intersect_Hf_Node(&Temp_Ray, H_Field, &Temp1, &Temp2))
-    ret_val = TRUE;
-  return(ret_val);
-  }
-
-int All_Csg_HeightFld_Intersections(Object, Ray, Depth_Stack)
-OBJECT *Object;
-RAY *Ray;  
-ISTACK *Depth_Stack;
+  if (block_traversal(&Temp_Ray, HField, Start))
   {
-  VECTOR Temp1, Temp2;
-  RAY Temp_Ray;
-  DBL depth1, depth2;
-  int ret_val = FALSE;
-  HEIGHT_FIELD *H_Field = (HEIGHT_FIELD *) Object;
+    Increase_Counter(stats[Ray_HField_Tests_Succeeded]);
 
-  Ray_Ht_Field_Tests++;
-
-  MInvTransPoint(&(Temp_Ray.Initial),&(Ray->Initial),H_Field->Trans);
-  MInvTransDirection(&(Temp_Ray.Direction),&(Ray->Direction),H_Field->Trans);
-
-  if(!Intersect_Boxx(&Temp_Ray,H_Field->bounding_box,&depth1,&depth2))
-    return(FALSE);     
-
-  H_Field->cache_pos = 0;          
-  Block_Size = H_Field->Block_Size;
-  Inv_Blk_Size = H_Field->Inv_Blk_Size;
-
-  if( depth1 == depth2) 
-    {
-    depth1 = Small_Tolerance;
-    VScale(Temp1,Temp_Ray.Direction,depth1);
-    VAddEq(Temp1,Temp_Ray.Initial);
-    VScale(Temp2,Temp_Ray.Direction,depth2);
-    VAddEq(Temp2,Temp_Ray.Initial);
-    }
-  else 
-    {
-    VScale(Temp1,Temp_Ray.Direction,depth1);
-    VAddEq(Temp1,Temp_Ray.Initial);
-    VScale(Temp2,Temp_Ray.Direction,depth2);
-    VAddEq(Temp2,Temp_Ray.Initial);             
-    }
-
-    mindist = depth1;
-  maxdist = depth2;
-
-  if(fabs(Temp_Ray.Direction.x) > EPSILON) 
-    {
-    Mzx = Temp_Ray.Direction.z/Temp_Ray.Direction.x;
-    Myx = Temp_Ray.Direction.y/Temp_Ray.Direction.x;
-    }
-  else 
-    {
-    Mzx = Temp_Ray.Direction.z/EPSILON;
-    Myx = Temp_Ray.Direction.y/EPSILON;
-    }
-  if(fabs(Temp_Ray.Direction.z) > EPSILON) 
-    {
-    Mxz = Temp_Ray.Direction.x/Temp_Ray.Direction.z;
-    Myz = Temp_Ray.Direction.y/Temp_Ray.Direction.z;
-    }
-  else 
-    {
-    Mxz = Temp_Ray.Direction.x/EPSILON;
-    Myz = Temp_Ray.Direction.y/EPSILON;
-    }
-
-    Hf_Stack = Depth_Stack;
-  RRay = Ray;
-
-  isdx = sign(Temp_Ray.Direction.x);
-  isdz = sign(Temp_Ray.Direction.z);
-
-  X_Dom = FALSE;
-  if(fabs(Temp_Ray.Direction.x) >= fabs(Temp_Ray.Direction.z))
-    X_Dom = TRUE;
-
-  Gdx = fabs(Mxz);
-  Gdz = fabs(Mzx);
-  if(X_Dom) 
-    {
-    Gdy = Myx * (DBL)isdx;
-    }
-  else 
-    {
-    Gdy = Myz * (DBL)isdz;
-    }
-
-    if(Intersect_Csg_Hf_Node(&Temp_Ray, H_Field, &Temp1, &Temp2))
-      ret_val = TRUE;
-  return(ret_val);
+    return(TRUE);
   }
-
-int Inside_HeightFld (IPoint, Object)
-VECTOR *IPoint;
-OBJECT *Object;
+  else
   {
-  HEIGHT_FIELD *H_Field = (HEIGHT_FIELD *) Object;
+    return(FALSE);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Inside_HField
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int Inside_HField (IPoint, Object)
+VECTOR IPoint;
+OBJECT *Object;
+{
+  HFIELD *HField = (HFIELD *) Object;
   int px, pz;
   DBL x,z,y1,y2,y3,water, dot1, dot2;
-  VECTOR Local_Origin, Temp1, Temp2, Local_Normal, Test;
+  VECTOR Local_Origin, H_Normal, Test;
 
-  MInvTransPoint(&Test, IPoint, H_Field->Trans);
+  MInvTransPoint(Test, IPoint, HField->Trans);
 
-  water = H_Field->bounding_box->bounds[0].y;
-  if ((Test.x < 0.0) || (Test.x >= H_Field->bounding_box->bounds[1].x) || (Test.z < 0.0) || (Test.z >= H_Field->bounding_box->bounds[1].z))
-    return (H_Field->Inverted);
+  water = HField->bounding_box->bounds[0][Y];
 
-  if (Test.y >= H_Field->bounding_box->bounds[1].y)
-    return (H_Field->Inverted);
-
-  if (Test.y < water)
-    return (H_Field->Inverted ^ TRUE);
-
-  px = (int)Test.x;
-  pz = (int)Test.z;
-  x = Test.x - (DBL)px;
-  z = Test.z - (DBL)pz;
-
-  if((x+z)<1.0) 
-    {
-    y1 = max_value(Get_Height(px,pz,H_Field),water);
-    y2 = max_value(Get_Height(px+1,pz,H_Field),water);
-    y3 = max_value(Get_Height(px,pz+1,H_Field),water);
-    Make_Vector(&Local_Origin,(DBL)px,y1,(DBL)pz);
-    Temp1.x = 1.0;
-    Temp1.z = 0.0;
-    Temp1.y = y2 - y1;
-    Temp2.x = 0.0;
-    Temp2.z = 1.0;
-    Temp2.y = y3 - y1;
-    }
-  else 
-    {
-    px = (int)ceil(Test.x);
-    pz = (int)ceil(Test.z);
-    y1 = max_value(Get_Height(px,pz,H_Field),water);
-    y2 = max_value(Get_Height(px-1,pz,H_Field),water);
-    y3 = max_value(Get_Height(px,pz-1,H_Field),water);
-    Make_Vector(&Local_Origin,(DBL)px,y1,(DBL)pz);
-    Temp1.x = -1.0;
-    Temp1.z = 0.0;
-    Temp1.y = y2 - y1;
-    Temp2.x = 0.0;
-    Temp2.z = -1.0;
-    Temp2.y = y3 - y1;
-    }
-  VCross(Local_Normal,Temp2,Temp1);
-  VDot(dot1,Test,Local_Normal);
-  VDot(dot2,Local_Origin,Local_Normal);
-  if(dot1 < dot2)
-    return(TRUE^H_Field->Inverted);
-  return(FALSE^H_Field->Inverted);
+  if ((Test[X] < 0.0) || (Test[X] >= HField->bounding_box->bounds[1][X]) ||
+      (Test[Z] < 0.0) || (Test[Z] >= HField->bounding_box->bounds[1][Z]))
+  {
+    return(Test_Flag(HField, INVERTED_FLAG));
   }
 
-static
-DBL stretch (x)
-DBL x;
+  if (Test[Y] >= HField->bounding_box->bounds[1][Y])
   {
-  if(x<=0.5) 
-    {
-    x = 2 * x*x;
-    }
-  else 
-    {
-    x = 1.0 - (2 * (1.0-x)*(1.0-x));
-    }
-  return x;
+    return(Test_Flag(HField, INVERTED_FLAG));
   }
 
-  void HeightFld_Normal (Result, Object, IPoint)
-    OBJECT *Object;
-VECTOR *Result, *IPoint;
+  if (Test[Y] < water)
   {
-  HEIGHT_FIELD *H_Field = (HEIGHT_FIELD *) Object;
-  int px,pz, i, code;
+    return(!Test_Flag(HField, INVERTED_FLAG));
+  }
+
+  px = (int)Test[X];
+  pz = (int)Test[Z];
+
+  x = Test[X] - (DBL)px;
+  z = Test[Z] - (DBL)pz;
+
+  if ((x+z) < 1.0)
+  {
+    y1 = max(Get_Height(px,   pz,   HField), water);
+    y2 = max(Get_Height(px+1, pz,   HField), water);
+    y3 = max(Get_Height(px,   pz+1, HField), water);
+
+    Make_Vector(Local_Origin,(DBL)px,y1,(DBL)pz);
+
+    Make_Vector(H_Normal, y1-y2, 1.0, y1-y3);
+  }
+  else
+  {
+    px = (int)ceil(Test[X]);
+    pz = (int)ceil(Test[Z]);
+
+    y1 = max(Get_Height(px,   pz,   HField), water);
+    y2 = max(Get_Height(px-1, pz,   HField), water);
+    y3 = max(Get_Height(px,   pz-1, HField), water);
+
+    Make_Vector(Local_Origin,(DBL)px,y1,(DBL)pz);
+
+    Make_Vector(H_Normal, y2-y1, 1.0, y3-y1);
+  }
+
+  VDot(dot1, Test, H_Normal);
+  VDot(dot2, Local_Origin, H_Normal);
+
+  if (dot1 < dot2)
+  {
+    return(!Test_Flag(HField, INVERTED_FLAG));
+  }
+
+  return(Test_Flag(HField, INVERTED_FLAG));
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   HField_Normal
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void HField_Normal (Result, Object, Inter)
+OBJECT *Object;
+VECTOR Result;
+INTERSECTION *Inter;
+{
+  HFIELD *HField = (HFIELD *) Object;
+  int px,pz, i;
   DBL x,z,y1,y2,y3,u,v;
-  VECTOR Local_Origin, Temp1, Temp2;
+  VECTOR Local_Origin;
   VECTOR n[5];
 
-  MInvTransPoint(&Local_Origin, IPoint, H_Field->Trans);
+  MInvTransPoint(Local_Origin, Inter->IPoint, HField->Trans);
 
-  for(i=0;i<H_Field->cache_pos;i++) 
+  for (i = 0; i < HField->Data->cache_pos; i++)
+  {
+    if ((Local_Origin[X] == HField->Data->Normal_Cache[i].fx) &&
+       (Local_Origin[Z] == HField->Data->Normal_Cache[i].fz))
     {
-    if(((float)Local_Origin.x == H_Field->Normal_Vector[i].x) &&
-      ((float)Local_Origin.z == H_Field->Normal_Vector[i].z)) 
-      {
-      *Result = H_Field->Normal_Vector[i].normal;
-      MTransNormal(Result,Result,H_Field->Trans);
-      VNormalize(*Result,*Result);
+      Assign_Vector(Result,HField->Data->Normal_Cache[i].normal);
+
+      MTransNormal(Result,Result,HField->Trans);
+
+      VNormalize(Result,Result);
+
       return;
-      }
     }
+  }
 
-  px = (int)Local_Origin.x;
-  pz = (int)Local_Origin.z;
-  x = Local_Origin.x - (DBL)px;
-  z = Local_Origin.z - (DBL)pz;
+  px = (int)Local_Origin[X];
+  pz = (int)Local_Origin[Z];
 
-  px = (int)Local_Origin.x;
-  pz = (int)Local_Origin.z;
-  x = Local_Origin.x - (DBL)px;
-  z = Local_Origin.z - (DBL)pz;
-  if ((x+z) <= 1.0)
-    code = LOWER_TRI;
-  else 
-    code = UPPER_TRI;
+  x = Local_Origin[X] - (DBL)px;
+  z = Local_Origin[Z] - (DBL)pz;
 
-  if (H_Field->Smoothed) 
-    {
-    n[0].x = H_Field->Normals[pz][px][0];
-    n[0].y = H_Field->Normals[pz][px][1];
-    n[0].z = H_Field->Normals[pz][px][2];
-    n[1].x = H_Field->Normals[pz][px+1][0];
-    n[1].y = H_Field->Normals[pz][px+1][1];
-    n[1].z = H_Field->Normals[pz][px+1][2];
-    n[2].x = H_Field->Normals[pz+1][px][0];
-    n[2].y = H_Field->Normals[pz+1][px][1];
-    n[2].z = H_Field->Normals[pz+1][px][2];
-    n[3].x = H_Field->Normals[pz+1][px+1][0];
-    n[3].y = H_Field->Normals[pz+1][px+1][1];
-    n[3].z = H_Field->Normals[pz+1][px+1][2];
+  if (Test_Flag(HField, SMOOTHED_FLAG))
+  {
+    n[0][X] = HField->Data->Normals[pz][px][0];
+    n[0][Y] = HField->Data->Normals[pz][px][1];
+    n[0][Z] = HField->Data->Normals[pz][px][2];
+    n[1][X] = HField->Data->Normals[pz][px+1][0];
+    n[1][Y] = HField->Data->Normals[pz][px+1][1];
+    n[1][Z] = HField->Data->Normals[pz][px+1][2];
+    n[2][X] = HField->Data->Normals[pz+1][px][0];
+    n[2][Y] = HField->Data->Normals[pz+1][px][1];
+    n[2][Z] = HField->Data->Normals[pz+1][px][2];
+    n[3][X] = HField->Data->Normals[pz+1][px+1][0];
+    n[3][Y] = HField->Data->Normals[pz+1][px+1][1];
+    n[3][Z] = HField->Data->Normals[pz+1][px+1][2];
+
     x = stretch(x);
     z = stretch(z);
+
     u = (1.0 - x);
     v = (1.0 - z);
 
-    /* 	 n[4].x = u*n[0].x + x*n[1].x;
-	 n[4].y = u*n[0].y + x*n[1].y;
-	 n[4].z = u*n[0].z + x*n[1].z;
-
-	 n[5].x = u*n[2].x + x*n[3].x;
-	 n[5].y = u*n[2].y + x*n[3].y;
-	 n[5].z = u*n[2].z + x*n[3].z;
-
-	 n[6].x = v*n[0].x + z*n[2].x;
-	 n[6].y = v*n[0].y + z*n[2].y;
-	 n[6].z = v*n[0].z + z*n[2].z;
-
-	 n[7].x = v*n[1].x + z*n[3].x;
-	 n[7].y = v*n[1].y + z*n[3].y;
-	 n[7].z = v*n[1].z + z*n[3].z;
-
-	 Result->x = u*n[6].x + x*n[7].x + v*n[4].x + z*n[5].x;
-	 Result->y = u*n[6].y + x*n[7].y + v*n[4].y + z*n[5].y;
-	 Result->z = u*n[6].z + x*n[7].z + z*n[4].z + v*n[5].z;
-*/
-    Result->x = u*v*n[0].x + x*v*n[1].x + u*z*n[2].x + x*z*n[3].x;	 
-    Result->y = u*v*n[0].y + x*v*n[1].y + u*z*n[2].y + x*z*n[3].y;	 
-    Result->z = u*v*n[0].z + x*v*n[1].z + u*z*n[2].z + x*z*n[3].z;	 
-    }
-  else if (code == LOWER_TRI) 
+    Result[X] = v*(u*n[0][X] + x*n[1][X]) + z*(u*n[2][X] + x*n[3][X]);
+    Result[Y] = v*(u*n[0][Y] + x*n[1][Y]) + z*(u*n[2][Y] + x*n[3][Y]);
+    Result[Z] = v*(u*n[0][Z] + x*n[1][Z]) + z*(u*n[2][Z] + x*n[3][Z]);
+  }
+  else
+  {
+    if ((x+z) <= 1.0)
     {
-    y1 = Get_Height(px,pz,H_Field);
-    y2 = Get_Height(px+1,pz,H_Field);
-    y3 = Get_Height(px,pz+1,H_Field);
-    Temp1.x = 1.0;
-    Temp1.z = 0.0;
-    Temp1.y = y2 - y1;
-    Temp2.x = 0.0;
-    Temp2.z = 1.0;
-    Temp2.y = y3 - y1;
-    VCross(*Result,Temp2,Temp1);
+      /* Lower triangle. */
+
+      y1 = Get_Height(px,   pz,   HField);
+      y2 = Get_Height(px+1, pz,   HField);
+      y3 = Get_Height(px,   pz+1, HField);
+
+      Make_Vector(Result, y1-y2, 1.0, y1-y3);
     }
-  else 
+    else
     {
-    y1 = Get_Height(px+1,pz+1,H_Field);
-    y2 = Get_Height(px,pz+1,H_Field);
-    y3 = Get_Height(px+1,pz,H_Field);
-    Temp1.x = -1.0;
-    Temp1.z = 0.0;
-    Temp1.y = y2 - y1;
-    Temp2.x = 0.0;
-    Temp2.z = -1.0;
-    Temp2.y = y3 - y1;
-    VCross(*Result,Temp2,Temp1);
+      /* Upper triangle. */
+
+      y1 = Get_Height(px+1, pz+1, HField);
+      y2 = Get_Height(px,   pz+1, HField);
+      y3 = Get_Height(px+1, pz,   HField);
+
+      Make_Vector(Result, y2-y1, 1.0, y3-y1);
     }
-  MTransNormal(Result,Result,H_Field->Trans);
-  VNormalize(*Result,*Result);
-  return;
   }
 
-  void *Copy_HeightFld (Object)
-    OBJECT *Object;
+  MTransNormal(Result, Result, HField->Trans);
+
+  VNormalize(Result, Result);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   stretch
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static DBL stretch (x)
+DBL x;
+{
+  if (x <= 0.5)
   {
-  HEIGHT_FIELD *New;
+    x = 2.0 * x * x;
+  }
+  else
+  {
+    x = 1.0 - (2.0 * (1.0 - x) * (1.0 - x));
+  }
 
-  New = Create_Height_Field ();
+  return(x);
+}
 
-  /*  Create_Height_Field creates a transform and a box as 
-    does Copy_Transform and Copy_Box so destroy these.
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   normalize
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static DBL normalize(A, B)
+VECTOR A, B;
+{
+  VLength(VTemp, B);
+
+  if (fabs(VTemp) > EPSILON)
+  {
+    VInverseScale(A, B, VTemp);
+  }
+  else
+  {
+    Make_Vector(A, 0.0, 1.0, 0.0);
+  }
+
+  return(VTemp);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   intersect_pixel
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int intersect_pixel(x, z, Ray, HField, height1, height2)
+int x;
+int z;
+RAY *Ray;
+HFIELD *HField;
+DBL height1, height2;
+{
+  int Found;
+  DBL dot, depth1, depth2;
+  DBL s, t, y1, y2, y3, y4;
+  DBL min_y2_y3, max_y2_y3;
+  DBL max_height, min_height;
+  VECTOR P, N, V1;
+
+#ifdef HFIELD_EXTRA_STATS
+  Increase_Counter(stats[Ray_HField_Cell_Tests]);
+#endif
+
+  y1 = Get_Height(x,   z,   HField);
+  y2 = Get_Height(x+1, z,   HField);
+  y3 = Get_Height(x,   z+1, HField);
+  y4 = Get_Height(x+1, z+1, HField);
+
+  /* Do we hit this cell at all? */
+
+  if (y2 < y3)
+  {
+    min_y2_y3 = y2;
+    max_y2_y3 = y3;
+  }
+  else
+  {
+    min_y2_y3 = y3;
+    max_y2_y3 = y2;
+  }
+
+  min_height = min(min(y1, y4), min_y2_y3);
+  max_height = max(max(y1, y4), max_y2_y3);
+
+  if ((max_height < height1) || (min_height > height2))
+  {
+    return(FALSE);
+  }
+
+#ifdef HFIELD_EXTRA_STATS
+  Increase_Counter(stats[Ray_HField_Cell_Tests_Succeeded]);
+#endif
+
+  Found = FALSE;
+
+  /* Check if we'll hit first triangle. */
+
+  min_height = min(y1, min_y2_y3);
+  max_height = max(y1, max_y2_y3);
+
+  if ((max_height >= height1) && (min_height <= height2))
+  {
+#ifdef HFIELD_EXTRA_STATS
+    Increase_Counter(stats[Ray_HField_Triangle_Tests]);
+#endif
+
+    /* Set up triangle. */
+
+    Make_Vector(P, (DBL)x, y1, (DBL)z);
+
+    /*
+     * Calculate the normal vector from:
+     *
+     * N = V2 x V1, with V1 = <1, y2-y1, 0>, V2 = <0, y3-y1, 1>.
+     */
+
+    Make_Vector(N, y1-y2, 1.0, y1-y3);
+
+    /* Now intersect the triangle. */
+
+    VDot(dot, N, Ray->Direction);
+
+    if ((dot > EPSILON) || (dot < -EPSILON))
+    {
+      VSub(V1, P, Ray->Initial);
+
+      VDot(depth1, N, V1);
+
+      depth1 /= dot;
+
+      if ((depth1 >= mindist) && (depth1 <= maxdist))
+      {
+        s = Ray->Initial[X] + depth1 * Ray->Direction[X] - (DBL)x;
+        t = Ray->Initial[Z] + depth1 * Ray->Direction[Z] - (DBL)z;
+
+        if ((s >= -0.0001) && (t >= -0.0001) && ((s+t) <= 1.0001))
+        {
+#ifdef HFIELD_EXTRA_STATS
+          Increase_Counter(stats[Ray_HField_Triangle_Tests_Succeeded]);
+#endif
+
+          VEvaluateRay(P, RRay->Initial, depth1, RRay->Direction);
+
+          if (Point_In_Clip(P, HField->Clip))
+          {
+            push_entry(depth1, P, (OBJECT *)HField, HField_Stack);
+
+            Found = TRUE;
+
+            /* Cache normal. */
+
+            if (!Test_Flag(HField, SMOOTHED_FLAG))
+            {
+              if (HField->Data->cache_pos < HF_CACHE_SIZE)
+              {
+                Assign_Vector(HField->Data->Normal_Cache[HField->Data->cache_pos].normal, N);
+
+                HField->Data->Normal_Cache[HField->Data->cache_pos].fx = x + s;
+                HField->Data->Normal_Cache[HField->Data->cache_pos].fz = z + t;
+
+                HField->Data->cache_pos++;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* Check if we'll hit second triangle. */
+
+  min_height = min(y4, min_y2_y3);
+  max_height = max(y4, max_y2_y3);
+
+  if ((max_height >= height1) && (min_height <= height2))
+  {
+#ifdef HFIELD_EXTRA_STATS
+    Increase_Counter(stats[Ray_HField_Triangle_Tests]);
+#endif
+
+    /* Set up triangle. */
+
+    Make_Vector(P, (DBL)(x+1), y4, (DBL)(z+1));
+
+    /*
+     * Calculate the normal vector from:
+     *
+     * N = V2 x V1, with V1 = <-1, y3-y4, 0>, V2 = <0, y2-y4, -1>.
+     */
+
+    Make_Vector(N, y3-y4, 1.0, y2-y4);
+
+    /* Now intersect the triangle. */
+
+    VDot(dot, N, Ray->Direction);
+
+    if ((dot > EPSILON) || (dot < -EPSILON))
+    {
+      VSub(V1, P, Ray->Initial);
+
+      VDot(depth2, N, V1);
+
+      depth2 /= dot;
+
+      if ((depth2 >= mindist) && (depth2 <= maxdist))
+      {
+        s = Ray->Initial[X] + depth2 * Ray->Direction[X] - (DBL)x;
+        t = Ray->Initial[Z] + depth2 * Ray->Direction[Z] - (DBL)z;
+
+        if ((s <= 1.0001) && (t <= 1.0001) && ((s+t) >= 0.9999))
+        {
+#ifdef HFIELD_EXTRA_STATS
+          Increase_Counter(stats[Ray_HField_Triangle_Tests_Succeeded]);
+#endif
+
+          VEvaluateRay(P, RRay->Initial, depth2, RRay->Direction);
+
+          if (Point_In_Clip(P, HField->Clip))
+          {
+            push_entry(depth2, P, (OBJECT *)HField, HField_Stack);
+
+            Found = TRUE;
+
+            /* Cache normal. */
+
+            if (!Test_Flag(HField, SMOOTHED_FLAG))
+            {
+              if (HField->Data->cache_pos < HF_CACHE_SIZE)
+              {
+                Assign_Vector(HField->Data->Normal_Cache[HField->Data->cache_pos].normal, N);
+
+                HField->Data->Normal_Cache[HField->Data->cache_pos].fx = x + s;
+                HField->Data->Normal_Cache[HField->Data->cache_pos].fz = z + t;
+
+                HField->Data->cache_pos++;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return(Found);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   add_single_normal
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int add_single_normal(data, xsize, zsize, x0, z0, x1, z1, x2, z2, N)
+HF_VAL **data;
+int xsize,zsize,x0,z0,x1,z1,x2,z2;
+VECTOR N;
+{
+  VECTOR v0, v1, v2, t0, t1, Nt;
+
+  if ((x0 < 0) || (z0 < 0) ||
+      (x1 < 0) || (z1 < 0) ||
+      (x2 < 0) || (z2 < 0) ||
+      (x0 > xsize) || (z0 > zsize) ||
+      (x1 > xsize) || (z1 > zsize) ||
+      (x2 > xsize) || (z2 > zsize))
+  {
+    return(0);
+  }
+  else
+  {
+    Make_Vector(v0, x0, (DBL)data[z0][x0], z0);
+    Make_Vector(v1, x1, (DBL)data[z1][x1], z1);
+    Make_Vector(v2, x2, (DBL)data[z2][x2], z2);
+
+    VSub(t0, v2, v0);
+    VSub(t1, v1, v0);
+
+    VCross(Nt, t0, t1);
+
+    normalize(Nt, Nt);
+
+    if (Nt[Y] < 0.0)
+    {
+      VScaleEq(Nt, -1.0);
+    }
+
+    VAddEq(N, Nt);
+
+    return(1);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   smooth_height_field
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   Given a height field that only contains an elevation grid, this
+*   routine will walk through the data and produce averaged normals
+*   for all points on the grid.
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void smooth_height_field(HField, xsize, zsize)
+HFIELD *HField;
+int xsize;
+int zsize;
+{
+  int i, j, k;
+  VECTOR N;
+  HF_VAL **map = HField->Data->Map;
+
+  /* First off, allocate all the memory needed to store the normal information */
+
+  HField->Data->Normals_Height = zsize+1;
+
+  HField->Data->Normals = (HF_Normals **)POV_MALLOC((zsize+1)*sizeof(HF_Normals *), "height field normals");
+
+  for (i = 0; i <= zsize; i++)
+  {
+    HField->Data->Normals[i] = (HF_Normals *)POV_MALLOC((xsize+1)*sizeof(HF_Normals), "height field normals");
+  }
+
+  /*
+   * For now we will do it the hard way - by generating the normals
+   * individually for each elevation point.
+   */
+
+  for (i = 0; i < zsize; i++)
+  {
+    COOPERATE_1
+
+    for (j = 0; j < xsize; j++)
+    {
+      Make_Vector(N, 0.0, 0.0, 0.0);
+
+      k = 0;
+
+      k += add_single_normal(map, xsize, zsize, j, i, j+1, i, j, i+1, N);
+      k += add_single_normal(map, xsize, zsize, j, i, j, i+1, j-1, i, N);
+      k += add_single_normal(map, xsize, zsize, j, i, j-1, i, j, i-1, N);
+      k += add_single_normal(map, xsize, zsize, j, i, j, i-1, j+1, i, N);
+
+      if (k == 0)
+      {
+        Error ("Failed to find any normals at: (%d, %d).\n", i, j);
+      }
+
+      normalize(N, N);
+
+      HField->Data->Normals[i][j][0] = (short)(32767 * N[X]);
+      HField->Data->Normals[i][j][1] = (short)(32767 * N[Y]);
+      HField->Data->Normals[i][j][2] = (short)(32767 * N[Z]);
+    }
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Compute_HField
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*
+* DESCRIPTION
+*
+*   Copy image data into height field map. Create bounding blocks
+*   for the block traversal. Calculate normals for smoothed height fields.
+*
+* CHANGES
+*
+*   Feb 1995 : Modified to work with new intersection functions. [DB]
+*
+******************************************************************************/
+
+void Compute_HField(HField, Image)
+HFIELD *HField;
+IMAGE *Image;
+{
+  int x, z, max_x, max_z;
+  int temp1 = 0, temp2 = 0;
+  HF_VAL min_y, max_y, temp_y;
+
+  /* Get height field map size. */
+
+  max_x = Image->iwidth;
+
+  if (Image->File_Type == POT_FILE)
+  {
+    max_x = max_x / 2;
+  }
+
+  max_z = Image->iheight;
+
+  /* Allocate memory for map. */
+
+  HField->Data->Map = (HF_VAL **)POV_MALLOC(max_z*sizeof(HF_VAL *), "height field");
+
+  for (z = 0; z < max_z; z++)
+  {
+    HField->Data->Map[z] = (HF_VAL *)POV_MALLOC(max_x*sizeof(HF_VAL), "height field");
+  }
+
+  /* Copy map. */
+
+  min_y = 65535L;
+  max_y = 0;
+
+  for (z = 0; z < max_z; z++)
+  {
+    COOPERATE_1
+    for (x = 0; x < max_x; x++)
+    {
+
+      switch (Image->File_Type)
+      {
+        case GIF_FILE:
+
+          temp1 = Image->data.map_lines[max_z - z - 1][x];
+          temp2 = 0;
+
+          break;
+
+        case POT_FILE:
+
+          temp1 = Image->data.map_lines[max_z - z - 1][x];
+          temp2 = Image->data.map_lines[max_z - z - 1][x + max_x];
+
+          break;
+
+
+        case PPM_FILE:
+
+          temp1 = Image->data.rgb_lines[max_z - z - 1].red[x];
+          temp2 = Image->data.rgb_lines[max_z - z - 1].green[x];
+
+          break;
+
+        case PGM_FILE:
+        case TGA_FILE:
+        case PNG_FILE:
+
+          if (Image->Colour_Map == NULL)
+          {
+            temp1 = Image->data.rgb_lines[max_z - z - 1].red[x];
+            temp2 = Image->data.rgb_lines[max_z - z - 1].green[x];
+          }
+          else
+          {
+            temp1 = Image->data.map_lines[max_z - z - 1][x];
+            temp2 = 0;
+          }
+
+          break;
+
+        default:
+
+          Error("Unknown image type in Compute_HField().\n");
+      }
+
+      temp_y = (HF_VAL)(256*temp1 + temp2);
+
+      HField->Data->Map[z][x] = temp_y;
+
+      min_y = min(min_y, temp_y);
+      max_y = max(max_y, temp_y);
+    }
+  }
+
+  /* Resize bounding box. */
+
+  HField->Data->min_y = min_y;
+  HField->Data->max_y = max_y;
+
+  HField->bounding_box->bounds[0][Y] = max((DBL)min_y, HField->bounding_box->bounds[0][Y]) - HFIELD_OFFSET;
+  HField->bounding_box->bounds[1][Y] = (DBL)max_y + HFIELD_OFFSET;
+
+  /* Compute smoothed height field. */
+
+  if (Test_Flag(HField, SMOOTHED_FLAG))
+  {
+    smooth_height_field(HField, max_x-1, max_z-1);
+  }
+
+  HField->Data->max_x = max_x-2;
+  HField->Data->max_z = max_z-2;
+
+  build_hfield_blocks(HField);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   build_hfield_blocks
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Dieter Bayer
+*   
+* DESCRIPTION
+*
+*   Create the bounding block hierarchy used by the block traversal.
+*
+* CHANGES
+*
+*   Feb 1995 : Creation.
+*
+******************************************************************************/
+
+static void build_hfield_blocks(HField)
+HFIELD *HField;
+{
+  int x, z, nx, nz, wx, wz;
+  int i, j;
+  int xmin, xmax, zmin, zmax;
+  DBL y, ymin, ymax, water;
+
+  /* Get block size. */
+
+  nx = max(1, (int)(sqrt((DBL)HField->Data->max_x)));
+  nz = max(1, (int)(sqrt((DBL)HField->Data->max_z)));
+
+  /* Get dimensions of sub-block. */
+
+  wx = (int)ceil((DBL)(HField->Data->max_x + 2) / (DBL)nx);
+  wz = (int)ceil((DBL)(HField->Data->max_z + 2) / (DBL)nz);
+
+  /* Increase number of sub-blocks if necessary. */
+
+  if (nx * wx < HField->Data->max_x + 2)
+  {
+    nx++;
+  }
+
+  if (nz * wz < HField->Data->max_z + 2)
+  {
+    nz++;
+  }
+
+  if (!Test_Flag(HField, HIERARCHY_FLAG) || ((nx == 1) && (nz == 1)))
+  {
+    /* We don't want a bounding hierarchy. Just use one block. */
+
+    HField->Data->Block = (HFIELD_BLOCK **)POV_MALLOC(sizeof(HFIELD_BLOCK *), "height field blocks");
+
+    HField->Data->Block[0] = (HFIELD_BLOCK *)POV_MALLOC(sizeof(HFIELD_BLOCK), "height field blocks");
+
+    HField->Data->Block[0][0].xmin = 0;
+    HField->Data->Block[0][0].xmax = HField->Data->max_x;
+    HField->Data->Block[0][0].zmin = 0;
+    HField->Data->Block[0][0].zmax = HField->Data->max_z;
+
+    HField->Data->Block[0][0].ymin = HField->bounding_box->bounds[0][Y];
+    HField->Data->Block[0][0].ymax = HField->bounding_box->bounds[1][Y];
+
+    HField->Data->block_max_x = 1;
+    HField->Data->block_max_z = 1;
+
+    HField->Data->block_width_x = HField->Data->max_x + 2;
+    HField->Data->block_width_z = HField->Data->max_y + 2;
+
+/*
+    Debug_Info("\nHeight field: %d x %d (1 x 1 blocks)", HField->Data->max_x+2, HField->Data->max_z+2);
 */
 
-  Destroy_Transform(New->Trans);
-  Destroy_Box((OBJECT *)(New->bounding_box));
+    return;
+  }
 
-  *New = *((HEIGHT_FIELD *)Object);
-
-  New->Trans        = Copy_Transform (((HEIGHT_FIELD *)Object)->Trans);
-  New->bounding_box = Copy_Box ((OBJECT *)(((HEIGHT_FIELD *)Object)->bounding_box));
-
-  /* Note: For the time being we will not support copying the Block and Map
-   arrays.  We will only copy the pointers.  This means Destroy_HeightFld
-   must not destroy these arrays.  Actually it cannot because we don't
-   really know how big they are!  
+/*
+  Debug_Info("\nHeight field: %d x %d (%d x %d blocks)", HField->Data->max_x+2, HField->Data->max_z+2, nx, nz);
 */
 
-  return (New);
-  }
+  /* Allocate memory for blocks. */
 
-void Translate_HeightFld (Object, Vector)
-OBJECT *Object;
-VECTOR *Vector;
+  HField->Data->Block = (HFIELD_BLOCK **)POV_MALLOC(nz*sizeof(HFIELD_BLOCK *), "height field blocks");
+
+  /* Store block information. */
+
+  HField->Data->block_max_x = nx;
+  HField->Data->block_max_z = nz;
+
+  HField->Data->block_width_x = wx;
+  HField->Data->block_width_z = wz;
+
+  water = HField->bounding_box->bounds[0][Y];
+
+  for (z = 0; z < nz; z++)
   {
-  TRANSFORM Trans;
+    COOPERATE_1
 
-  Compute_Translation_Transform(&Trans,Vector);
-  Compose_Transforms(((HEIGHT_FIELD *) Object)->Trans,&Trans);
+    HField->Data->Block[z] = (HFIELD_BLOCK *)POV_MALLOC(nx*sizeof(HFIELD_BLOCK), "height field blocks");
+
+    for (x = 0; x < nx; x++)
+    {
+      /* Get block's borders. */
+
+      xmin = x * wx;
+      zmin = z * wz;
+
+      xmax = min((x + 1) * wx - 1, HField->Data->max_x);
+      zmax = min((z + 1) * wz - 1, HField->Data->max_z);
+
+      /* Find min. and max. height in current block. */
+
+      ymin = BOUND_HUGE;
+      ymax = -BOUND_HUGE;
+
+      for (i = xmin; i <= xmax+1; i++)
+      {
+        for (j = zmin; j <= zmax+1; j++)
+        {
+          y = Get_Height(i, j, HField);
+
+          ymin = min(ymin, y);
+          ymax = max(ymax, y);
+        }
+      }
+
+      /* Store block's borders. */
+
+      HField->Data->Block[z][x].xmin = xmin;
+      HField->Data->Block[z][x].xmax = xmax;
+      HField->Data->Block[z][x].zmin = zmin;
+      HField->Data->Block[z][x].zmax = zmax;
+
+      HField->Data->Block[z][x].ymin = max(ymin, water) - HFIELD_OFFSET;
+      HField->Data->Block[z][x].ymax = ymax + HFIELD_OFFSET;
+    }
   }
+}
 
-void Rotate_HeightFld (Object, Vector)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Translate_HField
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Translate_HField (Object, Vector, Trans)
 OBJECT *Object;
-VECTOR *Vector;
-  {
-  TRANSFORM Trans;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  Transform_HField(Object, Trans);
+}
 
-  Compute_Rotation_Transform(&Trans,Vector);
-  Compose_Transforms(((HEIGHT_FIELD *) Object)->Trans,&Trans);
-  }
 
-void Scale_HeightFld (Object, Vector)
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Rotate_HField
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Rotate_HField (Object, Vector, Trans)
 OBJECT *Object;
-VECTOR *Vector;
-  {
-  TRANSFORM Trans;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  Transform_HField(Object, Trans);
+}
 
-  Compute_Scaling_Transform(&Trans,Vector);
-  Compose_Transforms(((HEIGHT_FIELD *)Object)->Trans,&Trans);
-  }
 
-void Invert_HeightFld (Object)
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Scale_HField
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Scale_HField (Object, Vector, Trans)
 OBJECT *Object;
-  {
-  ((HEIGHT_FIELD *)Object)->Inverted ^= TRUE;
-  }
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  Transform_HField(Object, Trans);
+}
 
-void Transform_HeightFld (Object, Trans)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Invert_HField
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Invert_HField (Object)
+OBJECT *Object;
+{
+  Invert_Flag(Object, INVERTED_FLAG);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Transform_HField
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Transform_HField (Object, Trans)
 OBJECT *Object;
 TRANSFORM *Trans;
-  {
-  Compose_Transforms(((HEIGHT_FIELD *)Object)->Trans, Trans);
-  }
+{
+  Compose_Transforms(((HFIELD *)Object)->Trans, Trans);
 
-/* Allocate and intialize a Height Field */
-HEIGHT_FIELD *Create_Height_Field()
-  {
-  HEIGHT_FIELD *New;
+  Compute_HField_BBox((HFIELD *)Object);
+}
 
-  if((New = (HEIGHT_FIELD *) malloc (sizeof(HEIGHT_FIELD))) == NULL)
-    MAError ("height field");
 
-  INIT_OBJECT_FIELDS(New, HEIGHT_FIELD_OBJECT, &Height_Field_Methods)
 
-    /* Always uses Trans so always create one. */  
-    New->Trans = Create_Transform (); 
-  New->bounding_box = Create_Box (); 
-  New->Block_Size   = 1.0;
-  New->Inv_Blk_Size = 1.0;
-  New->Block = NULL;
-  New->Map   = NULL;
-  New->Inverted = FALSE;
-  New->cache_pos = 0;
-  New->Smoothed = FALSE;
-  New->Normals  = NULL;
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_HField
+*
+* INPUT
+*
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   Allocate and intialize a height field.
+*
+* CHANGES
+*
+*   Feb 1995 : Modified to work with new intersection functions. [DB]
+*
+******************************************************************************/
+
+HFIELD *Create_HField()
+{
+  HFIELD *New;
+
+  /* Allocate height field. */
+
+  New = (HFIELD *)POV_MALLOC(sizeof(HFIELD), "height field");
+
+  INIT_OBJECT_FIELDS(New, HFIELD_OBJECT, &HField_Methods)
+
+  /* Always uses Trans so always create one. */
+
+  New->Trans = Create_Transform();
+
+  New->bounding_box = Create_Box();
+
+  /* Allocate height field data. */
+
+  New->Data = (HFIELD_DATA *)POV_MALLOC(sizeof(HFIELD_DATA), "height field");
+
+  New->Data->References = 1;
+
+  New->Data->cache_pos = 0;
+
+  New->Data->Normals_Height = 0;
+
+  New->Data->Map     = NULL;
+  New->Data->Normals = NULL;
+
+  New->Data->max_x = 0;
+  New->Data->max_z = 0;
+
+  New->Data->block_max_x = 0;
+  New->Data->block_max_z = 0;
+
+  New->Data->block_width_x = 0;
+  New->Data->block_width_z = 0;
+
+  Set_Flag(New, HIERARCHY_FLAG);
+
   return(New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_HField
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   NOTE: The height field data is not copied, only the number of references
+*         is counted, so that Destray_HField() knows if it can be destroyed.
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void *Copy_HField(Object)
+OBJECT *Object;
+{
+  HFIELD *New;
+
+  New = Create_HField();
+
+  /* Destroy obsolete things created in Create_HField(). */
+
+  Destroy_Transform(New->Trans);
+
+  Destroy_Box((OBJECT *)(New->bounding_box));
+
+  POV_FREE (New->Data);
+
+  /* Copy height field. */
+
+  *New = *((HFIELD *)Object);
+
+  New->Trans = Copy_Transform(((HFIELD *)Object)->Trans);
+
+  New->bounding_box = Copy_Box((OBJECT *)(((HFIELD *)Object)->bounding_box));
+
+  New->Data->References++;
+
+  return(New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_HField
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Doug Muir, David Buck, Drew Wells
+*   
+* DESCRIPTION
+*
+*   NOTE: The height field data is destroyed if it's no longer
+*         used by any copy.
+*
+* CHANGES
+*
+*   Feb 1995 : Modified to work with new intersection functions. [DB]
+*
+******************************************************************************/
+
+static void Destroy_HField (Object)
+OBJECT *Object;
+{
+  int i;
+  HFIELD *HField = (HFIELD *)Object;
+
+  Destroy_Transform(HField->Trans);
+
+  Destroy_Box((OBJECT *)(HField->bounding_box));
+
+  if (--(HField->Data->References) == 0)
+  {
+    if (HField->Data->Map != NULL)
+    {
+      for (i = 0; i < HField->Data->max_z+2; i++)
+      {
+        if (HField->Data->Map[i] != NULL)
+        {
+          POV_FREE (HField->Data->Map[i]);
+        }
+      }
+
+      POV_FREE (HField->Data->Map);
+    }
+
+    if (HField->Data->Normals != NULL)
+    {
+      for (i = 0; i < HField->Data->Normals_Height; i++)
+      {
+        POV_FREE (HField->Data->Normals[i]);
+      }
+
+      POV_FREE (HField->Data->Normals);
+    }
+
+    if (HField->Data->Block != NULL)
+    {
+      for (i = 0; i < HField->Data->block_max_z; i++)
+      {
+        POV_FREE(HField->Data->Block[i]);
+      }
+
+      POV_FREE(HField->Data->Block);
+    }
+
+    POV_FREE (HField->Data);
   }
 
-void Destroy_HeightFld (Object)
-OBJECT *Object;
+  POV_FREE (Object);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Compute_HField_BBox
+*
+* INPUT
+*
+*   HField - Height field
+*   
+* OUTPUT
+*
+*   HField
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Dieter Bayer
+*   
+* DESCRIPTION
+*
+*   Calculate the bounding box of a height field.
+*
+* CHANGES
+*
+*   Aug 1994 : Creation.
+*
+******************************************************************************/
+
+void Compute_HField_BBox(HField)
+HFIELD *HField;
+{
+  Assign_BBox_Vect(HField->BBox.Lower_Left, HField->bounding_box->bounds[0]);
+
+  VSub (HField->BBox.Lengths, HField->bounding_box->bounds[1], HField->bounding_box->bounds[0]);
+
+  if (HField->Trans != NULL)
   {
-  Destroy_Transform (((HEIGHT_FIELD *)Object)->Trans);
-  Destroy_Box ((OBJECT *)((HEIGHT_FIELD *)Object)->bounding_box);
-  free (Object);
+    Recompute_BBox(&HField->BBox, HField->Trans);
   }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   dda_traversal
+*
+* INPUT
+*
+*   Ray    - Current ray
+*   HField - Height field
+*   Start  - Start point for the walk
+*   Block  - Sub-block of the height field to traverse
+*   
+* OUTPUT
+*   
+* RETURNS
+*
+*   int - TRUE if intersection was found
+*   
+* AUTHOR
+*
+*   Dieter Bayer
+*   
+* DESCRIPTION
+*
+*   Traverse the grid cell of the height field using a modified DDA.
+*
+*   Based on the following article:
+*
+*     Musgrave, F. Kenton, "Grid Tracing: Fast Ray Tracing for Height
+*     Fields", Research Report YALEU-DCS-RR-39, Yale University, July 1988
+*
+*   You should note that there are (n-1) x (m-1) grid cells in a height
+*   field of (image) size n x m. A grid cell (i,j), 0 <= i <= n-1,
+*   0 <= j <= m-1, extends from x = i to x = i + 1 - epsilon and
+*   y = j to y = j + 1 -epsilon.
+*
+* CHANGES
+*
+*   Feb 1995 : Creation.
+*
+******************************************************************************/
+
+static int dda_traversal(Ray, HField, Start, Block)
+RAY *Ray;
+HFIELD *HField;
+VECTOR Start;
+HFIELD_BLOCK *Block;
+{
+  int found;
+  int xmin, xmax, zmin, zmax;
+  int x, z, signx, signz;
+  DBL ymin, ymax, y1, y2;
+  DBL px, pz, dx, dy, dz;
+  DBL delta, error, x0, z0;
+  DBL neary, fary, deltay;
+
+  /* Setup DDA. */
+
+  found = FALSE;
+
+  px = Start[X];
+  pz = Start[Z];
+
+  /* Get dimensions of current block. */
+
+  xmin = Block->xmin;
+  xmax = min(Block->xmax + 1, HField->Data->max_x);
+  zmin = Block->zmin;
+  zmax = min(Block->zmax + 1, HField->Data->max_z);
+
+  ymin = min(Start[Y], Block->ymin) - EPSILON;
+  ymax = max(Start[Y], Block->ymax) + EPSILON;
+
+  /* Check for illegal grid values (caused by numerical inaccuracies). */
+
+  if (px < (DBL)xmin)
+  {
+    if (px < (DBL)xmin - HFIELD_OFFSET)
+    {
+      Debug_Info("Illegal grid value in dda_traversal().\n");
+
+      return(FALSE);
+    }
+    else
+    {
+      px = (DBL)xmin;
+    }
+  }
+  else
+  {
+    if (px > (DBL)xmax + 1.0 - EPSILON)
+    {
+      if (px > (DBL)xmax + 1.0 + EPSILON)
+      {
+        Debug_Info("Illegal grid value in dda_traversal().\n");
+
+        return(FALSE);
+      }
+      else
+      {
+        px = (DBL)xmax + 1.0 - EPSILON;
+      }
+    }
+  }
+
+  if (pz < (DBL)zmin)
+  {
+    if (pz < (DBL)zmin - HFIELD_OFFSET)
+    {
+      Debug_Info("Illegal grid value in dda_traversal().\n");
+
+      return(FALSE);
+    }
+    else
+    {
+      pz = (DBL)zmin;
+    }
+  }
+  else
+  {
+    if (pz > (DBL)zmax + 1.0 - EPSILON)
+    {
+      if (pz > (DBL)zmax + 1.0 + EPSILON)
+      {
+        Debug_Info("Illegal grid value in dda_traversal().\n");
+
+        return(FALSE);
+      }
+      else
+      {
+        pz = (DBL)zmax + 1.0 - EPSILON;
+      }
+    }
+  }
+
+  dx = Ray->Direction[X];
+  dy = Ray->Direction[Y];
+  dz = Ray->Direction[Z];
+
+  /*
+   * Here comes the DDA algorithm.
+   */
+
+  /* Choose algorithm depending on the driving axis. */
+
+  if (fabs(dx) >= fabs(dz))
+  {
+    /*
+     * X-axis is driving axis.
+     */
+
+    delta = fabs(dz / dx);
+
+    x = (int)px;
+    z = (int)pz;
+
+    x0 = px - floor(px);
+    z0 = pz - floor(pz);
+
+    signx = sign(dx);
+    signz = sign(dz);
+
+    /* Get initial error. */
+
+    if (dx >= 0.0)
+    {
+      if (dz >= 0.0)
+      {
+        error = z0 + delta * (1.0 - x0) - 1.0;
+      }
+      else
+      {
+        error = -(z0 - delta * (1.0 - x0));
+      }
+    }
+    else
+    {
+      if (dz >= 0.0)
+      {
+        error = z0 + delta * x0 - 1.0;
+      }
+      else
+      {
+        error = -(z0 - delta * x0);
+      }
+    }
+
+    /* Get y differential. */
+
+    deltay = dy / fabs(dx);
+
+    if (dx >= 0.0)
+    {
+      neary = Start[Y] - x0 * deltay;
+
+      fary = neary + deltay;
+    }
+    else
+    {
+      neary = Start[Y] - (1.0 - x0) * deltay;
+
+      fary = neary + deltay;
+    }
+
+    /* Step through the cells. */
+
+    do
+    {
+      if (neary < fary)
+      {
+        y1 = neary;
+        y2 = fary;
+      }
+      else
+      {
+        y1 = fary;
+        y2 = neary;
+      }
+
+      if (intersect_pixel(x, z, Ray, HField, y1, y2))
+      {
+        if (HField->Type & IS_CHILD_OBJECT)
+        {
+          found = TRUE;
+        }
+        else
+        {
+          return(TRUE);
+        }
+      }
+
+      if (error > EPSILON)
+      {
+        z += signz;
+
+        if ((z < zmin) || (z > zmax))
+        {
+          break;
+        }
+        else
+        {
+          if (intersect_pixel(x, z, Ray, HField, y1, y2))
+          {
+            if (HField->Type & IS_CHILD_OBJECT)
+            {
+              found = TRUE;
+            }
+            else
+            {
+              return(TRUE);
+            }
+          }
+        }
+
+        error--;
+      }
+      else
+      {
+        if (error > -EPSILON)
+        {
+          z += signz;
+
+          error--;
+        }
+      }
+
+      x += signx;
+
+      error += delta;
+
+      neary = fary;
+
+      fary += deltay;
+    }
+    while ((neary >= ymin) && (neary <= ymax) && (x >= xmin) && (x <= xmax) && (z >= zmin) && (z <= zmax));
+  }
+  else
+  {
+    /*
+     * Z-axis is driving axis.
+     */
+
+    delta = fabs(dx / dz);
+
+    x = (int)px;
+    z = (int)pz;
+
+    x0 = px - floor(px);
+    z0 = pz - floor(pz);
+
+    signx = sign(dx);
+    signz = sign(dz);
+
+    /* Get initial error. */
+
+    if (dz >= 0.0)
+    {
+      if (dx >= 0.0)
+      {
+        error = x0 + delta * (1.0 - z0) - 1.0;
+      }
+      else
+      {
+        error = -(x0 - delta * (1.0 - z0));
+      }
+    }
+    else
+    {
+      if (dx >= 0.0)
+      {
+        error = x0 + delta * z0 - 1.0;
+      }
+      else
+      {
+        error = -(x0 - delta * z0);
+      }
+    }
+
+    /* Get y differential. */
+
+    deltay = dy / fabs(dz);
+
+    if (dz >= 0.0)
+    {
+      neary = Start[Y] - z0 * deltay;
+
+      fary = neary + deltay;
+    }
+    else
+    {
+      neary = Start[Y] - (1.0 - z0) * deltay;
+
+      fary = neary + deltay;
+    }
+
+    /* Step through the cells. */
+
+    do
+    {
+      if (neary < fary)
+      {
+        y1 = neary;
+        y2 = fary;
+      }
+      else
+      {
+        y1 = fary;
+        y2 = neary;
+      }
+
+      if (intersect_pixel(x, z, Ray, HField, y1, y2))
+      {
+        if (HField->Type & IS_CHILD_OBJECT)
+        {
+          found = TRUE;
+        }
+        else
+        {
+          return(TRUE);
+        }
+      }
+
+      if (error > EPSILON)
+      {
+        x += signx;
+
+        if ((x < xmin) || (x > xmax))
+        {
+          break;
+        }
+        else
+        {
+          if (intersect_pixel(x, z, Ray, HField, y1, y2))
+          {
+            if (HField->Type & IS_CHILD_OBJECT)
+            {
+              found = TRUE;
+            }
+            else
+            {
+              return(TRUE);
+            }
+          }
+        }
+
+        error--;
+      }
+      else
+      {
+        if (error > -EPSILON)
+        {
+          x += signx;
+
+          error--;
+        }
+      }
+
+      z += signz;
+
+      error += delta;
+
+      neary = fary;
+
+      fary += deltay;
+    }
+    while ((neary >= ymin-EPSILON) && (neary <= ymax+EPSILON) &&
+           (x >= xmin) && (x <= xmax) &&
+           (z >= zmin) && (z <= zmax));
+  }
+
+  return(found);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   block_traversal
+*
+* INPUT
+*
+*   Ray    - Current ray
+*   HField - Height field
+*   Start  - Start point for the walk
+*
+* OUTPUT
+*
+* RETURNS
+*
+*   int - TRUE if intersection was found
+*   
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+*   Traverse the blocks of the height field.
+*
+* CHANGES
+*
+*   Feb 1995 : Creation.
+*
+*   Aug 1996 : Fixed bug as reported by Dean M. Phillips:
+*              "I found a bug in the height field code which resulted
+*              in "Illegal grid value in dda_traversal()." messages
+*              along with dark vertical lines in the height fields.
+*              This turned out to be caused by overlooking the units in
+*              which some boundary tests in two different places were
+*              made. It was easy to fix.
+*
+******************************************************************************/
+
+static int block_traversal(Ray, HField, Start)
+RAY *Ray;
+HFIELD *HField;
+VECTOR Start;
+{
+  int xmax, zmax;
+  int x, z, nx, nz, signx, signz;
+  int found = FALSE;
+  int dx_zero, dz_zero;
+  DBL px, pz, dx, dy, dz;
+  DBL maxdv;
+  DBL ymin, ymax, y1, y2;
+  DBL neary, fary;
+  DBL k1, k2, dist;
+  VECTOR nearP, farP;
+  HFIELD_BLOCK *Block;
+
+  px = Start[X];
+  pz = Start[Z];
+
+  dx = Ray->Direction[X];
+  dy = Ray->Direction[Y];
+  dz = Ray->Direction[Z];
+
+  maxdv = (dx > dz) ? dx : dz;
+
+  /* First test for 'perpendicular' rays. */
+
+  if ((fabs(dx) < EPSILON) && (fabs(dz) < EPSILON))
+  {
+    x = (int)px;
+    z = (int)pz;
+
+    neary = Start[Y];
+
+    if (dy >= 0.0)
+    {
+      fary = 65536.0;
+    }
+    else
+    {
+      fary = 0.0;
+    }
+
+    return(intersect_pixel(x, z, Ray, HField, min(neary, fary), max(neary, fary)));
+  }
+
+  /* If we don't have blocks we just step through the grid. */
+
+  if ((HField->Data->block_max_x <= 1) && (HField->Data->block_max_z <= 1))
+  {
+    return(dda_traversal(Ray, HField, Start, &HField->Data->Block[0][0]));
+  }
+
+  /* Get dimensions of grid. */
+
+  xmax = HField->Data->block_max_x;
+  zmax = HField->Data->block_max_z;
+
+  ymin = (DBL)HField->Data->min_y - EPSILON;
+  ymax = (DBL)HField->Data->max_y + EPSILON;
+
+  dx_zero = (fabs(dx) < EPSILON);
+  dz_zero = (fabs(dz) < EPSILON);
+
+  signx = sign(dx);
+  signz = sign(dz);
+
+  /* Walk on the block grid. */
+
+  px /= HField->Data->block_width_x;
+  pz /= HField->Data->block_width_z;
+
+  x = (int)px;
+  z = (int)pz;
+
+  Assign_Vector(nearP, Start);
+
+  neary = Start[Y];
+
+  /*
+   * Here comes the block walk algorithm.
+   */
+
+  do
+  {
+#ifdef HFIELD_EXTRA_STATS
+    Increase_Counter(stats[Ray_HField_Block_Tests]);
+#endif
+
+    /* Get current block. */
+
+    Block = &HField->Data->Block[z][x];
+
+    /* Intersect ray with bounding planes. */
+
+    if (dx_zero)
+    {
+      k1 = BOUND_HUGE;
+    }
+    else
+    {
+      if (signx >= 0)
+      {
+        k1 = ((DBL)Block->xmax + 1.0 - Ray->Initial[X]) / dx;
+      }
+      else
+      {
+        k1 = ((DBL)Block->xmin - Ray->Initial[X]) / dx;
+      }
+    }
+
+    if (dz_zero)
+    {
+      k2 = BOUND_HUGE;
+    }
+    else
+    {
+      if (signz >= 0)
+      {
+        k2 = ((DBL)Block->zmax + 1.0 - Ray->Initial[Z]) / dz;
+      }
+      else
+      {
+        k2 = ((DBL)Block->zmin - Ray->Initial[Z]) / dz;
+      }
+    }
+
+    /* Figure out the indices of the next block. */
+
+    if ((k1 < k2 - EPSILON / maxdv) && (k1 > 0.0))
+    {
+      /* Step along the x-axis. */
+
+      dist = k1;
+
+      nx = x + signx;
+      nz = z;
+    }
+    else
+    {
+      if ((k1 < k2 + EPSILON / maxdv) && (k1 > 0.0))
+      {
+        /* Step along both axis (very rare case). */
+
+        dist = k1;
+
+        nx = x + signx;
+        nz = z + signz;
+      }
+      else
+      {
+        /* Step along the z-axis. */
+
+        dist = k2;
+
+        nx = x;
+        nz = z + signz;
+      }
+    }
+
+    /* Get point where ray leaves current block. */
+
+    VEvaluateRay(farP, Ray->Initial, dist, Ray->Direction);
+
+    fary = farP[Y];
+
+    if (neary < fary)
+    {
+      y1 = neary;
+      y2 = fary;
+    }
+    else
+    {
+      y1 = fary;
+      y2 = neary;
+    }
+
+    /* Can we hit current block at all? */
+
+    if ((y1 <= (DBL)Block->ymax + EPSILON) && (y2 >= (DBL)Block->ymin - EPSILON))
+    {
+      /* Test current block. */
+
+#ifdef HFIELD_EXTRA_STATS
+      Increase_Counter(stats[Ray_HField_Block_Tests_Succeeded]);
+#endif
+
+      if (dda_traversal(Ray, HField, nearP, &HField->Data->Block[z][x]))
+      {
+        if (HField->Type & IS_CHILD_OBJECT)
+        {
+          found = TRUE;
+        }
+        else
+        {
+          return(TRUE);
+        }
+      }
+    }
+
+    /* Step to next block. */
+
+    x = nx;
+    z = nz;
+
+    Assign_Vector(nearP, farP);
+
+    neary = fary;
+  }
+  while ((x >= 0) && (x < xmax) && (z >= 0) && (z < zmax) && (neary >= ymin) && (neary <= ymax));
+
+  return(found);
+}
+

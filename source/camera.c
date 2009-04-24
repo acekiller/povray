@@ -3,8 +3,8 @@
 *
 *  This module implements methods for managing the viewpoint.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
@@ -24,77 +24,308 @@
 #include "frame.h"
 #include "vector.h"
 #include "povproto.h"
+#include "camera.h"
+#include "matrices.h"
+#include "normal.h"
 
-void Translate_Camera (Camera, Vector)
-CAMERA *Camera;
-VECTOR *Vector;
-  {
-  VAdd (((CAMERA *) Camera) -> Location, 
-    ((CAMERA *) Camera) -> Location,
-    *Vector);
-  }
 
-void Rotate_Camera (Camera, Vector)
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Translate_Camera
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+void Translate_Camera(Camera, Vector)
 CAMERA *Camera;
-VECTOR *Vector;
-  {
+VECTOR Vector;
+{
+  VAddEq(((CAMERA *)Camera)->Location, Vector);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Rotate_Camera
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+void Rotate_Camera(Camera, Vector)
+CAMERA *Camera;
+VECTOR Vector;
+{
   TRANSFORM Trans;
-
+  
   Compute_Rotation_Transform(&Trans, Vector);
-  Transform_Camera (Camera, &Trans);
-  }
+  
+  Transform_Camera(Camera, &Trans);
+}
 
-void Scale_Camera (Camera, Vector)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Scale_Camera
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+void Scale_Camera(Camera, Vector)
 CAMERA *Camera;
-VECTOR *Vector;
-  {
+VECTOR Vector;
+{
   TRANSFORM Trans;
-
+  
   Compute_Scaling_Transform(&Trans, Vector);
-  Transform_Camera (Camera, &Trans);
-  }
+  
+  Transform_Camera(Camera, &Trans);
+}
 
-void Transform_Camera (Camera, Trans)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Transform_Camera
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+void Transform_Camera(Camera, Trans)
 CAMERA *Camera;
 TRANSFORM *Trans;
-  {
-  MTransPoint (&(Camera -> Location), &(Camera -> Location), Trans);
+{
+  MTransPoint(Camera->Location, Camera->Location, Trans);
+  
+  MTransPoint(Camera->Direction, Camera->Direction, Trans);
+  
+  MTransPoint(Camera->Up, Camera->Up, Trans);
+  
+  MTransPoint(Camera->Right, Camera->Right, Trans);
+}
 
-  MTransPoint (&(Camera -> Direction), &(Camera -> Direction), Trans);
 
-  MTransPoint (&(Camera -> Up), &(Camera -> Up), Trans);
 
-  MTransPoint (&(Camera -> Right), &(Camera -> Right), Trans);
-  }
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Camera
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
-CAMERA *Copy_Camera (Old)
+CAMERA *Create_Camera()
+{
+  CAMERA *New;
+  
+  New = (CAMERA *)POV_MALLOC(sizeof (CAMERA), "camera");
+  
+  Make_Vector(New->Location,  0.0,  0.0, 0.0);
+  Make_Vector(New->Direction, 0.0,  0.0, 1.0);
+  Make_Vector(New->Up,        0.0,  1.0, 0.0);
+  Make_Vector(New->Right,     1.33, 0.0, 0.0);
+  Make_Vector(New->Sky,       0.0,  1.0, 0.0);
+  Make_Vector(New->Look_At,   0.0,  0.0, 1.0);
+
+  /* Init focal blur stuff (not used by default). */
+
+  New->Blur_Samples   = 0;
+  New->Confidence     = 0.9;
+  New->Variance       = 1.0 / 128.0;
+  New->Aperture       = 0.0;
+  New->Focal_Distance = -1.0;
+
+  /* Set default camera type and viewing angle. [DB 7/94] */
+
+  New->Type = PERSPECTIVE_CAMERA;
+
+  New->Angle = 90.0;
+
+  /* Do not perturb primary rays by default. [DB 7/94] */
+
+  New->Tnormal = NULL;
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_Camera
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+CAMERA *Copy_Camera(Old)
 CAMERA *Old;
-  {
+{
   CAMERA *New;
 
   if (Old != NULL)
-    {
-    New = Create_Camera ();
-    *New = *Old;
-    }
-  else
-    New = NULL;
-
-  return (New);   
-  }
-
-CAMERA *Create_Camera ()
   {
-  CAMERA *New;
+    New = Create_Camera();
 
-  if ((New = (CAMERA *) malloc (sizeof (CAMERA))) == NULL)
-    MAError ("camera");
-
-  Make_Vector (&(New->Location), 0.0, 0.0, 0.0);
-  Make_Vector (&(New->Direction), 0.0, 0.0, 1.0);
-  Make_Vector (&(New->Up), 0.0, 1.0, 0.0);
-  Make_Vector (&(New->Right), 1.33, 0.0, 0.0);
-  Make_Vector (&(New->Sky), 0.0, 1.0, 0.0);
-  return (New);
+    *New = *Old;
+  }
+  else
+  {
+    New = NULL;
   }
 
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_Camera
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+void Destroy_Camera(Camera)
+CAMERA *Camera;
+{
+  if (Camera != NULL)
+  {
+    Destroy_Tnormal(Camera->Tnormal);
+
+    POV_FREE(Camera);
+  }
+}

@@ -3,14 +3,14 @@
 *
 *  This module implements functions that manipulate planes.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
-*  with enhancements to POV-Ray and to port the software to platforms other 
+*  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  named POVLEGAL.DOC which should be distributed with this file. If
 *  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
 *  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
 *  Forum.  The latest version of POV-Ray may be found there as well.
@@ -22,11 +22,43 @@
 *****************************************************************************/
 
 #include "frame.h"
+#include "povray.h"
 #include "vector.h"
 #include "povproto.h"
+#include "matrices.h"
+#include "objects.h"
+#include "planes.h"
+
+
+
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
+
+#define DEPTH_TOLERANCE 1.0e-6
+
+/*****************************************************************************
+* Static functions
+******************************************************************************/
+
+static int   Intersect_Plane PARAMS((RAY *Ray, PLANE *Plane, DBL *Depth));
+static int   All_Plane_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
+static int   Inside_Plane PARAMS((VECTOR point, OBJECT *Object));
+static void  Plane_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
+static void  *Copy_Plane PARAMS((OBJECT *Object));
+static void  Translate_Plane PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void  Rotate_Plane PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void  Scale_Plane PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void  Transform_Plane PARAMS((OBJECT *Object, TRANSFORM *Trans));
+static void  Invert_Plane PARAMS((OBJECT *Object));
+static void  Destroy_Plane PARAMS((OBJECT *Object));
+
+/*****************************************************************************
+* Local variables
+******************************************************************************/
 
 METHODS Plane_Methods =
-  { 
+{
   All_Plane_Intersections,
   Inside_Plane, Plane_Normal,
   Copy_Plane,
@@ -34,185 +66,621 @@ METHODS Plane_Methods =
   Scale_Plane, Transform_Plane, Invert_Plane, Destroy_Plane
 };
 
-extern RAY *CM_Ray;
-extern long Ray_Plane_Tests, Ray_Plane_Tests_Succeeded;
 
-#ifndef Plane_Tolerance
-#define Plane_Tolerance 1.0e-8
-#endif
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   All_Plane_Intersections
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
-int All_Plane_Intersections (Object, Ray, Depth_Stack)
+static int All_Plane_Intersections (Object, Ray, Depth_Stack)
 OBJECT *Object;
 RAY *Ray;
 ISTACK *Depth_Stack;
-  {
+{
   DBL Depth;
   VECTOR IPoint;
 
-  if (Intersect_Plane (Ray, (PLANE *)Object, &Depth))
-    if (Depth > Plane_Tolerance)
-      {
-      VScale (IPoint, Ray -> Direction, Depth);
-      VAddEq (IPoint, Ray -> Initial);
-      if (Point_In_Clip (&IPoint, Object->Clip))
-        {
-        push_entry(Depth,IPoint,Object,Depth_Stack);
-        return (TRUE);
-        }
-      }
-  return (FALSE);
+  if (Intersect_Plane(Ray, (PLANE *)Object, &Depth))
+  {
+    VEvaluateRay(IPoint, Ray->Initial, Depth, Ray->Direction);
+
+    if (Point_In_Clip(IPoint, Object->Clip))
+    {
+      push_entry(Depth,IPoint,Object,Depth_Stack);
+
+      return(TRUE);
+    }
   }
 
-int Intersect_Plane (Ray, Plane, Depth)
+  return(FALSE);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Intersect_Plane
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int Intersect_Plane (Ray, Plane, Depth)
 RAY *Ray;
 PLANE *Plane;
 DBL *Depth;
-  {
+{
   DBL NormalDotOrigin, NormalDotDirection;
+  VECTOR P, D;
 
-  Ray_Plane_Tests++;
-  if (Ray == CM_Ray) 
+  Increase_Counter(stats[Ray_Plane_Tests]);
+
+  if (Plane->Trans == NULL)
+  {
+    VDot(NormalDotDirection, Plane->Normal_Vector, Ray->Direction);
+
+    if (fabs(NormalDotDirection) < EPSILON)
     {
-    VDot (NormalDotDirection, Plane->Normal_Vector, Ray->Direction);
-    if ((NormalDotDirection < Plane_Tolerance) &&
-      (NormalDotDirection > -Plane_Tolerance))
-      return (FALSE);
-
-    if (!Plane->CMCached) 
-      {
-      VDot (Plane->CMNormDotOrigin, Plane->Normal_Vector, Ray->Initial);
-      Plane->CMNormDotOrigin += Plane->Distance;
-      Plane->CMNormDotOrigin *= -1.0;
-      Plane->CMCached = TRUE;
-      }
-
-    *Depth = Plane->CMNormDotOrigin / NormalDotDirection;
-    if ((*Depth >= Plane_Tolerance) && (*Depth <= Max_Distance)) 
-      {
-      Ray_Plane_Tests_Succeeded++;
-      return (TRUE);
-      }
-    else
-      return (FALSE);
+      return(FALSE);
     }
-  else 
+
+    VDot(NormalDotOrigin, Plane->Normal_Vector, Ray->Initial);
+  }
+  else
+  {
+    MInvTransPoint(P, Ray->Initial, Plane->Trans);
+    MInvTransDirection(D, Ray->Direction, Plane->Trans);
+
+    VDot(NormalDotDirection, Plane->Normal_Vector, D);
+
+    if (fabs(NormalDotDirection) < EPSILON)
     {
-    VDot (NormalDotDirection, Plane->Normal_Vector, Ray->Direction);
-    if ((NormalDotDirection < Plane_Tolerance) &&
-      (NormalDotDirection > -Plane_Tolerance))
-      return (FALSE);
-
-    VDot (NormalDotOrigin, Plane->Normal_Vector, Ray->Initial);
-    NormalDotOrigin += Plane->Distance;
-    NormalDotOrigin *= -1.0;
-
-    *Depth = NormalDotOrigin / NormalDotDirection;
-    if ((*Depth >= Plane_Tolerance) && (*Depth <= Max_Distance)) 
-      {
-      Ray_Plane_Tests_Succeeded++;
-      return (TRUE);
-      }
-    else
-      return (FALSE);
+      return(FALSE);
     }
+
+    VDot(NormalDotOrigin, Plane->Normal_Vector, P);
   }
 
-int Inside_Plane (IPoint, Object)
-VECTOR *IPoint;
-OBJECT *Object;
+  *Depth = -(NormalDotOrigin + Plane->Distance) / NormalDotDirection;
+
+  if ((*Depth >= DEPTH_TOLERANCE) && (*Depth <= Max_Distance))
   {
+    Increase_Counter(stats[Ray_Plane_Tests_Succeeded]);
+
+    return (TRUE);
+  }
+  else
+  {
+    return (FALSE);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Inside_Plane
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int Inside_Plane (IPoint, Object)
+VECTOR IPoint;
+OBJECT *Object;
+{
   DBL Temp;
+  VECTOR P;
 
-  VDot (Temp, *IPoint, ((PLANE *)Object)->Normal_Vector);
-  return ((Temp + ((PLANE *)Object)->Distance) <= Plane_Tolerance);
+  if (((PLANE *)Object)->Trans == NULL)
+  {
+    VDot (Temp, IPoint, ((PLANE *)Object)->Normal_Vector);
+  }
+  else
+  {
+    MInvTransPoint(P, IPoint, ((PLANE *)Object)->Trans);
+
+    VDot (Temp, P, ((PLANE *)Object)->Normal_Vector);
   }
 
-void Plane_Normal (Result, Object, IPoint)
-OBJECT *Object;
-VECTOR *Result, *IPoint;
-  {
-  *Result = ((PLANE *)Object)->Normal_Vector;
-  }
+  return((Temp + ((PLANE *)Object)->Distance) < EPSILON);
+}
 
-void Translate_Plane (Object, Vector)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Plane_Normal
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Plane_Normal (Result, Object, Inter)
 OBJECT *Object;
-VECTOR *Vector;
+VECTOR Result;
+INTERSECTION *Inter;
+{
+  Assign_Vector(Result,((PLANE *)Object)->Normal_Vector);
+
+  if (((PLANE *)Object)->Trans != NULL)
   {
+    MTransNormal(Result, Result, ((PLANE *)Object)->Trans);
+
+    VNormalize(Result, Result);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Translate_Plane
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Translate_Plane (Object, Vector, Trans)
+OBJECT *Object;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
   VECTOR Translation;
+  PLANE *Plane = (PLANE *)Object;
 
-  VEvaluate (Translation, ((PLANE *)Object)->Normal_Vector, *Vector);
-  ((PLANE *)Object)->Distance -= Translation.x + Translation.y + Translation.z;
-  }
-
-void Rotate_Plane (Object, Vector)
-OBJECT *Object;
-VECTOR *Vector;
+  if (Plane->Trans == NULL)
   {
-  TRANSFORM Trans;
+    VEvaluate (Translation, ((PLANE *)Object)->Normal_Vector, Vector);
 
-  Compute_Rotation_Transform (&Trans, Vector);
-  Transform_Plane (Object, &Trans);
+    ((PLANE *)Object)->Distance -= Translation[X] + Translation[Y] + Translation[Z];
+
+    Compute_Plane_BBox((PLANE *)Object);
   }
-
-void Scale_Plane (Object, Vector)
-OBJECT *Object;
-VECTOR *Vector;
+  else
   {
+    Transform_Plane(Object, Trans);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Rotate_Plane
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Rotate_Plane (Object, Vector, Trans)
+OBJECT *Object;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  if (((PLANE *)Object)->Trans == NULL)
+  {
+    MTransDirection(((PLANE *)Object)->Normal_Vector, ((PLANE *)Object)->Normal_Vector, Trans);
+
+    Compute_Plane_BBox(((PLANE *)Object));
+  }
+  else
+  {
+    Transform_Plane (Object, Trans);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Scale_Plane
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Scale_Plane (Object, Vector, Trans)
+OBJECT *Object;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
   DBL Length;
-
   PLANE *Plane = (PLANE  *) Object;
 
-  VDivEq(Plane->Normal_Vector, *Vector);
-
-  VLength(Length, ((PLANE *)Object)->Normal_Vector);
-  VScaleEq (((PLANE *)Object)->Normal_Vector, 1.0 / Length);
-  ((PLANE *)Object)->Distance /= Length;
-  }
-
-void Invert_Plane (Object)
-OBJECT *Object;
+  if (Plane->Trans == NULL)
   {
-  VScaleEq (((PLANE *) Object)->Normal_Vector, -1.0);
-  ((PLANE *) Object)->Distance *= -1.0;
+    VDivEq(Plane->Normal_Vector, Vector);
+
+    VLength(Length, ((PLANE *)Object)->Normal_Vector);
+
+    VInverseScaleEq (((PLANE *)Object)->Normal_Vector, Length);
+
+    ((PLANE *)Object)->Distance /= Length;
+
+    Compute_Plane_BBox(Plane);
   }
+  else
+  {
+    Transform_Plane (Object, Trans);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Invert_Plane
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Invert_Plane (Object)
+OBJECT *Object;
+{
+  VScaleEq(((PLANE *)Object)->Normal_Vector, -1.0);
+
+  ((PLANE *)Object)->Distance *= -1.0;
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Transform_Plane
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Transform_Plane(Object, Trans)
+OBJECT *Object;
+TRANSFORM *Trans;
+{
+  PLANE *Plane = (PLANE  *) Object;
+
+  if (Plane->Trans == NULL)
+  {
+    Plane->Trans = Create_Transform();
+  }
+
+  Compose_Transforms(Plane->Trans, Trans);
+
+  Compute_Plane_BBox(Plane);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Plane
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 PLANE *Create_Plane()
-  {
+{
   PLANE *New;
 
-  if ((New = (PLANE *) malloc (sizeof (PLANE))) == NULL)
-    MAError ("plane");
+  New = (PLANE *)POV_MALLOC(sizeof (PLANE), "plane");
 
   INIT_OBJECT_FIELDS(New,PLANE_OBJECT,&Plane_Methods)
 
-    Make_Vector (&(New -> Normal_Vector), 0.0, 1.0, 0.0);
-  New -> Distance = 0.0;
-  New -> CMNormDotOrigin = 0.0;
-  New -> CMCached = 0;
-  return (New);
-  }
+  Make_Vector(New->Normal_Vector, 0.0, 1.0, 0.0);
 
-void *Copy_Plane (Object)
+  New ->Distance = 0.0;
+
+  New->Trans = NULL;
+
+  return(New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_Plane
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void *Copy_Plane (Object)
 OBJECT *Object;
-  {
+{
   PLANE *New;
 
-  New = Create_Plane ();
-  *New = * ((PLANE *)Object);
+  New = Create_Plane();
 
-  return (New);
-  }
+  Destroy_Transform(New->Trans);
 
-void Transform_Plane (Object, Trans)
+  *New = *((PLANE *)Object);
+
+  New->Trans = Copy_Transform(((PLANE *)Object)->Trans);
+
+  return(New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_Plane
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Destroy_Plane(Object)
 OBJECT *Object;
-TRANSFORM *Trans;
-  {
-  MTransPoint (&((PLANE *) Object)->Normal_Vector,
-    &((PLANE *) Object)->Normal_Vector, Trans);
-  }
+{
+  Destroy_Transform(((PLANE *)Object)->Trans);
 
-void Destroy_Plane (Object)
-OBJECT *Object;
+  POV_FREE(Object);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Compute_Plane_BBox
+*
+* INPUT
+*
+*   Plane - Plane
+*   
+* OUTPUT
+*
+*   Plane
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Dieter Bayer
+*   
+* DESCRIPTION
+*
+*   Calculate the bounding box of a plane (it's always infinite).
+*
+* CHANGES
+*
+*   Aug 1994 : Creation.
+*
+******************************************************************************/
+
+void Compute_Plane_BBox(Plane)
+PLANE *Plane;
+{
+  Make_BBox(Plane->BBox, -BOUND_HUGE/2, -BOUND_HUGE/2, -BOUND_HUGE/2,
+    BOUND_HUGE, BOUND_HUGE, BOUND_HUGE);
+
+  if (Plane->Clip != NULL)
   {
-  free (Object);
+    Plane->BBox = Plane->Clip->BBox;
   }
+}
+

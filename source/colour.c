@@ -3,8 +3,8 @@
 *
 *  This module implements routines to manipulate colours.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
@@ -24,159 +24,605 @@
 #include "frame.h"
 #include "vector.h"
 #include "povproto.h"
+#include "colour.h"
+#include "pigment.h"
+#include "normal.h"
+#include "texture.h"
 
-#define FABS(x) ((x) < 0.0 ? (0.0 - (x)) : (x))
 
-COLOUR_MAP_ENTRY *Build_Entries;
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
+
+
+
+/*****************************************************************************
+* Local typedefs
+******************************************************************************/
+
+
+
+/*****************************************************************************
+* Local variables
+******************************************************************************/
+
+
+/*****************************************************************************
+* Static functions
+******************************************************************************/
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 COLOUR *Create_Colour ()
-  {
+{
   COLOUR *New;
 
-  if ((New = (COLOUR *) malloc (sizeof (COLOUR))) == NULL)
-    MAError ("color");
+  New = (COLOUR *)POV_MALLOC(sizeof (COLOUR), "color");
 
-  Make_Colour (New, 0.0, 0.0, 0.0);
+  Make_Colour (*New, 0.0, 0.0, 0.0);
+
   return (New);
-  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 COLOUR *Copy_Colour (Old)
-COLOUR *Old;
-  {
+COLOUR Old;
+{
   COLOUR *New;
-  if (Old != NULL)
-    {
-    New  = Create_Colour ();
-    *New = *Old;
-    }
-  else New = NULL;
-  return (New);
-  }
-
-  COLOUR_MAP_ENTRY *Create_CMap_Entries (Map_Size)
-    int Map_Size;
-  {
-  COLOUR_MAP_ENTRY *New;
-
-  if ((New = (COLOUR_MAP_ENTRY *)
-    malloc(Map_Size * sizeof (COLOUR_MAP_ENTRY))) == NULL)
-    MAError ("colour map entry");
-  return (New);
-  }
-
-COLOUR_MAP_ENTRY *Copy_CMap_Entries (Old,Map_Size)
-COLOUR_MAP_ENTRY *Old;
-int Map_Size;
-  {
-  COLOUR_MAP_ENTRY *New;
-  register int i;
 
   if (Old != NULL)
-    {
-    New = Create_CMap_Entries (Map_Size);
-    for (i = 0; i < Map_Size; i++)
-      New[i] = Old[i];
-    }
+  {
+    New = Create_Colour ();
+
+    Assign_Colour(*New,Old);
+  }
   else
+  {
     New = NULL;
-  return (New);
   }
 
-COLOUR_MAP *Create_Colour_Map ()
-  {
-  COLOUR_MAP *New;
-
-  if ((New = (COLOUR_MAP *) malloc (sizeof (COLOUR_MAP))) == NULL)
-    MAError ("colour map");
-
-  New->Users = 0;
-  New->Number_Of_Entries = 0;
-  New->Colour_Map_Entries = NULL;
-  New->Transparency_Flag = FALSE;
   return (New);
-  }   
+}
 
-COLOUR_MAP *Copy_Colour_Map (Old)
-COLOUR_MAP *Old;
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   Aug 1995 : Use POV_CALLOC to initialize entries. [DB]
+*
+******************************************************************************/
+
+BLEND_MAP_ENTRY *Create_BMap_Entries (Map_Size)
+int Map_Size;
+{
+  BLEND_MAP_ENTRY *New;
+
+  New = (BLEND_MAP_ENTRY *)POV_CALLOC((size_t)Map_Size, sizeof (BLEND_MAP_ENTRY), "blend map entry");
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*
+* CHANGES
+*
+******************************************************************************/
+
+BLEND_MAP_ENTRY *Copy_BMap_Entries (Old, Map_Size, Type)
+BLEND_MAP_ENTRY *Old;
+int Map_Size, Type;
+{
+  int i;
+  BLEND_MAP_ENTRY *New;
+
+  if (Old != NULL)
   {
-  COLOUR_MAP *New;
+    New = Create_BMap_Entries (Map_Size);
+
+    for (i = 0; i < Map_Size; i++)
+    {
+      switch (Type)
+      {
+        case PIGMENT_TYPE:
+
+          New[i].Vals.Pigment = Copy_Pigment(Old[i].Vals.Pigment);
+
+          break;
+
+        case NORMAL_TYPE:
+
+          New[i].Vals.Tnormal = Copy_Tnormal(Old[i].Vals.Tnormal);
+
+          break;
+
+        case TEXTURE_TYPE:
+
+          New[i].Vals.Texture = Copy_Textures(Old[i].Vals.Texture);
+
+          break;
+
+        case COLOUR_TYPE:
+        case SLOPE_TYPE:
+
+          New[i] = Old[i];
+
+          break;
+      }
+    }
+  }
+  else
+  {
+    New = NULL;
+  }
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Blend_Map
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+BLEND_MAP *Create_Blend_Map ()
+{
+  BLEND_MAP *New;
+
+  New = (BLEND_MAP *)POV_MALLOC(sizeof (BLEND_MAP), "blend map");
+
+  New->Users = 1;
+
+  New->Number_Of_Entries = 0;
+
+  New->Type = COLOUR_TYPE;
+
+  New->Blend_Map_Entries = NULL;
+
+  New->Transparency_Flag = FALSE;
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_Blend_Map
+*
+* INPUT
+*   
+* OUTPUT
+*
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+BLEND_MAP *Copy_Blend_Map (Old)
+BLEND_MAP *Old;
+{
+  BLEND_MAP *New;
 
   New = Old;
-  if (New != NULL)
+
+  /* 
+   * Do not increase the users field if it is negative.
+   *
+   * A negative users field incicates a reference to a static
+   * or global memory area in the data segment, not on the heap!
+   * Thus it must not be deleted later.
+   */
+
+  if ((New != NULL) && (New->Users >= 0))
+  {
     New->Users++;
+  }
 
   return (New);
-  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Colour_Distance
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 DBL Colour_Distance (colour1, colour2)
-COLOUR *colour1, *colour2;
-  {
-  return (FABS (colour1->Red - colour2->Red)
-    + FABS (colour1->Green - colour2->Green)
-    + FABS (colour1->Blue - colour2->Blue));
-  }
+COLOUR colour1, colour2;
+{
+  return (fabs(colour1[RED]   - colour2[RED]) +
+          fabs(colour1[GREEN] - colour2[GREEN]) +
+          fabs(colour1[BLUE]  - colour2[BLUE]));
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Add_Colour
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 void Add_Colour (result, colour1, colour2)
-COLOUR *result, *colour1, *colour2;
-  {
-  result->Red = colour1->Red + colour2->Red;
-  result->Green = colour1->Green + colour2->Green;
-  result->Blue = colour1->Blue + colour2->Blue;
-  result->Filter = colour1->Filter + colour2->Filter;
-  }
+COLOUR result, colour1, colour2;
+{
+  result[RED]    = colour1[RED]    + colour2[RED];
+  result[GREEN]  = colour1[GREEN]  + colour2[GREEN];
+  result[BLUE]   = colour1[BLUE]   + colour2[BLUE];
+  result[FILTER] = colour1[FILTER] + colour2[FILTER];
+  result[TRANSM] = colour1[TRANSM] + colour2[TRANSM];
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Scale_Colour
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 void Scale_Colour (result, colour, factor)
-COLOUR *result, *colour;
+COLOUR result, colour;
 DBL factor;
-  {
-  result->Red = colour->Red * factor;
-  result->Green = colour->Green * factor;
-  result->Blue = colour->Blue * factor;
-  result->Filter = colour->Filter * factor;
-  }
+{
+  result[RED]    = colour[RED]    * factor;
+  result[GREEN]  = colour[GREEN]  * factor;
+  result[BLUE]   = colour[BLUE]   * factor;
+  result[FILTER] = colour[FILTER] * factor;
+  result[TRANSM] = colour[TRANSM] * factor;
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Clip_Colour
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 void Clip_Colour (result, colour)
-COLOUR *result, *colour;
+COLOUR result, colour;
+{
+  if (colour[RED] > 1.0)
   {
-  if (colour -> Red > 1.0)
-    result -> Red = 1.0;
-  else if (colour -> Red < 0.0)
-    result -> Red = 0.0;
-  else result -> Red = colour -> Red;
-
-    if (colour -> Green > 1.0)
-      result -> Green = 1.0;
-    else if (colour -> Green < 0.0)
-      result -> Green = 0.0;
-    else result -> Green = colour -> Green;
-
-    if (colour -> Blue > 1.0)
-      result -> Blue = 1.0;
-    else if (colour -> Blue < 0.0)
-      result -> Blue = 0.0;
-    else result -> Blue = colour -> Blue;
-
-    if (colour -> Filter > 1.0)
-      result -> Filter = 1.0;
-    else if (colour -> Filter < 0.0)
-      result -> Filter = 0.0;
-    else result -> Filter = colour -> Filter;
+    result[RED] = 1.0;
+  }
+  else
+  {
+    if (colour[RED] < 0.0)
+    {
+      result[RED] = 0.0;
+    }
+    else
+    {
+      result[RED] = colour[RED];
+    }
   }
 
-  void Destroy_Colour_Map (CMap)
-    COLOUR_MAP *CMap;
+  if (colour[GREEN] > 1.0)
   {
-  if (CMap == NULL)
-    return;
-
-  if (CMap->Users < 0)
-    return;
-
-  CMap->Users--;
-
-  if (CMap->Users >= 0)
-    return;
-
-  free (CMap->Colour_Map_Entries);
-  free (CMap);
+    result[GREEN] = 1.0;
   }
+  else
+  {
+    if (colour[GREEN] < 0.0)
+    {
+      result[GREEN] = 0.0;
+    }
+    else
+    {
+      result[GREEN] = colour[GREEN];
+    }
+  }
+
+  if (colour[BLUE] > 1.0)
+  {
+    result[BLUE] = 1.0;
+  }
+  else
+  {
+    if (colour[BLUE] < 0.0)
+    {
+      result[BLUE] = 0.0;
+    }
+    else
+    {
+      result[BLUE] = colour[BLUE];
+    }
+  }
+
+  if (colour[FILTER] > 1.0)
+  {
+    result[FILTER] = 1.0;
+  }
+  else
+  {
+    if (colour[FILTER] < 0.0)
+    {
+      result[FILTER] = 0.0;
+    }
+    else
+    {
+      result[FILTER] = colour[FILTER];
+    }
+  }
+
+  if (colour[TRANSM] > 1.0)
+  {
+    result[TRANSM] = 1.0;
+  }
+  else
+  {
+    if (colour[TRANSM] < 0.0)
+    {
+      result[TRANSM] = 0.0;
+    }
+    else
+    {
+      result[TRANSM] = colour[TRANSM];
+    }
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_Blend_Map
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+void Destroy_Blend_Map (BMap)
+BLEND_MAP *BMap;
+{
+  int i;
+  
+  if (BMap != NULL)
+  {
+    if (--(BMap->Users) == 0)
+    {
+      for (i = 0; i < BMap->Number_Of_Entries; i++)
+      {
+        switch (BMap->Type)
+        {
+           case PIGMENT_TYPE:
+             Destroy_Pigment(BMap->Blend_Map_Entries[i].Vals.Pigment);
+             break;
+
+           case NORMAL_TYPE:
+             Destroy_Tnormal(BMap->Blend_Map_Entries[i].Vals.Tnormal);
+             break;
+
+           case TEXTURE_TYPE:
+             Destroy_Textures(BMap->Blend_Map_Entries[i].Vals.Texture);
+        }
+      }
+
+      POV_FREE (BMap->Blend_Map_Entries);
+
+      POV_FREE (BMap);
+    }
+  }
+}
+

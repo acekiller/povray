@@ -2,17 +2,17 @@
 *                boxes.c
 *
 *  This module implements the box primitive.
-*  This file was written by Alexander Enzmann.	He wrote the code for
+*  This file was written by Alexander Enzmann.  He wrote the code for
 *  boxes and generously provided us these enhancements.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
-*  with enhancements to POV-Ray and to port the software to platforms other 
+*  with enhancements to POV-Ray and to port the software to platforms other
 *  than those supported by the POV-Ray Team.  There are strict rules under
 *  which you are permitted to use this file.  The rules are in the file
-*  named POVLEGAL.DOC which should be distributed with this file. If 
+*  named POVLEGAL.DOC which should be distributed with this file. If
 *  POVLEGAL.DOC is not available or for more info please contact the POV-Ray
 *  Team Coordinator by leaving a message in CompuServe's Graphics Developer's
 *  Forum.  The latest version of POV-Ray may be found there as well.
@@ -24,394 +24,1034 @@
 *****************************************************************************/
 
 #include "frame.h"
+#include "povray.h"
 #include "vector.h"
 #include "povproto.h"
+#include "bbox.h"
+#include "boxes.h"
+#include "matrices.h"
+#include "objects.h"
+
+
+
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
+
+/* Minimal intersection depth. */
+
+#define DEPTH_TOLERANCE 1.0e-6
+
+/* Two values are equal if their difference is small than CLOSE_TOLERANCE. */
+
+#define CLOSE_TOLERANCE 1.0e-6
+
+/* Side hit. */
+
+#define SIDE_X_0 1
+#define SIDE_X_1 2
+#define SIDE_Y_0 3
+#define SIDE_Y_1 4
+#define SIDE_Z_0 5
+#define SIDE_Z_1 6
+
+
+
+/*****************************************************************************
+* Static functions
+******************************************************************************/
+static int  All_Box_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
+static int  Inside_Box PARAMS((VECTOR point, OBJECT *Object));
+static void Box_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
+static void Translate_Box PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Rotate_Box PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Scale_Box PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Transform_Box PARAMS((OBJECT *Object, TRANSFORM *Trans));
+static void Invert_Box PARAMS((OBJECT *Object));
+
+
+
+/*****************************************************************************
+* Local variables
+******************************************************************************/
 
 METHODS Box_Methods =
-  { 
+{
   All_Box_Intersections,
   Inside_Box, Box_Normal,
   Copy_Box, Translate_Box, Rotate_Box, Scale_Box, Transform_Box,
   Invert_Box, Destroy_Box
 };
 
-extern long Ray_Box_Tests, Ray_Box_Tests_Succeeded;
 
-#define close(x, y) (fabs(x-y) < EPSILON ? 1 : 0)
 
-int All_Box_Intersections (Object, Ray, Depth_Stack)
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   All_Box_Intersections
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int All_Box_Intersections(Object, Ray, Depth_Stack)
 OBJECT *Object;
 RAY *Ray;
 ISTACK *Depth_Stack;
-  {
+{
+  int Intersection_Found;
+  int Side1, Side2;
   DBL Depth1, Depth2;
   VECTOR IPoint;
-  register int Intersection_Found;
+
+  Increase_Counter(stats[Ray_Box_Tests]);
 
   Intersection_Found = FALSE;
 
-  if (Intersect_Boxx (Ray, (BOX *)Object, &Depth1, &Depth2))
+  if (Intersect_Box(Ray, (BOX *)Object, &Depth1, &Depth2, &Side1, &Side2))
+  {
+    if (Depth1 > DEPTH_TOLERANCE)
     {
-    VScale (IPoint, Ray->Direction, Depth1);
-    VAddEq (IPoint, Ray->Initial);
+      VEvaluateRay(IPoint, Ray->Initial, Depth1, Ray->Direction);
 
-    if (Point_In_Clip (&IPoint, Object->Clip))
+      if (Point_In_Clip(IPoint, Object->Clip))
       {
-      push_entry(Depth1,IPoint,Object,Depth_Stack);
-      Intersection_Found = TRUE;
-      }
+        push_entry_i1(Depth1,IPoint,Object,Side1,Depth_Stack);
 
-    if (Depth2 != Depth1)
-      {
-      VScale (IPoint, Ray->Direction, Depth2);
-      VAddEq (IPoint, Ray->Initial);
-
-      if (Point_In_Clip (&IPoint, Object->Clip))
-        {
-        push_entry(Depth2,IPoint,Object,Depth_Stack);
         Intersection_Found = TRUE;
-        }
       }
     }
-  return (Intersection_Found);
+
+    VEvaluateRay(IPoint, Ray->Initial, Depth2, Ray->Direction);
+
+    if (Point_In_Clip(IPoint, Object->Clip))
+    {
+      push_entry_i1(Depth2,IPoint,Object,Side2,Depth_Stack);
+
+      Intersection_Found = TRUE;
+    }
   }
 
-int Intersect_Boxx (Ray, box, Depth1, Depth2)
+  if (Intersection_Found)
+  {
+    Increase_Counter(stats[Ray_Box_Tests_Succeeded]);
+  }
+
+  return (Intersection_Found);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Intersect_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   Sep 1994 : Added code to decide which side was hit in the case
+*              intersection points are close to each other. This removes
+*              some ugly artefacts one could observe at the corners of
+*              boxes due to the usage of the wrong normal vector. [DB]
+*
+******************************************************************************/
+
+int Intersect_Box(Ray, box, Depth1, Depth2, Side1, Side2)
 RAY *Ray;
 BOX *box;
 DBL *Depth1, *Depth2;
-  {
+int *Side1, *Side2;
+{
+  int smin = 0, smax = 0;    /* Side hit for min/max intersection. */
   DBL t, tmin, tmax;
   VECTOR P, D;
 
-  Ray_Box_Tests++;
-
   /* Transform the point into the boxes space */
-  if (box->Trans != NULL) 
+
+  if (box->Trans != NULL)
+  {
+    MInvTransPoint(P, Ray->Initial, box->Trans);
+    MInvTransDirection(D, Ray->Direction, box->Trans);
+  }
+  else
+  {
+    Assign_Vector(P, Ray->Initial);
+    Assign_Vector(D, Ray->Direction);
+  }
+
+  tmin = 0.0;
+  tmax = BOUND_HUGE;
+
+  /*
+   * Sides first.
+   */
+
+  if (D[X] < -EPSILON)
+  {
+    t = (box->bounds[0][X] - P[X]) / D[X];
+
+    if (t < tmin) return(FALSE);
+
+    if (t <= tmax)
     {
-    MInvTransPoint(&P, &Ray->Initial, box->Trans);
-    MInvTransDirection(&D, &Ray->Direction, box->Trans);
-    }
-  else 
-    {
-    P.x = Ray->Initial.x;
-    P.y = Ray->Initial.y;
-    P.z = Ray->Initial.z;
-    D.x = Ray->Direction.x;
-    D.y = Ray->Direction.y;
-    D.z = Ray->Direction.z;
+      smax = SIDE_X_0;
+      tmax = t;
     }
 
-    tmin = 0.0;
-  tmax = HUGE_VAL;
+    t = (box->bounds[1][X] - P[X]) / D[X];
 
-  /* Sides first */
-  if (D.x < -EPSILON) 
+    if (t >= tmin)
     {
-    t = (box->bounds[0].x - P.x) / D.x;
-    if (t < tmin)
-      return 0;
-    if (t <= tmax)
-      tmax = t;
-    t = (box->bounds[1].x - P.x) / D.x;
-    if (t >= tmin) 
-      {
-      if (t > tmax)
-        return 0;
-      tmin = t;
-      }
-    }
-  else if (D.x > EPSILON) 
-    {
-    t = (box->bounds[1].x - P.x) / D.x;
-    if (t < tmin)
-      return 0;
-    if (t <= tmax)
-      tmax = t;
-    t = (box->bounds[0].x - P.x) / D.x;
-    if (t >= tmin) 
-      {
-      if (t > tmax)
-        return 0;
-      tmin = t;
-      }
-    }
-  else if (P.x < box->bounds[0].x || P.x > box->bounds[1].x)
-    return 0;
+      if (t > tmax) return(FALSE);
 
-  /* Check Top/Bottom */
-  if (D.y < -EPSILON) 
-    {
-    t = (box->bounds[0].y - P.y) / D.y;
-    if (t < tmin)
-      return 0;
-    if (t <= tmax)
-      tmax = t;
-    t = (box->bounds[1].y - P.y) / D.y;
-    if (t >= tmin) 
-      {
-      if (t > tmax)
-        return 0;
+      smin = SIDE_X_1;
       tmin = t;
+    }
+  }
+  else
+  {
+    if (D[X] > EPSILON)
+    {
+      t = (box->bounds[1][X] - P[X]) / D[X];
+
+      if (t < tmin) return(FALSE);
+
+      if (t <= tmax)
+      {
+        smax = SIDE_X_1;
+        tmax = t;
+      }
+
+      t = (box->bounds[0][X] - P[X]) / D[X];
+
+      if (t >= tmin)
+      {
+        if (t > tmax) return(FALSE);
+
+        smin = SIDE_X_0;
+        tmin = t;
       }
     }
-  else if (D.y > EPSILON) 
+    else
     {
-    t = (box->bounds[1].y - P.y) / D.y;
-    if (t < tmin)
-      return 0;
-    if (t <= tmax)
-      tmax = t;
-    t = (box->bounds[0].y - P.y) / D.y;
-    if (t >= tmin) 
+      if ((P[X] < box->bounds[0][X]) || (P[X] > box->bounds[1][X]))
       {
-      if (t > tmax)
-        return 0;
-      tmin = t;
+        return(FALSE);
       }
     }
-  else if (P.y < box->bounds[0].y || P.y > box->bounds[1].y)
-    return 0;
+  }
+
+  /*
+   * Check Top/Bottom.
+   */
+
+  if (D[Y] < -EPSILON)
+  {
+    t = (box->bounds[0][Y] - P[Y]) / D[Y];
+
+    if (t < tmin) return(FALSE);
+
+    if (t <= tmax - CLOSE_TOLERANCE)
+    {
+      smax = SIDE_Y_0;
+      tmax = t;
+    }
+    else
+    {
+      /*
+       * If intersection points are close to each other find out
+       * which side to use, i.e. is most probably hit. [DB 9/94]
+       */
+
+      if (t <= tmax + CLOSE_TOLERANCE)
+      {
+        if (-D[Y] > fabs(D[X])) smax = SIDE_Y_0;
+      }
+    }
+
+    t = (box->bounds[1][Y] - P[Y]) / D[Y];
+
+    if (t >= tmin + CLOSE_TOLERANCE)
+    {
+      if (t > tmax) return(FALSE);
+
+      smin = SIDE_Y_1;
+      tmin = t;
+    }
+    else
+    {
+      /*
+       * If intersection points are close to each other find out
+       * which side to use, i.e. is most probably hit. [DB 9/94]
+       */
+
+      if (t >= tmin - CLOSE_TOLERANCE)
+      {
+        if (-D[Y] > fabs(D[X])) smin = SIDE_Y_1;
+      }
+    }
+  }
+  else
+  {
+    if (D[Y] > EPSILON)
+    {
+      t = (box->bounds[1][Y] - P[Y]) / D[Y];
+
+      if (t < tmin) return(FALSE);
+
+      if (t <= tmax - CLOSE_TOLERANCE)
+      {
+        smax = SIDE_Y_1;
+        tmax = t;
+      }
+      else
+      {
+        /*
+         * If intersection points are close to each other find out
+         * which side to use, i.e. is most probably hit. [DB 9/94]
+         */
+
+        if (t <= tmax + CLOSE_TOLERANCE)
+        {
+          if (D[Y] > fabs(D[X])) smax = SIDE_Y_1;
+        }
+      }
+
+      t = (box->bounds[0][Y] - P[Y]) / D[Y];
+
+      if (t >= tmin + CLOSE_TOLERANCE)
+      {
+        if (t > tmax) return(FALSE);
+
+        smin = SIDE_Y_0;
+        tmin = t;
+      }
+      else
+      {
+        /*
+         * If intersection points are close to each other find out
+         * which side to use, i.e. is most probably hit. [DB 9/94]
+         */
+
+        if (t >= tmin - CLOSE_TOLERANCE)
+        {
+          if (D[Y] > fabs(D[X])) smin = SIDE_Y_0;
+        }
+      }
+    }
+    else
+    {
+      if ((P[Y] < box->bounds[0][Y]) || (P[Y] > box->bounds[1][Y]))
+      {
+        return(FALSE);
+      }
+    }
+  }
 
   /* Now front/back */
-  if (D.z < -EPSILON) 
+
+  if (D[Z] < -EPSILON)
+  {
+    t = (box->bounds[0][Z] - P[Z]) / D[Z];
+
+    if (t < tmin) return(FALSE);
+
+    if (t <= tmax - CLOSE_TOLERANCE)
     {
-    t = (box->bounds[0].z - P.z) / D.z;
-    if (t < tmin)
-      return 0;
-    if (t <= tmax)
+      smax = SIDE_Z_0;
       tmax = t;
-    t = (box->bounds[1].z - P.z) / D.z;
-    if (t >= tmin) 
+    }
+    else
+    {
+      /*
+       * If intersection points are close to each other find out
+       * which side to use, i.e. is most probably hit. [DB 9/94]
+       */
+
+      if (t <= tmax + CLOSE_TOLERANCE)
       {
-      if (t > tmax)
-        return 0;
-      tmin = t;
+        switch (smax)
+        {
+          case SIDE_X_0 :
+          case SIDE_X_1 : if (-D[Z] > fabs(D[X])) smax = SIDE_Z_0; break;
+
+          case SIDE_Y_0 :
+          case SIDE_Y_1 : if (-D[Z] > fabs(D[Y])) smax = SIDE_Z_0; break;
+        }
       }
     }
-  else if (D.z > EPSILON) 
+
+    t = (box->bounds[1][Z] - P[Z]) / D[Z];
+
+    if (t >= tmin + CLOSE_TOLERANCE)
     {
-    t = (box->bounds[1].z - P.z) / D.z;
-    if (t < tmin)
-      return 0;
-    if (t <= tmax)
-      tmax = t;
-    t = (box->bounds[0].z - P.z) / D.z;
-    if (t >= tmin) 
-      {
-      if (t > tmax)
-        return 0;
+      if (t > tmax) return(FALSE);
+
+      smin = SIDE_Z_1;
       tmin = t;
+    }
+    else
+    {
+      /*
+       * If intersection points are close to each other find out
+       * which side to use, i.e. is most probably hit. [DB 9/94]
+       */
+
+      if (t >= tmin - CLOSE_TOLERANCE)
+      {
+        switch (smin)
+        {
+          case SIDE_X_0 :
+          case SIDE_X_1 : if (-D[Z] > fabs(D[X])) smin = SIDE_Z_1; break;
+
+          case SIDE_Y_0 :
+          case SIDE_Y_1 : if (-D[Z] > fabs(D[Y])) smin = SIDE_Z_1; break;
+        }
       }
     }
-  else if (P.z < box->bounds[0].z || P.z > box->bounds[1].z)
-    return 0;
+  }
+  else
+  {
+    if (D[Z] > EPSILON)
+    {
+      t = (box->bounds[1][Z] - P[Z]) / D[Z];
+
+      if (t < tmin) return(FALSE);
+
+      if (t <= tmax - CLOSE_TOLERANCE)
+      {
+        smax = SIDE_Z_1;
+        tmax = t;
+      }
+      else
+      {
+        /*
+         * If intersection points are close to each other find out
+         * which side to use, i.e. is most probably hit. [DB 9/94]
+         */
+
+        if (t <= tmax + CLOSE_TOLERANCE)
+        {
+          switch (smax)
+          {
+            case SIDE_X_0 :
+            case SIDE_X_1 : if (D[Z] > fabs(D[X])) smax = SIDE_Z_1; break;
+
+            case SIDE_Y_0 :
+            case SIDE_Y_1 : if (D[Z] > fabs(D[Y])) smax = SIDE_Z_1; break;
+          }
+        }
+      }
+
+      t = (box->bounds[0][Z] - P[Z]) / D[Z];
+
+      if (t >= tmin + CLOSE_TOLERANCE)
+      {
+        if (t > tmax) return(FALSE);
+
+        smin = SIDE_Z_0;
+        tmin = t;
+      }
+      else
+      {
+        /*
+         * If intersection points are close to each other find out
+         * which side to use, i.e. is most probably hit. [DB 9/94]
+         */
+
+        if (t >= tmin - CLOSE_TOLERANCE)
+        {
+          switch (smin)
+          {
+            case SIDE_X_0 :
+            case SIDE_X_1 : if (D[Z] > fabs(D[X])) smin = SIDE_Z_0; break;
+
+            case SIDE_Y_0 :
+            case SIDE_Y_1 : if (D[Z] > fabs(D[Y])) smin = SIDE_Z_0; break;
+          }
+        }
+      }
+    }
+    else
+    {
+      if ((P[Z] < box->bounds[0][Z]) || (P[Z] > box->bounds[1][Z]))
+      {
+        return(FALSE);
+      }
+    }
+  }
+
+  if (tmax < DEPTH_TOLERANCE)
+  {
+    return (FALSE);
+  }
 
   *Depth1 = tmin;
   *Depth2 = tmax;
 
-  /* printf("Box intersects: %g, %g\n", *Depth1, *Depth2); */
-  if ((*Depth1 < Small_Tolerance) || (*Depth1 > Max_Distance))
-    if ((*Depth2 < Small_Tolerance) || (*Depth2 > Max_Distance))
-      return (FALSE);
-    else
-      *Depth1 = *Depth2;
-  else
-    if ((*Depth2 < Small_Tolerance) || (*Depth2 > Max_Distance))
-      *Depth2 = *Depth1;
+  *Side1 = smin;
+  *Side2 = smax;
 
-  Ray_Box_Tests_Succeeded++;
-  return (TRUE);
-  }
+  return(TRUE);
+}
 
-int Inside_Box (IPoint, Object)
-VECTOR *IPoint;
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Inside_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int Inside_Box(IPoint, Object)
+VECTOR IPoint;
 OBJECT *Object;
-  {
+{
   VECTOR New_Point;
   BOX *box = (BOX *) Object;
 
-  /* Transform the point into the boxes space */
+  /* Transform the point into box space. */
+
   if (box->Trans != NULL)
-    MInvTransPoint(&New_Point, IPoint, box->Trans);
+  {
+    MInvTransPoint(New_Point, IPoint, box->Trans);
+  }
   else
-    New_Point = *IPoint;
-
-  /* Test to see if we are inside the box */
-  if (New_Point.x < box->bounds[0].x || New_Point.x > box->bounds[1].x)
-    return ((int) box->Inverted);
-  if (New_Point.y < box->bounds[0].y || New_Point.y > box->bounds[1].y)
-    return ((int) box->Inverted);
-  if (New_Point.z < box->bounds[0].z || New_Point.z > box->bounds[1].z)
-    return ((int)box->Inverted);
-  /* Inside the box */
-  return 1-box->Inverted;
+  {
+    Assign_Vector(New_Point,IPoint);
   }
 
-void Box_Normal (Result, Object, IPoint)
-OBJECT *Object;
-VECTOR *Result, *IPoint;
+  /* Test to see if we are outside the box. */
+
+  if ((New_Point[X] < box->bounds[0][X]) || (New_Point[X] > box->bounds[1][X]))
   {
-  VECTOR New_Point;
-  BOX *box = (BOX *) Object;
-
-  /* Transform the point into the boxes space */
-  if (box->Trans != NULL)
-    MInvTransPoint(&New_Point, IPoint, box->Trans);
-  else 
-    {
-    New_Point.x = IPoint->x;
-    New_Point.y = IPoint->y;
-    New_Point.z = IPoint->z;
-    }
-
-    Result->x = 0.0; Result->y = 0.0; Result->z = 0.0;
-  if (close(New_Point.x, box->bounds[1].x))
-    Result->x = 1.0;
-  else if (close(New_Point.x, box->bounds[0].x))
-    Result->x = -1.0;
-  else if (close(New_Point.y, box->bounds[1].y))
-    Result->y = 1.0;
-  else if (close(New_Point.y, box->bounds[0].y))
-    Result->y = -1.0;
-  else if (close(New_Point.z, box->bounds[1].z))
-    Result->z = 1.0;
-  else if (close(New_Point.z, box->bounds[0].z))
-    Result->z = -1.0;
-  else 
-    {
-    /* Bad result, should we do something with it? */
-      Result->x = 1.0;
-    }
-
-  /* Transform the point into the boxes space */
-  if (box->Trans != NULL) 
-    {
-    MTransNormal(Result, Result, box->Trans);
-    VNormalize(*Result, *Result);
-    }
+    return (Test_Flag(box, INVERTED_FLAG));
   }
 
-void *Copy_Box (Object)
-OBJECT *Object;
+  if ((New_Point[Y] < box->bounds[0][Y]) || (New_Point[Y] > box->bounds[1][Y]))
   {
+    return (Test_Flag(box, INVERTED_FLAG));
+  }
+
+  if ((New_Point[Z] < box->bounds[0][Z]) || (New_Point[Z] > box->bounds[1][Z]))
+  {
+    return (Test_Flag(box, INVERTED_FLAG));
+  }
+
+  /* Inside the box. */
+
+  return (!Test_Flag(box, INVERTED_FLAG));
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Box_Normal
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Box_Normal(Result, Object, Inter)
+OBJECT *Object;
+VECTOR Result;
+INTERSECTION *Inter;
+{
+  switch (Inter->i1)
+  {
+    case SIDE_X_0: Make_Vector(Result, -1.0,  0.0,  0.0); break;
+    case SIDE_X_1: Make_Vector(Result,  1.0,  0.0,  0.0); break;
+    case SIDE_Y_0: Make_Vector(Result,  0.0, -1.0,  0.0); break;
+    case SIDE_Y_1: Make_Vector(Result,  0.0,  1.0,  0.0); break;
+    case SIDE_Z_0: Make_Vector(Result,  0.0,  0.0, -1.0); break;
+    case SIDE_Z_1: Make_Vector(Result,  0.0,  0.0,  1.0); break;
+
+    default: Error("Unknown box side in Box_Normal().\n");
+  }
+
+  /* Transform the point into the boxes space. */
+
+  if (((BOX *)Object)->Trans != NULL)
+  {
+    MTransNormal(Result, Result, ((BOX *)Object)->Trans);
+
+    VNormalize(Result, Result);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Translate_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Translate_Box(Object, Vector, Trans)
+OBJECT *Object;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  if (((BOX *)Object)->Trans == NULL)
+  {
+    VAddEq(((BOX *)Object)->bounds[0], Vector);
+
+    VAddEq(((BOX *)Object)->bounds[1], Vector);
+
+    Compute_Box_BBox((BOX *)Object);
+  }
+  else
+  {
+    Transform_Box(Object, Trans);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Rotate_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Rotate_Box(Object, Vector, Trans)
+OBJECT *Object;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  Transform_Box(Object, Trans);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Scale_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Scale_Box(Object, Vector, Trans)
+OBJECT *Object;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  DBL temp;
+  BOX *Box = (BOX *)Object;
+
+  if (((BOX *)Object)->Trans == NULL)
+  {
+    VEvaluateEq(Box->bounds[0], Vector);
+    VEvaluateEq(Box->bounds[1], Vector);
+
+    if (Box->bounds[0][X] > Box->bounds[1][X])
+    {
+      temp = Box->bounds[0][X];
+
+      Box->bounds[0][X] = Box->bounds[1][X];
+      Box->bounds[1][X] = temp;
+    }
+
+    if (Box->bounds[0][Y] > Box->bounds[1][Y])
+    {
+      temp = Box->bounds[0][Y];
+
+      Box->bounds[0][Y] = Box->bounds[1][Y];
+      Box->bounds[1][Y] = temp;
+    }
+
+    if (Box->bounds[0][Z] > Box->bounds[1][Z])
+    {
+      temp = Box->bounds[0][Z];
+
+      Box->bounds[0][Z] = Box->bounds[1][Z];
+      Box->bounds[1][Z] = temp;
+    }
+
+    Compute_Box_BBox((BOX *)Object);
+  }
+  else
+  {
+    Transform_Box(Object, Trans);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Invert_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Invert_Box(Object)
+OBJECT *Object;
+{
+  Invert_Flag(Object, INVERTED_FLAG);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Transform_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Transform_Box(Object, Trans)
+OBJECT *Object;
+TRANSFORM *Trans;
+{
+  BOX *box = (BOX *)Object;
+
+  if (box->Trans == NULL)
+  {
+    box->Trans = Create_Transform();
+  }
+
+  Compose_Transforms(box->Trans, Trans);
+
+  Compute_Box_BBox(box);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+BOX *Create_Box()
+{
+  BOX *New;
+
+  New = (BOX *)POV_MALLOC(sizeof(BOX), "box");
+
+  INIT_OBJECT_FIELDS(New, BOX_OBJECT, &Box_Methods)
+
+  Make_Vector(New->bounds[0], -1.0, -1.0, -1.0);
+  Make_Vector(New->bounds[1],  1.0,  1.0,  1.0);
+
+  Make_BBox(New->BBox, -1.0, -1.0, -1.0, 2.0, 2.0, 2.0);
+
+  New->Trans = NULL;
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+void *Copy_Box(Object)
+OBJECT *Object;
+{
   BOX *New;
 
   New  = Create_Box();
-  *New = *((BOX *) Object);
+
+  /* Copy box. */
+
+  *New = *((BOX *)Object);
 
   New->Trans = Copy_Transform(((BOX *)Object)->Trans);
 
   return (New);
-  }
+}
 
-void Translate_Box (Object, Vector)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_Box
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+void Destroy_Box(Object)
 OBJECT *Object;
-VECTOR *Vector;
-  {
-  TRANSFORM Trans;
-
-  if (((BOX *)Object)->Trans == NULL)
-    {
-    VAddEq(((BOX *)Object)->bounds[0], *Vector);
-    VAddEq(((BOX *)Object)->bounds[1], *Vector);
-    Object->Bounds.Lower_Left = ((BOX *)Object)->bounds[0];
-    }
-  else
-    {
-    Compute_Translation_Transform(&Trans, Vector);
-    Transform_Box(Object, &Trans);
-    }
-  }
-
-void Rotate_Box (Object, Vector)
-OBJECT *Object;
-VECTOR *Vector;
-  {
-  TRANSFORM Trans;
-  Compute_Rotation_Transform(&Trans, Vector);
-  Transform_Box(Object, &Trans);
-  }
-
-void Scale_Box (Object, Vector)
-OBJECT *Object;
-VECTOR *Vector;
-  {
-  BOX *Box = (BOX *)Object;
-  TRANSFORM Trans;
-  DBL temp;
-
-  if (((BOX *)Object)->Trans == NULL)
-    {
-    VEvaluateEq(Box->bounds[0], *Vector);
-    VEvaluateEq(Box->bounds[1], *Vector);
-    if (Box->bounds[0].x > Box->bounds[1].x) {
-       temp = Box->bounds[0].x;
-       Box->bounds[0].x = Box->bounds[1].x;
-       Box->bounds[1].x = temp;
-       }
-    if (Box->bounds[0].y > Box->bounds[1].y) {
-       temp = Box->bounds[0].y;
-       Box->bounds[0].y = Box->bounds[1].y;
-       Box->bounds[1].y = temp;
-       }
-    if (Box->bounds[0].z > Box->bounds[1].z) {
-       temp = Box->bounds[0].z;
-       Box->bounds[0].z = Box->bounds[1].z;
-       Box->bounds[1].z = temp;
-       }
-    Box->Bounds.Lower_Left = Box->bounds[0];
-    VSub(Object->Bounds.Lengths, Box->bounds[1], Box->bounds[0]);
-    }
-  else
-    {
-    Compute_Scaling_Transform(&Trans, Vector);
-    Transform_Box(Object, &Trans);
-    }
-  }
-
-void Invert_Box (Object)
-OBJECT *Object;
-  {
-  ((BOX *)Object)->Inverted = 1 - ((BOX *)Object)->Inverted;
-  }
-
-void Transform_Box (Object, Trans)
-OBJECT *Object;
-TRANSFORM *Trans;
-  {
-  BOX *box = (BOX *)Object;
-  if (box->Trans == NULL)
-    box->Trans = Create_Transform();
-  Compose_Transforms(box->Trans, Trans);
-  Object->Bounds.Lower_Left = box->bounds[0];
-  VSub(Object->Bounds.Lengths, box->bounds[1], box->bounds[0]);
-  recompute_bbox(&Object->Bounds, box->Trans);
-  }
-
-BOX *Create_Box ()
-  {
-  BOX *New;
-
-  if ((New = (BOX *) malloc (sizeof (BOX))) == NULL)
-    MAError ("box");
-
-  INIT_OBJECT_FIELDS(New, BOX_OBJECT, &Box_Methods)
-
-    Make_Vector (&(New->bounds[0]), -1.0, -1.0, -1.0);
-  Make_Vector (&(New->bounds[1]),  1.0,  1.0,  1.0);
-  /* Recalculate the bounds */
-  Make_Vector(&New->Bounds.Lower_Left, -1.0, -1.0, -1.0);
-  Make_Vector(&New->Bounds.Lengths, 2.0, 2.0, 2.0);
-  /* Unlike HField, we don't always have a trans here */
-  New->Trans = NULL;
-  New->Inverted = FALSE;
-  return (New);
-  }
-
-void Destroy_Box (Object)
-OBJECT *Object;
-  {
+{
   Destroy_Transform(((BOX *)Object)->Trans);
-  free (Object);
+
+  POV_FREE (Object);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Compute_Box_BBox
+*
+* INPUT
+*
+*   Box - Box
+*
+* OUTPUT
+*
+*   Box
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+*   Calculate the bounding box of a box.
+*
+* CHANGES
+*
+*   Aug 1994 : Creation.
+*
+******************************************************************************/
+
+void Compute_Box_BBox(Box)
+BOX *Box;
+{
+  Assign_BBox_Vect(Box->BBox.Lower_Left, Box->bounds[0]);
+
+  VSub(Box->BBox.Lengths, Box->bounds[1], Box->bounds[0]);
+
+  if (Box->Trans != NULL)
+  {
+    Recompute_BBox(&Box->BBox, Box->Trans);
   }
+}
+

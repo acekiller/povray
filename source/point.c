@@ -3,8 +3,8 @@
 *
 *  This module implements the point & spot light source primitive.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
@@ -24,9 +24,47 @@
 #include "frame.h"
 #include "vector.h"
 #include "povproto.h"
+#include "point.h"
+#include "matrices.h"
+#include "objects.h"
+#include "povray.h"
 
-METHODS Light_Source_Methods =
-  { 
+
+
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
+
+
+
+/*****************************************************************************
+* Local typedefs
+******************************************************************************/
+
+
+
+/*****************************************************************************
+* Static functions
+******************************************************************************/
+
+static DBL cubic_spline PARAMS(( DBL low,DBL high,DBL pos));
+static int  All_Light_Source_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
+static int  Inside_Light_Source PARAMS((VECTOR point, OBJECT *Object));
+static void Light_Source_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
+static void Translate_Light_Source PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Rotate_Light_Source PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Scale_Light_Source PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Transform_Light_Source PARAMS((OBJECT *Object, TRANSFORM *Trans));
+static void Invert_Light_Source PARAMS((OBJECT *Object));
+static void *Copy_Light_Source PARAMS((OBJECT *Object));
+static void Destroy_Light_Source PARAMS((OBJECT *Object));
+
+/*****************************************************************************
+* Local variables
+******************************************************************************/
+
+static METHODS Light_Source_Methods =
+{
   All_Light_Source_Intersections,
   Inside_Light_Source, Light_Source_Normal,
   Copy_Light_Source,
@@ -35,241 +73,766 @@ METHODS Light_Source_Methods =
   Destroy_Light_Source
 };
 
-static DBL cubic_spline PARAMS(( DBL low,DBL high,DBL pos));
 
-int All_Light_Source_Intersections (Object, Ray, Depth_Stack)
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   All_Light_Source_Intersections
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int All_Light_Source_Intersections (Object, Ray, Depth_Stack)
 OBJECT *Object;
 RAY *Ray;
 ISTACK *Depth_Stack;
-  {
+{
   if (((LIGHT_SOURCE *)Object)->Children != NULL)
-    if (Ray_In_Bounds (Ray, ((LIGHT_SOURCE *)Object)->Children->Bound))
+  {
+    if (Ray_In_Bound (Ray, ((LIGHT_SOURCE *)Object)->Children->Bound))
+    {
       if (All_Intersections (((LIGHT_SOURCE *)Object)->Children, Ray, Depth_Stack))
-        return (TRUE);
-
-  return (FALSE);
+      {
+        return(TRUE);
+      }
+    }
   }
 
-int Inside_Light_Source (IPoint, Object)
-VECTOR *IPoint;
+  return(FALSE);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Inside_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int Inside_Light_Source (IPoint, Object)
+VECTOR IPoint;
 OBJECT *Object;
-  {
+{
   if (((LIGHT_SOURCE *)Object)->Children != NULL)
+  {
     if (Inside_Object (IPoint, ((LIGHT_SOURCE *)Object)->Children))
+    {
       return (TRUE);
+    }
+  }
 
   return (FALSE);
-  }
+}
 
-void Light_Source_Normal (Result, Object, IPoint)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Light_Source_Normal
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Light_Source_Normal (Result, Object, Inter)
 OBJECT *Object;
-VECTOR *Result, *IPoint;
-  {
+VECTOR Result;
+INTERSECTION *Inter;
+{
   if (((LIGHT_SOURCE *)Object)->Children != NULL)
-    Normal (Result, ((LIGHT_SOURCE *)Object)->Children,IPoint);
-  }
-
-void Translate_Light_Source (Object, Vector)
-OBJECT *Object;
-VECTOR *Vector;
   {
-  VAddEq (((LIGHT_SOURCE *) Object)->Center, *Vector);
-  VAddEq (((LIGHT_SOURCE *) Object)->Points_At, *Vector);
-
-  Translate_Object (((LIGHT_SOURCE *)Object)->Children, Vector);
+    Normal (Result, ((LIGHT_SOURCE *)Object)->Children,Inter);
   }
+}
 
-void Rotate_Light_Source (Object, Vector)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Translate_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Translate_Light_Source (Object, Vector, Trans)
 OBJECT *Object;
-VECTOR *Vector;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Object;
+
+  VAddEq (Light->Center, Vector);
+  VAddEq (Light->Points_At, Vector);
+
+  if (Light->Children != NULL)
   {
-  TRANSFORM Trans;
-
-  Compute_Rotation_Transform (&Trans, Vector);
-  Transform_Light_Source(Object, &Trans);
+    Translate_Object (Light->Children, Vector, Trans);
   }
+}
 
-void Scale_Light_Source (Object, Vector)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Rotate_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Rotate_Light_Source (Object, Vector, Trans)
 OBJECT *Object;
-VECTOR *Vector;
-  {
-  TRANSFORM Trans;
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  Transform_Light_Source(Object, Trans);
+}
 
-  Compute_Scaling_Transform (&Trans, Vector);
-  Transform_Light_Source(Object, &Trans);
-  }
 
-void Invert_Light_Source (Object)
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Scale_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Scale_Light_Source (Object, Vector, Trans)
 OBJECT *Object;
-  {
-  Invert_Object (((LIGHT_SOURCE *)Object)->Children);
-  }
+VECTOR Vector;
+TRANSFORM *Trans;
+{
+  Transform_Light_Source(Object, Trans);
+}
 
-void Transform_Light_Source (Object, Trans)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Transform_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Transform_Light_Source (Object, Trans)
 OBJECT *Object;
 TRANSFORM *Trans;
+{
+  DBL len;
+  LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Object;
+
+  MTransPoint (Light->Center,    Light->Center,    Trans);
+  MTransPoint (Light->Points_At, Light->Points_At, Trans);
+  MTransPoint (Light->Axis1,     Light->Axis1,     Trans);
+  MTransPoint (Light->Axis2,     Light->Axis2,     Trans);
+
+  MTransDirection (Light->Direction, Light->Direction, Trans);
+
+  /* Make sure direction has unit length. */
+
+  VLength(len, Light->Direction);
+
+  if (len > EPSILON)
   {
-  MTransPoint (&((LIGHT_SOURCE *) Object)->Center,
-    &((LIGHT_SOURCE *) Object)->Center, Trans);
-  MTransPoint (&((LIGHT_SOURCE *) Object)->Points_At,
-    &((LIGHT_SOURCE *) Object)->Points_At, Trans);
-  MTransPoint (&((LIGHT_SOURCE *) Object)->Axis1,
-    &((LIGHT_SOURCE *) Object)->Axis1, Trans);
-  MTransPoint (&((LIGHT_SOURCE *) Object)->Axis2,
-    &((LIGHT_SOURCE *) Object)->Axis2, Trans);
-  Transform_Object (((LIGHT_SOURCE *)Object)->Children, Trans);
+    VInverseScaleEq(Light->Direction, len);
   }
 
-void Destroy_Light_Source (Object)
+  if (Light->Children != NULL)
+  {
+    Transform_Object (Light->Children, Trans);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Invert_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Invert_Light_Source (Object)
 OBJECT *Object;
+{
+  LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Object;
+
+  if (Light->Children != NULL)
   {
-  int i;
-
-  if (((LIGHT_SOURCE *)Object)->Light_Grid != NULL) 
-    { 
-    for (i = 0; i < ((LIGHT_SOURCE *)Object)->Area_Size1; i++)
-      free(((LIGHT_SOURCE *)Object)->Light_Grid[i]);
-
-    free(((LIGHT_SOURCE *)Object)->Light_Grid);
-    } 
-
-  Destroy_Object (((LIGHT_SOURCE *)Object)->Children);
-  free (Object);
+    Invert_Object (Light->Children);
   }
+}
 
-COLOUR **Create_Light_Grid (Size1, Size2)
-int Size1, Size2;
-  {
-  COLOUR **New;
-  int i;
 
-  New = (COLOUR **)malloc (Size1 * sizeof (COLOUR *));
-  if (New == NULL)
-    MAError ("area light");
 
-  for (i = 0; i < Size1; i++) 
-    {
-    New[i] = (COLOUR *)malloc (Size2 * sizeof (COLOUR));
-    if (New[i] == NULL)
-      MAError ("area light");
-    }
-
-  return (New);
-  }
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 LIGHT_SOURCE *Create_Light_Source ()
-  {
+{
+  int i;
   LIGHT_SOURCE *New;
 
-  if ((New = (LIGHT_SOURCE *) malloc (sizeof (LIGHT_SOURCE))) == NULL)
-    MAError ("light_source");
+  New = (LIGHT_SOURCE *)POV_MALLOC(sizeof (LIGHT_SOURCE), "light_source");
 
   INIT_OBJECT_FIELDS(New, LIGHT_OBJECT, &Light_Source_Methods)
-    New->Children = NULL;
-  New->No_Shadow_Flag = TRUE;
 
-  Make_Colour(&New->Colour,1.0,1.0,1.0);
-  Make_Vector(&New->Center,0.0,0.0,0.0);
-  Make_Vector(&New->Points_At,0.0,0.0,1.0);
-  Make_Vector(&New->Axis1,0.0,0.0,1.0);
-  Make_Vector(&New->Axis2,0.0,1.0,0.0);
+  New->Children = NULL;
+
+  Set_Flag(New, NO_SHADOW_FLAG);
+
+  Make_Colour(New->Colour,    1.0, 1.0, 1.0);
+  Make_Vector(New->Direction, 0.0, 0.0, 0.0);
+  Make_Vector(New->Center,    0.0, 0.0, 0.0);
+  Make_Vector(New->Points_At, 0.0, 0.0, 1.0);
+  Make_Vector(New->Axis1,     0.0, 0.0, 1.0);
+  Make_Vector(New->Axis2,     0.0, 1.0, 0.0);
+
   New->Coeff   = 10.0;
   New->Radius  = 0.35;
   New->Falloff = 0.35;
+
+  New->Fade_Distance = 0.0;
+  New->Fade_Power    = 0.0;
+
   New->Next_Light_Source    = NULL;
-  New->Shadow_Cached_Object = NULL;
   New->Light_Grid           = NULL;
+  New->Shadow_Cached_Object = NULL;
+
   New->Light_Type = POINT_SOURCE;
+
   New->Area_Light = FALSE;
   New->Jitter     = FALSE;
   New->Track      = FALSE;
+
   New->Area_Size1 = 0;
   New->Area_Size2 = 0;
+
   New->Adaptive_Level = 100;
-  return (New);
+
+  New->Atmospheric_Attenuation = FALSE;
+  New->Atmosphere_Interaction  = TRUE;
+
+  for (i = 0; i < 6; i++)
+  {
+    New->Light_Buffer[i] = NULL;
   }
 
-void *Copy_Light_Source (Old)
-OBJECT *Old;
-  {
-  LIGHT_SOURCE *New;
-  int i, j;
+  return (New);
+}
 
-  New = Create_Light_Source ();
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void *Copy_Light_Source (Old)
+OBJECT *Old;
+{
+  int i, j;
+  LIGHT_SOURCE *New;
+  LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Old;
+
+  New = Create_Light_Source();
+
+  /* Copy light source. */
+
   *New = *(LIGHT_SOURCE *)Old;
 
   New->Next_Light_Source = NULL;
 
   New->Children = Copy_Object (((LIGHT_SOURCE *)Old)->Children);
 
-  if (((LIGHT_SOURCE *)Old)->Light_Grid != NULL) 
-    { 
-    New->Light_Grid = Create_Light_Grid (((LIGHT_SOURCE *)Old)->Area_Size1,
-      ((LIGHT_SOURCE *)Old)->Area_Size2);
+  if (Light->Light_Grid != NULL)
+  {
+    New->Light_Grid = Create_Light_Grid(Light->Area_Size1, Light->Area_Size2);
 
-    for (i = 0; i < ((LIGHT_SOURCE *)Old)->Area_Size1; i++)
-      for (j = 0; j < ((LIGHT_SOURCE *)Old)->Area_Size2; j++)
-      New->Light_Grid[i][j] = ((LIGHT_SOURCE *)Old)->Light_Grid[i][j];
-    } 
+    for (i = 0; i < Light->Area_Size1; i++)
+    {
+      for (j = 0; j < Light->Area_Size2; j++)
+      {
+        Assign_Colour(New->Light_Grid[i][j], Light->Light_Grid[i][j]);
+      }
+    }
+  }
 
   return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_Light_Source
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Destroy_Light_Source (Object)
+OBJECT *Object;
+{
+  int i;
+  LIGHT_SOURCE *Light = (LIGHT_SOURCE *)Object;
+
+  if (Light->Light_Grid != NULL)
+  {
+    for (i = 0; i < Light->Area_Size1; i++)
+    {
+      POV_FREE(Light->Light_Grid[i]);
+    }
+
+    POV_FREE(Light->Light_Grid);
   }
 
-/* Cubic spline that has tangents of slope 0 at x == low and at x == high.
-   For a given value "pos" between low and high the spline value is returned */
+  Destroy_Object(Light->Children);
+
+  POV_FREE(Object);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Light_Grid
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+COLOUR **Create_Light_Grid (Size1, Size2)
+int Size1, Size2;
+{
+  int i;
+  COLOUR **New;
+
+  New = (COLOUR **)POV_MALLOC(Size1 * sizeof (COLOUR *), "area light");
+
+  for (i = 0; i < Size1; i++)
+  {
+    New[i] = (COLOUR *)POV_MALLOC(Size2 * sizeof (COLOUR), "area light");
+  }
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   cubic_spline
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   Cubic spline that has tangents of slope 0 at x == low and at x == high.
+*   For a given value "pos" between low and high the spline value is returned.
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
 static DBL cubic_spline(low, high, pos)
 DBL low, high, pos;
-  {
-  /* Check to see if the position is within the proper boundaries */
+{
+  /* Check to see if the position is within the proper boundaries. */
+
   if (pos < low)
-    return 0.0;
-  else if (pos > high)
-    return 1.0;
-  if (high == low)
-    return 0.0;
-
-  /* Normalize to the interval 0->1 */
-  pos = (pos - low) / (high - low);
-
-  /* See where it is on the cubic curve */
-  return (3 - 2 * pos) * pos * pos;
+  {
+    return(0.0);
+  }
+  else
+  {
+    if (pos >= high)
+    {
+      return(1.0);
+    }
   }
 
-DBL Attenuate_Light (Light_Source, Light_Source_Ray)
-LIGHT_SOURCE *Light_Source;
-RAY *Light_Source_Ray;
-  {
-  DBL Len,costheta;
-  DBL Attenuation = 1.0;
-  VECTOR Spot_Direction;
+  /* This never happens. [DB] */
 
-  /* If this is a spotlight then attenuate based on the incidence angle */
-  if (Light_Source->Light_Type == SPOT_SOURCE) 
-    {
-    VSub(Spot_Direction, Light_Source->Points_At, Light_Source->Center);
-    VLength(Len, Spot_Direction);
-    if (Len > 0.0) 
-      {
-      VInverseScale(Spot_Direction, Spot_Direction, Len);
-      VDot(costheta, Light_Source_Ray->Direction, Spot_Direction);
+/*
+  if (high == low)
+  {
+    return(0.0);
+  }
+*/
+
+  /* Normalize to the interval [0...1]. */
+
+  pos = (pos - low) / (high - low);
+
+  /* See where it is on the cubic curve. */
+
+  return(3 - 2 * pos) * pos * pos;
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Attenuate_Light
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   Jan 1995 : Added attenuation due to atmospheric scattering and light
+*              source distance. Added cylindrical light source. [DB]
+*
+******************************************************************************/
+
+DBL Attenuate_Light (Light, Ray, Distance)
+LIGHT_SOURCE *Light;
+RAY *Ray;
+DBL Distance;
+{
+  DBL len, k, costheta;
+  DBL Attenuation = 1.0;
+  VECTOR P, V1;
+
+  /* If this is a spotlight then attenuate based on the incidence angle. */
+
+  switch (Light->Light_Type)
+  {
+    case SPOT_SOURCE:
+
+      VDot(costheta, Ray->Direction, Light->Direction);
+
       costheta *= -1.0;
-      if (costheta > 0.0) 
+
+      if (costheta > 0.0)
+      {
+        Attenuation = pow(costheta, Light->Coeff);
+
+        /*
+         * If there is a soft falloff region associated with the light then
+         * do an interpolation of values between the hot center and the
+         * direction at which light falls to nothing.
+         */
+
+        if (Light->Radius > 0.0)
         {
-        Attenuation = pow(costheta, Light_Source->Coeff);
-        /* If there is a soft falloff region associated with the light then
-               do an interpolation of values between the hot center and the
-               direction at which light falls to nothing. */
-        if (Light_Source->Radius > 0.0)
-          Attenuation *= cubic_spline(Light_Source->Falloff,
-            Light_Source->Radius,
-            costheta);
-        /* printf("Atten: %lg\n", Attenuation); */
+          Attenuation *= cubic_spline(Light->Falloff, Light->Radius, costheta);
         }
+/*
+        Debug_Info("Atten: %lg\n", Attenuation);
+*/
+      }
       else
+      {
         Attenuation = 0.0;
       }
-    else
-      Attenuation = 0.0;
-    } 
+
+      break;
+
+    case CYLINDER_SOURCE:
+
+      VSub(V1, Ray->Initial, Light->Center);
+
+      VDot(k, V1, Light->Direction);
+
+      if (k > 0.0)
+      {
+        VLinComb2(P, 1.0, V1, -k, Light->Direction);
+
+        VLength(len, P);
+
+        if (len < Light->Falloff)
+        {
+          len = 1.0 - len / Light->Falloff;
+
+          Attenuation = pow(len, Light->Coeff);
+
+          if (Light->Radius > 0.0)
+          {
+            Attenuation *= cubic_spline(1.0 - Light->Radius / Light->Falloff, 1.0, len);
+          }
+        }
+        else
+        {
+          Attenuation = 0.0;
+        }
+      }
+      else
+      {
+        Attenuation = 0.0;
+      }
+
+      break;
+  }
+
+  if (Attenuation > 0.0)
+  {
+    /* Attenuate light due to light source distance. */
+
+    if ((Light->Fade_Power > 0.0) && (fabs(Light->Fade_Distance) > EPSILON))
+    {
+      Attenuation *= 2.0 / (1.0 + pow(Distance / Light->Fade_Distance, Light->Fade_Power));
+    }
+  }
+
   return(Attenuation);
-  }    
+}

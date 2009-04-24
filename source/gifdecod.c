@@ -6,8 +6,8 @@
 *  NOTE:  Portions of this module were written by Steve Bennett and are used
 *         here with his permission.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
@@ -66,17 +66,19 @@
 */
 
 /* 
-   This routine was modified for Persistence of Vision Raytracer in the following ways:
+   This routine was modified for Persistence of Vision(tm) Ray Tracer in the following ways:
 
    1)  Removed calls to buzzer() and keypressed() to get rid of ASM files.
 
    2)  The dstack, suffix, and prefix arrays were made STATIC once again.
 
-   3)  Added the usual ANSI function prototypes, etc. in the Persistence of Vision Raytracer headers.
+   3)  Added the usual ANSI function prototypes, etc. in the Persistence of Vision(tm) Ray Tracer headers.
 */
 
 #include "frame.h"
 #include "povproto.h"
+#include "gif.h"
+#include "gifdecod.h"
 
 #define LOCAL static
 #define IMPORT extern
@@ -85,7 +87,6 @@
 
 /* typedef short WORD; */
 typedef unsigned short UWORD;
-typedef char TEXT;
 typedef unsigned char UTINY;
 typedef long LONG;
 typedef unsigned long ULONG;
@@ -107,13 +108,15 @@ typedef int INT;
 #define CREATE_ERROR -4
 
 
-/* IMPORT INT get_byte()
+/* IMPORT INT gif_get_byte()
  *
  *   - This external (machine specific) function is expected to return
  * either the next byte from the GIF file, or a negative number, as
  * defined in ERRS.H.
  */
-IMPORT INT get_byte();
+/*
+IMPORT INT gif_get_byte();
+*/
 
 /* IMPORT INT out_line(pixels, linelen)
  *     UBYTE pixels[];
@@ -128,7 +131,9 @@ IMPORT INT get_byte();
  * occurs in an odd place in the GIF file...  In any case, linelen will be
  * equal to the number of pixels passed...
  */
+/*
 IMPORT INT out_line();
+*/
 
 /* IMPORT INT bad_code_count;
  *
@@ -137,13 +142,13 @@ IMPORT INT out_line();
  * When this value is non-zero after a decode, your GIF file is probably
  * corrupt in some way...
  */
-INT bad_code_count;
+static INT bad_code_count;
 
 #define MAX_CODES   4095
 
 /* Static variables */
 LOCAL WORD curr_size;                     /* The current code size */
-LOCAL WORD clear;                         /* Value for a clear code */
+LOCAL WORD clear_code;                         /* Value for a clear code */
 LOCAL WORD ending;                        /* Value for a ending code */
 LOCAL WORD newcodes;                      /* First available code */
 LOCAL WORD top_slot;                      /* Highest code for current size */
@@ -168,18 +173,22 @@ LOCAL UTINY *pbytes;                      /* Pointer to next byte in block */
   0x07FF, 0x0FFF
   };
 
+static void cleanup_gif_decoder PARAMS((void));
+/* changed param to int to avoid problems with 32bit int ANSI compilers. */
+static WORD init_exp PARAMS((int i_size));
+static WORD get_next_code PARAMS((void));
 
 /* This function initializes the decoder for reading a new image.
  */
-WORD init_exp (i_size)
+static WORD init_exp (i_size)
 int i_size;
   {
   WORD size;
   size = (WORD)i_size;
   curr_size = size + 1;
   top_slot = 1 << curr_size;
-  clear = 1 << size;
-  ending = clear + 1;
+  clear_code = 1 << size;
+  ending = clear_code + 1;
   slot = newcodes = ending + 1;
   navail_bytes = nbits_left = 0;
   return(0);
@@ -189,7 +198,7 @@ int i_size;
  * - gets the next code from the GIF file.  Returns the code, or else
  * a negative number in case of file errors...
  */
-WORD get_next_code()
+static WORD get_next_code()
   {
   WORD i, x;
   ULONG ret;
@@ -202,13 +211,13 @@ WORD get_next_code()
       /* Out of bytes in current block, so read next block
           */
       pbytes = byte_buff;
-      if ((navail_bytes = get_byte()) < 0)
+      if ((navail_bytes = gif_get_byte()) < 0)
         return(navail_bytes);
       else if (navail_bytes)
         {
         for (i = 0; i < navail_bytes; ++i)
           {
-          if ((x = get_byte()) < 0)
+          if ((x = gif_get_byte()) < 0)
             return(x);
           byte_buff[i] = (UTINY) x;
           }
@@ -228,13 +237,13 @@ WORD get_next_code()
       /* Out of bytes in current block, so read next block
           */
       pbytes = byte_buff;
-      if ((navail_bytes = get_byte()) < 0)
+      if ((navail_bytes = gif_get_byte()) < 0)
         return(navail_bytes);
       else if (navail_bytes)
         {
         for (i = 0; i < navail_bytes; ++i)
           {
-          if ((x = get_byte()) < 0)
+          if ((x = gif_get_byte()) < 0)
             return(x);
           byte_buff[i] = (UTINY) x;
           }
@@ -279,7 +288,7 @@ extern UTINY *decoderline;              /* decoded line goes here */
  * will generate a call to out_line(), which is a user specific function
  * to display a line of pixels.  The function gets its codes from
  * get_next_code() which is responsible for reading blocks of data and
- * seperating them into the proper size codes.  Finally, get_byte() is
+ * seperating them into the proper size codes.  Finally, gif_get_byte() is
  * the global routine to read the next byte from the GIF file.
  *
  * It is generally a good idea to have linewidth correspond to the actual
@@ -290,12 +299,16 @@ extern UTINY *decoderline;              /* decoded line goes here */
  *
  */
 
-void cleanup_gif_decoder() 
-  {
-  free(dstack);
-  free(suffix);
-  free(prefix);
-  }
+static void cleanup_gif_decoder() 
+{
+  POV_FREE (dstack);
+  POV_FREE (suffix);
+  POV_FREE (prefix);
+
+  dstack = NULL;
+  suffix = NULL;
+  prefix = NULL;
+}
 
 WORD decoder (i_linewidth)
 int i_linewidth;
@@ -310,15 +323,15 @@ int i_linewidth;
 
   /* Initialize for decoding a new image...
     */
-  if ((size = get_byte()) < 0)
+  if ((size = gif_get_byte()) < 0)
     return(size);
   if (size < 2 || 9 < size)
     return(BAD_CODE_SIZE);
   init_exp((int)size);        /* changed param to int */
 
-  dstack = (UTINY *) malloc((MAX_CODES + 1)*sizeof(UTINY));
-  suffix = (UTINY *) malloc((MAX_CODES + 1)*sizeof(UTINY));
-  prefix = (UWORD *) malloc((MAX_CODES + 1)*sizeof(UWORD));
+  dstack = (UTINY *)POV_MALLOC((MAX_CODES + 1)*sizeof(UTINY), "GIF dstack");
+  suffix = (UTINY *)POV_MALLOC((MAX_CODES + 1)*sizeof(UTINY), "GIF suffix");
+  prefix = (UWORD *)POV_MALLOC((MAX_CODES + 1)*sizeof(UWORD), "GIF prefix");
 
   /* Initialize in case they forgot to put in a clear code.
     * (This shouldn't happen, but we'll try and decode it anyway...)
@@ -356,7 +369,7 @@ int i_linewidth;
 
     /* If the code is a clear code, reinitialize all necessary items.
        */
-    if (c == clear)
+    if (c == clear_code)
       {
       curr_size = size + 1;
       slot = newcodes;
@@ -365,7 +378,7 @@ int i_linewidth;
       /* Continue reading codes until we get a non-clear code
           * (Another unlikely, but possible case...)
           */
-      while ((c = get_next_code()) == clear)
+      while ((c = get_next_code()) == clear_code)
         ;
 
       /* If we get an ending code immediately after a clear code
@@ -392,7 +405,7 @@ int i_linewidth;
       *bufptr++ = (UTINY) c;
       if (--bufcnt == 0)
         {
-        COOPERATE
+        COOPERATE_1
         if ((ret = out_line(buf, linewidth)) < 0) 
           {
           cleanup_gif_decoder();
@@ -467,7 +480,7 @@ int i_linewidth;
         *bufptr++ = *(--sp);
         if (--bufcnt == 0)
           {
-          COOPERATE
+          COOPERATE_1
           if ((ret = out_line(buf, linewidth)) < 0) 
             {
             cleanup_gif_decoder();

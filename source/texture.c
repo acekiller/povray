@@ -7,8 +7,8 @@
 *  The noise function used here is the one described by Ken Perlin in
 *  "Hypertexture", SIGGRAPH '89 Conference Proceedings page 253.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
@@ -32,219 +32,311 @@
 */
 
 #include "frame.h"
+#include "povray.h"
 #include "vector.h"
 #include "povproto.h"
 #include "texture.h"
+#include "halos.h"
+#include "image.h"
+#include "matrices.h"
+#include "normal.h"
+#include "pigment.h"
 
-DBL *sintab;
-DBL frequency[NUMBER_OF_WAVES];
-VECTOR Wave_Sources[NUMBER_OF_WAVES];
-DBL *RTable;
+
+
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
+
+/* Ridiculously large scaling values */
+
+#define MINX (-10000)
+#define MINY MINX
+#define MINZ MINX
+
+#define SINTABSIZE 1000
+
+#define REALSCALE (2.0 / 65535.0)
+
+#define SCURVE(a) ((a)*(a)*(3.0-2.0*(a)))
+
+
+/*****************************************************************************
+* Local typedefs
+******************************************************************************/
+
+
+
+/*****************************************************************************
+* Local variables
+******************************************************************************/
+
+static DBL *sintab;
+unsigned int Number_Of_Waves = 10;    /* dmf */
+DBL *frequency;                       /* dmf */
+VECTOR *Wave_Sources;                 /* dmf */
+
 short *hashTable;
 
-unsigned short crctab[256] =
-  {
-  0x0000, 0xc0c1, 0xc181, 0x0140, 0xc301, 0x03c0, 0x0280, 0xc241,
-  0xc601, 0x06c0, 0x0780, 0xc741, 0x0500, 0xc5c1, 0xc481, 0x0440,
-  0xcc01, 0x0cc0, 0x0d80, 0xcd41, 0x0f00, 0xcfc1, 0xce81, 0x0e40,
-  0x0a00, 0xcac1, 0xcb81, 0x0b40, 0xc901, 0x09c0, 0x0880, 0xc841,
-  0xd801, 0x18c0, 0x1980, 0xd941, 0x1b00, 0xdbc1, 0xda81, 0x1a40,
-  0x1e00, 0xdec1, 0xdf81, 0x1f40, 0xdd01, 0x1dc0, 0x1c80, 0xdc41,
-  0x1400, 0xd4c1, 0xd581, 0x1540, 0xd701, 0x17c0, 0x1680, 0xd641,
-  0xd201, 0x12c0, 0x1380, 0xd341, 0x1100, 0xd1c1, 0xd081, 0x1040,
-  0xf001, 0x30c0, 0x3180, 0xf141, 0x3300, 0xf3c1, 0xf281, 0x3240,
-  0x3600, 0xf6c1, 0xf781, 0x3740, 0xf501, 0x35c0, 0x3480, 0xf441,
-  0x3c00, 0xfcc1, 0xfd81, 0x3d40, 0xff01, 0x3fc0, 0x3e80, 0xfe41,
-  0xfa01, 0x3ac0, 0x3b80, 0xfb41, 0x3900, 0xf9c1, 0xf881, 0x3840,
-  0x2800, 0xe8c1, 0xe981, 0x2940, 0xeb01, 0x2bc0, 0x2a80, 0xea41,
-  0xee01, 0x2ec0, 0x2f80, 0xef41, 0x2d00, 0xedc1, 0xec81, 0x2c40,
-  0xe401, 0x24c0, 0x2580, 0xe541, 0x2700, 0xe7c1, 0xe681, 0x2640,
-  0x2200, 0xe2c1, 0xe381, 0x2340, 0xe101, 0x21c0, 0x2080, 0xe041,
-  0xa001, 0x60c0, 0x6180, 0xa141, 0x6300, 0xa3c1, 0xa281, 0x6240,
-  0x6600, 0xa6c1, 0xa781, 0x6740, 0xa501, 0x65c0, 0x6480, 0xa441,
-  0x6c00, 0xacc1, 0xad81, 0x6d40, 0xaf01, 0x6fc0, 0x6e80, 0xae41,
-  0xaa01, 0x6ac0, 0x6b80, 0xab41, 0x6900, 0xa9c1, 0xa881, 0x6840,
-  0x7800, 0xb8c1, 0xb981, 0x7940, 0xbb01, 0x7bc0, 0x7a80, 0xba41,
-  0xbe01, 0x7ec0, 0x7f80, 0xbf41, 0x7d00, 0xbdc1, 0xbc81, 0x7c40,
-  0xb401, 0x74c0, 0x7580, 0xb541, 0x7700, 0xb7c1, 0xb681, 0x7640,
-  0x7200, 0xb2c1, 0xb381, 0x7340, 0xb101, 0x71c0, 0x7080, 0xb041,
-  0x5000, 0x90c1, 0x9181, 0x5140, 0x9301, 0x53c0, 0x5280, 0x9241,
-  0x9601, 0x56c0, 0x5780, 0x9741, 0x5500, 0x95c1, 0x9481, 0x5440,
-  0x9c01, 0x5cc0, 0x5d80, 0x9d41, 0x5f00, 0x9fc1, 0x9e81, 0x5e40,
-  0x5a00, 0x9ac1, 0x9b81, 0x5b40, 0x9901, 0x59c0, 0x5880, 0x9841,
-  0x8801, 0x48c0, 0x4980, 0x8941, 0x4b00, 0x8bc1, 0x8a81, 0x4a40,
-  0x4e00, 0x8ec1, 0x8f81, 0x4f40, 0x8d01, 0x4dc0, 0x4c80, 0x8c41,
-  0x4400, 0x84c1, 0x8581, 0x4540, 0x8701, 0x47c0, 0x4680, 0x8641,
-  0x8201, 0x42c0, 0x4380, 0x8341, 0x4100, 0x81c1, 0x8081, 0x4040
-  };
+DBL RTable[267] =
+{
+         -1,    0.604974,   -0.937102,    0.414115,    0.576226,  -0.0161593,
+   0.432334,    0.103685,    0.590539,   0.0286412,     0.46981,    -0.84622,
+ -0.0734112,   -0.304097,    -0.40206,   -0.210132,   -0.919127,    0.652033,
+   -0.83151,   -0.183948,   -0.671107,    0.852476,    0.043595,   -0.404532,
+    0.75494,   -0.335653,    0.618433,    0.605707,    0.708583,   -0.477195,
+   0.899474,    0.490623,    0.221729,   -0.400381,   -0.853727,   -0.932586,
+   0.659113,    0.961303,    0.325948,   -0.750851,    0.842466,    0.734401,
+  -0.649866,    0.394491,   -0.466056,   -0.434073,    0.109026,   0.0847028,
+  -0.738857,    0.241505,     0.16228,    -0.71426,   -0.883665,   -0.150408,
+   -0.90396,   -0.686549,   -0.785214,    0.488548,   0.0246433,    0.142473,
+  -0.602136,    0.375845, -0.00779736,    0.498955,   -0.268147,    0.856382,
+  -0.386007,   -0.596094,   -0.867735,   -0.570977,   -0.914366,     0.28896,
+   0.672206,   -0.233783,     0.94815,    0.895262,    0.343252,   -0.173388,
+  -0.767971,   -0.314748,    0.824308,   -0.342092,    0.721431,    -0.24004,
+   -0.63653,    0.553277,    0.376272,    0.158984,   -0.452659,    0.396323,
+  -0.420676,   -0.454154,    0.122179,    0.295857,   0.0664225,   -0.202075,
+  -0.724788,    0.453513,    0.224567,   -0.908812,    0.176349,   -0.320516,
+  -0.697139,    0.742702,   -0.900786,    0.471489,   -0.133532,    0.119127,
+  -0.889769,    -0.23183,   -0.669673,   -0.046891,   -0.803433,   -0.966735,
+   0.475578,   -0.652644,   0.0112459,   -0.730007,    0.128283,    0.145647,
+  -0.619318,    0.272023,    0.392966,    0.646418,  -0.0207675,   -0.315908,
+   0.480797,    0.535668,   -0.250172,    -0.83093,   -0.653773,   -0.443809,
+   0.119982,   -0.897642,     0.89453,    0.165789,    0.633875,   -0.886839,
+   0.930877,   -0.537194,    0.587732,    0.722011,   -0.209461,  -0.0424659,
+  -0.814267,   -0.919432,    0.280262,    -0.66302,   -0.558099,   -0.537469,
+  -0.598779,    0.929656,   -0.170794,   -0.537163,    0.312581,    0.959442,
+   0.722652,    0.499931,    0.175616,   -0.534874,   -0.685115,    0.444999,
+    0.17171,    0.108202,   -0.768704,   -0.463828,    0.254231,    0.546014,
+   0.869474,    0.875212,   -0.944427,    0.130724,   -0.110185,    0.312184,
+   -0.33138,   -0.629206,   0.0606546,    0.722866,  -0.0979477,    0.821561,
+  0.0931258,   -0.972808,   0.0318151,   -0.867033,   -0.387228,    0.280995,
+  -0.218189,   -0.539178,   -0.427359,   -0.602075,    0.311971,    0.277974,
+   0.773159,    0.592493,  -0.0331884,   -0.630854,   -0.269947,    0.339132,
+   0.581079,    0.209461,   -0.317433,   -0.284993,    0.181323,    0.341634,
+   0.804959,   -0.229572,   -0.758907,   -0.336721,    0.605463,   -0.991272,
+ -0.0188754,   -0.300191,    0.368307,   -0.176135,     -0.3832,   -0.749569,
+    0.62356,   -0.573938,    0.278309,   -0.971313,    0.839994,   -0.830686,
+   0.439078,     0.66128,    0.694514,   0.0565042,     0.54342,   -0.438804,
+ -0.0228428,   -0.687068,    0.857267,    0.301991,   -0.494255,   -0.941039,
+   0.775509,    0.410575,   -0.362081,   -0.671534,   -0.348379,    0.932433,
+   0.886442,    0.868681,   -0.225666,   -0.062211,  -0.0976425,   -0.641444,
+  -0.848112,    0.724697,    0.473503,    0.998749,    0.174701,    0.559625,
+  -0.029099,   -0.337392,   -0.958129,   -0.659785,    0.236042,   -0.246937,
+   0.659449,   -0.027512,    0.821897,   -0.226215,   0.0181735,    0.500481,
+  -0.420127,   -0.427878,    0.566186
+};
 
-void Compute_Colour (Colour, Pigment, value)
-COLOUR *Colour;
-PIGMENT *Pigment;
-DBL value;
-  {
-  COLOUR_MAP *Colour_Map = Pigment->Colour_Map;
-  int max_colors = Colour_Map->Number_Of_Entries-1;
-  COLOUR_MAP_ENTRY *Cur, *Prev;
-  register DBL fraction;
+static unsigned long int next_rand = 1;
 
-  value = fmod(value * Pigment->Frequency + Pigment->Phase,1.00001);
-  if (value < 0.0)         /* allow negative Frequency */
-    value -=floor(value);
 
-  /* if greater than last, use last. */
-  if (value >= Colour_Map->Colour_Map_Entries[max_colors].value)
-    {
-    *Colour = Colour_Map->Colour_Map_Entries[max_colors].Colour;
-    return;
-    }
 
-  Prev = Cur = &(Colour_Map->Colour_Map_Entries[0]);
-  while (value >= Cur->value)
-    Prev = Cur++;
+/*****************************************************************************
+* Static functions
+******************************************************************************/
 
-  /* if stopped on first entry, use first. */
-  if (Prev == Cur)
-    {
-    *Colour = Cur->Colour;
-    return;
-    }
+static void InitTextureTable PARAMS((void));
+static TEXTURE *Copy_Materials PARAMS((TEXTURE *Old));
 
-  fraction = (value - Prev->value) / (Cur->value - Prev->value);
-  Colour->Red   = Prev->Colour.Red   + fraction * (Cur->Colour.Red   - Prev->Colour.Red);
-  Colour->Green = Prev->Colour.Green + fraction * (Cur->Colour.Green - Prev->Colour.Green);
-  Colour->Blue  = Prev->Colour.Blue  + fraction * (Cur->Colour.Blue  - Prev->Colour.Blue);
-  Colour->Filter = Prev->Colour.Filter + fraction * (Cur->Colour.Filter - Prev->Colour.Filter);
 
-  return;
-  }
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Initialize_Noise()
+*
+* INPUT
+*   
+* OUTPUT
+*
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
 
-void Initialize_Noise ()
-  {
-  register int i = 0;
+void Initialize_Noise()
+{
+  register unsigned int i;
   VECTOR point;
-
-  InitRTable();
-
-  if ((sintab = (DBL *)malloc(SINTABSIZE * sizeof(DBL))) == NULL) 
-    MAError ("sine table");
-
-  for (i = 0 ; i < SINTABSIZE ; i++)
-    sintab[i] = sin(i/(DBL)SINTABSIZE * (3.14159265359 * 2.0));
-
-  for (i = 0 ; i < NUMBER_OF_WAVES ; i++)
-    {
-    DNoise (&point, (DBL) i, 0.0, 0.0);
-    VNormalize (Wave_Sources[i], point);
-    frequency[i] = (rand() & RNDMASK) / RNDDIVISOR + 0.01;
-    }
-  }
-
-void InitTextureTable()
-  {
-  int i, j, temp;
-
-  srand(0);
-
-  if ((hashTable = (short int *) malloc(4096*sizeof(short int))) == NULL) 
-    MAError ("hash table");
-
-  for (i = 0; i < 4096; i++)
-    hashTable[i] = i;
-  for (i = 4095; i >= 0; i--) 
-    {
-    j = rand() % 4096;
-    temp = hashTable[i];
-    hashTable[i] = hashTable[j];
-    hashTable[j] = temp;
-    }
-  }
-
-/* modified by AAC to work properly with little bitty integers (16 bits) */
-
-void InitRTable()
-  {
-  int i;
-  VECTOR rp;
 
   InitTextureTable();
 
-  if ((RTable = (DBL *)malloc(MAXSIZE * sizeof(DBL))) == NULL) 
-    MAError ("RTable");
+  sintab = (DBL *)POV_MALLOC(SINTABSIZE * sizeof(DBL), "sine table");
 
-  for (i = 0; i < MAXSIZE; i++)
-    {
-    rp.x = rp.y = rp.z = (DBL)i;
-    RTable[i] = (unsigned int) R(&rp) * REALSCALE - 1.0;
-    }
+  /* dmf */
+  frequency = (DBL *)POV_MALLOC(Number_Of_Waves * sizeof(DBL), "wave frequency table: use lower Number_Of_Waves");
+
+  /* dmf */
+  Wave_Sources = (VECTOR *)POV_MALLOC(Number_Of_Waves * sizeof(VECTOR), "wave sources table: use lower Number_Of_Waves");
+
+  for (i = 0 ; i < SINTABSIZE ; i++)
+  {
+    sintab[i] = sin((DBL)i / SINTABSIZE * TWO_M_PI);
   }
 
-int R(v)
-VECTOR *v;
+  for (i = 0 ; i < Number_Of_Waves ; i++)
   {
-  v->x *= .12345;
-  v->y *= .12345;
-  v->z *= .12345;
+    Make_Vector(point,(DBL)i,0.0,0.0);
+    DNoise(point, point);
+    VNormalize(Wave_Sources[i], point);
+    frequency[i] = FRAND() + 0.01;
+  }
+}
 
-  return (Crc16((char *) v, sizeof(VECTOR)));
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   InitTextureTable()
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+static void InitTextureTable()
+{
+  int i, j, temp;
+
+  POV_SRAND(0);
+
+  hashTable = (short int *)POV_MALLOC(4096*sizeof(short int), "hash table");
+
+  for (i = 0; i < 4096; i++)
+  {
+    hashTable[i] = i;
   }
 
-/*
- * Note that passing a VECTOR array to Crc16 and interpreting it as
- * an array of chars means that machines with different floating-point
- * representation schemes will evaluate Noise(point) differently.
- */
-
-int Crc16(buf, count)
-register char *buf;
-register int  count;
+  for (i = 4095; i >= 0; i--)
   {
-  register unsigned short crc = 0;
-
-  while (count--)
-    crc = (crc >> 8) ^ crctab[ (unsigned char) (crc ^ *buf++) ];
-
-  return ((int) crc);
+    j = POV_RAND() % 4096;
+    temp = hashTable[i];
+    hashTable[i] = hashTable[j];
+    hashTable[j] = temp;
   }
+}
 
 
-/*
-        Robert's Skinner's Perlin-style "Noise" function - modified by AAC
-        to ensure uniformly distributed clamped values between 0 and 1.0...
-*/
 
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Free_Noise_Tables()
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
 
-DBL Noise(x, y, z)
-DBL x, y, z;
+void Free_Noise_Tables()
+{
+  if (sintab != NULL) 
   {
+    POV_FREE(sintab);
+    POV_FREE(hashTable);
+    POV_FREE(frequency);
+    POV_FREE(Wave_Sources);
+    
+    sintab       = NULL;
+    hashTable    = NULL;
+    frequency    = NULL;
+    Wave_Sources = NULL;
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Noise
+*
+* INPUT
+*
+*   EPoint -- 3-D point at which noise is evaluated
+*
+* OUTPUT
+*   
+* RETURNS
+*
+*   DBL noise value
+*   
+* AUTHOR
+*
+*   Robert Skinner based on Ken Perlin
+*   
+* DESCRIPTION
+*
+* CHANGES
+*   Modified by AAC to ensure uniformly distributed clamped values
+*   between 0 and 1.0...
+*
+******************************************************************************/
+
+DBL Noise(EPoint)
+VECTOR EPoint;
+{
+  DBL x, y, z;
   DBL *mp;
   long ix, iy, iz, jx, jy, jz;
   int ixiy_hash, ixjy_hash, jxiy_hash, jxjy_hash;
-
+  
   DBL sx, sy, sz, tx, ty, tz;
   DBL sum;
-
+  
   DBL x_ix, x_jx, y_iy, y_jy, z_iz, z_jz, txty, sxty, txsy, sxsy;
-
-  Calls_To_Noise++;
-
-  /*setup_lattice(&x, &y, &z, &ix, &iy, &iz, &jx, &jy, &jz, &sx, &sy, &sz, &tx, &ty, &tz);*/
-  x -= MINX;
-  y -= MINY;
-  z -= MINZ;
-
+  
+  Increase_Counter(stats[Calls_To_Noise]);
+  
+  x = EPoint[X]-MINX;
+  y = EPoint[Y]-MINY;
+  z = EPoint[Z]-MINZ;
+  
   /* its equivalent integer lattice point. */
   ix = (long)x; iy = (long)y; iz = (long)z;
   jx = ix + 1; jy = iy + 1; jz = iz + 1;
-
+  
   sx = SCURVE(x - ix); sy = SCURVE(y - iy); sz = SCURVE(z - iz);
-
+  
   /* the complement values of sx,sy,sz */
   tx = 1.0 - sx; ty = 1.0 - sy; tz = 1.0 - sz;
-
+  
   /*
-    *  interpolate!
-    */
+  *  interpolate!
+  */
   x_ix = x - ix;
   x_jx = x - jx;
   y_iy = y - iy;
@@ -255,559 +347,1223 @@ DBL x, y, z;
   sxty = sx * ty;
   txsy = tx * sy;
   sxsy = sx * sy;
-  ixiy_hash = Hash2d ( ix, iy );
-  jxiy_hash = Hash2d ( jx, iy );
-  ixjy_hash = Hash2d ( ix, jy );
-  jxjy_hash = Hash2d ( jx, jy );
+  ixiy_hash = Hash2d(ix, iy);
+  jxiy_hash = Hash2d(jx, iy);
+  ixjy_hash = Hash2d(ix, jy);
+  jxjy_hash = Hash2d(jx, jy);
+  
+  mp = &RTable[(int) Hash1d(ixiy_hash, iz) & 0xFF];
+  sum = INCRSUMP(mp, (txty*tz), x_ix, y_iy, z_iz);
+  
+  mp = &RTable[(int) Hash1d(jxiy_hash, iz) & 0xFF];
+  sum += INCRSUMP(mp, (sxty*tz), x_jx, y_iy, z_iz);
+  
+  mp = &RTable[(int) Hash1d(ixjy_hash, iz) & 0xFF];
+  sum += INCRSUMP(mp, (txsy*tz), x_ix, y_jy, z_iz);
+  
+  mp = &RTable[(int) Hash1d(jxjy_hash, iz) & 0xFF];
+  sum += INCRSUMP(mp, (sxsy*tz), x_jx, y_jy, z_iz);
+  
+  mp = &RTable[(int) Hash1d(ixiy_hash, jz) & 0xFF];
+  sum += INCRSUMP(mp, (txty*sz), x_ix, y_iy, z_jz);
+  
+  mp = &RTable[(int) Hash1d(jxiy_hash, jz) & 0xFF];
+  sum += INCRSUMP(mp, (sxty*sz), x_jx, y_iy, z_jz);
 
-  mp = &RTable[(int) Hash1d(ixiy_hash, iz ) & 0xFF];
-  sum = INCRSUMP(mp,(txty*tz), x_ix, y_iy, z_iz);
-
-  mp = &RTable[(int) Hash1d( jxiy_hash, iz ) & 0xFF];
-  sum += INCRSUMP(mp,(sxty*tz), x_jx, y_iy, z_iz);
-
-  mp = &RTable[(int) Hash1d( ixjy_hash, iz ) & 0xFF];
-  sum += INCRSUMP(mp,(txsy*tz), x_ix, y_jy, z_iz);
-
-  mp = &RTable[(int) Hash1d( jxjy_hash, iz ) & 0xFF];
-  sum += INCRSUMP(mp,(sxsy*tz), x_jx, y_jy, z_iz);
-
-  mp = &RTable[(int) Hash1d( ixiy_hash, jz ) & 0xFF];
-  sum += INCRSUMP(mp,(txty*sz), x_ix, y_iy, z_jz);
-
-  mp = &RTable[(int) Hash1d( jxiy_hash, jz ) & 0xFF];
-  sum += INCRSUMP(mp,(sxty*sz), x_jx, y_iy, z_jz);
-
-  mp = &RTable[(int) Hash1d( ixjy_hash, jz ) & 0xFF];
-  sum += INCRSUMP(mp,(txsy*sz), x_ix, y_jy, z_jz);
-
-  mp = &RTable[(int) Hash1d( jxjy_hash, jz ) & 0xFF];
-  sum += INCRSUMP(mp,(sxsy*sz), x_jx, y_jy, z_jz);
-
-  sum = sum + 0.5;          /* range at this point -0.5 - 0.5... */
-
+  mp = &RTable[(int) Hash1d(ixjy_hash, jz) & 0xFF];
+  sum += INCRSUMP(mp, (txsy*sz), x_ix, y_jy, z_jz);
+  
+  mp = &RTable[(int) Hash1d(jxjy_hash, jz) & 0xFF];
+  sum += INCRSUMP(mp, (sxsy*sz), x_jx, y_jy, z_jz);
+  
+  sum = sum + 0.5;                     /* range at this point -0.5 - 0.5... */
+  
   if (sum < 0.0)
     sum = 0.0;
   if (sum > 1.0)
     sum = 1.0;
-
+  
   return (sum);
-  }
+}
 
 
-/*
-       Vector-valued version of "Noise"
-*/
 
-void DNoise(result, x, y, z)
-VECTOR *result;
-DBL x, y, z;
-  {
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   DNoise
+*
+* INPUT
+*
+*   EPoint -- 3-D point at which noise is evaluated
+*   
+* OUTPUT
+*
+*   VECTOR result
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Robert Skinner based on Ken Perlin
+*   
+* DESCRIPTION
+*   Vector-valued version of "Noise"
+*
+* CHANGES
+*   Modified by AAC to ensure uniformly distributed clamped values
+*   between 0 and 1.0...
+*
+******************************************************************************/
+
+void DNoise(result, EPoint)
+VECTOR result;
+VECTOR EPoint;
+{
+  DBL x, y, z;
   DBL *mp;
   long ix, iy, iz, jx, jy, jz;
   int ixiy_hash, ixjy_hash, jxiy_hash, jxjy_hash;
   DBL px, py, pz, s;
   DBL sx, sy, sz, tx, ty, tz;
   DBL txty, sxty, txsy, sxsy;
-
-  Calls_To_DNoise++;
-
-  /*setup_lattice(&x, &y, &z, &ix, &iy, &iz, &jx, &jy, &jz, &sx, &sy, &sz, &tx, &ty, &tz);*/
-  x -= MINX;
-  y -= MINY;
-  z -= MINZ;
-
+  
+  Increase_Counter(stats[Calls_To_DNoise]);
+  
+  x = EPoint[X]-MINX;
+  y = EPoint[Y]-MINY;
+  z = EPoint[Z]-MINZ;
+  
   /* its equivalent integer lattice point. */
   ix = (long)x; iy = (long)y; iz = (long)z;
   jx = ix + 1; jy = iy + 1; jz = iz + 1;
-
+  
   sx = SCURVE(x - ix); sy = SCURVE(y - iy); sz = SCURVE(z - iz);
-
+  
   /* the complement values of sx,sy,sz */
   tx = 1.0 - sx; ty = 1.0 - sy; tz = 1.0 - sz;
-
+  
   /*
-    *  interpolate!
-    */
+  *  interpolate!
+  */
   txty = tx * ty;
   sxty = sx * ty;
   txsy = tx * sy;
   sxsy = sx * sy;
-  ixiy_hash = Hash2d ( ix, iy );
-  jxiy_hash = Hash2d ( jx, iy );
-  ixjy_hash = Hash2d ( ix, jy );
-  jxjy_hash = Hash2d ( jx, jy );
-
-  mp = &RTable[(int) Hash1d( ixiy_hash, iz ) & 0xFF];
-  px = x-ix;  py = y-iy;  pz = z-iz;
+  ixiy_hash = Hash2d(ix, iy);
+  jxiy_hash = Hash2d(jx, iy);
+  ixjy_hash = Hash2d(ix, jy);
+  jxjy_hash = Hash2d(jx, jy);
+  
+  mp = &RTable[(int) Hash1d(ixiy_hash, iz) & 0xFF];
+  px = x - ix;  py = y - iy;  pz = z - iz;
   s = txty*tz;
-  result->x = INCRSUMP(mp,s,px,py,pz);
+  result[X] = INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->y = INCRSUMP(mp,s,px,py,pz);
+  result[Y] = INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->z = INCRSUMP(mp,s,px,py,pz);
-
-  mp = &RTable[(int) Hash1d( jxiy_hash, iz ) & 0xFF];
-  px = x-jx;
+  result[Z] = INCRSUMP(mp, s, px, py, pz);
+  
+  mp = &RTable[(int) Hash1d(jxiy_hash, iz) & 0xFF];
+  px = x - jx;
   s = sxty*tz;
-  result->x += INCRSUMP(mp,s,px,py,pz);
+  result[X] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->y += INCRSUMP(mp,s,px,py,pz);
+  result[Y] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->z += INCRSUMP(mp,s,px,py,pz);
-
-  mp = &RTable[(int) Hash1d( jxjy_hash, iz ) & 0xFF];
-  py = y-jy;
+  result[Z] += INCRSUMP(mp, s, px, py, pz);
+  
+  mp = &RTable[(int) Hash1d(jxjy_hash, iz) & 0xFF];
+  py = y - jy;
   s = sxsy*tz;
-  result->x += INCRSUMP(mp,s,px,py,pz);
+  result[X] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->y += INCRSUMP(mp,s,px,py,pz);
+  result[Y] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->z += INCRSUMP(mp,s,px,py,pz);
-
-  mp = &RTable[(int) Hash1d( ixjy_hash, iz ) & 0xFF];
-  px = x-ix;
+  result[Z] += INCRSUMP(mp, s, px, py, pz);
+  
+  mp = &RTable[(int) Hash1d(ixjy_hash, iz) & 0xFF];
+  px = x - ix;
   s = txsy*tz;
-  result->x += INCRSUMP(mp,s,px,py,pz);
+  result[X] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->y += INCRSUMP(mp,s,px,py,pz);
+  result[Y] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->z += INCRSUMP(mp,s,px,py,pz);
-
-  mp = &RTable[(int) Hash1d( ixjy_hash, jz ) & 0xFF];
-  pz = z-jz;
+  result[Z] += INCRSUMP(mp, s, px, py, pz);
+  
+  mp = &RTable[(int) Hash1d(ixjy_hash, jz) & 0xFF];
+  pz = z - jz;
   s = txsy*sz;
-  result->x += INCRSUMP(mp,s,px,py,pz);
+  result[X] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->y += INCRSUMP(mp,s,px,py,pz);
+  result[Y] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->z += INCRSUMP(mp,s,px,py,pz);
-
-  mp = &RTable[(int) Hash1d( jxjy_hash, jz ) & 0xFF];
-  px = x-jx;
+  result[Z] += INCRSUMP(mp, s, px, py, pz);
+  
+  mp = &RTable[(int) Hash1d(jxjy_hash, jz) & 0xFF];
+  px = x - jx;
   s = sxsy*sz;
-  result->x += INCRSUMP(mp,s,px,py,pz);
+  result[X] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->y += INCRSUMP(mp,s,px,py,pz);
+  result[Y] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->z += INCRSUMP(mp,s,px,py,pz);
-
-  mp = &RTable[(int) Hash1d( jxiy_hash, jz ) & 0xFF];
-  py = y-iy;
+  result[Z] += INCRSUMP(mp, s, px, py, pz);
+  
+  mp = &RTable[(int) Hash1d(jxiy_hash, jz) & 0xFF];
+  py = y - iy;
   s = sxty*sz;
-  result->x += INCRSUMP(mp,s,px,py,pz);
+  result[X] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->y += INCRSUMP(mp,s,px,py,pz);
+  result[Y] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->z += INCRSUMP(mp,s,px,py,pz);
-
-  mp = &RTable[(int) Hash1d( ixiy_hash, jz ) & 0xFF];
-  px = x-ix;
+  result[Z] += INCRSUMP(mp, s, px, py, pz);
+  
+  mp = &RTable[(int) Hash1d(ixiy_hash, jz) & 0xFF];
+  px = x - ix;
   s = txty*sz;
-  result->x += INCRSUMP(mp,s,px,py,pz);
+  result[X] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->y += INCRSUMP(mp,s,px,py,pz);
+  result[Y] += INCRSUMP(mp, s, px, py, pz);
   mp += 4;
-  result->z += INCRSUMP(mp,s,px,py,pz);
-  }
+  result[Z] += INCRSUMP(mp, s, px, py, pz);
+}
 
-DBL Turbulence (x, y, z, omega, lambda, octaves)
-DBL x, y, z,omega, lambda;
-int octaves;
-  {
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Turbulence
+*
+* INPUT
+*
+*   EPoint -- Point at which turb is evaluated.
+*   Turb   -- Parameters for fbm calculations.
+*   
+* OUTPUT
+*   
+* RETURNS
+*
+*   DBL result
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION   : Computes a Fractal Brownian Motion turbulence value
+*                 using repeated calls to a Perlin Noise function.
+*
+* CHANGES
+*   ??? ???? : Updated with varible Octaves, Lambda, & Omega by [DMF]
+*
+******************************************************************************/
+
+DBL Turbulence(EPoint,Turb)
+VECTOR EPoint;
+TURB *Turb;
+{
   int i;
-  DBL l, o, value, tempx, tempy, tempz;
+  DBL Lambda, Omega, l, o, value;
+  VECTOR temp;
+  int Octaves=Turb->Octaves;
+  
+  value = Noise(EPoint);
 
-  value = Noise(x, y, z);
-  l = lambda;
-  o = omega;
-  for (i = 2; i <= octaves; i++)
-    {
-    tempx = l * x;
-    tempy = l * y;
-    tempz = l * z;
-    value += o * Noise(tempx, tempy, tempz);
-    if (i < octaves)
-      {
-      l *= lambda;
-      o *= omega;
-      }
-    }
-  return (value);
-  }
+  l = Lambda = Turb->Lambda;
+  o = Omega  = Turb->Omega;
 
-void DTurbulence (result, x, y, z, omega, lambda, octaves)
-VECTOR  *result;
-DBL x, y, z, omega, lambda;
-int octaves;
+  for (i = 2; i <= Octaves; i++)
   {
+    VScale(temp,EPoint,l);
+    value += o * Noise(temp);
+    if (i < Octaves)
+    {
+      l *= Lambda;
+      o *= Omega;
+    }
+  }
+  return (value);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   DTurbulence
+*
+* INPUT
+*
+*   EPoint -- Point at which turb is evaluated.
+*   Turb   -- Parameters for fmb calculations.
+*   
+* OUTPUT
+*
+*   result -- Vector valued turbulence
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION   : Computes a Fractal Brownian Motion turbulence value
+*                 using repeated calls to a Perlin DNoise function.
+*
+* CHANGES
+*   ??? ???? : Updated with varible Octaves, Lambda, & Omega by [DMF]
+*
+******************************************************************************/
+
+
+void DTurbulence(result, EPoint, Turb)
+VECTOR  result, EPoint;
+TURB *Turb;
+{
+  DBL Omega, Lambda;
   int i;
   DBL l, o;
   VECTOR value, temp;
+  int Octaves=Turb->Octaves;
+  
+  result[X] = result[Y] = result[Z] = 0.0;
+  value[X]  = value[Y]  = value[Z]  = 0.0;
+  
+  DNoise(result, EPoint);
+  
+  l = Lambda = Turb->Lambda;
+  o = Omega  = Turb->Omega;
 
-  result -> x = 0.0;
-  result -> y = 0.0;
-  result -> z = 0.0;
-
-  value.x = value.y = value.z = 0.0;
-
-  DNoise(result, x,y,z);
-
-  l = lambda;
-  o = omega;
-  for (i = 2; i <= octaves; i++)
+  for (i = 2; i <= Octaves; i++)
+  {
+    VScale(temp,EPoint,l);
+    
+    DNoise(value, temp);
+    result[X] += o * value[X];
+    result[Y] += o * value[Y];
+    result[Z] += o * value[Z];
+    if (i < Octaves)
     {
-    temp.x = l * x;
-    temp.y = l * y;
-    temp.z = l * z;
-
-    DNoise(&value, temp.x, temp.y, temp.z);
-    result->x += o * value.x;
-    result->y += o * value.y;
-    result->z += o * value.z;
-    if (i < octaves)
-      {
-      l *= lambda;
-      o *= omega;
-      }
+      l *= Lambda;
+      o *= Omega;
     }
   }
+}
 
-DBL cycloidal (value)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   cycloidal
+*
+* INPUT
+*
+*   DBL value
+*   
+* OUTPUT
+*   
+* RETURNS
+*
+*   DBL result
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+DBL cycloidal(value)
 DBL value;
-  {
+{
   register int indx;
-
+  
   if (value >= 0.0)
-    {
-    indx = (int)((value - floor (value)) * SINTABSIZE);
+  {
+    indx = (int)((value - floor(value)) * SINTABSIZE);
     return (sintab [indx]);
-    }
+  }
   else
-    {
-    indx = (int)((0.0 - (value + floor (0.0 - value))) * SINTABSIZE);
+  {
+    indx = (int)((0.0 - (value + floor(0.0 - value))) * SINTABSIZE);
     return (0.0 - sintab [indx]);
-    }
   }
+}
 
-DBL Triangle_Wave (value)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Triangle_Wave
+*
+* INPUT
+*
+*   DBL value
+*   
+* OUTPUT
+*   
+* RETURNS
+*
+*   DBL result
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+DBL Triangle_Wave(value)
 DBL value;
+{
+  register DBL offset;
+  
+  if (value >= 0.0) 
   {
-  register DBL offset,temp1;
-
-  if (value >= 0.0) offset = value - floor(value);
-  else 
-    {
-    temp1 = -1.0 - floor(fabs(value));
-    offset = value - temp1;
-    }
-  if (offset >= 0.5) return (2.0 * (1.0 - offset));
-  else return (2.0 * offset);
+    offset = value - floor(value);
   }
-
-  void Translate_Textures (Textures, Vector)
-    TEXTURE *Textures;
-VECTOR *Vector;
+  else
   {
-  TRANSFORM Trans;
-
-  Compute_Translation_Transform (&Trans, Vector);
-  Transform_Textures (Textures, &Trans);
+    offset = value + 1.0 + floor(fabs(value));
   }
-
-void Rotate_Textures (Textures, Vector)
-TEXTURE *Textures;
-VECTOR *Vector;
+  if (offset >= 0.5) 
   {
-  TRANSFORM Trans;
-
-  Compute_Rotation_Transform (&Trans, Vector);
-  Transform_Textures (Textures, &Trans);
+    return (2.0 * (1.0 - offset));
   }
-
-void Scale_Textures (Textures, Vector)
-TEXTURE *Textures;
-VECTOR *Vector;
+  else
   {
-  TRANSFORM Trans;
-
-  Compute_Scaling_Transform (&Trans, Vector);
-  Transform_Textures (Textures, &Trans);
+    return (2.0 * offset);
   }
+}
 
-void Transform_Textures (Textures, Trans)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+void Translate_Textures(Textures, Trans)
 TEXTURE *Textures;
 TRANSFORM *Trans;
+{
+  Transform_Textures(Textures, Trans);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+void Rotate_Textures(Textures, Trans)
+TEXTURE *Textures;
+TRANSFORM *Trans;
+{
+  Transform_Textures(Textures, Trans);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+void Scale_Textures(Textures, Trans)
+TEXTURE *Textures;
+TRANSFORM *Trans;
+{
+  Transform_Textures(Textures, Trans);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+void Transform_Textures(Textures, Trans)
+TEXTURE *Textures;
+TRANSFORM *Trans;
+{
+  TEXTURE *Layer;
+
+  for (Layer = Textures; Layer != NULL; Layer = (TEXTURE *)Layer->Next)
   {
-  TEXTURE *Layer, *Material;
-
-  for (Layer = Textures;
-  Layer != NULL;
-  Layer = Layer->Next_Layer)
-    switch (Layer->Type)
+    if (Layer->Type == PLAIN_PATTERN)
     {
-    case PNF_TEXTURE:
-      Transform_Pigment (Layer->Pigment, Trans);
-      Transform_Tnormal (Layer->Tnormal, Trans);
-      break;
-
-    case TILE_TEXTURE:
-      if (((TILES *)Layer)->Trans == NULL)
-        ((TILES *)Layer)->Trans = Create_Transform ();
-      Compose_Transforms (((TILES *)Layer)->Trans, Trans);
-      Transform_Textures (((TILES *)Layer)->Tile1, Trans);
-      Transform_Textures (((TILES *)Layer)->Tile2, Trans);
-      break;
-
-    case MAT_TEXTURE:
-      if (((MATERIAL *)Layer)->Trans == NULL)
-        ((MATERIAL *)Layer)->Trans = Create_Transform ();
-      Compose_Transforms (((MATERIAL *)Layer)->Trans, Trans);
-      for (Material = ((MATERIAL *)Layer)->Materials;
-      Material != NULL;
-      Material = Material->Next_Material)
-        Transform_Textures (Material, Trans);
-      break;
+      Transform_Tpattern((TPATTERN *)Layer->Pigment, Trans);
+      Transform_Tpattern((TPATTERN *)Layer->Tnormal, Trans);
+      Transform_Halo(Layer->Halo, Trans);
+    }
+    else
+    {
+      Transform_Tpattern((TPATTERN *)Layer, Trans);
     }
   }
+}
 
-FINISH *Create_Finish ()
-  {
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+FINISH *Create_Finish()
+{
   FINISH *New;
+  
+  New = (FINISH *)POV_MALLOC(sizeof (FINISH), "finish");
+  
+  Make_RGB(New->Ambient, 0.1, 0.1, 0.1);
+  Make_RGB(New->Reflection, 0.0, 0.0, 0.0);
 
-  if ((New = (FINISH *) malloc (sizeof (FINISH))) == NULL)
-    MAError ("finish");
-
-  New->Reflection = 0.0;
-  New->Ambient    = 0.1;
   New->Diffuse    = 0.6;
   New->Brilliance = 1.0;
-  New->Index_Of_Refraction = 1.0;
-  New->Refraction = 0.0;
-  New->Specular   = 0.0;
-  New->Roughness  = 1.0/0.05; /* CEY 12/92 */
   New->Phong      = 0.0;
   New->Phong_Size = 40.0;
+  New->Specular   = 0.0;
+  New->Roughness  = 1.0 / 0.05;
+  New->Refraction = 0.0;
+
+  New->Index_Of_Refraction = 1.0;
+
   New->Crand = 0.0;
-  New->Metallic_Flag = FALSE;
 
-  return (New);
-  }
+  New->Metallic = 0.0;
+  New->Caustics = 0.0;
 
-FINISH *Copy_Finish (Old)
+  New->Irid                = 0.0;
+  New->Irid_Film_Thickness = 0.0;
+  New->Irid_Turb           = 0.0;
+
+  New->Fade_Distance = 0.0;
+  New->Fade_Power    = 0.0;
+
+  return(New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+FINISH *Copy_Finish(Old)
 FINISH *Old;
-  {
+{
   FINISH *New;
-
+  
   if (Old != NULL)
-    {
-    New  = Create_Finish ();
+  {
+    New = Create_Finish();
     *New = *Old;
-    }
+  }
   else
     New = NULL;
   return (New);
-  }
+}
 
-TEXTURE *Create_PNF_Texture ()
-  {
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+TEXTURE *Create_Texture()
+{
   TEXTURE *New;
+  
+  New = (TEXTURE *)POV_MALLOC(sizeof (TEXTURE), "texture");
+  
+  Init_TPat_Fields((TPATTERN *)New);
 
-  if ((New = (TEXTURE *) malloc (sizeof (TEXTURE))) == NULL)
-    MAError ("texture");
+  New->References = 1;
 
-  New->Type    = PNF_TEXTURE;
-  New->Flags   = NO_FLAGS;
+  New->Type  = PLAIN_PATTERN;
+  New->Flags = NO_FLAGS;
+
   New->Pigment = NULL;
   New->Tnormal = NULL;
   New->Finish  = NULL;
-  New->Next_Layer = NULL;
+  New->Halo    = NULL;
+
+  New->Next          = NULL;
   New->Next_Material = NULL;
 
   return (New);
-  }
+}
 
-TILES *Create_Tiles_Texture ()
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+TEXTURE *Copy_Texture_Pointer(Texture)
+TEXTURE *Texture;
+{
+  if (Texture != NULL)
   {
-  TILES *New;
-
-  if ((New = (TILES *) malloc (sizeof (TILES))) == NULL)
-    MAError ("checker texture");
-
-  New->Type  = TILE_TEXTURE;
-  New->Flags = NO_FLAGS;
-  New->Tile1 = NULL;
-  New->Tile2 = NULL;
-  New->Trans  = NULL;
-  New->Next_Layer = NULL;
-  New->Next_Material = NULL;
-
-  return (New);
+    Texture->References++;
   }
 
-MATERIAL *Create_Material_Texture ()
-  {
-  MATERIAL *New;
+  return(Texture);
+}
 
-  if ((New = (MATERIAL *) malloc (sizeof (MATERIAL))) == NULL)
-    MAError ("material texture");
 
-  New->Type      = MAT_TEXTURE;
-  New->Flags     = NO_FLAGS;
-  New->Materials = NULL;
-  New->Num_Of_Mats = 0;
-  New->Trans  = NULL;
-  New->Next_Layer = NULL;
-  New->Next_Material = NULL;
 
-  return (New);
-  }
 
-TEXTURE *Copy_Textures (Textures)
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+TEXTURE *Copy_Textures(Textures)
 TEXTURE *Textures;
-  {
+{
   TEXTURE *New, *First, *Previous, *Layer;
-
+  
   Previous = First = NULL;
+  
+  for (Layer = Textures; Layer != NULL; Layer = (TEXTURE *)Layer->Next)
+  {
+    New = Create_Texture();
+    Copy_TPat_Fields ((TPATTERN *)New, (TPATTERN *)Layer);
 
-  for (Layer = Textures;
-  Layer != NULL;
-  Layer = Layer->Next_Layer)
-    {
     switch (Layer->Type)
     {
-    case PNF_TEXTURE:
-      New = Create_PNF_Texture ();
-      New->Pigment = Copy_Pigment (Layer->Pigment);
-      New->Tnormal = Copy_Tnormal (Layer->Tnormal);
-      New->Finish  = Copy_Finish  (Layer->Finish);
-      break;
+      case PLAIN_PATTERN:
+        New->Pigment = Copy_Pigment(Layer->Pigment);
+        New->Tnormal = Copy_Tnormal(Layer->Tnormal);
+        New->Finish  = Copy_Finish(Layer->Finish);
+        New->Halo    = Copy_Halo(Layer->Halo);
 
-    case TILE_TEXTURE:
-      New = (TEXTURE *) Create_Tiles_Texture ();
-      ((TILES *)New)->Tile1 = Copy_Textures (((TILES *)Layer)->Tile1);
-      ((TILES *)New)->Tile2 = Copy_Textures (((TILES *)Layer)->Tile2);
-      ((TILES *)New)->Trans = Copy_Transform (((TILES *)Layer)->Trans);
-      break;
+        break;
+      
+      case BITMAP_PATTERN:
 
-    case MAT_TEXTURE:
-      New = (TEXTURE *) Create_Material_Texture ();
-      ((MATERIAL *)New)->Materials = Copy_Materials (((MATERIAL *)Layer)->Materials);
-      ((MATERIAL *)New)->Trans = Copy_Transform (((MATERIAL *)Layer)->Trans);
-      ((MATERIAL *)New)->Image = Copy_Image (((MATERIAL *)Layer)->Image);
-      ((MATERIAL *)New)->Num_Of_Mats = (((MATERIAL *)Layer)->Num_Of_Mats);
-      break;
+        New->Materials   = Copy_Materials(Layer->Materials);
+        New->Num_Of_Mats = Layer->Num_Of_Mats;
+
+/*      Not needed. Copied by Copy_TPat_Fields */
+/*      New->Vals.Image  = Copy_Image(Layer->Vals.Image);*/ 
+
+        break;
     }
 
     if (First == NULL)
-      First = New;
-    if (Previous != NULL)
-      Previous->Next_Layer = New;
-    Previous = New;
-    }
-  return (First);
-  }
-
-TEXTURE *Copy_Materials (Old)
-TEXTURE *Old;
-  {
-  TEXTURE *New, *First, *Previous, *Material;
-
-  Previous = First = NULL;
-
-  for (Material = Old;
-  Material != NULL;
-  Material = Material->Next_Material)
     {
-    New = Copy_Textures (Material);
-
-    if (First == NULL)
       First = New;
+    }
 
     if (Previous != NULL)
-      Previous->Next_Material = New;
+    {
+      Previous->Next = (TPATTERN *)New;
+    }
 
     Previous = New;
-    }
-  return (First);
   }
 
-void Destroy_Textures (Textures)
-TEXTURE *Textures;
+  return (First);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+static TEXTURE *Copy_Materials(Old)
+TEXTURE *Old;
+{
+  TEXTURE *New, *First, *Previous, *Material;
+  
+  Previous = First = NULL;
+  
+  for (Material = Old; Material != NULL; Material = Material->Next_Material)
   {
-  TEXTURE *Layer=Textures;
+    New = Copy_Textures(Material);
+
+    if (First == NULL)
+    {
+      First = New;
+    }
+
+    if (Previous != NULL)
+    {
+      Previous->Next_Material = New;
+    }
+
+    Previous = New;
+  }
+
+  return (First);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+void Destroy_Textures(Textures)
+TEXTURE *Textures;
+{
+  TEXTURE *Layer = Textures;
   TEXTURE *Mats;
   TEXTURE *Temp;
+  
+  if ((Textures == NULL) || (--(Textures->References) > 0))
+  {
+    return;
+  }
 
   while (Layer != NULL)
-    {
+  {
     Mats = Layer->Next_Material;
+
     while (Mats != NULL)
-      {
+    {
       Temp = Mats->Next_Material;
       Mats->Next_Material = NULL;
-      Destroy_Textures (Mats);
+      Destroy_Textures(Mats);
       Mats = Temp;
-      }
+    }
+
+    Destroy_TPat_Fields((TPATTERN *)Layer);
+
     switch (Layer->Type)
     {
-    case PNF_TEXTURE:
-      Destroy_Pigment (Layer->Pigment);
-      Destroy_Tnormal (Layer->Tnormal);
-      Destroy_Finish (Layer->Finish);
+      case PLAIN_PATTERN:
+
+        Destroy_Pigment(Layer->Pigment);
+        Destroy_Tnormal(Layer->Tnormal);
+        Destroy_Finish(Layer->Finish);
+        Destroy_Halo(Layer->Halo);
+
       break;
 
-    case TILE_TEXTURE:
-      Destroy_Transform (((TILES *)Layer)->Trans);
-      Destroy_Textures (((TILES *)Layer)->Tile1);
-      Destroy_Textures (((TILES *)Layer)->Tile2);
-      break;
 
-    case MAT_TEXTURE:
-      Destroy_Transform (((MATERIAL *)Layer)->Trans);
-      Destroy_Textures (((MATERIAL *)Layer)->Materials);
-      Destroy_Image (((MATERIAL *)Layer)->Image);
+      case BITMAP_PATTERN:
+
+        Destroy_Textures(Layer->Materials);
+        /*taken care of by Destroy_TPat_Fields*/
+        /*Destroy_Image(Layer->Vals.Image);*/
+
       break;
     }
-    Temp = Layer->Next_Layer;
-    free (Layer);
+
+    Temp = (TEXTURE *)Layer->Next;
+    POV_FREE(Layer);
     Layer = Temp;
-    }
-  }  
+  }
+}
 
-void Post_Textures (Textures)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+void Post_Textures(Textures)
 TEXTURE *Textures;
-  {
+{
   TEXTURE *Layer, *Material;
-
+  int i;
+  BLEND_MAP *Map;
+  
   if (Textures == NULL)
+  {
     return;
+  }
 
-  for (Layer = Textures;
-  Layer != NULL;
-  Layer = Layer->Next_Layer)
-    {
+  for (Layer = Textures; Layer != NULL; Layer = (TEXTURE *)Layer->Next)
+  {
     if (!((Layer->Flags) & POST_DONE))
+    {
       switch (Layer->Type)
       {
-      case PNF_TEXTURE:
-        Post_Pigment (Layer->Pigment);
-        Post_Tnormal (Layer->Tnormal);
-        break;
+        case PLAIN_PATTERN:
 
-      case TILE_TEXTURE:
-        Post_Textures (((TILES *)Layer)->Tile1);
-        Post_Textures (((TILES *)Layer)->Tile2);
-        break;
+          Post_Pigment(Layer->Pigment);
+          Post_Tnormal(Layer->Tnormal);
+          Post_Halo(Layer);
 
-      case MAT_TEXTURE:
-        for (Material = ((MATERIAL *)Layer)->Materials;
-        Material != NULL;
-        Material = Material->Next_Material)
-          Post_Textures(Material);
-        break;
+          break;
+
+        case BITMAP_PATTERN:
+
+          for (Material = Layer->Materials; Material != NULL; Material = Material->Next_Material)
+
+            Post_Textures(Material);
+
+            break;
+      }
+  
+      if ((Map=Layer->Blend_Map) != NULL)
+      {
+        for (i = 0; i < Map->Number_Of_Entries; i++)
+        {
+           Post_Textures(Map->Blend_Map_Entries[i].Vals.Texture);
+        }
+      }
+      else
+      {
+        if (Layer->Type == AVERAGE_PATTERN)
+        {
+           Error("No texture map in averaged texture.");
+        }
       }
     }
-  return;
   }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Test_Opacity
+*
+* INPUT
+*
+*   Object - Pointer to object
+*
+* OUTPUT
+*
+* RETURNS
+*
+*   int - TRUE, if opaque
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*   
+* DESCRIPTION
+*
+*   Test wether an object is opaque or not, i.e. wether the texture contains
+*   a non-zero filter or alpha channel.
+*
+* CHANGES
+*
+*   Aug 1994 : Creation.
+*
+*   Oct 1994 : Added code to check for opaque image maps. [DB]
+*
+*   Jun 1995 : Added code to check for alpha channel image maps. [DB]
+*
+******************************************************************************/
+
+int Test_Opacity(Texture)
+TEXTURE *Texture;
+{
+  int x, y;
+  int Opaque, Help;
+  IMAGE *Image;
+  TEXTURE *Layer, *Material;
+
+  if (Texture == NULL)
+  {
+    return(FALSE);
+  }
+
+  /* We assume that the object is not opaque. */
+
+  Opaque = FALSE;
+
+  /* Test all layers. If at least one layer is opaque the object is opaque. */
+
+  for (Layer = Texture; Layer != NULL; Layer = (TEXTURE *)Layer->Next)
+  {
+    switch (Layer->Type)
+    {
+      case PLAIN_PATTERN:
+
+        /* Test image map for opacity. */
+
+        if ((Layer->Pigment->Type == BITMAP_PATTERN) &&
+            (Layer->Pigment->Vals.Image != NULL))
+        {
+          /* Layer is not opaque if the image map is used just once. */
+
+          if (Layer->Pigment->Vals.Image->Once_Flag)
+          {
+            break;
+          }
+
+          /* Layer is not opaque if there's at least one non-opaque color. */
+
+          Image = Layer->Pigment->Vals.Image;
+
+          Help = FALSE;
+
+          if (Image->Colour_Map != NULL)
+          {
+            /* Test color map. */
+
+            for (x = 0; x < (int)Image->Colour_Map_Size; x++)
+            {
+              if (fabs(Image->Colour_Map[x].Filter) > EPSILON)
+              {
+                Help = TRUE;
+
+                break;
+              }
+            }
+          }
+          else
+          {
+            /* Test image. */
+
+            if (Image->data.rgb_lines[0].transm != NULL)
+            {
+              for (y = 0; y < Image->iheight; y++)
+              {
+                for (x = 0; x < Image->iwidth; x++)
+                {
+                  if (fabs(Image->data.rgb_lines[y].transm[x]) > EPSILON)
+                  {
+                    Help = TRUE;
+
+                    break;
+                  }
+                }
+
+                if (Help)
+                {
+                  break;
+                }
+              }
+            }
+          }
+
+          if (Help)
+          {
+            break;
+          }
+        }
+
+        if (!(Layer->Pigment->Flags & HAS_FILTER))
+        {
+          Opaque = TRUE;
+        }
+
+        break;
+
+      case BITMAP_PATTERN:
+
+        /* Layer is not opaque if the image map is used just once. */
+
+        if (Layer->Vals.Image != NULL)
+        {
+          if (Layer->Vals.Image->Once_Flag)
+          {
+            break;
+          }
+        }
+
+        /* Layer is opaque if all materials are opaque. */
+
+        Help = TRUE;
+
+        for (Material = Layer->Materials; Material != NULL; Material = Material->Next_Material)
+        {
+          if (!Test_Opacity(Material))
+          {
+            /* Material is not opaque --> layer is not opaque. */
+
+            Help = FALSE;
+
+            break;
+          }
+        }
+
+        if (Help)
+        {
+          Opaque = TRUE;
+        }
+
+        break;
+    }
+  }
+
+  return(Opaque);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   POV_Std_rand
+*
+* INPUT
+*
+* OUTPUT
+*   
+* RETURNS
+*
+*   int - random value
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   Standard pseudo-random function.
+*
+* CHANGES
+*
+*   Feb 1995 : Creation.
+*
+******************************************************************************/
+
+int POV_Std_rand()
+{
+  next_rand = next_rand * 1812433253L + 12345L;
+
+  return((int)(next_rand >> 16) & RNDMASK);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   POV_Std_srand
+*
+* INPUT
+*
+*   seed - Pseudo-random generator start value
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION
+*
+*   Set start value for pseudo-random generator.
+*
+* CHANGES
+*
+*   Feb 1995 : Creation.
+*
+******************************************************************************/
+
+void POV_Std_srand(seed)
+int seed;
+{
+  next_rand = (unsigned long int)seed;
+}
 

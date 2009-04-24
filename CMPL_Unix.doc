@@ -1,0 +1,94 @@
+                 Persistence of Vision Ray Tracer
+                           Version 3.00
+                   Unix Compilation Instructions
+
+Files:
+   If this file has ^M's in it when you're reading it under Unix, then
+   you need to make sure that when you extract the source files and
+   Unix specific code from the archive it came in, that you tell the
+   de-archiver to convert CR-LF's to LF's in text files.
+
+   The widely-distributed Info-Zip archiver does this if you supply
+   '-a' on the command-line, i.e. 'unzip -a <archive name>'. You may
+   also like to use 'unzip -aL <archive name>' if the filenames are
+   extracted in upper-case.  If you received these files in a .tar.gz
+   (or .tgz) archive then this has already been done for you.
+
+   This file contains the documentation specific to compiling POV-Ray
+   on Unix systems.  Due to the wide variety of Unix systems available,
+   POV-Ray may not compile directly on all systems as is.  Every effort
+   has been made to make it compile on as many systems as we have access
+   to.  If you have problems compiling, try checking with a local Unix
+   guru first.  If you still have problems and have internet access,
+   check out the comp.graphics.rendering.raytracing newsgroup.  Please
+   do not contact the POV-Team about problems with compiling POV-Ray.
+
+   If you are trying to compile POV-Ray on an unsupported platform,
+   this version is the best one to use as a base.  The platform
+   specific configuration is in one of several files, depending on what
+   type of display you will be using when running POV-Ray.  See also
+   the compile.doc that was extracted into the main directory for more
+   information on compiling POV-Ray.
+
+Building the source:
+   POV-Ray should compile as is with most ANSI or non-ANSI Unix compilers.
+   No changes should be needed in the core of the raytracer.
+
+   To compile POV-Ray from the original source, follow the following
+   instructions:
+
+      1)  If you do not already have libpng and zlib installed on your
+          system, go to the libpng and zlib directories under the main
+          POV-Ray source tree and follow the instructions there to build
+          those libraries.  This will probably be typing 'make' in libpng
+	  (you may want to use makefile.elf under Linux or Solaris), and
+	  'configure; make' in zlib.  If either of these fail, you should
+	  read the documentation included for each.
+
+      2)  Go to the source/unix directory.
+
+      2a) For the command-line only version type 'make newunix'.
+
+      2b) For the X Windows version, you may have to specify the location
+          of the X11 include and library files, via setting the X11 variable
+	  in the makefile.  There are several possible default settings in
+	  the makefile.  Now type 'make newxwin'.
+
+      2c) Building the SVGAlib version under Linux is basically the same as
+          the X Windows version: type 'make newsvga'.  You, of course, will
+          need to have libvga installed on your system.
+
+   Your executable will be called povray, x-povray, or s-povray, depending
+   on which executable you build, but this can be changed in the makefile.
+
+   If POV-Ray doesn't compile the first time, have a look at the config
+   file(s) you are using.  All three display formats use the unixconf.h
+   file for the generic Unix configuration, while the X Windows display
+   code also uses xwinconf.h, while the SVGAlib display code uses also
+   svgaconf.h for configuration.  Some compiler options are also set in
+   the makefile.
+   
+   The "make newxxxx" target is intended for use the first time you are
+   building POV-Ray, or if you have already compiled POV-Ray with one
+   type of display, and you also want to compile it with another display
+   type.  In general, you should just use "make xwin", "make svga", or
+   "make unix" when building the source (in fact, you can change the
+   default target in the makefile as well).  When you do a "make newxxxx"
+   the correct configuration file is COPIED to config.h, so any changes
+   you make to config.h will be lost.  In general, you should make changes
+   to unixconf.h, so that it is available to all display versions.
+
+   If you are compiling under SunOS 4.1, or other system which doesn't
+   have an implementation of the memmov() function, you need to have:
+   #define POV_MEMMOV to pov_memmov
+   in the unixconf.h file before compiling.
+
+Questions and problems with Unix versions can be directed to Andreas
+Dilger.  Please make sure you have consulted with a local Unix person
+first if you think the problem is likely to be on your end.  If you are
+installing POV-Ray in a publicly accessible location, you must read and
+comply with the 'Online or Remote Execution' conditions in POVLEGAL.DOC.
+
+Andreas Dilger
+Internet:   adilger@enel.ucalgary.ca
+

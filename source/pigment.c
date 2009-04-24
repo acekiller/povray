@@ -4,8 +4,8 @@
 *  This module implements solid texturing functions that modify the color
 *  transparency of an object's surface.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
@@ -32,771 +32,644 @@
 #include "vector.h"
 #include "povproto.h"
 #include "texture.h"
+#include "colour.h"   
+#include "image.h"    
+#include "matrices.h" 
+#include "pigment.h"  
+#include "txttest.h"
+                    
 
-COLOUR_MAP_ENTRY Black_White_Entries[2]=
-   {{0.0, {0.0,0.0,0.0,0.0}},
-    {1.0, {1.0,1.0,1.0,0.0}}};
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
 
-COLOUR_MAP Gray_Default_Map =
-  { 2, FALSE, -1, Black_White_Entries};
 
-COLOUR_MAP_ENTRY Bozo_Entries[6]=
-   {{0.4, {1.0,1.0,1.0,0.0}},
-    {0.4, {0.0,1.0,0.0,0.0}},
-    {0.6, {0.0,1.0,0.0,0.0}},
-    {0.6, {0.0,0.0,1.0,0.0}},
-    {0.8, {0.0,0.0,1.0,0.0}},
-    {0.8, {1.0,0.0,0.0,0.0}}};
 
-COLOUR_MAP Bozo_Default_Map =
-  { 6, FALSE, -1, Bozo_Entries};
+/*****************************************************************************
+* Local typedefs
+******************************************************************************/
 
-COLOUR_MAP_ENTRY Wood_Entries[2]=
-   {{0.6, {0.666,0.312, 0.2,  0.0}},
-    {0.6, {0.4,  0.1333,0.066,0.0}}};
 
-COLOUR_MAP Wood_Default_Map =
-  { 2, FALSE, -1, Wood_Entries};
 
-COLOUR_MAP_ENTRY Mandel_Entries[5]=
-   {{0.001, {0.0,0.0,0.0,0.0}},
-    {0.001, {0.0,1.0,1.0,0.0}},
-    {0.012, {1.0,1.0,0.0,0.0}},
-    {0.015, {1.0,0.0,1.0,0.0}},
-    {0.1,   {0.0,1.0,1.0,0.0}}};
+/*****************************************************************************
+* Local variables
+******************************************************************************/
 
-COLOUR_MAP Mandel_Default_Map =
-  { 5, FALSE, -1, Mandel_Entries};
-
-COLOUR_MAP_ENTRY Agate_Entries[6]=
-   {{0.0, {1.0, 1.0, 1.0, 0.0}},
-    {0.5, {0.95,0.75,0.5, 0.0}},
-    {0.5, {0.9, 0.7, 0.5, 0.0}},
-    {0.6, {0.9, 0.7, 0.4, 0.0}},
-    {0.6, {1.0, 0.7, 0.4, 0.0}},
-    {1.0, {0.6, 0.3, 0.0, 0.0}}};
-
-COLOUR_MAP Agate_Default_Map =
-  { 6, FALSE, -1, Agate_Entries};
-
-COLOUR_MAP_ENTRY Radial_Entries[4]=
-   {{0.0,   {0.0,1.0,1.0,0.0}},
-    {0.333, {1.0,1.0,0.0,0.0}},
-    {0.666, {1.0,0.0,1.0,0.0}},
-    {1.0,   {0.0,1.0,1.0,0.0}}};
-
-COLOUR_MAP Radial_Default_Map =
-  { 4, FALSE, -1, Radial_Entries};
-
-COLOUR_MAP_ENTRY Marble_Entries[3]=
-   {{0.0,   {0.9,0.8, 0.8, 0.0}},
-    {0.9,   {0.9,0.08,0.08,0.0}},
-    {0.9,   {0.0,0.0,0.0,0.0}}};
-
-COLOUR_MAP Marble_Default_Map =
-  { 3, FALSE, -1, Marble_Entries};
-
-void agate (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  register DBL noise, turb;
-  COLOUR New_Colour;
-
-  turb = Turbulence(x, y, z,Pigment->omega,
-                    Pigment->lambda,Pigment->Octaves) 
-           * Pigment->Agate_Turb_Scale;
-  noise = 0.5 * (cycloidal(1.3 * turb + 1.1 * z) + 1.0);
-  if (noise <= 0.0)
-     noise = 0.0;
-  else 
-    {
-     noise = (noise > 1.0 ? 1.0 : noise);
-     noise = pow(noise, 0.77);
-    }
-
-  Compute_Colour (&New_Colour, Pigment, noise);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-void bozo (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  register DBL noise;
-  COLOUR New_Colour;
-
-  noise = Noise (x, y, z);
-
-  Compute_Colour (&New_Colour, Pigment, noise);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-void brick (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-
-  /* Disabled.  Needs work.
-
-   DBL xr, yr, zr;
-
-     xr = fabs(fmod(x, 1.0));
-     yr = fabs(fmod(y, 1.0));
-     zr = fabs(fmod(z, 1.0));
-
-   *colour = *Pigment -> Colour2;
-
-    if (xr > 0 && xr < Pigment-> Mortar) {
-       *colour = *Pigment -> Colour1;
-       return;
-       }
-    if (yr > 0 && yr < Pigment-> Mortar) {
-       *colour = *Pigment -> Colour1;
-       return;
-       }
-    if (zr > 0 && zr < Pigment-> Mortar)
-       *colour = *Pigment -> Colour1;
-
-*/
-  return;
-
-  }
-
-void checker (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  DBL value;
-  COLOUR_MAP_ENTRY *Cur;
-  int Num_Entries = Pigment->Colour_Map->Number_Of_Entries;
-  int Fudge = (int)((DBL)Num_Entries/Pigment->Frequency);
-
-  x += Small_Tolerance;
-  y += Small_Tolerance;
-  z += Small_Tolerance;
-
-  x -= FLOOR(x/Fudge) * Fudge-Small_Tolerance;
-  y -= FLOOR(y/Fudge) * Fudge-Small_Tolerance;
-  z -= FLOOR(z/Fudge) * Fudge-Small_Tolerance;
-
-  value = (FLOOR(x)+FLOOR(y)+FLOOR(z))* Pigment->Frequency;
-
-  value = fmod(FLOOR(value + (int)(Pigment->Phase)),
-    (DBL) Num_Entries);
-
-  Cur = &(Pigment->Colour_Map->Colour_Map_Entries[0]);
-
-  while (value > Cur->value)
-    Cur++;
-
-  colour->Red   += Cur->Colour.Red;
-  colour->Green += Cur->Colour.Green;
-  colour->Blue  += Cur->Colour.Blue;
-  colour->Filter += Cur->Colour.Filter;
-
-  }
-
-
-/*
-   Color Gradient Pigment - gradient based on the fractional values of x, y or
-   z, based on whether or not the given directional vector is a 1.0 or a 0.0.
-   Note - ONLY works with colour maps, preferably one that is circular - i.e.
-   the last defined colour (value 1.001) is the same as the first colour (with
-   a value of 0.0) in the map.  The basic concept of this is from DBW Render,
-   but Dave Wecker's only supports simple Y axis gradients.
-*/
-
-void gradient (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  COLOUR New_Colour;
-  DBL value = 0.0;
-
-  if (Pigment -> Colour_Gradient.x != 0.0)
-    {
-    x = FABS(x);
-    value += x - FLOOR(x);        /* obtain fractional X component */
-    }
-  if (Pigment -> Colour_Gradient.y != 0.0)
-    {
-    y = FABS(y);
-    value += y - FLOOR(y);        /* obtain fractional Y component */
-    }
-  if (Pigment -> Colour_Gradient.z != 0.0)
-    {
-    z = FABS(z);
-    value += z - FLOOR(z);        /* obtain fractional Z component */
-    }
-  value = ((value > 1.0) ? fmod(value, 1.0) : value); /* clamp to 1.0 */
-
-  Compute_Colour (&New_Colour, Pigment, value);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-
-/*
-   Granite - kind of a union of the "spotted" and the "dented" textures,
-   using a 1/f fractal noise function for color values.  Typically used
-   w/ small scaling values.  Should work with colour maps for pink granite...
-*/
-
-
-void granite (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  register int i;
-  register DBL temp, noise = 0.0, freq = 1.0;
-  COLOUR New_Colour;
-
-  for (i = 0; i < 6 ; freq *= 2.0, i++)
-    {
-    temp = 0.5 - Noise (x * 4 * freq, y * 4 * freq, z * 4 * freq);
-    temp = FABS(temp);
-    noise += temp / freq;
-    }
-
-  Compute_Colour (&New_Colour, Pigment, noise);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-void mandel (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {  
-  DBL a,b,cf,a2,b2;
-  int it_max,col;
-  COLOUR thepoint;
-
-  a = x; a2 = a*a;
-  b = y; b2 = b*b;
-  it_max = Pigment->Iterations;
-  for (col=0;col<it_max;col++) 
-    {
-     b  = 2*a*b + y;
-     a  = a2 - b2 + x;
-     a2 = a*a;
-     b2 = b*b;
-     if (a2 + b2 > 4.0)
-       break;
-    }
-  cf = (DBL)col / it_max;
-
-  Compute_Colour (&thepoint, Pigment, cf);
-  colour->Red   +=thepoint.Red;
-  colour->Green +=thepoint.Green;
-  colour->Blue  +=thepoint.Blue;
-  colour->Filter +=thepoint.Filter;
-  }
-
-
-void marble (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  register DBL noise, turb;
-  COLOUR New_Colour;
-
-  if ((Pigment->Flags) & HAS_TURB)
-    turb =  Turbulence(x, y, z,Pigment->omega,Pigment->lambda,Pigment->Octaves) *
-    Pigment->Turbulence.x;
-  else
-    turb = 0.0;
-
-  noise = Triangle_Wave(x + turb);
-
-  Compute_Colour (&New_Colour, Pigment, noise);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-void radial (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  register DBL value;
-  COLOUR New_Colour;
-
-  if ( (fabs(x)<0.001) && (fabs(z)<0.001))
-    value = 0.25;
-  else
-    value = 0.25+(atan2(x,z)+M_PI)/(2*M_PI);
-
-  Compute_Colour (&New_Colour, Pigment, value);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-
-/*        
-   With a little reflectivity and brilliance, can look like organ pipe
-   metal.   With tiny scaling values can look like masonry or concrete.
-   Works with color maps.
-*/
-
-void spotted (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  register DBL noise;
-  COLOUR New_Colour;
-
-  noise = Noise (x, y, z);
-
-  Compute_Colour (&New_Colour, Pigment, noise);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-
-void wood (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  register DBL noise, length;
-  VECTOR WoodTurbulence;
-  VECTOR point;
-  COLOUR New_Colour;
-
-  DTurbulence (&WoodTurbulence, x, y, z,Pigment->omega,Pigment->lambda,Pigment->Octaves);
-
-  point.x = cycloidal((x + WoodTurbulence.x)
-    * Pigment -> Turbulence.x);
-  point.y = cycloidal((y + WoodTurbulence.y)
-    * Pigment -> Turbulence.y);
-  point.z = 0.0;
-
-  point.x += x;
-  point.y += y;
-
-  /*  point.z += z;       Deleted per David Buck --  BP 7/91 */
-
-  VLength (length, point);
-
-  noise = Triangle_Wave(length);
-
-  Compute_Colour (&New_Colour, Pigment, noise);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-/* Two new pigments by Scott Taylor LEOPARD & ONION */
-
-void leopard (x, y, z, Pigment, colour)      /* SWT 7/18/91 */
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  /* The variable noise is not used as noise in this function */
-  register DBL noise,temp1,temp2,temp3;
-  COLOUR New_Colour;
-
-  /* This form didn't work with Zortech 386 compiler */
-  /* noise = Sqr((sin(x)+sin(y)+sin(z))/3); */
-  /* So we break it down. */
-  temp1 = sin(x);
-  temp2 = sin(y);
-  temp3 = sin(z);
-  noise = Sqr((temp1+temp2+temp3)/3);
-
-  Compute_Colour (&New_Colour, Pigment, noise);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-void onion (x, y, z, Pigment, colour)      /* SWT 7/18/91 */
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  /* The variable noise is not used as noise in this function */
-  register DBL noise;
-  COLOUR New_Colour;
-
-  /* This ramp goes 0-1,1-0,0-1,1-0...
-   noise = (fmod(SQRT(Sqr(x)+Sqr(y)+Sqr(z)),2.0)-1.0);
-   if (noise<0.0) {noise = 0.0-noise;}
-   */
-
-  /* This ramp goes 0-1,0-1,0-1,0-1... */
-  noise = (fmod(SQRT(Sqr(x)+Sqr(y)+Sqr(z)),1.0));
-
-  Compute_Colour (&New_Colour, Pigment, noise);
-  colour -> Red += New_Colour.Red;
-  colour -> Green += New_Colour.Green;
-  colour -> Blue += New_Colour.Blue;
-  colour -> Filter += New_Colour.Filter;
-  }
-
-/* TriHex pattern -- Ernest MacDougal Campbell III (EMC3) 11/23/92
- *
- * Creates a hexagon pattern in the XZ plane.
- *
- * This algorithm is hard to explain.  First it scales the point to make
- * a few of the later calculations easier, then maps some points to be
- * closer to the Origin.  A small area in the first quadrant is subdivided
- * into a 6 x 6 grid.  The position of the point mapped into that grid
- * determines its color.  For some points, just the grid location is enough,
- * but for others, we have to calculate which half of the block it's in 
- * (this is where the atan2() function comes in handy).
- */
-
-#define xfactor 0.5;         /* each triangle is split in half for the grid */
-#define zfactor 0.866025404; /* sqrt(3)/2 -- Height of an equilateral triangle */
-
-void hexagon (x, y, z, Pigment, colour)
-DBL x, y, z;
-PIGMENT *Pigment;
-COLOUR *colour;
-  {
-  int xm, zm;
-  DBL xs, zs, xl, zl, value;
-  int brkindx;
-  COLOUR_MAP_ENTRY *Cur;
-
-  /* Keep all numbers positive.  Also, if z is negative, map it in such a
- * way as to avoid mirroring across the x-axis.  The value 5.196152424
- * is (sqrt(3)/2) * 6 (because the grid is 6 blocks high)
- */
-
-  x = fabs(x);
-  z = z<0?5.196152424 - fabs(z):z;  /* avoid mirroring across x-axis */
-
-  xs = x/xfactor;               /* scale point to make calcs easier */
-  zs = z/zfactor;
-
-  xs -= floor(xs/6) * 6;        /* map points into the 6 x 6 grid where  */
-  zs -= floor(zs/6) * 6;        /* the basic formula works               */
-
-  xm = (int) FLOOR(xs) % 6;     /* Get a block in the 6 x 6 grid */
-  zm = (int) FLOOR(zs) % 6;
-
-  switch (xm)
-    {                 /* These are easy cases:           */
-  case 0:                     /* color depends only on xm and zm */
-  case 5:
-    switch (zm)
-      {
-    case 0:
-    case 5:
-      value = 0;
-      break;
-    case 1:
-    case 2:
-      value = 1;
-      break;
-    case 3:
-    case 4:
-      value = 2;
-      break;
-    }
-    break;
-  case 2:
-  case 3:
-    switch (zm)
-      {
-    case 0:
-    case 1:
-      value = 2;
-      break;
-    case 2:
-    case 3:
-      value = 0;
-      break;
-    case 4:
-    case 5:
-      value = 1;
-      break;
-    }
-    break;
-
-    /* These cases are harder.  These blocks are divided diagonally
-      * by the angled edges of the hexagons.  Some slope positive, and
-      * others negative.  We flip the x value of the negatively sloped
-      * pieces.  Then we check to see if the point in question falls
-      * in the upper or lower half of the block.  That info, plus the
-      * z status of the block determines the color.
-      */
-
-  case 1:
-  case 4:
-    xl = xs-xm; /* map the point into the block at the origin */
-    zl = zs-zm;
-
-    if (((xm+zm) % 2) == 1)   /* These blocks have negative slopes */
-      xl = 1 - xl;            /* so we flip it horizontally        */
-
-    if (xl == 0) 
-      xl = .0001;             /* avoid a divide-by-zero error */
-
-    /* is the angle less-than or greater-than 45 degrees? */
-
-    brkindx = (zl/xl) < 1;
-
-    /* was...
-         * brkindx = (atan2(zl,xl) < (45 * M_PI/180));  
-         * ...but because of the mapping, it's easier and cheaper, 
-         * CPU-wise, to just use a good ol' slope.
-         */
-
-    switch (brkindx) 
-      {
-    case TRUE:
-      switch (zm) 
-        {
-      case 0:
-      case 3:
-        value = 0;
-        break;
-      case 2:
-      case 5:
-        value = 1;
-        break;
-      case 1:
-      case 4:
-        value = 2;
-        break;
-      }
-      break;
-    case FALSE:
-      switch (zm) 
-        {
-      case 0:
-      case 3:
-        value = 2;
-        break;
-      case 2:
-      case 5:
-        value = 0;
-        break;
-      case 1:
-      case 4:
-        value = 1;
-        break;
-      }
-      }
-    }
-  value = fmod (value+(int)Pigment->Phase,3);
-
-  Cur = &(Pigment->Colour_Map->Colour_Map_Entries[0]);
-  while (value > Cur->value)
-    Cur++;
-
-  colour->Red   += Cur->Colour.Red;
-  colour->Green += Cur->Colour.Green;
-  colour->Blue  += Cur->Colour.Blue;
-  colour->Filter += Cur->Colour.Filter;
-
-  return;
-  }
-
-/* End trihex() */
+static BLEND_MAP_ENTRY Black_White_Entries[2] /* =
+  {{0.0, FALSE, {{0.0, 0.0, 0.0, 0.0, 0.0}}},
+  {1.0, FALSE, {{1.0, 1.0, 1.0, 0.0, 0.0}}}} */ ;
+
+static BLEND_MAP Gray_Default_Map =
+  { 2,  FALSE, COLOUR_TYPE,  -1,  Black_White_Entries};
+
+static BLEND_MAP_ENTRY Bozo_Entries[6] /* =
+  {{0.4, FALSE, {{1.0, 1.0, 1.0, 0.0, 0.0}}},
+   {0.4, FALSE, {{0.0, 1.0, 0.0, 0.0, 0.0}}},
+   {0.6, FALSE, {{0.0, 1.0, 0.0, 0.0, 0.0}}},
+   {0.6, FALSE, {{0.0, 0.0, 1.0, 0.0, 0.0}}},
+   {0.8, FALSE, {{0.0, 0.0, 1.0, 0.0, 0.0}}},
+   {0.8, FALSE, {{1.0, 0.0, 0.0, 0.0, 0.0}}}} */ ;
+
+static BLEND_MAP Bozo_Default_Map =
+  { 6,  FALSE, COLOUR_TYPE,  -1,  Bozo_Entries};
+
+static BLEND_MAP_ENTRY Wood_Entries[2] /* =
+  {{0.6, FALSE, {{0.666, 0.312,  0.2,   0.0, 0.0}}},
+   {0.6, FALSE, {{0.4,   0.1333, 0.066, 0.0, 0.0}}}} */ ;
+    
+static BLEND_MAP Wood_Default_Map =
+  { 2,  FALSE, COLOUR_TYPE,  -1,  Wood_Entries};
+
+static BLEND_MAP_ENTRY Mandel_Entries[5] /* =
+  {{0.001, FALSE, {{0.0, 0.0, 0.0, 0.0, 0.0}}},
+   {0.001, FALSE, {{0.0, 1.0, 1.0, 0.0, 0.0}}},
+   {0.012, FALSE, {{1.0, 1.0, 0.0, 0.0, 0.0}}},
+   {0.015, FALSE, {{1.0, 0.0, 1.0, 0.0, 0.0}}},
+   {0.1,   FALSE, {{0.0, 1.0, 1.0, 0.0, 0.0}}}} */ ;
+
+static BLEND_MAP Mandel_Default_Map =
+  { 5,  FALSE, COLOUR_TYPE,  -1,  Mandel_Entries};
+
+static BLEND_MAP_ENTRY Agate_Entries[6] /* =
+  {{0.0, FALSE, {{1.0,  1.0,  1.0,  0.0, 0.0}}},
+   {0.5, FALSE, {{0.95, 0.75, 0.5,  0.0, 0.0}}},
+   {0.5, FALSE, {{0.9,  0.7,  0.5,  0.0, 0.0}}},
+   {0.6, FALSE, {{0.9,  0.7,  0.4,  0.0, 0.0}}},
+   {0.6, FALSE, {{1.0,  0.7,  0.4,  0.0, 0.0}}},
+   {1.0, FALSE, {{0.6,  0.3,  0.0,  0.0, 0.0}}}} */ ;
+
+static BLEND_MAP Agate_Default_Map =
+  { 6,  FALSE, COLOUR_TYPE,  -1,  Agate_Entries};
+
+static BLEND_MAP_ENTRY Radial_Entries[4] /* =
+  {{0.0,   FALSE, {{0.0, 1.0, 1.0, 0.0, 0.0}}},
+   {0.333, FALSE, {{1.0, 1.0, 0.0, 0.0, 0.0}}},
+   {0.666, FALSE, {{1.0, 0.0, 1.0, 0.0, 0.0}}},
+   {1.0,   FALSE, {{0.0, 1.0, 1.0, 0.0, 0.0}}}} */ ;
+
+static BLEND_MAP Radial_Default_Map =
+  { 4,  FALSE, COLOUR_TYPE,  -1,  Radial_Entries};
+
+static BLEND_MAP_ENTRY Marble_Entries[3] /* =
+  {{0.0, FALSE, {{0.9, 0.8,  0.8,  0.0, 0.0}}},
+   {0.9, FALSE, {{0.9, 0.08, 0.08, 0.0, 0.0}}},
+   {0.9, FALSE, {{0.0, 0.0, 0.0, 0.0, 0.0}}}} */ ;
+
+static BLEND_MAP Marble_Default_Map =
+  { 3,  FALSE, COLOUR_TYPE,  -1,  Marble_Entries};
+
+static BLEND_MAP_ENTRY Brick_Entries[2] /* =
+  {{0.0, FALSE, {{0.5, 0.5,  0.5,  0.0, 0.0}}},
+   {1.0, FALSE, {{0.6, 0.15, 0.15, 0.0, 0.0}}}} */ ;
+
+BLEND_MAP Brick_Default_Map =
+  { 2,  FALSE, COLOUR_TYPE,  -1,  Brick_Entries};
+
+static BLEND_MAP_ENTRY Hex_Entries[3] /*=
+  {{0.0, FALSE, {{0.0, 0.0, 1.0, 0.0, 0.0}}},
+   {1.0, FALSE, {{0.0, 1.0, 0.0, 0.0, 0.0}}},
+   {2.0, FALSE, {{1.0, 0.0, 0.0, 0.0, 0.0}}}} */;
+
+BLEND_MAP Hex_Default_Map =
+  { 3, FALSE,COLOUR_TYPE, -1, Hex_Entries};
+
+BLEND_MAP Check_Default_Map =
+  { 2, FALSE,COLOUR_TYPE, -1, Hex_Entries}; /* Yes... Hex_Entries, not Check [CY] */
+
+
+
+/*****************************************************************************
+* Static functions
+******************************************************************************/
+static void Do_Average_Pigments PARAMS((COLOUR Colour, PIGMENT *Pigment, VECTOR EPoint));
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Pigment
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*
+*   pointer to the created pigment
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION   : Allocate memory for new pigment and initialize it to
+*                 system default values.
+*
+* CHANGES
+*
+******************************************************************************/
 
 PIGMENT *Create_Pigment ()
-  {
+{
   PIGMENT *New;
 
-  if ((New = (PIGMENT *) malloc (sizeof (PIGMENT))) == NULL)
-    MAError ("pigment");
+  New = (PIGMENT *)POV_MALLOC(sizeof (PIGMENT), "pigment");
 
-  INIT_TPATTERN_FIELDS(New,NO_PIGMENT)
-    New->Colour1 = NULL;
-  Make_Colour(&(New->Quick_Colour), 0.5,0.5,0.5) ;
-  New->Colour_Map = NULL;
-  Make_Vector (&(New->Colour_Gradient), 0.0, 0.0, 0.0);
-  New->Image = NULL;
-  New->Mortar = 0.2;
-  New->Agate_Turb_Scale = 1.0;
-  New->Iterations = 0;
+  Init_TPat_Fields((TPATTERN *)New);
+
+  Make_Colour(New->Colour, 0.0,0.0,0.0) ;
+
+  New->Blend_Map = NULL;
+
   return (New);
-  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_Pigment
+*
+* INPUT
+*
+*   Old -- point to pigment to be copied
+*   
+* RETURNS
+*
+*   pointer to the created pigment
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION   : Allocate memory for new pigment and initialize it to
+*                 values in existing pigment Old.
+*
+* CHANGES
+*
+******************************************************************************/
 
 PIGMENT *Copy_Pigment (Old)
 PIGMENT *Old;
-  {
+{
   PIGMENT *New;
 
   if (Old != NULL)
-    {
+  {
     New = Create_Pigment ();
-    *New = *Old;
 
-    New->Trans = Copy_Transform (Old->Trans);
-    New->Colour1 = Copy_Colour (Old->Colour1);
-    New->Image = Copy_Image (Old->Image);
-    New->Colour_Map = Copy_Colour_Map (Old->Colour_Map);
+    Copy_TPat_Fields ((TPATTERN *)New, (TPATTERN *)Old);
+
+    if (Old->Type == PLAIN_PATTERN)
+    {
+      Assign_Colour(New->Colour,Old->Colour);
     }
+  }
   else
+  {
     New = NULL;
-
-  return (New);   
   }
 
-void Translate_Pigment(Pigment,Vector)
-PIGMENT *Pigment;
-VECTOR *Vector;
-  {
-  TRANSFORM Trans;
+  return (New);
+}
 
-  if (Pigment == NULL)
-    return;
 
-  Compute_Translation_Transform (&Trans, Vector);
-  Transform_Pigment (Pigment, &Trans);
-  }
 
-void Rotate_Pigment(Pigment,Vector)
-PIGMENT *Pigment;
-VECTOR *Vector;
-  {
-  TRANSFORM Trans;
-
-  if (Pigment == NULL)
-    return;
-
-  Compute_Rotation_Transform (&Trans, Vector);
-  Transform_Pigment (Pigment, &Trans);
-  }
-
-void Scale_Pigment(Pigment,Vector)
-PIGMENT *Pigment;
-VECTOR *Vector;
-  {
-  TRANSFORM Trans;
-
-  if (Pigment == NULL)
-    return;
-
-  Compute_Scaling_Transform (&Trans, Vector);
-  Transform_Pigment (Pigment, &Trans);
-  }
-
-void Transform_Pigment(Pigment,Trans)
-PIGMENT *Pigment;
-TRANSFORM *Trans;
-  {
-  if (Pigment == NULL)
-    return;
-
-  if (!Pigment->Trans)
-    Pigment->Trans = Create_Transform ();
-
-  Compose_Transforms (Pigment->Trans, Trans);
-  }
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_Pigment
+*
+* INPUT
+*
+*   pointer to pigment to destroied
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   POV-Ray Team
+*   
+* DESCRIPTION   : free all memory associated with given pigment
+*
+* CHANGES
+*
+******************************************************************************/
 
 void Destroy_Pigment (Pigment)
 PIGMENT *Pigment;
+{
+  if (Pigment != NULL)
   {
-  if (Pigment == NULL)
-    return;
+    Destroy_Pigment((PIGMENT *)Pigment->Next);
 
-  Destroy_Colour (Pigment->Colour1);
-  Destroy_Colour_Map (Pigment->Colour_Map);
-  Destroy_Image (Pigment->Image);
-  Destroy_Transform (Pigment->Trans);
-  free (Pigment);
+    Destroy_TPat_Fields ((TPATTERN *)Pigment);
+
+    POV_FREE(Pigment);
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Post_Pigment
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Chris Young
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+int Post_Pigment(Pigment)
+PIGMENT *Pigment;
+{
+  int i, Has_Filter;
+  BLEND_MAP *Map;
+
+  if (Pigment == NULL)
+  {
+    Error("Missing pigment");
   }
 
-void Post_Pigment (Pigment)
-PIGMENT *Pigment;
-  {
-  if (Pigment == NULL)
-    Error("Missing pigment");
-
   if (Pigment->Flags & POST_DONE)
-    return;
+  {
+    return(Pigment->Flags & HAS_FILTER);
+  }
 
-  if (Pigment->Type == NO_PIGMENT)
-    {
-    Pigment->Type = COLOUR_PIGMENT;
-    Pigment->Colour1 = Create_Colour ();
-    Warn("No pigment type given",1.5);
-    }
+  if (Pigment->Type == NO_PATTERN)
+  {
+    Pigment->Type = PLAIN_PATTERN;
+
+    Make_Colour(Pigment->Colour, 0.0, 0.0, 0.0) ;
+
+    Warning(1.5, "No pigment type given.\n");
+  }
 
   Pigment->Flags |= POST_DONE;
 
   switch (Pigment->Type)
   {
-  case COLOUR_PIGMENT:
-    Destroy_Transform (Pigment->Trans);
-    Pigment->Trans = NULL;
-    Make_Vector(&(Pigment->Turbulence),0.0,0.0,0.0);
-    break;
+    case PLAIN_PATTERN:
 
-  case BOZO_PIGMENT:
-    if (Pigment->Colour_Map == NULL)
-      Pigment->Colour_Map = &Bozo_Default_Map;
-    break;
+      Destroy_Warps (Pigment->Warps);
 
-  case WOOD_PIGMENT:
-    if (Pigment->Colour_Map == NULL)
-      Pigment->Colour_Map = &Wood_Default_Map;
-    break;
+      Pigment->Warps = NULL;
 
-  case MANDEL_PIGMENT:
-    if (Pigment->Colour_Map == NULL)
-      Pigment->Colour_Map = &Mandel_Default_Map;
-    break;
+      break;
 
-  case RADIAL_PIGMENT:
-    if (Pigment->Colour_Map == NULL)
-      Pigment->Colour_Map = &Radial_Default_Map;
-    break;
+    case NO_PATTERN:
+    case BITMAP_PATTERN:
 
-  case AGATE_PIGMENT:
-    if (Pigment->Colour_Map == NULL)
-      Pigment->Colour_Map = &Agate_Default_Map;
-    break;
+      break;
 
-  case MARBLE_PIGMENT:
-    if (Pigment->Colour_Map == NULL)
-      Pigment->Colour_Map = &Marble_Default_Map;
-    break;
+    default:
 
-  case SPOTTED_PIGMENT:
-  case GRADIENT_PIGMENT:
-  case GRANITE_PIGMENT:
-  case ONION_PIGMENT:
-  case LEOPARD_PIGMENT:
-    if (Pigment->Colour_Map == NULL)
-      Pigment->Colour_Map = &Gray_Default_Map;
-    break;
+      if (Pigment->Blend_Map == NULL)
+      {
+        switch (Pigment->Type)
+        {
+          case BOZO_PATTERN:    Pigment->Blend_Map = &Bozo_Default_Map;  break;
+          case BRICK_PATTERN:   Pigment->Blend_Map = &Brick_Default_Map; break;
+          case WOOD_PATTERN:    Pigment->Blend_Map = &Wood_Default_Map;  break;
+          case MANDEL_PATTERN:  Pigment->Blend_Map = &Mandel_Default_Map;break;
+          case RADIAL_PATTERN:  Pigment->Blend_Map = &Radial_Default_Map;break;
+          case AGATE_PATTERN:   Pigment->Blend_Map = &Agate_Default_Map; break;
+          case MARBLE_PATTERN:  Pigment->Blend_Map = &Marble_Default_Map;break;
+          case HEXAGON_PATTERN: Pigment->Blend_Map = &Hex_Default_Map;   break;
+          case CHECKER_PATTERN: Pigment->Blend_Map = &Check_Default_Map; break;
+          case AVERAGE_PATTERN: Error("Missing pigment_map in average pigment"); break;
+          default:              Pigment->Blend_Map = &Gray_Default_Map;  break;
+        }
+      }
+
+      break;
   }
 
-  return;   
+  /* Now we test wether this pigment is opaque or not. [DB 8/94] */
+
+  Has_Filter = FALSE;
+
+  if ((fabs(Pigment->Colour[FILTER]) > EPSILON) ||
+      (fabs(Pigment->Colour[TRANSM]) > EPSILON))
+  {
+    Has_Filter = TRUE;
   }
+
+  if ((Map = Pigment->Blend_Map) != NULL)
+  {
+    if (Map->Type == PIGMENT_TYPE)
+    {
+       for (i = 0; i < Map->Number_Of_Entries; i++)
+       {
+         Has_Filter |= Post_Pigment(Map->Blend_Map_Entries[i].Vals.Pigment);
+       }
+    }
+    else
+    {
+       for (i = 0; i < Map->Number_Of_Entries; i++)
+       {
+         Has_Filter |= fabs(Map->Blend_Map_Entries[i].Vals.Colour[FILTER])>EPSILON;
+         Has_Filter |= fabs(Map->Blend_Map_Entries[i].Vals.Colour[TRANSM])>EPSILON;
+       }
+    }
+  }
+
+  if (Has_Filter)
+  {
+    Pigment->Flags |= HAS_FILTER;
+  }
+
+  return(Has_Filter);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Compute_Pigment
+*
+* INPUT
+*
+*   Pigment - Info about this pigment
+*   EPoint  - 3-D point at which pattern is evaluated
+*
+* OUTPUT
+*
+*   Colour  - Resulting color is returned here.
+*
+* RETURNS
+*
+*   int - TRUE,  if a color was found for the given point
+*         FALSE, if no color was found (e.g. areas outside an image map
+*                that has the once option)
+*
+* AUTHOR
+*
+*   POV-Ray Team
+*
+* DESCRIPTION
+*   Given a 3d point and a pigment, compute colour from that layer.
+*   (Formerly called "Colour_At", or "Add_Pigment")
+*
+* CHANGES
+*   Added pigment map support [CY 11/94]
+*
+******************************************************************************/
+
+int Compute_Pigment (Colour, Pigment, EPoint)
+COLOUR Colour;
+PIGMENT *Pigment;
+VECTOR EPoint;
+{
+  int Colour_Found;
+  VECTOR TPoint;
+  DBL value;
+  register DBL fraction;
+  BLEND_MAP_ENTRY *Cur, *Prev;
+  COLOUR Temp_Colour;
+  BLEND_MAP *Blend_Map = Pigment->Blend_Map;
+
+  if (Pigment->Type <= LAST_SPECIAL_PATTERN)
+  {
+    Colour_Found = TRUE;
+
+    switch (Pigment->Type)
+    {
+      case NO_PATTERN:
+
+        Make_Colour(Colour, 0.0, 0.0, 0.0);
+
+        break;
+
+      case PLAIN_PATTERN:
+
+        Assign_Colour(Colour,Pigment->Colour);
+
+        break;
+
+      case AVERAGE_PATTERN:
+
+        Warp_EPoint (TPoint, EPoint, (TPATTERN *)Pigment);
+
+        Do_Average_Pigments(Colour,Pigment,TPoint);
+
+        break;
+
+      case BITMAP_PATTERN:
+
+        Warp_EPoint (TPoint, EPoint, (TPATTERN *)Pigment);
+
+        Make_Colour(Colour, 0.0, 0.0, 0.0);
+
+        Colour_Found = image_map (TPoint, Pigment, Colour);
+
+        break;
+
+      default:
+
+        Error("Pigment type %d not yet implemented",Pigment->Type);
+    }
+
+    return(Colour_Found);
+  }
+
+  Colour_Found = FALSE;
+
+  value = Evaluate_TPat ((TPATTERN *)Pigment,EPoint);
+
+  Search_Blend_Map (value, Blend_Map, &Prev, &Cur);
+
+  if (Blend_Map->Type == COLOUR_TYPE)
+  {
+    Colour_Found = TRUE;
+
+    Assign_Colour(Colour, Cur->Vals.Colour);
+  }
+  else
+  {
+    Warp_EPoint (TPoint, EPoint, (TPATTERN *)Pigment);
+
+    if (Compute_Pigment(Colour, Cur->Vals.Pigment,TPoint))
+    {
+      Colour_Found = TRUE;
+    }
+  }
+
+  if (Prev != Cur)
+  {
+    if (Blend_Map->Type == COLOUR_TYPE)
+    {
+      Colour_Found = TRUE;
+
+      Assign_Colour(Temp_Colour, Prev->Vals.Colour);
+    }
+    else
+    {
+      if (Compute_Pigment(Temp_Colour, Prev->Vals.Pigment, TPoint))
+      {
+        Colour_Found = TRUE;
+      }
+    }
+
+    fraction = (value - Prev->value) / (Cur->value - Prev->value);
+
+    Colour[RED]    = Temp_Colour[RED]    + fraction * (Colour[RED]    - Temp_Colour[RED]);
+    Colour[GREEN]  = Temp_Colour[GREEN]  + fraction * (Colour[GREEN]  - Temp_Colour[GREEN]);
+    Colour[BLUE]   = Temp_Colour[BLUE]   + fraction * (Colour[BLUE]   - Temp_Colour[BLUE]);
+    Colour[FILTER] = Temp_Colour[FILTER] + fraction * (Colour[FILTER] - Temp_Colour[FILTER]);
+    Colour[TRANSM] = Temp_Colour[TRANSM] + fraction * (Colour[TRANSM] - Temp_Colour[TRANSM]);
+  }
+
+  return(Colour_Found);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+* INPUT
+*
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*   
+* DESCRIPTION
+*
+* CHANGES
+*
+******************************************************************************/
+
+static void Do_Average_Pigments (Colour, Pigment, EPoint)
+COLOUR Colour;
+PIGMENT *Pigment;
+VECTOR EPoint;
+{
+   int i;
+   COLOUR LC;
+   BLEND_MAP *Map = Pigment->Blend_Map;
+   SNGL Value;
+   SNGL Total = 0.0;
+   
+   Make_Colour (Colour, 0.0, 0.0, 0.0);
+
+   for (i = 0; i < Map->Number_Of_Entries; i++)
+   {
+     Value = Map->Blend_Map_Entries[i].value;
+
+     Compute_Pigment (LC,Map->Blend_Map_Entries[i].Vals.Pigment,EPoint);
+     
+     Colour[RED]   += LC[RED]   *Value;
+     Colour[GREEN] += LC[GREEN] *Value;
+     Colour[BLUE]  += LC[BLUE]  *Value;
+     Colour[FILTER]+= LC[FILTER]*Value;
+     Colour[TRANSM]+= LC[TRANSM]*Value;
+
+     Total += Value;
+   }
+   Colour[RED]   /= Total;
+   Colour[GREEN] /= Total;
+   Colour[BLUE]  /= Total;
+   Colour[FILTER]/= Total;
+   Colour[TRANSM]/= Total;
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION  Make_Pigment_Entries
+*
+* INPUT  None
+*   
+* OUTPUT  Initializes default pigment blend_map values.
+*   
+* RETURNS  None
+*   
+* AUTHOR  Steve Demlow, Dec. '95
+*   
+* DESCRIPTION  Some pre-ANSI compilers won't auto-initialize unions, so these
+*   have to be done in regular code.
+*
+* CHANGES
+*
+******************************************************************************/
+
+void Make_Pigment_Entries()
+{
+  static unsigned char Made = FALSE;
+
+  if (Made) {
+    return;
+  }
+  Made = TRUE;
+
+  Make_Blend_Map_Entry(Black_White_Entries[0] , 0.0, FALSE, 0.0, 0.0, 0.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Black_White_Entries[1] , 1.0, FALSE, 1.0, 1.0, 1.0, 0.0, 0.0);
+  
+  Make_Blend_Map_Entry(Bozo_Entries[0], 0.4, FALSE, 1.0, 1.0, 1.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Bozo_Entries[1], 0.4, FALSE, 0.0, 1.0, 0.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Bozo_Entries[2], 0.6, FALSE, 0.0, 1.0, 0.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Bozo_Entries[3], 0.6, FALSE, 0.0, 0.0, 1.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Bozo_Entries[4], 0.8, FALSE, 0.0, 0.0, 1.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Bozo_Entries[5], 0.8, FALSE, 1.0, 0.0, 0.0, 0.0, 0.0);
+  
+  Make_Blend_Map_Entry(Wood_Entries[0], 0.6, FALSE, 0.666, 0.312,  0.2,   0.0, 0.0);
+  Make_Blend_Map_Entry(Wood_Entries[1], 0.6, FALSE, 0.4,   0.1333, 0.066, 0.0, 0.0);
+  
+  Make_Blend_Map_Entry(Mandel_Entries[0], 0.001, FALSE, 0.0, 0.0, 0.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Mandel_Entries[1], 0.001, FALSE, 0.0, 1.0, 1.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Mandel_Entries[2], 0.012, FALSE, 1.0, 1.0, 0.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Mandel_Entries[3], 0.015, FALSE, 1.0, 0.0, 1.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Mandel_Entries[4], 0.1,   FALSE, 0.0, 1.0, 1.0, 0.0, 0.0);
+  
+  Make_Blend_Map_Entry(Agate_Entries[0], 0.0, FALSE, 1.0,  1.0,  1.0,  0.0, 0.0);
+  Make_Blend_Map_Entry(Agate_Entries[1], 0.5, FALSE, 0.95, 0.75, 0.5,  0.0, 0.0);
+  Make_Blend_Map_Entry(Agate_Entries[2], 0.5, FALSE, 0.9,  0.7,  0.5,  0.0, 0.0);
+  Make_Blend_Map_Entry(Agate_Entries[3], 0.6, FALSE, 0.9,  0.7,  0.4,  0.0, 0.0);
+  Make_Blend_Map_Entry(Agate_Entries[4], 0.6, FALSE, 1.0,  0.7,  0.4,  0.0, 0.0);
+  Make_Blend_Map_Entry(Agate_Entries[5], 1.0, FALSE, 0.6,  0.3,  0.0,  0.0, 0.0);
+  
+  Make_Blend_Map_Entry(Radial_Entries[0], 0.0,   FALSE, 0.0, 1.0, 1.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Radial_Entries[1], 0.333, FALSE, 1.0, 1.0, 0.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Radial_Entries[2], 0.666, FALSE, 1.0, 0.0, 1.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Radial_Entries[3], 1.0,   FALSE, 0.0, 1.0, 1.0, 0.0, 0.0);
+  
+  Make_Blend_Map_Entry(Marble_Entries[0], 0.0, FALSE, 0.9, 0.8, 0.8, 0.0, 0.0);
+  Make_Blend_Map_Entry(Marble_Entries[1], 0.9, FALSE, 0.9, 0.08, 0.08, 0.0, 0.0);
+  Make_Blend_Map_Entry(Marble_Entries[2], 0.9, FALSE, 0.0, 0.0, 0.0, 0.0, 0.0);
+  
+  Make_Blend_Map_Entry(Brick_Entries[0], 0.0, FALSE, 0.5, 0.5,  0.5,  0.0, 0.0);
+  Make_Blend_Map_Entry(Brick_Entries[1], 1.0, FALSE, 0.6, 0.15, 0.15, 0.0, 0.0);
+  
+  Make_Blend_Map_Entry(Hex_Entries[0], 0.0, FALSE, 0.0, 0.0, 1.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Hex_Entries[1], 1.0, FALSE, 0.0, 1.0, 0.0, 0.0, 0.0);
+  Make_Blend_Map_Entry(Hex_Entries[2], 2.0, FALSE, 1.0, 0.0, 0.0, 0.0, 0.0);
+}
+
+
+

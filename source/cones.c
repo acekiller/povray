@@ -5,8 +5,8 @@
 *  This file was written by Alexander Enzmann.    He wrote the code for
 *  cones and generously provided us these enhancements.
 *
-*  from Persistence of Vision Raytracer
-*  Copyright 1993 Persistence of Vision Team
+*  from Persistence of Vision(tm) Ray Tracer
+*  Copyright 1996 Persistence of Vision Team
 *---------------------------------------------------------------------------
 *  NOTICE: This source code file is provided so that users may experiment
 *  with enhancements to POV-Ray and to port the software to platforms other 
@@ -24,401 +24,1035 @@
 *****************************************************************************/
 
 #include "frame.h"
+#include "povray.h"
 #include "vector.h"
 #include "povproto.h"
+#include "bbox.h"
+#include "cones.h"
+#include "matrices.h"
+#include "objects.h"
 
-METHODS Cone_Methods =
-  { 
+
+
+/*****************************************************************************
+* Local preprocessor defines
+******************************************************************************/
+
+#define Cone_Tolerance 1.0e-6
+
+#define close(x, y) (fabs(x-y) < EPSILON ? 1 : 0)
+
+/* Part of the cone/cylinder hit. [DB 9/94] */
+
+#define BASE_HIT 1
+#define CAP_HIT  2
+#define SIDE_HIT 3
+
+
+
+/*****************************************************************************
+* Local typedefs
+******************************************************************************/
+
+typedef struct Cone_Intersection_Structure CONE_INT;
+
+struct Cone_Intersection_Structure
+{
+  DBL d;  /* Distance of intersection point               */
+  int t;  /* Type of intersection: base/cap plane or side */
+};
+
+
+
+/*****************************************************************************
+* Static functions
+******************************************************************************/
+
+static int intersect_cone PARAMS((RAY *Ray, CONE *Cone, CONE_INT *Depths));
+static void Destroy_Cone PARAMS((OBJECT *Object));
+static int All_Cone_Intersections PARAMS((OBJECT *Object, RAY *Ray, ISTACK *Depth_Stack));
+static int Inside_Cone PARAMS((VECTOR point, OBJECT *Object));
+static void Cone_Normal PARAMS((VECTOR Result, OBJECT *Object, INTERSECTION *Inter));
+static void *Copy_Cone PARAMS((OBJECT *Object));
+static void Translate_Cone PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Rotate_Cone PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Scale_Cone PARAMS((OBJECT *Object, VECTOR Vector, TRANSFORM *Trans));
+static void Transform_Cone PARAMS((OBJECT *Object, TRANSFORM *Trans));
+static void Invert_Cone PARAMS((OBJECT *Object));
+
+
+/*****************************************************************************
+* Local variables
+******************************************************************************/
+
+static METHODS Cone_Methods =
+{
   All_Cone_Intersections,
   Inside_Cone, Cone_Normal,
   Copy_Cone, Translate_Cone, Rotate_Cone, Scale_Cone, Transform_Cone,
   Invert_Cone, Destroy_Cone
-  };
+};
 
-extern long Ray_Cone_Tests, Ray_Cone_Tests_Succeeded;
-static int Intersect_Cone PARAMS((RAY *Ray, CONE *Cone, DBL *Depths));
 
-#ifndef Cone_Tolerance
-#define Cone_Tolerance 1.0e-6
-#endif
 
-#define close(x, y) (fabs(x-y) < EPSILON ? 1 : 0)
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   All_Cone_Intersections
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Alexander Enzmann
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
-int All_Cone_Intersections (Object, Ray, Depth_Stack)
+static int All_Cone_Intersections(Object, Ray, Depth_Stack)
 OBJECT *Object;
 RAY *Ray;
 ISTACK *Depth_Stack;
-  {
-  DBL Depths[4];
-  VECTOR IPoint;
+{
   int Intersection_Found, cnt, i;
+  VECTOR IPoint;
+  CONE_INT I[4];
 
   Intersection_Found = FALSE;
 
-  if ((cnt=Intersect_Cone (Ray, (CONE *)Object, Depths))!=0)
-    for (i=0; i<cnt; i++)
+  if ((cnt = intersect_cone(Ray, (CONE *)Object, I)) != 0)
+  {
+    for (i = 0; i < cnt; i++)
     {
-    VScale (IPoint, Ray->Direction, Depths[i]);
-    VAddEq (IPoint, Ray->Initial);
+      VEvaluateRay(IPoint, Ray->Initial, I[i].d, Ray->Direction);
 
-    if (Point_In_Clip (&IPoint, Object->Clip))
+      if (Point_In_Clip(IPoint, Object->Clip))
       {
-      push_entry(Depths[i],IPoint,Object,Depth_Stack);
-      Intersection_Found = TRUE;
+        push_entry_i1(I[i].d,IPoint,Object,I[i].t,Depth_Stack);
+
+        Intersection_Found = TRUE;
       }
     }
-  return (Intersection_Found);
   }
 
-static int Intersect_Cone (Ray, Cone, Depths)
+  return (Intersection_Found);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   intersect_cone
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Alexander Enzmann
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int intersect_cone(Ray, Cone, Intersection)
 RAY *Ray;
 CONE *Cone;
-DBL *Depths;
-  {
+CONE_INT *Intersection;
+{
+  int i = 0;
   DBL a, b, c, z, t1, t2, len;
   DBL d;
   VECTOR P, D;
-  int i=0;
 
-  Ray_Cone_Tests++;
+  Increase_Counter(stats[Ray_Cone_Tests]);
 
   /* Transform the ray into the cones space */
-  MInvTransPoint(&P, &Ray->Initial, Cone->Trans);
-  MInvTransDirection(&D, &Ray->Direction, Cone->Trans);
+
+  MInvTransPoint(P, Ray->Initial, Cone->Trans);
+  MInvTransDirection(D, Ray->Direction, Cone->Trans);
 
   VLength(len, D);
   VInverseScaleEq(D, len);
 
-  if (Cone->cyl_flag) 
-    {
+  if (Test_Flag(Cone, CYLINDER_FLAG))
+  {
     /* Solve intersections with a cylinder */
-    a = D.x * D.x + D.y * D.y;
-    if (a > EPSILON) 
-      {
-      b = P.x * D.x + P.y * D.y;
-      c = P.x * P.x + P.y * P.y - 1.0;
+
+    a = D[X] * D[X] + D[Y] * D[Y];
+
+    if (a > EPSILON)
+    {
+      b = P[X] * D[X] + P[Y] * D[Y];
+
+      c = P[X] * P[X] + P[Y] * P[Y] - 1.0;
+
       d = b * b - a * c;
+
       if (d >= 0.0)
-        {
+      {
         d = sqrt(d);
+
         t1 = (-b + d) / a;
         t2 = (-b - d) / a;
-        z = P.z + t1 * D.z;
-        if (t1 > Cone_Tolerance && t1 < Max_Distance && z >= 0.0 && z <= 1.0)
-          Depths[i++] = t1/len;
-        z = P.z + t2 * D.z;
-        if (t2 > Cone_Tolerance && t1 < Max_Distance && z >= 0.0 && z <= 1.0)
-          Depths[i++] = t2/len;
+
+        z = P[Z] + t1 * D[Z];
+
+        if ((t1 > Cone_Tolerance) && (t1 < Max_Distance) && (z >= 0.0) && (z <= 1.0))
+        {
+          Intersection[i].d   = t1 / len;
+          Intersection[i++].t = SIDE_HIT;
+        }
+
+        z = P[Z] + t2 * D[Z];
+
+        if ((t2 > Cone_Tolerance) && (t1 < Max_Distance) && (z >= 0.0) && (z <= 1.0))
+        {
+          Intersection[i].d   = t2 / len;
+          Intersection[i++].t = SIDE_HIT;
         }
       }
     }
+  }
   else
-    {
+  {
     /* Solve intersections with a cone */
-    a = D.x * D.x + D.y * D.y - D.z * D.z;
-    b = D.x * P.x + D.y * P.y - D.z * P.z;
-    c = P.x * P.x + P.y * P.y - P.z * P.z;
+
+    a = D[X] * D[X] + D[Y] * D[Y] - D[Z] * D[Z];
+
+    b = D[X] * P[X] + D[Y] * P[Y] - D[Z] * P[Z];
+
+    c = P[X] * P[X] + P[Y] * P[Y] - P[Z] * P[Z];
 
     if (fabs(a) < EPSILON)
-      {
+    {
       if (fabs(b) > EPSILON)
-        {
+      {
         /* One intersection */
+
         t1 = -0.5 * c / b;
-        z = P.z + t1 * D.z;
-        if (t1 > Cone_Tolerance && t1 < Max_Distance && z >= Cone->dist && z <= 1.0)
-          Depths[i++] = t1/len;
+
+        z = P[Z] + t1 * D[Z];
+
+        if ((t1 > Cone_Tolerance) && (t1 < Max_Distance) && (z >= Cone->dist) && (z <= 1.0))
+        {
+          Intersection[i].d   = t1 / len;
+          Intersection[i++].t = SIDE_HIT;
         }
       }
+    }
     else
-      {
+    {
       /* Check hits against the side of the cone */
+
       d = b * b - a * c;
+
       if (d >= 0.0)
-        {
+      {
         d = sqrt(d);
+
         t1 = (-b - d) / a;
         t2 = (-b + d) / a;
-        z = P.z + t1 * D.z;
-        if (t1 > Cone_Tolerance && t1 < Max_Distance && z >= Cone->dist && z <= 1.0)
-          Depths[i++] = t1/len;
-        z = P.z + t2 * D.z;
-        if (t2 > Cone_Tolerance && t1 < Max_Distance && z >= Cone->dist && z <= 1.0)
-          Depths[i++] = t2/len;
+
+        z = P[Z] + t1 * D[Z];
+
+        if ((t1 > Cone_Tolerance) && (t1 < Max_Distance) && (z >= Cone->dist) && (z <= 1.0))
+        {
+          Intersection[i].d   = t1 / len;
+          Intersection[i++].t = SIDE_HIT;
+        }
+
+        z = P[Z] + t2 * D[Z];
+
+        if ((t2 > Cone_Tolerance) && (t1 < Max_Distance) && (z >= Cone->dist) && (z <= 1.0))
+        {
+          Intersection[i].d   = t2 / len;
+          Intersection[i++].t = SIDE_HIT;
         }
       }
     }
-
-  if (Cone->closed)
-    {
-    d = (1.0 - P.z) / D.z;
-    a = (P.x + d * D.x);
-    b = (P.y + d * D.y);
-    if ((a * a + b * b) <= 1.0 && d > Cone_Tolerance && d < Max_Distance)
-      Depths[i++] = d/len;
-    d = (Cone->dist - P.z) / D.z;
-    a = (P.x + d * D.x);
-    b = (P.y + d * D.y);
-    if ((a * a + b * b) <= (Cone->cyl_flag ? 1.0 : Cone->dist*Cone->dist)
-      && d > Cone_Tolerance && d < Max_Distance)
-      Depths[i++] = d/len;
-    }
-
-  Ray_Cone_Tests_Succeeded +=i;
-
-  return(i);
   }
 
-int Inside_Cone (IPoint, Object)
-VECTOR *IPoint;
-OBJECT *Object;
+  if (Test_Flag(Cone, CLOSED_FLAG) && (fabs(D[Z]) > EPSILON))
   {
+    d = (1.0 - P[Z]) / D[Z];
+
+    a = (P[X] + d * D[X]);
+
+    b = (P[Y] + d * D[Y]);
+
+    if (((Sqr(a) + Sqr(b)) <= 1.0) && (d > Cone_Tolerance) && (d < Max_Distance))
+    {
+      Intersection[i].d   = d / len;
+      Intersection[i++].t = CAP_HIT;
+    }
+
+    d = (Cone->dist - P[Z]) / D[Z];
+
+    a = (P[X] + d * D[X]);
+
+    b = (P[Y] + d * D[Y]);
+
+    if ((Sqr(a) + Sqr(b)) <= (Test_Flag(Cone, CYLINDER_FLAG) ? 1.0 : Sqr(Cone->dist))
+      && (d > Cone_Tolerance) && (d < Max_Distance))
+    {
+      Intersection[i].d   = d / len;
+      Intersection[i++].t = BASE_HIT;
+    }
+  }
+
+  if (i)
+  {
+    Increase_Counter(stats[Ray_Cone_Tests_Succeeded]);
+  }
+
+  return (i);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Inside_Cone
+*
+* INPUT
+*   
+* OUTPUT
+*   
+* RETURNS
+*   
+* AUTHOR
+*
+*   Alexander Enzmann
+*   
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static int Inside_Cone(IPoint, Object)
+VECTOR IPoint;
+OBJECT *Object;
+{
+  CONE *Cone = (CONE *)Object;
+  DBL w2, z2, offset = (Test_Flag(Cone, CLOSED_FLAG) ? -EPSILON : EPSILON);
   VECTOR New_Point;
-  CONE *Cone = (CONE *) Object;
-  DBL w2, z2, offset = (Cone->Inverted ? -EPSILON : EPSILON);
 
   /* Transform the point into the cones space */
-  MInvTransPoint(&New_Point, IPoint, Cone->Trans);
+
+  MInvTransPoint(New_Point, IPoint, Cone->Trans);
 
   /* Test to see if we are inside the cone */
-  w2 = New_Point.x * New_Point.x + New_Point.y * New_Point.y;
-  if (Cone->cyl_flag) 
-    {
+
+  w2 = New_Point[X] * New_Point[X] + New_Point[Y] * New_Point[Y];
+
+  if (Test_Flag(Cone, CYLINDER_FLAG))
+  {
     /* Check to see if we are inside a cylinder */
-    if (w2 > 1.0 + offset ||
-      New_Point.z < 0.0 - offset ||
-      New_Point.z > 1.0 + offset)
-      return Cone->Inverted;
-    else
-      return 1 - Cone->Inverted;
-    }
-  else 
+
+    if ((w2 > 1.0 + offset) ||
+        (New_Point[Z] < 0.0 - offset) ||
+        (New_Point[Z] > 1.0 + offset))
     {
-    /* Check to see if we are inside a cone */
-    z2 = New_Point.z * New_Point.z;
-    if (w2 > z2 + offset ||
-      New_Point.z < Cone->dist - offset ||
-      New_Point.z > 1.0+offset)
-      return Cone->Inverted;
+      return (Test_Flag(Cone, INVERTED_FLAG));
+    }
     else
-      return 1 - Cone->Inverted;
+    {
+      return (!Test_Flag(Cone, INVERTED_FLAG));
     }
   }
-
-void Cone_Normal (Result, Object, IPoint)
-OBJECT *Object;
-VECTOR *Result, *IPoint;
+  else
   {
-  CONE *Cone = (CONE *) Object;
+    /* Check to see if we are inside a cone */
+
+    z2 = New_Point[Z] * New_Point[Z];
+
+    if ((w2 > z2 + offset) ||
+        (New_Point[Z] < Cone->dist - offset) ||
+        (New_Point[Z] > 1.0+offset))
+    {
+      return (Test_Flag(Cone, INVERTED_FLAG));
+    }
+    else
+    {
+      return (!Test_Flag(Cone, INVERTED_FLAG));
+    }
+  }
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Cone_Normal
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Cone_Normal(Result, Object, Inter)
+OBJECT *Object;
+VECTOR Result;
+INTERSECTION *Inter;
+{
+  CONE *Cone = (CONE *)Object;
 
   /* Transform the point into the cones space */
-  MInvTransPoint(Result, IPoint, Cone->Trans);
+
+  MInvTransPoint(Result, Inter->IPoint, Cone->Trans);
 
   /* Calculating the normal is real simple in canonical cone space */
-  if (Result->z > (1-EPSILON))
-    Make_Vector(Result,0.0,0.0,1.0)
-else
-  if (Result->z < (Cone->dist+EPSILON))
-    Make_Vector(Result,0.0,0.0,-1.0)
-else
-  if (Cone->cyl_flag)
-    Result->z = 0.0;
-  else
-    Result->z = -Result->z;
 
-/* Transform the point out of the cones space */
-MTransNormal(Result, Result, Cone->Trans);
-VNormalize(*Result, *Result);
+  switch (Inter->i1)
+  {
+    case SIDE_HIT:
+
+      if (Test_Flag(Cone, CYLINDER_FLAG))
+      {
+        Result[Z] = 0.0;
+      }
+      else
+      {
+        Result[Z] = -Result[Z];
+      }
+
+      break;
+
+    case BASE_HIT:
+
+      Make_Vector(Result, 0.0, 0.0, -1.0)
+
+      break;
+
+    case CAP_HIT:
+
+      Make_Vector(Result, 0.0, 0.0, 1.0)
+
+      break;
+  }
+
+  /* Transform the point out of the cones space */
+
+  MTransNormal(Result, Result, Cone->Trans);
+
+  VNormalize(Result, Result);
 }
 
-void *Copy_Cone (Object)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Translate_Cone
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Translate_Cone(Object, Vector, Trans)
 OBJECT *Object;
+VECTOR Vector;
+TRANSFORM *Trans;
 {
-CONE *New;
-
-New  = Create_Cone();
-*New = *((CONE *) Object);
-
-New->Trans = Copy_Transform(((CONE *)Object)->Trans);
-
-return (New);
+  Transform_Cone(Object, Trans);
 }
 
-void Translate_Cone (Object, Vector)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Rotate_Cone
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Rotate_Cone(Object, Vector, Trans)
 OBJECT *Object;
-VECTOR *Vector;
+VECTOR Vector;
+TRANSFORM *Trans;
 {
-TRANSFORM Trans;
-
-Compute_Translation_Transform(&Trans, Vector);
-Transform_Cone(Object, &Trans);
+  Transform_Cone(Object, Trans);
 }
 
-void Rotate_Cone (Object, Vector)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Scale_Cone
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Scale_Cone(Object, Vector, Trans)
 OBJECT *Object;
-VECTOR *Vector;
+VECTOR Vector;
+TRANSFORM *Trans;
 {
-TRANSFORM Trans;
-Compute_Rotation_Transform(&Trans, Vector);
-Transform_Cone(Object, &Trans);
+  Transform_Cone(Object, Trans);
 }
 
-void Scale_Cone (Object, Vector)
-OBJECT *Object;
-VECTOR *Vector;
-{
-TRANSFORM Trans;
 
-Compute_Scaling_Transform(&Trans, Vector);
-Transform_Cone(Object, &Trans);
-}
 
-void Invert_Cone (Object)
-OBJECT *Object;
-{
-((CONE *)Object)->Inverted = 1 - ((CONE *)Object)->Inverted;
-}
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Transform_Cone
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
-void Transform_Cone (Object, Trans)
+static void Transform_Cone(Object, Trans)
 OBJECT *Object;
 TRANSFORM *Trans;
 {
-CONE *Cone = (CONE *)Object;
-Compose_Transforms(Cone->Trans, Trans);
+  CONE *Cone = (CONE *)Object;
 
-/* Recalculate the bounds */
-Make_Vector(&Cone->Bounds.Lower_Left, -1.0, -1.0, 0.0);
-Make_Vector(&Cone->Bounds.Lengths, 2.0, 2.0, 1.0);
-recompute_bbox(&Cone->Bounds, Cone->Trans);
+  Compose_Transforms(Cone->Trans, Trans);
+
+  Compute_Cone_BBox(Cone);
 }
 
-CONE *Create_Cone ()
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Invert_Cone
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Invert_Cone(Object)
+OBJECT *Object;
 {
-CONE *New;
-
-if ((New = (CONE *) malloc (sizeof (CONE))) == NULL)
-MAError ("cone");
-
-INIT_OBJECT_FIELDS(New, CONE_OBJECT, &Cone_Methods)
-Make_Vector (&(New->apex), 0.0, 0.0, 1.0);
-Make_Vector (&(New->base), 0.0, 0.0, 0.0);
-New->apex_radius = 1.0;
-New->base_radius = 0.0;
-New->dist = 0.0;
-New->Trans = Create_Transform();
-New->Inverted = FALSE;
-New->cyl_flag = 0; /* This is a Cone */
-New->closed   = 1; /* Has capped ends*/
-
-/* Default bounds */
-Make_Vector(&New->Bounds.Lower_Left, -1.0, -1.0, 0.0);
-Make_Vector(&New->Bounds.Lengths, 2.0, 2.0, 1.0);
-
-return New;
+  Invert_Flag(Object, INVERTED_FLAG);
 }
 
-CONE *Create_Cylinder ()
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Cone
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+CONE *Create_Cone()
 {
-CONE *New;
+  CONE *New;
 
-if ((New = (CONE *) malloc (sizeof (CONE))) == NULL)
-MAError ("cone");
+  New = (CONE *)POV_MALLOC(sizeof(CONE), "cone");
 
-INIT_OBJECT_FIELDS(New, CONE_OBJECT, &Cone_Methods)
-Make_Vector (&(New->apex), 0.0, 0.0, 1.0);
-Make_Vector (&(New->base), 0.0, 0.0, 0.0);
-New->apex_radius = 1.0;
-New->base_radius = 1.0;
-New->dist = 0.0;
-New->Trans = Create_Transform();
-New->Inverted = FALSE;
-New->cyl_flag = 1; /* This is a Cylinder */
-New->closed   = 1; /* Has capped ends*/
+  INIT_OBJECT_FIELDS(New, CONE_OBJECT, &Cone_Methods)
 
-/* Default bounds */
-Make_Vector(&New->Bounds.Lower_Left, -1.0, -1.0, 0.0);
-Make_Vector(&New->Bounds.Lengths, 2.0, 2.0, 1.0);
+  Make_Vector(New->apex, 0.0, 0.0, 1.0);
+  Make_Vector(New->base, 0.0, 0.0, 0.0);
 
-return New;
+  New->apex_radius = 1.0;
+  New->base_radius = 0.0;
+
+  New->dist = 0.0;
+
+  New->Trans = Create_Transform();
+
+  /* Cone/Cylinder has capped ends by default. */
+
+  Set_Flag(New, CLOSED_FLAG);
+
+  /* Default bounds */
+
+  Make_BBox(New->BBox, -1.0, -1.0, 0.0, 2.0, 2.0, 1.0);
+
+  return (New);
 }
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Copy_Cone
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void *Copy_Cone(Object)
+OBJECT *Object;
+{
+  CONE *New;
+
+  New = Create_Cone();
+
+  /* Get rid of the transformation created in Create_Cone(). */
+
+  Destroy_Transform(New->Trans);
+
+  /* Copy cone. */
+
+  *New = *((CONE *)Object);
+
+  New->Trans = Copy_Transform(((CONE *)Object)->Trans);
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Create_Cylinder
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+CONE *Create_Cylinder()
+{
+  CONE *New;
+
+  New = (CONE *)POV_MALLOC(sizeof(CONE), "cone");
+
+  INIT_OBJECT_FIELDS(New, CONE_OBJECT, &Cone_Methods)
+
+  Make_Vector(New->apex, 0.0, 0.0, 1.0);
+  Make_Vector(New->base, 0.0, 0.0, 0.0);
+
+  New->apex_radius = 1.0;
+  New->base_radius = 1.0;
+  New->dist        = 0.0;
+
+  New->Trans = Create_Transform();
+
+  Set_Flag(New, CYLINDER_FLAG); /* This is a cylinder. */
+  Set_Flag(New, CLOSED_FLAG);   /* Has capped ends.    */
+
+  /* Default bounds */
+
+  Make_BBox(New->BBox, -1.0, -1.0, 0.0, 2.0, 2.0, 1.0);
+
+  return (New);
+}
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Compute_Cone_Data
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   Feb 1996: check for equal sized ends (cylinder) first [AED]
+*
+******************************************************************************/
 
 void Compute_Cone_Data(Object)
 OBJECT *Object;
 {
-DBL tlen, len, tmpf;
-VECTOR tmpv, axis, origin;
-CONE *Cone = (CONE *)Object;
+  DBL tlen, len, tmpf;
+  VECTOR tmpv, axis, origin;
+  CONE *Cone = (CONE *)Object;
 
-/* Process the primitive specific information */
-if(Cone->apex_radius < Cone->base_radius) 
+  /* Process the primitive specific information */
+
+  if (fabs(Cone->apex_radius - Cone->base_radius) < EPSILON)
   {
-  /* Want the bigger end at the top */
-  tmpv = Cone->base;
-  Cone->base = Cone->apex;
-  Cone->apex = tmpv;
-  tmpf = Cone->base_radius;
-  Cone->base_radius = Cone->apex_radius;
-  Cone->apex_radius = tmpf;
-  }
-else if (fabs(Cone->apex_radius - Cone->base_radius) < EPSILON) 
-  {
-  /* What we are dealing with here is really a cylinder */
-  Cone->cyl_flag = 1;
-  Compute_Cylinder_Data(Object);
-  return;
+    /* What we are dealing with here is really a cylinder */
+
+    Set_Flag(Cone, CYLINDER_FLAG);
+
+    Compute_Cylinder_Data(Object);
+
+    return;
   }
 
-/* Find the axis and axis length */
-VSub(axis, Cone->apex, Cone->base);
-VLength(len, axis);
-if (len < EPSILON)
-Error("Degenerate cone/cylinder\n");
-else
-  VInverseScaleEq(axis, len)
+  if (Cone->apex_radius < Cone->base_radius)
+  {
+    /* Want the bigger end at the top */
 
-    /* Determine alignment */
-    tmpf = Cone->base_radius *
-    len / (Cone->apex_radius - Cone->base_radius);
-VScale(origin, axis, tmpf);
-VSub(origin, Cone->base, origin);
-tlen = tmpf + len;
-Cone->dist = tmpf / tlen;
-Compute_Coordinate_Transform(Cone->Trans, &origin, &axis,
-Cone->apex_radius, tlen);
+    Assign_Vector(tmpv,Cone->base);
+    Assign_Vector(Cone->base,Cone->apex);
+    Assign_Vector(Cone->apex,tmpv);
 
-/* Recalculate the bounds */
-Make_Vector(&Cone->Bounds.Lower_Left, -1.0, -1.0, 0.0);
-Make_Vector(&Cone->Bounds.Lengths, 2.0, 2.0, 1.0);
-recompute_bbox(&Cone->Bounds, Cone->Trans);
+    tmpf = Cone->base_radius;
+    Cone->base_radius = Cone->apex_radius;
+    Cone->apex_radius = tmpf;
+  }
+
+  /* Find the axis and axis length */
+
+  VSub(axis, Cone->apex, Cone->base);
+
+  VLength(len, axis);
+
+  if (len < EPSILON)
+  {
+    Error("Degenerate cone/cylinder.\n");
+  }
+  else
+  {
+    VInverseScaleEq(axis, len)
+  }
+
+  /* Determine alignment */
+
+  tmpf = Cone->base_radius * len / (Cone->apex_radius - Cone->base_radius);
+
+  VScale(origin, axis, tmpf);
+
+  VSub(origin, Cone->base, origin);
+
+  tlen = tmpf + len;
+
+  Cone->dist = tmpf / tlen;
+
+  Compute_Coordinate_Transform(Cone->Trans, origin, axis, Cone->apex_radius, tlen);
+
+  /* Recalculate the bounds */
+
+  Compute_Cone_BBox(Cone);
 }
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Compute_Cylinder_Data
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
 
 void Compute_Cylinder_Data(Object)
 OBJECT *Object;
 {
-CONE *Cone = (CONE *)Object;
-VECTOR axis;
-DBL tmpf;
+  DBL tmpf;
+  VECTOR axis;
+  CONE *Cone = (CONE *)Object;
 
-VSub(axis, Cone->apex, Cone->base);
-VLength(tmpf, axis);
-if (tmpf < EPSILON)
-Error("Degenerate cylinder, base point = apex point\n");
-else
-  VInverseScaleEq(axis, tmpf)
-    Compute_Coordinate_Transform(Cone->Trans, &Cone->base, &axis,
-      Cone->apex_radius, tmpf);
+  VSub(axis, Cone->apex, Cone->base);
 
-Cone->dist = 0.0;
-/* Recalculate the bounds */
-Make_Vector(&Cone->Bounds.Lower_Left, -1.0, -1.0, 0.0);
-Make_Vector(&Cone->Bounds.Lengths, 2.0, 2.0, 1.0);
-recompute_bbox(&Cone->Bounds, Cone->Trans);
+  VLength(tmpf, axis);
+
+  if (tmpf < EPSILON)
+  {
+    Error("Degenerate cylinder, base point = apex point.\n");
+  }
+  else
+  {
+    VInverseScaleEq(axis, tmpf)
+
+    Compute_Coordinate_Transform(Cone->Trans, Cone->base, axis, Cone->apex_radius, tmpf);
+  }
+
+  Cone->dist = 0.0;
+
+  /* Recalculate the bounds */
+
+  Compute_Cone_BBox(Cone);
 }
 
 
-void Destroy_Cone (Object)
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Destroy_Cone
+*
+* INPUT
+*
+* OUTPUT
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Alexander Enzmann
+*
+* DESCRIPTION
+*
+*   -
+*
+* CHANGES
+*
+*   -
+*
+******************************************************************************/
+
+static void Destroy_Cone(Object)
 OBJECT *Object;
 {
-Destroy_Transform(((CONE *)Object)->Trans);
-free (Object);
+  Destroy_Transform(((CONE *)Object)->Trans);
+
+  POV_FREE (Object);
 }
+
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*
+*   Compute_Cone_BBox
+*
+* INPUT
+*
+*   Cone - Cone/Cylinder
+*
+* OUTPUT
+*
+*   Cone
+*
+* RETURNS
+*
+* AUTHOR
+*
+*   Dieter Bayer
+*
+* DESCRIPTION
+*
+*   Calculate the bounding box of a cone or cylinder.
+*
+* CHANGES
+*
+*   Aug 1994 : Creation.
+*
+******************************************************************************/
+
+void Compute_Cone_BBox(Cone)
+CONE *Cone;
+{
+  Make_BBox(Cone->BBox, -1.0, -1.0, 0.0, 2.0, 2.0, 1.0);
+
+  Recompute_BBox(&Cone->BBox, Cone->Trans);
+}
+
