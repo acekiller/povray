@@ -22,10 +22,10 @@
 # DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 #---------------------------------------------------------------------------
 # $File: //depot/povray/smp/unix/configure.ac $
-# $Revision: #45 $
-# $Change: 5364 $
-# $DateTime: 2011/01/06 17:39:19 $
-# $Author: chrisc $
+# $Revision: #46 $
+# $Change: 5615 $
+# $DateTime: 2012/02/27 04:23:29 $
+# $Author: jholsenback $
 # $Log$
 ##############################################################################
 
@@ -986,6 +986,10 @@ AC_DEFINE_UNQUOTED([BUILTIN_XWIN_DISPLAY], ["$pov_xwin_msg"], [X Window display.
 AC_DEFINE_UNQUOTED([BUILTIN_IMG_FORMATS], ["$pov_img_fmt_builtin $pov_img_fmt_enabled"], [Supported image formats.])
 AC_DEFINE_UNQUOTED([MISSING_IMG_FORMATS], ["$pov_img_fmt_disabled"], [Unsupported image formats.])
 
+povowner=`stat -c %u ${HOME}`
+povgroup=`stat -c %g ${HOME}`
+AC_SUBST([povowner])
+AC_SUBST([povgroup])
 
 AC_OUTPUT
 

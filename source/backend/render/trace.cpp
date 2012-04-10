@@ -20,9 +20,9 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  * ---------------------------------------------------------------------------
  * $File: //depot/povray/smp/source/backend/render/trace.cpp $
- * $Revision: #196 $
- * $Change: 5573 $
- * $DateTime: 2011/12/02 21:56:12 $
+ * $Revision: #197 $
+ * $Change: 5614 $
+ * $DateTime: 2012/02/23 20:13:13 $
  * $Author: clipka $
  *******************************************************************************/
 
@@ -1865,7 +1865,7 @@ void Trace::ComputeOneLightRay(const LightSource &lightsource, double& lightsour
 		attenuation = 1.0;
 	else
 		attenuation = Attenuate_Light(&lightsource, lightsourceray, lightsourcedepth);
-	
+
 	// Now scale the color by the attenuation
 	lightcolour *= attenuation;
 }
@@ -3862,7 +3862,7 @@ void Trace::ComputeSubsurfaceScattering(const FINISH *Finish, const RGBColour& l
 			}
 			else if (IsSameSSLTObject(unscatteredIn.Object, out.Object))
 			{
-				out.Object->Normal(unscatteredIn.INormal, &unscatteredIn, threadData);
+				unscatteredIn.Object->Normal(unscatteredIn.INormal, &unscatteredIn, threadData);
 				if (dot(refractedEye, Vector3d(unscatteredIn.INormal)) > 0)
 					VScaleEq(unscatteredIn.INormal, -1.0);
 				Vector3d doubleRefractedEye;

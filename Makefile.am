@@ -32,8 +32,8 @@ povconfdir = @sysconfdir@/@PACKAGE@/@VERSION_BASE@
 povuser = $(HOME)/.@PACKAGE@
 povconfuser = $(povuser)/@VERSION_BASE@
 povinstall = $(top_builddir)/install.log
-povowner = 0
-povgroup = 0
+povowner = @povowner@
+povgroup = @povgroup@
 
 # Directories to build.
 SUBDIRS = source vfe unix

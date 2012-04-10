@@ -6,8 +6,50 @@
 #----------------------------------------------------------------------------
 
 ----------------------------------------
+Changes between 3.7.beta.RC4 and 3.7.RC5
+----------------------------------------
+
+Change 5618 on 2012/02/23 by jholsenback@linux-c2bm
+
+    Bump to RC5 in the "correct" place
+
+Change 5617 on 2012/02/23 by jholsenback@linux-c2bm
+
+    Resync changes/revision.txt files
+
+Change 5616 on 2012/02/23 by jholsenback@linux-c2bm
+
+    Bump unix version to RC5
+
+Change 5615 on 2012/02/23 by jholsenback@linux-c2bm
+
+    Fix for FS#239 improper uid/gid handling incorrectly branded some files
+    during non elevated privilege builds.
+
+Change 5614 on 2012/02/23 by clipka@cli-pc-7
+
+    Fix for crashdump #357 (triggered by non-closed SSLT-enabled
+    mesh inside CSG)
+
+Change 5612 on 2012/02/21 by chrisc@x8
+
+    Make dump submitter a bit more robust.
+
+Change 5610 on 2012/02/21 by clipka@cli-pc-7
+
+    Fix for FS#12 (facets pattern in normal map)
+
+Change 5607 on 2012/02/05 by chrisc@x8
+
+    More installer work, should be more or less done now.
+
+----------------------------------------
 Changes between 3.7.beta.RC3 and 3.7.RC4
 ----------------------------------------
+
+Change 5606 on 2012/02/04 by chrisc@x8
+
+    Fix to FMA4 detection. AMD optimizations re-enabled.
 
 Change 5604 on 2012/01/28 by jgrimbert@smpdirect
 

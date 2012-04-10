@@ -11,6 +11,28 @@ located in the same directory as this file is.
 ----------------------------------------------------------------------------
 
 ----------------------------------------
+Changes between 3.7.beta.RC4 and 3.7.RC5
+----------------------------------------
+
+   - This release candidate primarily addresses the crash dump report #357
+     triggered by non-closed SSLT-enabled mesh inside CSG. This fix also
+     addressed several issue's with another outstanding bug report.
+
+   - The Windows installer and crash dump submitter have been improved.
+
+   - Changes to the post processing of the Windows help file corrected the
+     broken searchable index.
+
+   - A couple of bug reports have been addressed.
+
+Fixed or mitigated the following reports:
+-----------------------------------------
+
+http://bugs.povray.org/task/12    FS#12    (facets pattern in normal map)
+http://bugs.povray.org/task/196   FS#196   (More SSLT Caveats)
+http://bugs.povray.org/task/46    FS#239   (improper uid/gid handling)
+
+----------------------------------------
 Changes between 3.7.beta.RC3 and 3.7.RC4
 ----------------------------------------
 
@@ -25,8 +47,8 @@ Changes between 3.7.beta.RC3 and 3.7.RC4
      - three new tiling patterns were added
 
    - Building from the windows source distribution has also been simplified
-   - Introduced a new windows installer.
-   - Added AMD optimizations for noise (currently disabled)
+   - Introduced a new windows installer
+   - Added AMD optimizations for noise
    - A Windows Editor crash fix
    - Over two dozen bug reports have addressed
    - A few scene file fixes and/or additions

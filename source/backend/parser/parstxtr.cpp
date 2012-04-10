@@ -22,9 +22,9 @@
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
  * ---------------------------------------------------------------------------
  * $File: //depot/povray/smp/source/backend/parser/parstxtr.cpp $
- * $Revision: #83 $
- * $Change: 5582 $
- * $DateTime: 2011/12/05 12:17:53 $
+ * $Revision: #84 $
+ * $Change: 5610 $
+ * $DateTime: 2012/02/21 03:11:56 $
  * $Author: clipka $
  *******************************************************************************/
 
@@ -1924,6 +1924,7 @@ void Parser::Parse_Pattern (TPATTERN *New, int TPat_Type)
 			}
 			if (New->Type == CHECKER_PATTERN ||
 			    New->Type == BRICK_PATTERN ||
+			    New->Type == FACETS_PATTERN ||
 			    New->Type == HEXAGON_PATTERN ||
 			    New->Type == SQUARE_PATTERN ||
 			    New->Type == TRIANGULAR_PATTERN ||
