@@ -1,9 +1,12 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // By Chris Young 76702,1655
 // Try changing C0 and C1 to various values from 0.0 to 1.0 in this scene.
 
+#version 3.6;
 
-global_settings { assumed_gamma 2.2 }
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #include "colors.inc"
 

@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Illustrates how area light grid size affects soft shadows
 //
 // -w320 -h240
@@ -8,8 +8,11 @@
 // Middle shadow - area_light <8,0,0>, <0,0,8>,  5,  5
 // Right  shadow - area_light <8,0,0>, <0,0,8>, 17, 17 (renders slowest)
 
-#version 3.1;
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+}
 
 #include "colors.inc"
 #include "textures.inc"

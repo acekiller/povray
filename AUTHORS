@@ -1,21 +1,27 @@
-Persistence of Vision(tm) Ray Tracer Version 3.6
+Persistence of Vision(tm) Ray Tracer Version 3.7.0.
 
 POV-Ray is based on DKBTrace 2.12 by David K. Buck & Aaron A. Collins
 Copyright 1991-2003 Persistence of Vision Team
-Copyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd.
+Copyright 2003-2011 Persistence of Vision Raytracer Pty. Ltd.
 
-Primary POV-Ray 3.5/3.6 Developers: (Alphabetically)
-  Chris Cason         Thorsten Froehlich  Nathan Kopp         Ron Parker
+Primary POV-Ray 3.7 Architects/Developers: (Alphabetically)
+  Chris Cason         Thorsten Froehlich  Christoph Lipka   
 
-Contributing Authors: (Alphabetically)
-  Steve Anger         Eric Barish         Dieter Bayer        Steve A. Bennett
-  David K. Buck       Nicolas Calimet     Aaron A. Collins    Chris Dailey
-  Steve Demlow        Andreas Dilger      Alexander Enzmann   Dan Farmer
-  Mark Gordon         Christoph Hormann   Mike Hough          Chris Huff
-  Kari Kivisalo       Lutz Kretzschmar    Jochen Lippert      Pascal Massimino
-  Jim McElhiney       Douglas Muir        Juha Nieminen       Bill Pulver
-  Eduard Schwan       Wlodzimierz Skiba   Robert Skinner      Yvo Smellenbergh
-  Zsolt Szalavari     Scott Taylor        Massimo Valentini   Timothy Wegner
-  Drew Wells          Chris Young
+With Assistance From: (Alphabetically)
+  Nicolas Calimet     James Holsenback    Christoph Hormann   Nathan Kopp       
+  Juha Nieminen     
+
+Past Contributors: (Alphabetically)
+  Steve Anger         Eric Barish         Dieter Bayer        David K. Buck     
+  Nicolas Calimet     Chris Cason         Aaron A. Collins    Chris Dailey      
+  Steve Demlow        Andreas Dilger      Alexander Enzmann   Dan Farmer        
+  Thorsten Froehlich  Mark Gordon         James Holsenback    Christoph Hormann 
+  Mike Hough          Chris Huff          Kari Kivisalo       Nathan Kopp       
+  Lutz Kretzschmar    Christoph Lipka     Jochen Lippert      Pascal Massimino  
+  Jim McElhiney       Douglas Muir        Juha Nieminen       Ron Parker        
+  Bill Pulver         Eduard Schwan       Wlodzimierz Skiba   Robert Skinner    
+  Yvo Smellenbergh    Zsolt Szalavari     Scott Taylor        Massimo Valentini 
+  Timothy Wegner      Drew Wells          Chris Young       
 
 Other contributors are listed in the documentation.
+

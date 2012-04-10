@@ -1,12 +1,12 @@
-/****************************************************************************
- *               povms.cpp
+/*******************************************************************************
+ * povms.cpp
  *
  * This module contains POVMS data type handling and utility functions.
  *
- * from Persistence of Vision(tm) Ray Tracer version 3.6.
+ * from Persistence of Vision Ray Tracer ('POV-Ray') version 3.7.
  * Copyright 1991-2003 Persistence of Vision Team
- * Copyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd.
- *---------------------------------------------------------------------------
+ * Copyright 2003-2009 Persistence of Vision Raytracer Pty. Ltd.
+ * ---------------------------------------------------------------------------
  * NOTICE: This source code file is provided so that users may experiment
  * with enhancements to POV-Ray and to port the software to platforms other
  * than those supported by the POV-Ray developers. There are strict rules
@@ -16,18 +16,79 @@
  *
  * These licences may be found online, linked from the end-user license
  * agreement that is located at http://www.povray.org/povlegal.html
- *---------------------------------------------------------------------------
- * This program is based on the popular DKB raytracer version 2.12.
+ * ---------------------------------------------------------------------------
+ * POV-Ray is based on the popular DKB raytracer version 2.12.
  * DKBTrace was originally written by David K. Buck.
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
- *---------------------------------------------------------------------------
- * $File: //depot/povray/3.6-release/source/base/povms.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
- * $Log$
- *****************************************************************************/
+ * ---------------------------------------------------------------------------
+ * $File: //depot/povray/smp/source/base/povms.cpp $
+ * $Revision: #43 $
+ * $Change: 5260 $
+ * $DateTime: 2010/12/14 06:48:11 $
+ * $Author: chrisc $
+ *******************************************************************************/
+
+/*********************************************************************************
+ * NOTICE
+ *
+ * This file is part of a BETA-TEST version of POV-Ray version 3.7. It is not
+ * final code. Use of this source file is governed by both the standard POV-Ray
+ * licences referred to in the copyright header block above this notice, and the
+ * following additional restrictions numbered 1 through 4 below:
+ *
+ *   1. This source file may not be re-distributed without the written permission
+ *      of Persistence of Vision Raytracer Pty. Ltd.
+ *
+ *   2. This notice may not be altered or removed.
+ *   
+ *   3. Binaries generated from this source file by individuals for their own
+ *      personal use may not be re-distributed without the written permission
+ *      of Persistence of Vision Raytracer Pty. Ltd. Such personal-use binaries
+ *      are not required to have a timeout, and thus permission is granted in
+ *      these circumstances only to disable the timeout code contained within
+ *      the beta software.
+ *   
+ *   4. Binaries generated from this source file for use within an organizational
+ *      unit (such as, but not limited to, a company or university) may not be
+ *      distributed beyond the local organizational unit in which they were made,
+ *      unless written permission is obtained from Persistence of Vision Raytracer
+ *      Pty. Ltd. Additionally, the timeout code implemented within the beta may
+ *      not be disabled or otherwise bypassed in any manner.
+ *
+ * The following text is not part of the above conditions and is provided for
+ * informational purposes only.
+ *
+ * The purpose of the no-redistribution clause is to attempt to keep the
+ * circulating copies of the beta source fresh. The only authorized distribution
+ * point for the source code is the POV-Ray website and Perforce server, where
+ * the code will be kept up to date with recent fixes. Additionally the beta
+ * timeout code mentioned above has been a standard part of POV-Ray betas since
+ * version 1.0, and is intended to reduce bug reports from old betas as well as
+ * keep any circulating beta binaries relatively fresh.
+ *
+ * All said, however, the POV-Ray developers are open to any reasonable request
+ * for variations to the above conditions and will consider them on a case-by-case
+ * basis.
+ *
+ * Additionally, the developers request your co-operation in fixing bugs and
+ * generally improving the program. If submitting a bug-fix, please ensure that
+ * you quote the revision number of the file shown above in the copyright header
+ * (see the '$Revision:' field). This ensures that it is possible to determine
+ * what specific copy of the file you are working with. The developers also would
+ * like to make it known that until POV-Ray 3.7 is out of beta, they would prefer
+ * to emphasize the provision of bug fixes over the addition of new features.
+ *
+ * Persons wishing to enhance this source are requested to take the above into
+ * account. It is also strongly suggested that such enhancements are started with
+ * a recent copy of the source.
+ *
+ * The source code page (see http://www.povray.org/beta/source/) sets out the
+ * conditions under which the developers are willing to accept contributions back
+ * into the primary source tree. Please refer to those conditions prior to making
+ * any changes to this source, if you wish to submit those changes for inclusion
+ * with POV-Ray.
+ *
+ *********************************************************************************/
 
 #ifdef POVMS_DISCONNECTED
 	#include "cnfpovms.h"
@@ -35,16 +96,22 @@
 	#include <string.h>
 	#include <stdlib.h>
 	#include <stdio.h>
+
+	// configbase.h must always be the first POV file included within base *.cpp files
 	#include "configbase.h"
 #endif
 
 // Note: Needed for function prototypes
 #define POVMS_EXPORT_STREAM_FUNCTIONS
 
+#include <time.h>
 #include "povms.h"
 #include "pov_err.h"
 
-USING_POV_BASE_NAMESPACE
+// this must be the last file included
+#include "base/povdebug.h"
+
+using namespace pov_base;
 
 /*****************************************************************************
 * Local preprocessor defines
@@ -53,7 +120,9 @@ USING_POV_BASE_NAMESPACE
 // #define _DEBUG_POVMS_DUMP_MESSAGES_
 // #define _DEBUG_POVMS_TRACE_MEMORY_
 
-#define kDefaultTimeout   30
+#ifndef kDefaultTimeout
+#define kDefaultTimeout   10
+#endif
 
 #ifndef POVMS_ASSERT
 	#define POVMS_ASSERT(c,s) POVMS_AssertFunction(c, s, __FILE__, __LINE__)
@@ -78,8 +147,16 @@ struct POVMS_Sys_QueueNode_Default
 };
 
 // Note: You should really override these!
+#ifndef POVMS_Sys_Thread_Type
+	#define POVMS_Sys_Thread_Type         int
+#endif
+
 #ifndef POVMS_Sys_Queue_Type
 	#define POVMS_Sys_Queue_Type          POVMS_Sys_QueueNode_Default *
+#endif
+
+#ifndef POVMS_Sys_GetCurrentThread
+	#define POVMS_Sys_GetCurrentThread(q) POVMS_Sys_GetCurrentThread_Default(q)
 #endif
 
 #ifndef POVMS_Sys_QueueToAddress
@@ -101,17 +178,29 @@ struct POVMS_Sys_QueueNode_Default
 // Note: Blocking is optional, that is, even if the parameter is true,
 // this function does not have to block! [trf]
 #ifndef POVMS_Sys_QueueReceive
-	#define POVMS_Sys_QueueReceive(q,l,b) POVMS_Sys_QueueReceive_Default(q, l, b)
+	#define POVMS_Sys_QueueReceive(q,l,b,y) POVMS_Sys_QueueReceive_Default(q, l, b, y)
 #endif
 
 #ifndef POVMS_Sys_QueueSend
 	#define POVMS_Sys_QueueSend(q, p, l)  POVMS_Sys_QueueSend_Default(q, p, l)
 #endif
 
+#ifndef POVMS_Sys_AddressFromStream
+	#define POVMS_Sys_AddressFromStream(a, s, z)      POVMS_Sys_AddressFromStream_Default((a), (s), (z))
+#endif
+
+#ifndef POVMS_Sys_AddressToStreamSize
+	#define POVMS_Sys_AddressToStream(a, s, z)        POVMS_Sys_AddressToStream_Default((a), (s), (z))
+#endif
+
+#ifndef POVMS_Sys_AddressToStreamSize
+	#define POVMS_Sys_AddressToStreamSize(a)          POVMS_Sys_AddressToStreamSize_Default((a))
+#endif
+
 // Note: Timer function which returns time in seconds.
 // Other precisions are not supported! */
 #ifndef POVMS_Sys_Timer
-	#define POVMS_Sys_Timer()             0
+	#define POVMS_Sys_Timer()             (POVMSLong)time(NULL)
 #endif
 
 // Note: These low level functions allow building POVMS without a
@@ -122,6 +211,11 @@ struct POVMS_Sys_QueueNode_Default
 
 #ifndef POVMS_Sys_Memmove
 	#define POVMS_Sys_Memmove(a, b, c)    memmove(a, b, c)
+#endif
+
+// Note: Usually no need to change this one! */
+#ifndef POVMS_Sys_UCS2Strlen
+	#define POVMS_Sys_UCS2Strlen(p)       POVMS_Sys_UCS2Strlen_Default(p)
 #endif
 
 // Note: Remember that the POVMS cannot use the standard
@@ -189,7 +283,10 @@ struct POVMSContextData
 	POVMSBool valid;
 	POVMSReceiveHandlerNode *receivehandlerroot;
 	POVMS_Sys_Queue_Type queue;
+	POVMS_Sys_Thread_Type thread;
 	POVMSObject result;
+	POVMSLong resultid;
+	POVMSLong nextsequenceid;
 };
 
 
@@ -203,6 +300,7 @@ struct
 	int long_write[8],  long_read[8];
 	int float_write[4], float_read[4];
 	int type_write[4],  type_read[4];
+	int ucs2_write[2],  ucs2_read[2];
 } POVMSStreamOrderTables;
 
 
@@ -233,17 +331,23 @@ int POVMSStream_Dump           (FILE *file, POVMSStream *stream, int datasize);
 int POVMSObject_DumpSpace      (FILE *file);
 #endif
 
+unsigned int POVMS_Sys_UCS2Strlen_Default                     (const POVMSUCS2 *s);
+
+POVMS_Sys_Thread_Type POVMS_Sys_GetCurrentThread_Default      ();
 POVMSAddress POVMS_Sys_QueueToAddress_Default                 (POVMS_Sys_QueueNode_Default *q);
 POVMS_Sys_QueueNode_Default *POVMS_Sys_AddressToQueue_Default (POVMSAddress a);
 POVMS_Sys_QueueNode_Default *POVMS_Sys_QueueOpen_Default      ();
 void POVMS_Sys_QueueClose_Default                             (POVMS_Sys_QueueNode_Default *q);
-void *POVMS_Sys_QueueReceive_Default                          (POVMS_Sys_QueueNode_Default *q, int *l, bool blocking);
+void *POVMS_Sys_QueueReceive_Default                          (POVMS_Sys_QueueNode_Default *q, int *l, bool blocking, bool yielding);
 int POVMS_Sys_QueueSend_Default                               (POVMS_Sys_QueueNode_Default *q, void *p, int l);
+int POVMS_Sys_AddressFromStream_Default                       (POVMSAddress *a, POVMSStream *s, int z);
+int POVMS_Sys_AddressToStream_Default                         (POVMSAddress a, POVMSStream *s, int *z);
+int POVMS_Sys_AddressToStreamSize_Default                     (POVMSAddress a);
 
 #ifdef _DEBUG_POVMS_TRACE_MEMORY_
-void *POVMS_Sys_Trace_Malloc(unsigned long size, int line);
-void *POVMS_Sys_Trace_Calloc(unsigned long nmemb, unsigned long size, int line);
-void *POVMS_Sys_Trace_Realloc(void *iptr, unsigned long size, int line);
+void *POVMS_Sys_Trace_Malloc(size_t size, int line);
+void *POVMS_Sys_Trace_Calloc(size_t nmemb, size_t size, int line);
+void *POVMS_Sys_Trace_Realloc(void *iptr, size_t size, int line);
 void POVMS_Sys_Trace_Free(void *ptr, int line);
 void POVMS_Sys_Trace_Set_Guard(char *ptr);
 int POVMS_Sys_Trace_Check_Guard(char *ptr);
@@ -285,7 +389,10 @@ POVMS_EXPORT int POVMS_CDECL POVMS_OpenContext(POVMSContext *contextrefptr)
 
 	context->receivehandlerroot = NULL;
 	context->queue = POVMS_Sys_QueueOpen();
+	context->thread = POVMS_Sys_GetCurrentThread();
 	context->result.type = kPOVMSType_Null;
+	context->resultid = 0;
+	context->nextsequenceid = 1;
 
 	context->valid = true;
 
@@ -484,7 +591,7 @@ POVMS_EXPORT int POVMS_CDECL POVMS_RemoveReceiver(POVMSContext contextref, POVMS
 *
 ******************************************************************************/
 
-POVMS_EXPORT int POVMS_CDECL POVMS_ProcessMessages(POVMSContext contextref, POVMSBool blocking)
+POVMS_EXPORT int POVMS_CDECL POVMS_ProcessMessages(POVMSContext contextref, POVMSBool blocking, POVMSBool yielding)
 {
 	POVMSContextData *context = (POVMSContextData *)contextref;
 	POVMSObject msg;
@@ -492,6 +599,7 @@ POVMS_EXPORT int POVMS_CDECL POVMS_ProcessMessages(POVMSContext contextref, POVM
 	POVMSAddress saddr = POVMSInvalidAddress;
 	POVMSAddress daddr = POVMSInvalidAddress;
 	POVMSStream *stream = NULL;
+	POVMSLong resultid = 0;
 	POVMSInt msgsize = 0;
 	POVMSInt mode = kPOVMSSendMode_Invalid;
 	POVMSInt resultsize = 0;
@@ -507,10 +615,10 @@ POVMS_EXPORT int POVMS_CDECL POVMS_ProcessMessages(POVMSContext contextref, POVM
 		return kParamErr;
 	if(context->valid == false)
 		return kInvalidContextErr;
-	if(context->result.type != kPOVMSType_Null)
+	if((context->result.type != kPOVMSType_Null) && (context->resultid != 0))
 		return kOutOfSyncErr;
 
-	stream = (POVMSStream *)POVMS_Sys_QueueReceive(context->queue, &maxsize, blocking);
+	stream = (POVMSStream *)POVMS_Sys_QueueReceive(context->queue, &maxsize, blocking, yielding);
 	if((stream != NULL) && (maxsize > 16))
 	{
 		msg.type = kPOVMSType_Null;
@@ -547,39 +655,78 @@ POVMS_EXPORT int POVMS_CDECL POVMS_ProcessMessages(POVMSContext contextref, POVM
 			datasize += POVMSStream_Read(&result, stream + datasize, &maxsize);        // result       x byte
 		}
 
-		// set source and destination addresses
-		if((objectcnt == 2) && (result.type != kPOVMSType_Null))
-		{
-			if(err == kNoErr)
-			{
-				if(POVMSMsg_GetSourceAddress(&msg, &saddr) != kNoErr)
-					err = POVMSMsg_GetSourceAddress(&result, &saddr);
-				if(err == kNoErr)
-					err = POVMSMsg_SetDestinationAddress(&result, saddr);
-			}
-
-			if(err == kNoErr)
-			{
-				if(POVMSMsg_GetDestinationAddress(&msg, &daddr) != kNoErr)
-					err = POVMSMsg_GetDestinationAddress(&result, &daddr);
-				if(err == kNoErr)
-					(void)POVMSMsg_SetSourceAddress(&result, daddr);
-			}
-		}
+		(void)POVMSUtil_GetLong(&msg, kPOVMSResultSequenceID, &resultid);
 
 		if(err == kNoErr)
-			err = POVMS_Receive(context, &msg, &result, mode);
+		{
+			if((context->resultid == 0) || (context->resultid != resultid))
+			{
+				// set source and destination addresses
+				if((objectcnt == 2) && (result.type != kPOVMSType_Null))
+				{
+					if(err == kNoErr)
+					{
+						if((POVMSMsg_GetSourceAddress(&msg, &saddr) != kNoErr) || (saddr == POVMSInvalidAddress))
+							err = POVMSMsg_GetSourceAddress(&result, &saddr);
+						if(err == kNoErr)
+							err = POVMSMsg_SetDestinationAddress(&result, saddr);
+					}
 
-		if(((objectcnt == 2) && (result.type != kPOVMSType_Null)) && (err == kNoErr))
-			err = POVMS_Send(context, &result, NULL, kPOVMSSendMode_NoReply);
+					if(err == kNoErr)
+					{
+						if((POVMSMsg_GetDestinationAddress(&msg, &daddr) != kNoErr) || (daddr == POVMSInvalidAddress))
+							err = POVMSMsg_GetDestinationAddress(&result, &daddr);
+						if(err == kNoErr)
+							(void)POVMSMsg_SetSourceAddress(&result, daddr);
+					}
+
+					if(err == kNoErr)
+						err = POVMSUtil_GetLong(&result, kPOVMSResultSequenceID, &resultid);
+				}
+
+				if(err == kNoErr)
+				{
+					try
+					{
+						err = POVMS_Receive(context, &msg, &result, mode);
+					}
+					catch(...)
+					{
+						POVMSObject_Delete(&result);
+						POVMSObject_Delete(&msg);
+						POVMS_Sys_Free(stream);
+						throw;
+					}
+				}
+
+				if(((objectcnt == 2) && (result.type != kPOVMSType_Null)) && (err == kNoErr))
+				{
+					if((objectcnt == 2) && (result.type != kPOVMSType_Null)) // enforce result sequence id
+						err = POVMSUtil_SetLong(&result, kPOVMSResultSequenceID, resultid);
+					if(err == kNoErr)
+						err = POVMS_Send(context, &result, NULL, kPOVMSSendMode_NoReply);
+				}
+				else
+					(void)POVMSObject_Delete(&result);
+
+				(void)POVMSObject_Delete(&msg);
+
+				POVMS_Sys_Free(stream);
+
+				return kFalseErr;
+			}
+			else
+			{
+				context->result = msg;
+				context->resultid = 0;
+
+				POVMS_Sys_Free(stream);
+
+				return kNoErr;
+			}
+		}
 		else
-			(void)POVMSObject_Delete(&result);
-
-		(void)POVMSObject_Delete(&msg);
-
-		POVMS_Sys_Free(stream);
-
-		return kFalseErr;
+			return kNoErr; // ignore all errors
 	}
 
 	return kNoErr;
@@ -607,6 +754,7 @@ POVMS_EXPORT int POVMS_CDECL POVMS_Send(POVMSContext contextref, POVMSObjectPtr 
 {
 	POVMSContextData *context = (POVMSContextData *)contextref;
 	POVMSAddress addr = POVMSInvalidAddress;
+	POVMSLong resultid = 0;
 	int maxtime = kDefaultTimeout;
 	int err = kNoErr;
 
@@ -630,14 +778,46 @@ POVMS_EXPORT int POVMS_CDECL POVMS_Send(POVMSContext contextref, POVMSObjectPtr 
 			err = kParamErr;
 		if(contextref == NULL)
 			err = kParamErr;
-//		if(POVMSMsg_GetSourceAddress(result, &addr) != kNoErr)
-//			err = kParamErr;
+	}
+
+	if(err == kNoErr)
+	{
+		if((POVMSMsg_GetSourceAddress(msg, &addr) != kNoErr) || (addr == POVMSInvalidAddress))
+		{
+			if(contextref == NULL)
+				err = kParamErr;
+			else
+				err = POVMS_GetContextAddress(contextref, &addr);
+			if(err == kNoErr)
+				err = POVMSMsg_SetSourceAddress(msg, addr);
+		}
 	}
 
 	if(err == kNoErr)
 	{
 		if(POVMSUtil_GetInt(msg, kPOVMSMessageTimeoutID, &maxtime) != kNoErr)
 			maxtime = kDefaultTimeout; // kDefaultTimeout seconds is the default timeout
+	}
+
+	if(contextref != NULL)
+	{
+		if(err == kNoErr)
+			err = POVMSUtil_SetLong(msg, kPOVMSMessageSequenceID, context->nextsequenceid);
+		context->nextsequenceid++;
+
+		if(mode == kPOVMSSendMode_WaitReply)
+		{
+			if(err == kNoErr)
+			{
+				if(POVMS_ASSERT(context->thread == POVMS_Sys_GetCurrentThread(), "POVMS_Send context not valid for this thread") == false)
+					err = kInvalidContextErr;
+			}
+
+			resultid = context->nextsequenceid;
+			if(err == kNoErr)
+				err = POVMSUtil_SetLong(result, kPOVMSResultSequenceID, context->nextsequenceid);
+			context->nextsequenceid++;
+		}
 	}
 
 	if(err == kNoErr)
@@ -684,16 +864,29 @@ POVMS_EXPORT int POVMS_CDECL POVMS_Send(POVMSContext contextref, POVMSObjectPtr 
 
 			if(result != NULL)
 			{
-				long t = POVMS_Sys_Timer();
+				POVMSType oldresulttype = context->result.type;
+				POVMSLong oldresultid = context->resultid;
+				POVMSLong t = POVMS_Sys_Timer();
 
-				while((context->result.type == kPOVMSType_Null) && ((POVMS_Sys_Timer() - t) < maxtime))
-					(void)POVMS_ProcessMessages(context, false);
+				context->result.type = kPOVMSType_Null;
+				context->resultid = resultid;
 
-				if(context->result.type != kPOVMSType_Null)
+				while((context->resultid == resultid) && ((POVMS_Sys_Timer() - t) < maxtime))
+					(void)POVMS_ProcessMessages(context, true, true);
+
+				if(context->resultid == 0)
 				{
+					POVMSObject_Delete(result);
 					*result = context->result;
-					context->result.type = kPOVMSType_Null;
 				}
+
+				if((context->resultid == resultid) && (POVMS_Sys_Timer() - t) >= maxtime)
+				{
+					err = kTimeoutErr;
+				}
+
+				context->result.type = oldresulttype;
+				context->resultid = oldresultid;
 			}
 		}
 		else
@@ -897,11 +1090,13 @@ void POVMSStream_Init()
 	POVMSLong data_long;
 	POVMSIEEEFloat data_ieeefloat;
 	POVMSType data_type;
+	POVMSUCS2 data_ucs2;
 
 	data_int = 16909060;
 	SetPOVMSLong(&data_long, 16909060, 84281096);
 	HexToPOVMSIEEEFloat(0x44663355, data_ieeefloat); // 0x44663355 equals 920.802063
 	data_type = '1234';
+	data_ucs2 = 258;
 
 	stream[0] = 1;
 	stream[1] = 2;
@@ -933,24 +1128,34 @@ void POVMSStream_Init()
 
 	POVMSStream_BuildOrderTable((POVMSStream *)&data_type, stream, POVMSStreamOrderTables.type_write, 4);
 	POVMSStream_BuildOrderTable(stream, (POVMSStream *)&data_type, POVMSStreamOrderTables.type_read, 4);
+
+	stream[0] = 1;
+	stream[1] = 2;
+
+	POVMSStream_BuildOrderTable((POVMSStream *)&data_ucs2, stream, POVMSStreamOrderTables.ucs2_write, 2);
+	POVMSStream_BuildOrderTable(stream, (POVMSStream *)&data_ucs2, POVMSStreamOrderTables.ucs2_read, 2);
 #else
 	// WARNING: The setup below makes cross-platform communication impossible! [trf]
 
-	#define POVMS_INIT_ORDER(d,o) d[o + 0] = o + 0; d[o + 1] = o + 1; d[o + 2] = o + 2; d[o + 3] = o + 3
+	#define POVMS_INIT_ORDER4(d,o) d[o + 0] = o + 0; d[o + 1] = o + 1; d[o + 2] = o + 2; d[o + 3] = o + 3
+	#define POVMS_INIT_ORDER2(d,o) d[o + 0] = o + 0; d[o + 1] = o + 1
 
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.int_write, 0);
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.int_read, 0);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.int_write, 0);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.int_read, 0);
 
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.long_write, 0);
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.long_write, 4);
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.long_read, 0);
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.long_read, 4);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.long_write, 0);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.long_write, 4);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.long_read, 0);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.long_read, 4);
 
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.float_write, 0);
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.float_read, 0);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.float_write, 0);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.float_read, 0);
 
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.type_write, 0);
-	POVMS_INIT_ORDER(POVMSStreamOrderTables.type_read, 0);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.type_write, 0);
+	POVMS_INIT_ORDER4(POVMSStreamOrderTables.type_read, 0);
+
+	POVMS_INIT_ORDER2(POVMSStreamOrderTables.ucs2_write, 0);
+	POVMS_INIT_ORDER2(POVMSStreamOrderTables.ucs2_read, 0);
 #endif
 }
 
@@ -1054,6 +1259,38 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_ReadString(char *data, POVMSStream *str
 	*maxstreamsize -= datasize;
 
 	return datasize;
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*   POVMSStream_ReadUCS2String
+*   
+* DESCRIPTION
+*   -
+*
+* CHANGES
+*   -
+*
+******************************************************************************/
+
+POVMS_EXPORT int POVMS_CDECL POVMSStream_ReadUCS2String(POVMSUCS2 *data, POVMSStream *stream, int datasize, int *maxstreamsize)
+{
+	int i = 0;
+
+	if(data == NULL)
+		return 0;
+
+	if(*maxstreamsize < datasize)
+		return 0;
+
+	for(i = 0; i < datasize; i++)
+		POVMSStream_ReadDataOrdered(&stream[i * 2], (POVMSStream *)(&data[i]), POVMSStreamOrderTables.ucs2_read, 2);
+
+	*maxstreamsize -= (datasize * 2);
+
+	return (datasize * 2);
 }
 
 
@@ -1225,10 +1462,16 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_Read(struct POVMSData *data, POVMSStrea
 				ret += POVMSStream_Read(&(data->items[cnt]), stream + ret, maxstreamsize);
 			break;
 		case kPOVMSType_CString:
-			data->ptr = (void *)POVMS_Sys_Malloc(sizeof(char *) * (data->size + 1));
+			data->ptr = (void *)POVMS_Sys_Malloc(data->size + 1);
 			ret += POVMSStream_ReadString((char *)(data->ptr), stream + ret, data->size, maxstreamsize);
 			((char *)(data->ptr))[data->size] = 0;
 			data->size++;
+			break;
+		case kPOVMSType_UCS2String:
+			data->ptr = (void *)POVMS_Sys_Malloc(data->size + 2);
+			ret += POVMSStream_ReadUCS2String((POVMSUCS2 *)(data->ptr), stream + ret, data->size / 2, maxstreamsize);
+			((POVMSUCS2 *)(data->ptr))[data->size / 2] = 0;
+			data->size += 2;
 			break;
 		case kPOVMSType_Int:
 			data->size = sizeof(POVMSInt);
@@ -1255,6 +1498,35 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_Read(struct POVMSData *data, POVMSStrea
 			data->size = sizeof(POVMSType);
 			data->ptr = (void *)POVMS_Sys_Malloc(data->size);
 			ret += POVMSStream_ReadType(((POVMSType *)(data->ptr)), stream + ret, maxstreamsize);
+			break;
+		case kPOVMSType_VectorInt:
+			data->ptr = (void *)POVMS_Sys_Malloc(sizeof(POVMSInt) * data->size);
+			for(int i = 0; i < data->size; i++)
+				ret += POVMSStream_ReadInt(&(((POVMSInt *)(data->ptr))[i]), stream + ret, maxstreamsize);
+			data->size = sizeof(POVMSInt) * data->size;
+			break;
+		case kPOVMSType_VectorLong:
+			data->ptr = (void *)POVMS_Sys_Malloc(sizeof(POVMSLong) * data->size);
+			for(int i = 0; i < data->size; i++)
+				ret += POVMSStream_ReadLong(&(((POVMSLong *)(data->ptr))[i]), stream + ret, maxstreamsize);
+			data->size = sizeof(POVMSLong) * data->size;
+			break;
+		case kPOVMSType_VectorFloat:
+			data->ptr = (void *)POVMS_Sys_Malloc(sizeof(POVMSFloat) * data->size);
+			for(int i = 0; i < data->size; i++)
+				ret += POVMSStream_ReadFloat(&(((POVMSFloat *)(data->ptr))[i]), stream + ret, maxstreamsize);
+			data->size = sizeof(POVMSFloat) * data->size;
+			break;
+		case kPOVMSType_VectorType:
+			data->ptr = (void *)POVMS_Sys_Malloc(sizeof(POVMSType) * data->size);
+			for(int i = 0; i < data->size; i++)
+				ret += POVMSStream_ReadType(&(((POVMSType *)(data->ptr))[i]), stream + ret, maxstreamsize);
+			data->size = sizeof(POVMSType) * data->size;
+			break;
+		case kPOVMSType_Address:
+			data->ptr = (void *)POVMS_Sys_Malloc(sizeof(POVMSAddress));
+			ret += POVMS_Sys_AddressFromStream((POVMSAddress *)(data->ptr), stream + ret, data->size);
+			data->size = sizeof(POVMSAddress);
 			break;
 		default:
 			data->ptr = (void *)POVMS_Sys_Malloc(data->size);
@@ -1331,7 +1603,7 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_WriteString(const char *data, POVMSStre
 	if(data == NULL)
 		return 0;
 
-	len = POVMS_Sys_Strlen(data);
+	len = (int)POVMS_Sys_Strlen(data);
 
 	if(*maxstreamsize < len)
 		return 0;
@@ -1341,6 +1613,41 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_WriteString(const char *data, POVMSStre
 	*maxstreamsize -= len;
 
 	return len;
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*   POVMSStream_WriteUCS2String
+*   
+* DESCRIPTION
+*   -
+*
+* CHANGES
+*   -
+*
+******************************************************************************/
+
+POVMS_EXPORT int POVMS_CDECL POVMSStream_WriteUCS2String(const POVMSUCS2 *data, POVMSStream *stream, int *maxstreamsize)
+{
+	int len = 0;
+	int i = 0;
+
+	if(data == NULL)
+		return 0;
+
+	len = (int)POVMS_Sys_UCS2Strlen(data);
+
+	if(*maxstreamsize < len)
+		return 0;
+
+	for(i = 0; i < len; i++)
+		POVMSStream_WriteDataOrdered((POVMSStream *)(&data[i]), &stream[i * 2], POVMSStreamOrderTables.ucs2_write, 2);
+
+	*maxstreamsize -= (len * 2);
+
+	return (len * 2);
 }
 
 
@@ -1496,6 +1803,10 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_Write(struct POVMSData *data, POVMSStre
 			ret += POVMSStream_WriteInt(data->size - 1, stream + ret, maxstreamsize);
 			ret += POVMSStream_WriteString((char *)(data->ptr), stream + ret, maxstreamsize);
 			break;
+		case kPOVMSType_UCS2String:
+			ret += POVMSStream_WriteInt(data->size - 2, stream + ret, maxstreamsize);
+			ret += POVMSStream_WriteUCS2String((POVMSUCS2 *)(data->ptr), stream + ret, maxstreamsize);
+			break;
 		case kPOVMSType_Int:
 			ret += POVMSStream_WriteInt(4, stream + ret, maxstreamsize);
 			ret += POVMSStream_WriteInt(*((POVMSInt *)(data->ptr)), stream + ret, maxstreamsize);
@@ -1516,6 +1827,30 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_Write(struct POVMSData *data, POVMSStre
 		case kPOVMSType_Type:
 			ret += POVMSStream_WriteInt(4, stream + ret, maxstreamsize);
 			ret += POVMSStream_WriteType(*((POVMSType *)(data->ptr)), stream + ret, maxstreamsize);
+			break;
+		case kPOVMSType_VectorInt:
+			ret += POVMSStream_WriteInt(data->size / 4, stream + ret, maxstreamsize);
+			for(int i = 0; i < data->size / 4; i++)
+				ret += POVMSStream_WriteInt(((POVMSInt *)(data->ptr))[i], stream + ret, maxstreamsize);
+			break;
+		case kPOVMSType_VectorLong:
+			ret += POVMSStream_WriteInt(data->size / 8, stream + ret, maxstreamsize);
+			for(int i = 0; i < data->size / 8; i++)
+				ret += POVMSStream_WriteLong(((POVMSLong *)(data->ptr))[i], stream + ret, maxstreamsize);
+			break;
+		case kPOVMSType_VectorFloat:
+			ret += POVMSStream_WriteInt(data->size / 4, stream + ret, maxstreamsize);
+			for(int i = 0; i < data->size / 4; i++)
+				ret += POVMSStream_WriteFloat(((POVMSFloat *)(data->ptr))[i], stream + ret, maxstreamsize);
+			break;
+		case kPOVMSType_VectorType:
+			ret += POVMSStream_WriteInt(data->size / 4, stream + ret, maxstreamsize);
+			for(int i = 0; i < data->size / 4; i++)
+				ret += POVMSStream_WriteType(((POVMSType *)(data->ptr))[i], stream + ret, maxstreamsize);
+			break;
+		case kPOVMSType_Address:
+			ret += POVMSStream_WriteInt(POVMS_Sys_AddressToStreamSize(*((POVMSAddress *)(data->ptr))), stream + ret, maxstreamsize);
+			ret += POVMS_Sys_AddressToStream(*((POVMSAddress *)(data->ptr)), stream + ret, maxstreamsize);
 			break;
 		default:
 			ret += POVMSStream_WriteInt(data->size, stream + ret, maxstreamsize);
@@ -1568,7 +1903,10 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_Size(struct POVMSData *data)
 				ret += POVMSStream_Size(&(data->items[cnt]));
 			break;
 		case kPOVMSType_CString:
-			ret += POVMS_Sys_Strlen((char *)(data->ptr));
+			ret += (int)POVMS_Sys_Strlen((char *)(data->ptr));
+			break;
+		case kPOVMSType_UCS2String:
+			ret += (int)POVMS_Sys_UCS2Strlen((POVMSUCS2 *)(data->ptr)) * 2;
 			break;
 		case kPOVMSType_Int:
 			ret += 4;
@@ -1584,6 +1922,21 @@ POVMS_EXPORT int POVMS_CDECL POVMSStream_Size(struct POVMSData *data)
 			break;
 		case kPOVMSType_Type:
 			ret += 4;
+			break;
+		case kPOVMSType_VectorInt:
+			ret += data->size / sizeof(POVMSInt) * 4;
+			break;
+		case kPOVMSType_VectorLong:
+			ret += data->size / sizeof(POVMSLong) * 8;
+			break;
+		case kPOVMSType_VectorFloat:
+			ret += data->size / sizeof(POVMSFloat) * 4;
+			break;
+		case kPOVMSType_VectorType:
+			ret += data->size / sizeof(POVMSType) * 4;
+			break;
+		case kPOVMSType_Address:
+			ret += POVMS_Sys_AddressToStreamSize(*((POVMSAddress *)(data->ptr)));
 			break;
 		default:
 			ret += data->size;
@@ -1650,6 +2003,66 @@ int POVMSStream_Dump(FILE *file, POVMSStream *stream, int datasize)
 /*****************************************************************************
 *
 * FUNCTION
+*   POVMSStream_CheckMessageHeader
+*   
+* DESCRIPTION
+*   Check a stream if it contains a valid message header. It returns 0 if
+*   everything is ok and kIncompleteDataErr if there was not enough data to
+*   determine if the header was valid (that is, the header was not complete,
+*   which currently implies there were less than 16 bytes). It either returns
+*   kCannotHandleDataErr, kVersionErr or kInvalidDataSizeErr if the heeader
+*   was invalid. It returns kParamErr if the stream or totalsize pointers
+*   were invalid. It returns 0 (kNoErr) and the total expected size of the
+*   message in totalsize (including streamsize!). Use this function when
+*   receiving message data over a streamed communication mechanism (for
+*   example a TCP/IP stream or a pipe). Read as many bytes as returned by
+*   totalsize and then insert a message of that size into your local message
+*   queue for processing by POVMS. In turn POVMS_ProcessMessages can then
+*   process the message in the queue.
+*
+* CHANGES
+*   -
+*
+******************************************************************************/
+
+POVMS_EXPORT int POVMS_CDECL POVMSStream_CheckMessageHeader(POVMSStream *stream, int streamsize, int *totalsize)
+{
+	char header[8];
+	int version = 0;
+	int err = kNoErr;
+
+	if((stream == NULL) || (totalsize == NULL))
+		return kParamErr;
+
+	*totalsize = 0;
+
+	if(streamsize >= 16)
+	{
+		int datasize = 0;
+
+		datasize = POVMSStream_ReadString(header, stream, 8, &streamsize);             // header       8 byte
+		if(!((header[0] == 'P') && (header[1] == 'O') && (header[2] == 'V') && (header[3] == 'R') &&
+		     (header[4] == 'A') && (header[5] == 'Y') && (header[6] == 'M') && (header[7] == 'S')))
+			err = kCannotHandleDataErr;
+
+		datasize += POVMSStream_ReadInt(&version, stream + datasize, &streamsize);     // version      4 byte
+		if(version != 0x0351)
+			err = kVersionErr;
+
+		datasize += POVMSStream_ReadInt(totalsize, stream + datasize, &streamsize);    // total size   4 byte
+		if(*totalsize < 16)
+			err = kInvalidDataSizeErr;
+	}
+	else if(streamsize < 16)
+		err = kIncompleteDataErr;
+
+	return err;
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
 *   POVMSMsg_SetupMessage
 *   
 * DESCRIPTION
@@ -1670,9 +2083,9 @@ POVMS_EXPORT int POVMS_CDECL POVMSMsg_SetupMessage(POVMSObjectPtr object, POVMST
 	ret = POVMSMsg_SetMessageClass(object, msgclass);
 	if(ret == kNoErr)
 		ret = POVMSMsg_SetMessageIdentifier(object, msgid);
-	if(ret == kNoErr)
+	if((ret == kNoErr) && (POVMSObject_Exist(object, kPOVMSSourceAddressID) != kNoErr))
 		ret = POVMSMsg_SetSourceAddress(object, addr);
-	if(ret == kNoErr)
+	if((ret == kNoErr) && (POVMSObject_Exist(object, kPOVMSDestinationAddressID) != kNoErr))
 		ret = POVMSMsg_SetDestinationAddress(object, addr);
 
 	return ret;
@@ -2394,9 +2807,9 @@ POVMS_EXPORT int POVMS_CDECL POVMSObject_Dump(FILE *file, POVMSObjectPtr object)
 	POVMSObject_DumpSpace(file); fprintf(file, "Object ");
 
 	fprintf(file, "%c%c%c%c\n", (char)((object->type) >> 24)
-							  , (char)((object->type) >> 16)
-							  , (char)((object->type) >> 8)
-							  , (char)((object->type)));
+	                          , (char)((object->type) >> 16)
+	                          , (char)((object->type) >> 8)
+	                          , (char)((object->type)));
 
 	POVMSObject_DumpSpace(file); fprintf(file, "{\n");
 
@@ -2408,9 +2821,9 @@ POVMS_EXPORT int POVMS_CDECL POVMSObject_Dump(FILE *file, POVMSObjectPtr object)
 		{
 			POVMSObject_DumpSpace(file);
 			fprintf(file, "%c%c%c%c = ", (char)((cur->key) >> 24)
-									   , (char)((cur->key) >> 16)
-									   , (char)((cur->key) >> 8)
-									   , (char)((cur->key)));
+			                           , (char)((cur->key) >> 16)
+			                           , (char)((cur->key) >> 8)
+			                           , (char)((cur->key)));
 
 			(void)POVMSObject_DumpAttr(file, &(cur->data));
 		}
@@ -2482,9 +2895,9 @@ POVMS_EXPORT int POVMS_CDECL POVMSObject_DumpAttr(FILE *file, POVMSAttributePtr 
 		return kParamErr;
 
 	fprintf(file, "(%c%c%c%c) ", (char)((attr->type) >> 24)
-							   , (char)((attr->type) >> 16)
-							   , (char)((attr->type) >> 8)
-							   , (char)((attr->type)));
+	                           , (char)((attr->type) >> 16)
+	                           , (char)((attr->type) >> 8)
+	                           , (char)((attr->type)));
 
 	switch(attr->type)
 	{
@@ -2532,10 +2945,10 @@ POVMS_EXPORT int POVMS_CDECL POVMSObject_DumpAttr(FILE *file, POVMSAttributePtr 
 				fprintf(file, "false\n");
 			break;
 		case kPOVMSType_Type:
-			fprintf(file, "\'%c%c%c%c\'\n", (char)((*((unsigned long *)(attr->ptr))) >> 24)
-										  , (char)((*((unsigned long *)(attr->ptr))) >> 16)
-										  , (char)((*((unsigned long *)(attr->ptr))) >> 8)
-										  , (char)((*((unsigned long *)(attr->ptr)))));
+			fprintf(file, "\'%c%c%c%c\'\n", (char)((*((unsigned int *)(attr->ptr))) >> 24)
+			                              , (char)((*((unsigned int *)(attr->ptr))) >> 16)
+			                              , (char)((*((unsigned int *)(attr->ptr))) >> 8)
+			                              , (char)((*((unsigned int *)(attr->ptr)))));
 			break;
 		default:
 			fprintf(file, "[cannot dump data]\n");
@@ -3091,6 +3504,66 @@ POVMS_EXPORT int POVMS_CDECL POVMSAttrList_Append(POVMSAttributeListPtr attr, PO
 /*****************************************************************************
 *
 * FUNCTION
+*   POVMSAttrList_AppendN
+*   
+* DESCRIPTION
+*   Adds the data of the item to the end of the given attribute list.
+*
+* CHANGES
+*   -
+*
+******************************************************************************/
+
+POVMS_EXPORT int POVMS_CDECL POVMSAttrList_AppendN(POVMSAttributeListPtr attr, int cnt, POVMSAttributePtr item)
+{
+	POVMSData *temp_items;
+	int err = kNoErr;
+
+	POVMS_LOG_OUTPUT("POVMSAttrList_AppendN");
+
+	if(attr == NULL)
+		return kParamErr;
+	if(attr->type != kPOVMSType_List)
+		return kDataTypeErr;
+	if(item == NULL)
+		return kNoErr;
+
+	temp_items = (POVMSData *)POVMS_Sys_Realloc((void *)(attr->items), sizeof(POVMSData) * (attr->size + cnt));
+	if(POVMS_ASSERT(temp_items != NULL, "POVMSAttrList_Append failed, out of memory") == false)
+	{
+		err = kNoErr;
+	}
+	else
+	{
+		attr->items = temp_items;
+		attr->items[attr->size] = *item;
+		attr->size += cnt;
+
+		for(cnt = attr->size - cnt + 1; cnt < attr->size; cnt++)
+		{
+			err = POVMSAttr_Copy(item, &(attr->items[cnt]));
+			if(err != kNoErr)
+				break;
+		}
+		if(err != kNoErr)
+		{
+			for(cnt--; cnt >= 0; cnt--)
+			{
+				err = POVMSAttr_Delete(&(attr->items[cnt]));
+				POVMS_ASSERT(err == kNoErr, "POVMSAttr_Delete in POVMSAttrList_AppendN failed. Possible memory leak.");
+			}
+			POVMS_Sys_Free((void *)(attr->items));
+			err = kObjectAccessErr;
+		}
+	}
+
+	return err;
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
 *   POVMSAttrList_Remove
 *   
 * DESCRIPTION
@@ -3322,7 +3795,7 @@ POVMS_EXPORT int POVMS_CDECL POVMSAttrList_Count(POVMSAttributeListPtr attr, int
 *   POVMSUtil_SetString
 *   
 * DESCRIPTION
-*   Stores a string in the given attribute.
+*   Stores a string (including terminating 0) in the given attribute.
 *
 * CHANGES
 *   -
@@ -3343,7 +3816,42 @@ POVMS_EXPORT int POVMS_CDECL POVMSUtil_SetString(POVMSObjectPtr object, POVMSTyp
 
 	ret = POVMSAttr_New(&attr);
 	if(ret == kNoErr)
-		ret = POVMSAttr_Set(&attr, kPOVMSType_CString, (void *)str, POVMS_Sys_Strlen(str) + 1);
+		ret = POVMSAttr_Set(&attr, kPOVMSType_CString, (void *)str, (int)POVMS_Sys_Strlen(str) + 1);
+	if(ret == kNoErr)
+		ret = POVMSObject_Set(object, &attr, key);
+
+	return ret;
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*   POVMSUtil_SetUCS2String
+*   
+* DESCRIPTION
+*   Stores a string (including terminating 0) in the given attribute.
+*
+* CHANGES
+*   -
+*
+******************************************************************************/
+
+POVMS_EXPORT int POVMS_CDECL POVMSUtil_SetUCS2String(POVMSObjectPtr object, POVMSType key, const POVMSUCS2 *str) // Note: Strings may not contain \0 characters codes!
+{
+	POVMSAttribute attr;
+	int ret;
+
+	POVMS_LOG_OUTPUT("POVMSUtil_SetUCS2String");
+
+	if(object == NULL)
+		return kParamErr;
+	if(str == NULL)
+		return kParamErr;
+
+	ret = POVMSAttr_New(&attr);
+	if(ret == kNoErr)
+		ret = POVMSAttr_Set(&attr, kPOVMSType_UCS2String, (void *)str, (int)(POVMS_Sys_UCS2Strlen((const POVMSUCS2 *)str) + 1)*sizeof(POVMSUCS2));
 	if(ret == kNoErr)
 		ret = POVMSObject_Set(object, &attr, key);
 
@@ -3528,7 +4036,7 @@ POVMS_EXPORT int POVMS_CDECL POVMSUtil_SetType(POVMSObjectPtr object, POVMSType 
 *   POVMSUtil_GetStringLength
 *   
 * DESCRIPTION
-*   Accesses a string length in the given attribute.
+*   Accesses a string length (including terminating 0) in the given attribute.
 *
 * CHANGES
 *   -
@@ -3569,7 +4077,7 @@ POVMS_EXPORT int POVMS_CDECL POVMSUtil_GetStringLength(POVMSObjectPtr object, PO
 *   POVMSUtil_GetString
 *   
 * DESCRIPTION
-*   Accesses a string in the given attribute.
+*   Accesses a string (including terminating 0) in the given attribute.
 *
 * CHANGES
 *   -
@@ -3596,6 +4104,89 @@ POVMS_EXPORT int POVMS_CDECL POVMSUtil_GetString(POVMSObjectPtr object, POVMSTyp
 		if(ret == kNoErr)
 			ret = temp_ret;
 	}
+
+	return ret;
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*   POVMSUtil_GetStringLength
+*   
+* DESCRIPTION
+*   Accesses a string length (including terminating 0) in the given attribute.
+*
+* CHANGES
+*   -
+*
+******************************************************************************/
+
+POVMS_EXPORT int POVMS_CDECL POVMSUtil_GetUCS2StringLength(POVMSObjectPtr object, POVMSType key, int *len)
+{
+	POVMSAttribute attr;
+	POVMSType attr_type = kPOVMSType_UCS2String;
+	int ret,temp_ret;
+
+	POVMS_LOG_OUTPUT("POVMSUtil_GetUCS2StringLength");
+
+	if(len == NULL)
+		return kParamErr;
+
+	ret = POVMSObject_Get(object, &attr, key);
+	if(ret == kNoErr)
+	{
+		ret = POVMSAttr_Type(&attr, &attr_type);
+		if((ret == kNoErr) && (attr_type == kPOVMSType_UCS2String))
+			ret = POVMSAttr_Size(&attr, len) / 2;
+		else if((ret == kNoErr) && (attr_type != kPOVMSType_UCS2String))
+			ret = kDataTypeErr;
+		temp_ret = POVMSAttr_Delete(&attr);
+		if(ret == kNoErr)
+			ret = temp_ret;
+	}
+
+	return ret;
+}
+
+
+/*****************************************************************************
+*
+* FUNCTION
+*   POVMSUtil_GetUCS2String
+*   
+* DESCRIPTION
+*   Accesses a string (including terminating 0) in the given attribute.
+*
+* CHANGES
+*   -
+*
+******************************************************************************/
+
+POVMS_EXPORT int POVMS_CDECL POVMSUtil_GetUCS2String(POVMSObjectPtr object, POVMSType key, POVMSUCS2 *str, int *maxlen)
+{
+	POVMSAttribute attr;
+	int ret,temp_ret;
+
+	POVMS_LOG_OUTPUT("POVMSUtil_GetUCS2String");
+
+	if(str == NULL)
+		return kParamErr;
+	if(maxlen == NULL)
+		return kParamErr;
+
+	*maxlen *= 2;
+
+	ret = POVMSObject_Get(object, &attr, key);
+	if(ret == kNoErr)
+	{
+		ret = POVMSAttr_Get(&attr, kPOVMSType_UCS2String, (void *)str, maxlen);
+		temp_ret = POVMSAttr_Delete(&attr);
+		if(ret == kNoErr)
+			ret = temp_ret;
+	}
+
+	*maxlen /= 2;
 
 	return ret;
 }
@@ -3860,89 +4451,26 @@ POVMS_EXPORT int POVMS_CDECL POVMSUtil_TempFree(void *ptr)
 * Default system specific functions
 ******************************************************************************/
 
-#ifndef POVMS_DISCONNECTED
-
-extern POVMSContext POVMS_Render_Context;
-extern POVMSContext POVMS_Output_Context;
-extern bool Binary_POVMS_Stream_Mode;
-
-void *POVMS_ReadFromStdin(int *l);
-int POVMS_WriteToStdout(void *p, int l);
-
-void *POVMS_ReadFromStdin(int *l)
+unsigned int POVMS_Sys_UCS2Strlen_Default(const POVMSUCS2 *s)
 {
-	unsigned char *msgptr = NULL;
+	unsigned int len = 0;
 
-	// see if there is any input
-	if(feof(stdin) != 0)
-		return NULL;
-
-	// read length of (unencoded!) input
-	l = 0;
-	if(scanf("%d ", l) > 0)
-	{
-		msgptr = (unsigned char *)POVMS_Sys_Malloc(*l);
-		for(int i = 0; i < *l; i++)
-		{
-			while(feof(stdin) == 0) { }
-
-			int chr = getchar();
-			if(chr == '\\')
-			{
-				chr = getchar();
-				if(chr == 'x')
-				{
-					char str[5];
-					str[0] = '0';
-					str[1] = 'x';
-					str[2] = getchar();
-					str[3] = getchar();
-					str[4] = 0;
-				}
-				else 
-					msgptr[i] = chr;
-			}
-			else
-				msgptr[i] = chr;
-		}
-
-		scanf("\n");
-	}
-
-	return msgptr;
-}
-
-int POVMS_WriteToStdout(void *p, int l)
-{
-	unsigned char *msgptr = (unsigned char *)p;
-
-	if(p == NULL)
-		return -1;
-
-	if(l == 0)
+	if(s == NULL)
 		return 0;
 
-	printf("%d ", l);
-
-	for(int i = 0; i < l; i++)
+	while(*s != 0)
 	{
-		if((msgptr[i] < 32) || (msgptr[i] == '\"') || (msgptr[i] == '<') || (msgptr[i] == '>'))
-			printf("\\x%02x", (unsigned int)(msgptr[i]));
-		else if(msgptr[i] == '\\')
-			printf("\\\\");
-		else
-			putchar(msgptr[i]);
+		len++;
+		s++;
 	}
 
-	printf("\n");
-	fflush(stdout);
-
-	POVMS_Sys_Free(p);
-
-	return 0;
+	return len;
 }
 
-#endif
+POVMS_Sys_Thread_Type POVMS_Sys_GetCurrentThread_Default()
+{
+	return (POVMS_Sys_Thread_Type)0;
+}
 
 POVMSAddress POVMS_Sys_QueueToAddress_Default(POVMS_Sys_QueueNode_Default *q)
 {
@@ -3992,7 +4520,7 @@ void POVMS_Sys_QueueClose_Default(POVMS_Sys_QueueNode_Default *q)
 	}
 }
 
-void *POVMS_Sys_QueueReceive_Default(POVMS_Sys_QueueNode_Default *q, int *l, bool)
+void *POVMS_Sys_QueueReceive_Default(POVMS_Sys_QueueNode_Default *q, int *l, bool, bool)
 {
 	POVMS_Sys_QueueNode_Default *ptr = (POVMS_Sys_QueueNode_Default *)q;
 	POVMS_Sys_QueueDataNode_Default *node = NULL;
@@ -4008,14 +4536,6 @@ void *POVMS_Sys_QueueReceive_Default(POVMS_Sys_QueueNode_Default *q, int *l, boo
 
 	if(ptr->magic != 0x12345678)
 		return NULL;
-
-#ifndef POVMS_DISCONNECTED
-	POVMSAddress addr = POVMSInvalidAddress;
-	if(POVMS_GetContextAddress(POVMS_Render_Context, &addr) != kNoErr)
-		return NULL;
-	if((POVMS_Sys_QueueToAddress_Default(q) == addr) && (Binary_POVMS_Stream_Mode == true))
-		return POVMS_ReadFromStdin(l);
-#endif
 
 	if(ptr->entries <= 0)
 		return NULL;
@@ -4051,14 +4571,6 @@ int POVMS_Sys_QueueSend_Default(POVMS_Sys_QueueNode_Default *q, void *p, int l)
 	if(ptr->magic != 0x12345678)
 		return -2;
 
-#ifndef POVMS_DISCONNECTED
-	POVMSAddress addr = POVMSInvalidAddress;
-	if(POVMS_GetContextAddress(POVMS_Output_Context, &addr) != kNoErr)
-		return -1;
-	if((POVMS_Sys_QueueToAddress_Default(q) == addr) && (Binary_POVMS_Stream_Mode == true))
-		return POVMS_WriteToStdout(p, l);
-#endif
-
 	node = (POVMS_Sys_QueueDataNode_Default *)POVMS_Sys_Malloc(sizeof(POVMS_Sys_QueueDataNode_Default));
 	if(node == NULL)
 		return -3;
@@ -4078,6 +4590,88 @@ int POVMS_Sys_QueueSend_Default(POVMS_Sys_QueueNode_Default *q, void *p, int l)
 	return 0;
 }
 
+int POVMS_Sys_AddressFromStream_Default(POVMSAddress *a, POVMSStream *s, int z)
+{
+	POVMSStream *b = s;
+	int i;
+
+	// default value in case decoding fails
+	*a = POVMSInvalidAddress;
+
+	// system specific address (byte code 1)
+	if((z >= (2 + sizeof(POVMSAddress))) && (*s == 1))
+	{
+		s++;
+		if(*s == sizeof(POVMSAddress))
+		{
+			s++;
+			for(i = 0; i < sizeof(POVMSAddress); i++)
+				((POVMSStream *)a)[i] = s[i];
+			s += sizeof(POVMSAddress);
+		}
+
+		z -= (s - b);
+	}
+	else if((z >= 2) && (*s == 1))
+	{
+		// skip over unknown system specific address size
+		s += *s;
+		z -= (s - b);
+	}
+
+	// IPv4 address and TCP port (byte code 4)
+	if((z >= 7) && (*s == 4))
+	{
+		// skip
+		s += 7;
+		z -= 7;
+	}
+
+	// IPv6 address and TCP port (byte code 6)
+	if((z >= 11) && (*s == 6))
+	{
+		// skip
+		s += 11;
+		z -= 11;
+	}
+
+	// skip over the remaining data
+	s += z;
+
+	// return that everything has been read
+	return (s - b);
+}
+
+int POVMS_Sys_AddressToStream_Default(POVMSAddress a, POVMSStream *s, int *z)
+{
+	int i;
+
+	// check if there is enough space (there should always be)
+	if(*z < (2 + sizeof(POVMSAddress)))
+		return 0;
+
+	// write system specific address
+	*s = 1;
+	s++;
+	*s = sizeof(POVMSAddress);
+	s++;
+	for(i = 0; i < sizeof(POVMSAddress); i++)
+		s[i] = ((POVMSStream *)(&a))[i];
+	s += sizeof(POVMSAddress);
+
+	// substract size written
+	*z -= (2 + sizeof(POVMSAddress));
+
+	// return size written
+	return (2 + sizeof(POVMSAddress));
+}
+
+int POVMS_Sys_AddressToStreamSize_Default(POVMSAddress)
+{
+	// default implementation only supports writing system specific address
+	return (2 + sizeof(POVMSAddress));
+}
+
 /*****************************************************************************
 * POVMS memory debugging functions
 ******************************************************************************/
@@ -4086,7 +4680,7 @@ int POVMS_Sys_QueueSend_Default(POVMS_Sys_QueueNode_Default *q, void *p, int l)
 
 POVMSMemoryTraceHeader *gPOVMSMemoryTraceRootPointer = NULL;
 
-void *POVMS_Sys_Trace_Malloc(unsigned long size, int line)
+void *POVMS_Sys_Trace_Malloc(size_t size, int line)
 {
 	POVMSMemoryTraceHeader *ptr = (POVMSMemoryTraceHeader *)malloc(size + sizeof(POVMSMemoryTraceHeader) + (sizeof(char) * 8));
 
@@ -4102,7 +4696,7 @@ void *POVMS_Sys_Trace_Malloc(unsigned long size, int line)
 	return (void *)(((char *)ptr) + sizeof(POVMSMemoryTraceHeader));
 }
 
-void *POVMS_Sys_Trace_Calloc(unsigned long nmemb, unsigned long size, int line)
+void *POVMS_Sys_Trace_Calloc(size_t nmemb, size_t size, int line)
 {
 	POVMSMemoryTraceHeader *ptr = (POVMSMemoryTraceHeader *)calloc((nmemb * size) + sizeof(POVMSMemoryTraceHeader) + (sizeof(char) * 8), 1);
 
@@ -4118,7 +4712,7 @@ void *POVMS_Sys_Trace_Calloc(unsigned long nmemb, unsigned long size, int line)
 	return (void *)(((char *)ptr) + sizeof(POVMSMemoryTraceHeader));
 }
 
-void *POVMS_Sys_Trace_Realloc(void *iptr, unsigned long size, int line)
+void *POVMS_Sys_Trace_Realloc(void *iptr, size_t size, int line)
 {
 	if(iptr != NULL)
 	{

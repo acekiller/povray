@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: newdiffract.pov
 //	Author: Modified by Chris Huff, original author unknown
 //	Description: A collection of glass objects, using photons
@@ -8,6 +8,8 @@
 // -w800 -h600 +a0.3
 //
 //*******************************************
+
+#version 3.6;
 
 #include "colors.inc"
 #include "woods.inc"
@@ -44,11 +46,12 @@ interior {
 
 
 global_settings {
-	assumed_gamma 1
-	max_trace_level 5
-	#if(Photons)
-		photons {spacing 0.02}
-	#end
+  assumed_gamma 1.0
+  max_trace_level 5
+
+  #if (Photons)
+    photons {spacing 0.02}
+  #end
 }
 
 #default {finish {ambient 0}}

@@ -8,16 +8,16 @@
 // -w240 -h180 +sf1 +ef11 +kff20
 // -w320 -h240 +a0.3 +sf1 +ef11 +kff20
 
-#version 3.5;
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+}
 
 #if (!clock_on)
   #warning concat("This scene should be rendered as an animation\n",
                   "use '+sf1 +ef11' for rendering all versions.\n")
 #end
-
-global_settings {
-  assumed_gamma 1
-}
 
 light_source {
   <1.9, 1.6, 2.7>*10000

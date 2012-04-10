@@ -1,11 +1,14 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // This file demonstrates the effect of metallic reflection,
 // formerly controlled by the "reflect_metallic" keyword
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { 
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0 
   max_trace_level 5
 }
 

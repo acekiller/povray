@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: crackle3.pov
-// Vers: 3.5
 // Desc: crackle pattern demonstration scene
 // Date: April 2001
 // Auth: Christoph Hormann
@@ -8,12 +7,19 @@
 // -w400 -h200
 // -w512 -h256 +a0.3
 
-#version 3.5;
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+}
 
 #include "colors.inc"
 
 global_settings {
-   assumed_gamma 1
+  // conditionally comply with gamma correction handling
+  #if (version < 3.7)
+    assumed_gamma 1.0
+  #end
 }
 
 light_source {

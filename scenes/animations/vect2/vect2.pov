@@ -3,7 +3,11 @@
 // Demonstrates various new vector math functions.
 // Animate this scene with clock values +k0.0 to +k1.0
 
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #include "colors.inc"
 

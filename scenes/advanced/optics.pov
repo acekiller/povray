@@ -1,13 +1,13 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File: optics.pov
 // Author: Christopher J. Huff
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-#include "colors.inc"
+#version 3.6;
 
-#version 3.5;
+#include "colors.inc"
 
 #default {finish {ambient 0}}
 

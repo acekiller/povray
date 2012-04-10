@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // this scene demonstrates a possible use of the pigment_pattern pattern
 
 // first, we'll define a reasonably complex pigment, made of wrinkles
@@ -6,6 +6,12 @@
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
+
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+}
 
 #include "colors.inc"
 

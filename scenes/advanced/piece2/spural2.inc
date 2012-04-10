@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 
 #declare Spural2_Inc_Temp = version;
 

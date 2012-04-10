@@ -1,6 +1,5 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File: SwirlBox.POV
-// Vers: 3
 // Desc: Stacked square rings in a snail shell shape,
 //       shows off the use of the while loop for creating objects,
 //       and for smoothly changing colors.
@@ -10,7 +9,11 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { assumed_gamma 1.0 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+}
 
 // ------------------------------------------------------------------
 // Look down at an angle at our creation

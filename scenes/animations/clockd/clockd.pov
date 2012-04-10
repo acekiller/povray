@@ -1,7 +1,10 @@
-// Persistence Of Vision Ray Tracer POV-Ray 3.5 sample Scene
+// Persistence Of Vision Ray Tracer POV-Ray sample Scene
 // by Chris Young
 // CLOCKD.POV demonstrates basic use of the clock_delta identifier.
 // Run this scene with various start & end clock values or frames.
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 #include "colors.inc"
 

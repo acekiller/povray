@@ -1,4 +1,4 @@
-// Persistence Of Vision Raytracer version 3.5 sample file.
+// Persistence Of Vision Raytracer sample file.
 // The TEXTUREn.POV files demonstrate all textures in TEXTURES.INC
 
 camera {

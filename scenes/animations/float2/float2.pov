@@ -1,9 +1,12 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracersample file.
 // Demonstrates various new float math functions.
 // Animate this scene with clock values +ki0.0 to +kf1.0
 
+#version 3.6;
 
-global_settings { assumed_gamma 2.2 }
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #declare F = clock*10-5;
 #declare G = floor(F);

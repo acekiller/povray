@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: mediasky.pov
 //	Author: Chris Huff
 //	Description: This file demonstrates the use of scattering media
@@ -14,13 +14,13 @@
 //
 //*******************************************
 
+#version 3.6;
+
 #include "colors.inc"
 
-#version 3.5;
-
 global_settings {
-	assumed_gamma 1
-	max_trace_level 5
+  assumed_gamma 1.0
+  max_trace_level 5
 }
 
 #declare CamPos = <-5, 1,-25>;

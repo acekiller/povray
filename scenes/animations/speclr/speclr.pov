@@ -2,8 +2,11 @@
 // File by Dan Farmer
 // Specular values demonstration
 
+#version 3.6;
 
-global_settings { assumed_gamma 2.2 }
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #include "colors.inc"
 #include "stdcam.inc"

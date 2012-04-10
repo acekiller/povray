@@ -1,11 +1,12 @@
 // Persistence Of Vision Ray Tracer Include File
 // File: ChessPieces.pov
-// Vers: 3.5
 // Desc: Chesspieces
 // Date: 1999-06-19
 // Auth: ingo
 //
 // Lathe and prism made with SpilinEditor v1.2
+
+// Updated: 09Aug2008 (jh) for v3.7 distribution
 
 //The King fits in box{<-0.43490,-0.00165,-0.43490>, < 0.43490, 1.99845, 0.43490>}
 #declare Koning = difference {

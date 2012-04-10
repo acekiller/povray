@@ -1,5 +1,7 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Include file for DRUMS.POV by Dan Farmer
+
+// Updated: 09Aug2008 (jh) for v3.7 distribution
 
 #declare Brass = colour red 0.88 green 0.84 blue 0.10;
 #declare ChromeBlue = colour red 0.84 green 0.89 blue 1.00;

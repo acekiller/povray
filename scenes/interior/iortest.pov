@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // This file demonstrates the use of the file "ior.inc" and a few other
 // interesting and useful tricks.  It can take a bit of time to render,
 // (he said, understatingly), because of the transparency and because of
@@ -9,7 +9,12 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { max_trace_level 20 assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  max_trace_level 20
+  }
 
 #include "colors.inc"
 #include "shapes.inc"
@@ -57,7 +62,6 @@ plane { y, -1
    }
 }
 
-
 #declare Hummer =
 union {
    union {
@@ -65,7 +69,6 @@ union {
       object { Disk_Y translate 2*y }
       sphere { <0, 4, 0>, 1 }
       rotate 45*y
-    //  interior{I_Glass}
    }
 
    // Let's attach an orange sphere to this thing... off in the distance,
@@ -82,8 +85,7 @@ union {
 
 // Set up a default texture for all objects that follow that don't already
 // have a texture of their own
-default { texture { T_Glass1 } }
-
+#default {texture {pigment {color rgbf<1.0, 1.0, 1.0, 0.7>} finish {F_Glass1}}}
 
 // Now lay out five of those Hummers
 object { Hummer

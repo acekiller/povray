@@ -1,10 +1,12 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //
 // Life.Pov Celular autotomata life animation for POV-Ray 3.0
 //    by JIm WIlliamson 100041,2563
 //    using a character string to simulate arrays.
 // Adapted for POV-Ray 3.1 using arrays by Chris Young
 
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 camera {location 100*y  direction z*2.1  look_at <0,0,0>}
 light_source { <10,100,5> color rgb 1}

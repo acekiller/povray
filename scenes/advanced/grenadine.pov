@@ -1,15 +1,13 @@
 // Persistence of Vision Ray Tracer Scene Description File
 // File: grenadine.pov
-// Vers: 3.5
 // Desc: Glass with liquid
 // Date: 1999/06/04
-// Update: 2001/07/26, to work with POV-Ray 3.5
 // Auth: Ingo Janssen
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-#version 3.5;
+#version 3.6;
 
 #include "glass.inc"
 #include "lemon.inc"
@@ -70,8 +68,16 @@ union {                     //plane & background
       sphere {-y*1.9,0.1}
    }
    torus {0.975, 0.026 translate <0,2,0>}
-   texture {T_Glass1}
-   interior {ior 1.5}
+   // texture {T_Glass1}
+   // interior {ior 1.5}
+   // converted to material 26Sep2008 (jh)
+   material {
+     texture {
+       pigment {color rgbf<1.0, 1.0, 1.0, 0.7>}
+       finish {F_Glass1}
+       }
+     interior {ior 1.5}
+     }
 }
 
 

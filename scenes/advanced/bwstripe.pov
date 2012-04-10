@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // "Black and White Stripes"
 // Copyright 2001 Rune S. Johansen
 
@@ -17,6 +17,10 @@
 // Because the light from the light_source also makes the
 // gradient brighter, the white stripes are more dominant in
 // the illuminated areas on the objects.
+
+#version 3.6;
+
+global_settings {assumed_gamma 1.0}
 
 camera {
    location <0,6,-10>

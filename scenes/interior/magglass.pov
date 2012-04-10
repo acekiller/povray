@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Magnifying glass created using POV-Ray's refraction.
 // A convex lens created with CSG
 // (and something to view through it)
@@ -8,7 +8,12 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  max_trace_level 5
+  }
 
 #include "colors.inc"
 #include "shapes.inc"
@@ -58,7 +63,7 @@ intersection {
 
    interior{ior Flint_Glass_Ior}
    texture {
-       T_Glass3
+       pigment { color rgbf <0.98, 0.98, 0.98, 0.9> }
        finish {
           reflection 0                  // Over-ride reflection
        }

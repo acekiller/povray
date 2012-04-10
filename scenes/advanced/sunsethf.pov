@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File by Douglas Muir
 // Note: Original used 640 x 480 height field.
 // This version is scaled down for distribution.
@@ -6,6 +6,8 @@
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
+
+#version 3.6;
 
 global_settings {
   assumed_gamma 2.2

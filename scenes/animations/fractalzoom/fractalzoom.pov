@@ -1,5 +1,4 @@
-
-//    Persistence of Vision Raytracer Version 3.5 Scene Description File
+//    Persistence of Vision Raytracer Scene Description File
 //    File: fractalzoom.pov
 //    Author: Parts by Rune S. Johansen and Greg M. Johnson,
 //      combined in one file by Chris Huff.
@@ -12,6 +11,10 @@
 // 2 = Fractal zoom by Greg
 //
 //*******************************************
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
+
 #include "colors.inc"
 #declare Choice = 0;
 

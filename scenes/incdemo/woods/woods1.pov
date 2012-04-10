@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision Raytracer sample file.
 // Woods.inc demonstration on cubes.  Faster than woods2.pov but
 // doesn't give as good an idea of how the textures look on other
 // shapes.
@@ -6,7 +6,8 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+global_settings {assumed_gamma 2.2}
 
 // Set default finish for wood textures before including the file
 #default { finish { specular 0.15 roughness 0.025 ambient 0.25 } }

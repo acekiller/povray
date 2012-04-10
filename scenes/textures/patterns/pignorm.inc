@@ -1,8 +1,11 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Used by pigment/normal pattern example scenes
 
+#version 3.6;
 
-global_settings { assumed_gamma 2.2 }
+global_settings {
+  assumed_gamma 2.2
+}
 
 camera {
   location <0,1,-14>

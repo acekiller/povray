@@ -6,17 +6,17 @@
 //       objects in allobjects_.pov
 // Date: 2001/08/08
 // Auth: Ingo Janssen
-//
-
-#version 3.5;
-#include "colors.inc"
-#include "metals.inc"
-#include "functions.inc"
-#include "html_gen.inc"
+#version 3.6;
 global_settings {
   assumed_gamma 1.0
   max_trace_level 10
 }
+
+#include "colors.inc"
+#include "metals.inc"
+#include "functions.inc"
+#include "html_gen.inc"
+
 
 #declare Generate_HTML=yes;
 #declare Generate_Images=yes;

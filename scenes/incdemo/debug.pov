@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: debug.pov
 //	Last updated: 2001.4.26
 //	Author: Chris J. Huff
@@ -9,13 +9,11 @@
 //
 //*******************************************
 
+#version 3.6;
+global_settings { assumed_gamma 1.0 }
+
 #include "colors.inc"
 #include "debug.inc"
-#version 3.5;
-//-------------------------------------------
-global_settings {
-	assumed_gamma 1
-}
 
 #declare CamPos = < 2, 3.5,-8>;
 

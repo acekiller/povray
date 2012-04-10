@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //
 // ------------------------------
 // Features pseudo-Gaussian distribution and use of trace function

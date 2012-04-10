@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: media2.pov
 //	Author:
 //	Description:
@@ -8,6 +8,9 @@
 // -w800 -h600 +a0.3
 //
 //*******************************************
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 //
 // The camera.

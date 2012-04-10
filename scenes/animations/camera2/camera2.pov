@@ -1,10 +1,13 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File by Dieter Bayer
 // Perturbed camera demonstration.
 // Use povray -icamera2.pov camera2.ini to trace.
 
+#version 3.6;
 
-global_settings { assumed_gamma 2.2 }
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #include "colors.inc"
 

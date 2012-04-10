@@ -19,6 +19,8 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
+
 #declare WriteFile=true;  // turns on the generation of the stacks and write them to a file
 #declare WriteFile=false; // turns off the generation of the file, just read them from the previous file
 // ------------------------------
@@ -37,6 +39,7 @@
 // Set settings : radiosity only
 // ------------------------------
 global_settings{
+    assumed_gamma 1.0
     radiosity{
         pretrace_start 1
         pretrace_end 1

@@ -1,13 +1,16 @@
 // Persistence Of Vision Ray Tracer Include File
 // File: sky.inc
-// Vers: 3.5
 // Desc: sky for 'balcony.pov' demonstration scene
 // Date: July/August 2001
 // Auth: Christoph Hormann
 
+// Updated: 09Aug2008 (jh) for v3.7 distribution
+
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-#version 3.5;
+#if (version < 3.7)
+  #version 3.5;
+#end
 
 #local P_Clouds=
 pigment {

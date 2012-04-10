@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 
 //----------- one fish include....3/13/92 M.Miller
 
@@ -9,7 +9,7 @@
 #declare YourTexture =
 texture {
    pigment { image_map { <1 -1 0> png "finskin2.png"  } }
-   scale <100 60 1> translate <-50 -30 -1>
+   scale <100 60 1> translate <-50 -30-1>
    finish { ambient  0.2 diffuse 0.5 phong 1.0 phong_size 80 }
 }
 
@@ -1165,7 +1165,17 @@ object {
       }
    }
    //-------------- glass sphere {
-   sphere { 0, 5 texture { T_Glass1 } interior{I_Glass}}
+   sphere { 0, 5
+     // texture { T_Glass1 } interior{I_Glass}}
+     // converted to material 26Sep2008 (jh)
+     material {
+       texture {
+         pigment {color rgbf<1.0, 1.0, 1.0, 0.7>}
+         finish {F_Glass1}
+         }
+       interior {ior 1.5}
+       }
+     }
 }
 
 

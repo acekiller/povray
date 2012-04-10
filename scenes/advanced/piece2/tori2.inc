@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 
 #declare torusx = torus { 9.5, 0.5 sturm }
 #declare torus0 = torus { 9.376883, 0.500000 sturm }

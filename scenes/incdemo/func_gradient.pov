@@ -1,6 +1,5 @@
 // Persistence of Vision Ray Tracer Scene Description File
 // File: func_gradient.pov
-// Vers: 3.5
 // Desc: Gradient macros example
 // Date: January 2002
 // Auth: Christoph Hormann
@@ -23,7 +22,7 @@
 //
 // =============================================================
 
-#version 3.5;
+#version 3.6;
 
 global_settings {
   assumed_gamma 1.0

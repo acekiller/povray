@@ -3,7 +3,7 @@
 #version 3.5;
 
 #ifdef(View_POV_Include_Stack)
-#   debug "including golds.inc\n"
+#debug "including golds.inc\n"
 #end
 
 /*
@@ -29,19 +29,19 @@
 #declare P_Gold5    = rgb CVect5;            // front row
 
 // Reflection colors, derived from pigment color, "grayed down" a touch.
-#declare R_GoldA =  P_Gold1 * 0.30 + 0.25;        // left column (soft)
-#declare R_GoldB =  P_Gold2 * 0.35 + 0.25;
-#declare R_GoldC =  P_Gold3 * 0.40 + 0.25;
-#declare R_GoldD =  P_Gold4 * 0.45 + 0.25;
-#declare R_GoldE =  P_Gold5 * 0.50 + 0.25;       // right column (hard)
+#declare R_GoldA =  P_Gold1 * 0.30 + <0.25,0.25,0.25>;        // left column (soft)
+#declare R_GoldB =  P_Gold2 * 0.35 + <0.25,0.25,0.25>;
+#declare R_GoldC =  P_Gold3 * 0.40 + <0.25,0.25,0.25>;
+#declare R_GoldD =  P_Gold4 * 0.45 + <0.25,0.25,0.25>;
+#declare R_GoldE =  P_Gold5 * 0.50 + <0.25,0.25,0.25>;       // right column (hard)
 
 
 // Ambient colors, derived from base color
-#declare A_GoldA    =  P_Gold1 * 0.12 + 0.1;      // left column  (soft)
-#declare A_GoldB    =  P_Gold2 * 0.10 + 0.1;
-#declare A_GoldC    =  P_Gold3 * 0.08 + 0.1;
-#declare A_GoldD    =  P_Gold4 * 0.05 + 0.1;
-#declare A_GoldE    =  P_Gold5 * 0.02 + 0.1;     // right column (hard)
+#declare A_GoldA    =  P_Gold1 * 0.12 + <0.1,0.1,0.1>;      // left column  (soft)
+#declare A_GoldB    =  P_Gold2 * 0.10 + <0.1,0.1,0.1>;
+#declare A_GoldC    =  P_Gold3 * 0.08 + <0.1,0.1,0.1>;
+#declare A_GoldD    =  P_Gold4 * 0.05 + <0.1,0.1,0.1>;
+#declare A_GoldE    =  P_Gold5 * 0.02 + <0.1,0.1,0.1>;     // right column (hard)
 
 // Diffuse values
 // Calculated as 1 - (ambient+reflective+specular values)

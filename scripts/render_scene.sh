@@ -1,6 +1,6 @@
 #!/bin/sh
 # ==============================================================================
-# POV-Ray 3.6 
+# POV-Ray 3.7 
 # render_scene.sh - render a scene with options given in a scene file comment
 # ==============================================================================
 # written November 2003 by Christoph Hormann

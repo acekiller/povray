@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Illustrates how adaptive level can affect soft shadows
 //
 // -w320 -h240
@@ -13,8 +13,11 @@
 // Middle shadow - adaptive 1
 // Right  shadow - adaptive 2 (renders slowest)
 
-#version 3.1;
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+}
 
 #include "colors.inc"
 #include "textures.inc"

@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File by Tom Price, modified by Dan Farmer
 //
 //                         !! NOTE !!
@@ -10,10 +10,11 @@
 // -w320 -h240 +kfi1 +kff4 +ki1.0 +kf4.0 +fn
 // -w800 -h600 +a0.3 +kfi1 +kff4 +ki1.0 +kf4.0 +fn
 
+#version 3.6;
+
 global_settings {
   assumed_gamma 2.2
-  max_trace_level 5
-}
+  }
 
 #include "shapes.inc"
 #include "colors.inc"
@@ -155,7 +156,15 @@ intersection {
    sphere { <0.0, -5.0, 0.0>, 10.0 }
    disc { 0, -y, 10.1 }
    translate <0.0, -17.9998, -35.0>
-   texture { T_Green_Glass }
+   //texture { T_Green_Glass }
+   // converted to material 26Sep2008 (jh)
+   material {
+     texture {
+       pigment {color rgbf <0.8, 1, 0.95, 0.9>}
+       finish {F_Glass3}
+       }
+     interior {ior 1.5}
+     }
 }
 
 

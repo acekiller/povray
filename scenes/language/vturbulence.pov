@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: vturbulence.pov
-// Vers: 3.5
 // Desc: vturbulence sample
 // Date: June 2001
 // Auth: Christoph Hormann
@@ -8,10 +7,10 @@
 // -w320 -h240
 // -w512 -h384 +a0.3
 
-#version 3.5;
+#version 3.6;
 
 global_settings {
-  assumed_gamma 1
+  assumed_gamma 1.0
 }
 
 //#declare Style=0;    // just the spheres

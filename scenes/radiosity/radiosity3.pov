@@ -1,17 +1,21 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: radiosity3.pov
-// Vers: 3.5
 // Desc: radiosity tutorial scene
 // Date: 2000-2001
 // Auth: Christoph Hormann
 
 // -w240 -h180 +a0.3
 
+// Updated: 29Dec2010 (cli) modified scene to use 3.7 syntax and more realistic diffuse finish
+
+//#version 3.6;
+#version 3.7;
+
 #declare use_light=false;
 
 global_settings {
-  assumed_gamma 1
-
+  assumed_gamma 1.0
+  
   radiosity {
     pretrace_start 0.08
     pretrace_end   0.04
@@ -29,8 +33,6 @@ global_settings {
     adc_bailout 0.01/2
 
   }
-
-
 }
 
 #if (use_light)
@@ -56,7 +58,7 @@ sphere {
        [0.0 color rgb < 0.700, 0.705, 1.000 >]
      }
    }
-   finish { diffuse 0 ambient 1 }
+   finish { diffuse 0 #if (version < 3.7) ambient 1.4 #else emission 1.4 #end }
   }
   hollow on
   no_shadow
@@ -64,7 +66,7 @@ sphere {
 }
 
 
-#declare FinX= finish { diffuse 1.0 ambient 0 }
+#declare FinX= finish { diffuse 0.65 #if (version < 3.7) ambient 0 #end }
 
 union {
 

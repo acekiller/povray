@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: strings.pov
 //	Author: Chris Huff
 //	Description: A demo of the string macros in strings.inc.
@@ -9,9 +9,10 @@
 //
 //*******************************************
 
-#include "strings.inc"
-#version 3.5;
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
+#include "strings.inc"
 
 #debug concat("\n",CRGBFTStr(color rgbft <0.2, 0.3, 0.4, 0.5, 0.6>, 5, 5),"\n")
 #debug concat(CRGBStr(color rgb <0.2, 0.3, 0.4>, 5, 5),"\n")

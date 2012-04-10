@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // POV-Ray scene description for chess board.
 // By Ville Saari
 // Copyright (c) 1991 Ferry Island Pixelboys
@@ -22,8 +22,11 @@
 
 // remaining manual bounding commented out by Bob Hughes, August 31, 2001
 
+#version 3.6;
 
-global_settings { assumed_gamma 2.2 max_trace_level 5 }
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #include "shapes.inc"
 #include "colors.inc"

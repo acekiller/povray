@@ -1,13 +1,13 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: cornell.pov
-// Vers: 3.5
 // Desc: Radiosity demo scene. See also http://www.Graphics.Cornell.EDU/online/box/
 // Date: August 2001
 // Auth: Kari Kivisalo
 
 // +w300 +h300
 
-global_settings{
+#version 3.6;
+global_settings {
   assumed_gamma 1.0
   radiosity{
     pretrace_start 0.04

@@ -1,4 +1,4 @@
-// Persistence Of Vision Raytracer version 3.5 sample file.
+// Persistence Of Vision Raytracer sample file.
 // Used in conjunction with BRASSES.POV, COPPERS.POV, CHROMES.POV, & SILVERS.POV
 // to demonstrate the textures in metals.inc.
 

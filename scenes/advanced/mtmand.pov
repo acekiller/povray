@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File By Dan Farmer and Tim Wegner
 //
 // -w320 -h240
@@ -10,8 +10,12 @@
 // of these images. MTMAND.PAR contains the fractal parameters to generate
 // both images using the DOS program FRACTINT.
 
+#version 3.6;
 
-global_settings { assumed_gamma 2.2 }
+global_settings {
+  assumed_gamma 2.2
+  }
+
 
 #include "shapes.inc"
 #include "colors.inc"

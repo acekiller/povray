@@ -3,10 +3,10 @@
 #
 # Process this file with automake to produce Makefile.in
 #
-# from Persistence of Vision(tm) Ray Tracer version 3.6.
+# from Persistence of Vision Ray Tracer ('POV-Ray') version 3.7.
 # Copyright 1991-2003 Persistence of Vision Team
-# Copyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd.
-#---------------------------------------------------------------------------
+# Copyright 2003-2009 Persistence of Vision Raytracer Pty. Ltd.
+# ---------------------------------------------------------------------------
 # NOTICE: This source code file is provided so that users may experiment
 # with enhancements to POV-Ray and to port the software to platforms other
 # than those supported by the POV-Ray developers. There are strict rules
@@ -16,32 +16,35 @@
 #
 # These licences may be found online, linked from the end-user license
 # agreement that is located at http://www.povray.org/povlegal.html
-#---------------------------------------------------------------------------
-# This program is based on the popular DKB raytracer version 2.12.
+# ---------------------------------------------------------------------------
+# POV-Ray is based on the popular DKB raytracer version 2.12.
 # DKBTrace was originally written by David K. Buck.
 # DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 ##############################################################################
 
-# Makefile.am for the source distribution of POV-Ray 3.6 for UNIX
-# Written by Nicolas Calimet <pov4grasp@free.fr>
+# Makefile.am for the source distribution of POV-Ray 3.7 for UNIX
+# Written by POV-Ray Bugtracker http://bugs.povray.org/
 
 # Directories.
 povlibdir = @datadir@/@PACKAGE@-@VERSION_BASE@
 povdocdir = @datadir@/doc/@PACKAGE@-@VERSION_BASE@
 povconfdir = @sysconfdir@/@PACKAGE@/@VERSION_BASE@
-povconfuser = $(HOME)/.@PACKAGE@/@VERSION_BASE@
+povuser = $(HOME)/.@PACKAGE@
+povconfuser = $(povuser)/@VERSION_BASE@
+povinstall = $(top_builddir)/install.log
+povowner = 0
+povgroup = 0
 
 # Directories to build.
-SUBDIRS = libraries source unix
+SUBDIRS = source vfe unix
 
 # Additional files to distribute.
 EXTRA_DIST = \
   bootstrap kde_install.sh \
-  doc icons include ini libraries scenes scripts \
-  povray.ini.in
+  doc icons include ini scenes scripts \
+  povray.ini.in changes.txt revision.txt
 
 # Additional files to clean with 'make distclean'.
-# Note the little ';' trick for CONFIG_CLEAN_FILES.
 DISTCLEANFILES = $(top_builddir)/povray.ini
 CONFIG_CLEAN_FILES = $(top_builddir)/source/jversion.h
 
@@ -51,7 +54,7 @@ check: all
 	$(top_builddir)/unix/povray +i$(top_srcdir)/scenes/advanced/biscuit.pov -f +d +p +v +w320 +h240 +a0.3 +L$(top_srcdir)/include
 
 # Install scripts in povlibdir.
-nobase_povlib_SCRIPTS = scripts/allanim.sh scripts/allscene.sh scripts/portfolio.sh scripts/render_anim.sh scripts/render_scene.sh scripts/rerunpov.sh scripts/runpov.sh
+nobase_povlib_SCRIPTS = scripts/allscene.sh scripts/render_anim.sh scripts/render_scene.sh scripts/portfolio.sh scripts/rerunpov.sh scripts/allanim.sh scripts/runpov.sh
 
 # Install documentation in povdocdir.
 povdoc_DATA = AUTHORS ChangeLog NEWS
@@ -67,78 +70,83 @@ povray.ini:
 # Install man page.
 dist_man_MANS = povray.1
 
-# Remove all unwanted files in unix and libraries for 'make dist'.
+# Remove all unwanted files for 'make dist(check)'.
 # Make all files user read-writeable.
 dist-hook:
-	rm -f ./@PACKAGE@-@VERSION@/source/jversion.h
-	rm -f `find ./@PACKAGE@-@VERSION@/libraries -name "*.o"`
-	rm -f `find ./@PACKAGE@-@VERSION@/libraries -name "lib*.a"`
-	rm -f `find ./@PACKAGE@-@VERSION@/libraries -name config.log`
-	rm -f `find ./@PACKAGE@-@VERSION@/libraries -name config.status`
-	rm -f `find ./@PACKAGE@-@VERSION@/libraries -name Makefile`
-	rm -f ./@PACKAGE@-@VERSION@/libraries/tiff/libtiff/mkg3states
-	rm -f ./@PACKAGE@-@VERSION@/libraries/tiff/libtiff/mkversion
-	rm -f ./@PACKAGE@-@VERSION@/libraries/tiff/libtiff/port.h
-	rm -f ./@PACKAGE@-@VERSION@/libraries/tiff/libtiff/tif_fax3sm.c
-	rm -f ./@PACKAGE@-@VERSION@/libraries/tiff/libtiff/tiffvers.h
-	rm -f ./@PACKAGE@-@VERSION@/libraries/tiff/port/install.sh
-	chmod -R u+rw ./@PACKAGE@-@VERSION@
-	chmod 655 ./@PACKAGE@-@VERSION@/scripts/*
+	chmod -R u+rw $(distdir)
+	chmod 755 $(distdir)/scripts/*
+	rm -f    `find $(distdir) -name "*.h.in~"`
+	rm -f -r `find $(distdir) -name autom4te.cache`
+	rm -f -r `find $(distdir) -name .libs`
+	rm -f    $(distdir)/source/jversion.h
 
 # Manage various data files for 'make install'.
+# Creates an install.log file to record created folders and files.
+# Folder paths are prepended (using POSIX printf) to ease later removal in 'make uninstall'.
+# Don't be too verbose so as to easily spot possible problems.
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(povlibdir)
-	@list='$(top_srcdir)/icons $(top_srcdir)/include $(top_srcdir)/ini $(top_srcdir)/scenes'; \
-	echo "Creating data directories..."; \
+	cat /dev/null > $(povinstall);
+	@echo "Creating data directories..."; \
+	list='$(top_srcdir)/icons $(top_srcdir)/include $(top_srcdir)/ini $(top_srcdir)/scenes'; \
 	dirlist=`find $$list -type d | sed s,$(top_srcdir)/,,`; \
-	for p in $$dirlist ; do \
-	  $(mkinstalldirs) $(DESTDIR)$(povlibdir)/$$p ; \
+	for p in "" $$dirlist ; do \
+	  $(mkdir_p) $(DESTDIR)$(povlibdir)/$$p && printf "%s\n" "$(DESTDIR)$(povlibdir)/$$p" "`cat $(povinstall)`" > $(povinstall); \
 	done; \
 	echo "Copying data files..."; \
 	filelist=`find $$list -type f | sed s,$(top_srcdir)/,,`; \
 	for f in $$filelist ; do \
-	  $(INSTALL_DATA) $(top_srcdir)/$$f $(DESTDIR)$(povlibdir)/$$f ; \
+	  $(INSTALL_DATA) $(top_srcdir)/$$f $(DESTDIR)$(povlibdir)/$$f && echo "$(DESTDIR)$(povlibdir)/$$f" >> $(povinstall); \
 	done
 	@echo "Creating documentation directories..."; \
-	$(mkinstalldirs) $(DESTDIR)$(povdocdir); \
 	dirlist=`find $(top_srcdir)/doc/ -type d | sed s,$(top_srcdir)/doc/,,`; \
-	for p in $$dirlist ; do \
-	  $(mkinstalldirs) $(DESTDIR)$(povdocdir)/$$p ; \
+	for p in "" $$dirlist ; do \
+	  $(mkdir_p) $(DESTDIR)$(povdocdir)/$$p && printf "%s\n" "$(DESTDIR)$(povdocdir)/$$p" "`cat $(povinstall)`" > $(povinstall); \
 	done
 	@echo "Copying documentation files..."; \
 	filelist=`find $(top_srcdir)/doc/ -type f | sed s,$(top_srcdir)/doc/,,`; \
 	for f in $$filelist ; do \
-	  $(INSTALL_DATA) $(top_srcdir)/doc/$$f $(DESTDIR)$(povdocdir)/$$f ; \
+	  $(INSTALL_DATA) $(top_srcdir)/doc/$$f $(DESTDIR)$(povdocdir)/$$f && echo "$(DESTDIR)$(povdocdir)/$$f" >> $(povinstall); \
+	done
+	@echo "Creating user directories..."; \
+	for p in $(povuser) $(povconfuser) ; do \
+	  $(mkdir_p) $$p && chown $(povowner) $$p && chgrp $(povgroup) $$p && printf "%s\n" "$$p" "`cat $(povinstall)`" > $(povinstall); \
 	done
 	@echo "Copying user configuration and INI files..."; \
-	$(mkinstalldirs) $(povconfuser); \
-	filelist='povray.conf povray.ini'; \
-	for f in $$filelist ; do \
-	  if test -e $(povconfuser)/$$f; then \
+	for f in povray.conf povray.ini ; do \
+	  if test -f $(povconfuser)/$$f; then \
 	    echo "Creating backup of $(povconfuser)/$$f"; \
 	    mv -f $(povconfuser)/$$f $(povconfuser)/$$f.bak; \
 	  fi; \
 	done; \
-	$(INSTALL_DATA) $(top_srcdir)/povray.conf $(povconfuser)/povray.conf ; \
-	$(INSTALL_DATA) $(top_builddir)/povray.ini $(povconfuser)/povray.ini
+	$(INSTALL_DATA) $(top_srcdir)/povray.conf $(povconfuser)/povray.conf && chown $(povowner) $(povconfuser)/povray.conf && chgrp $(povgroup) $(povconfuser)/povray.conf  && echo "$(povconfuser)/povray.conf" >> $(povinstall); \
+	$(INSTALL_DATA) $(top_builddir)/povray.ini $(povconfuser)/povray.ini && chown $(povowner) $(povconfuser)/povray.ini && chgrp $(povgroup) $(povconfuser)/povray.ini  && echo "$(povconfuser)/povray.ini" >> $(povinstall)
 
-# For 'make uninstall' we remove the whole POV-Ray data directory.
-# We have to use uninstall-local and not uninstall-data-local.
-uninstall-local:
-	-rm -f -r $(DESTDIR)$(povlibdir)
-	-rm -f -r $(DESTDIR)$(povdocdir)
-	-rm -f $(DESTDIR)$(povconfdir)/povray.ini
-	if test -d $(DESTDIR)$(povconfdir) && test -z "`ls -A $(DESTDIR)$(povconfdir)`"; then \
-	  rm -f -r $(DESTDIR)$(povconfdir); \
-	fi
-	if test -d $(DESTDIR)$(sysconfdir)/@PACKAGE@ && test -z "`ls -A $(DESTDIR)$(sysconfdir)/@PACKAGE@`"; then \
-	  rm -f -r $(DESTDIR)$(sysconfdir)/@PACKAGE@; \
-	fi
-	-rm -f $(HOME)/.@PACKAGE@/@VERSION_BASE@/povray.conf
-	-rm -f $(HOME)/.@PACKAGE@/@VERSION_BASE@/povray.ini
-	if test -d $(HOME)/.@PACKAGE@/@VERSION_BASE@ && test -z "`ls -A $(HOME)/.@PACKAGE@/@VERSION_BASE@`"; then \
-	  rm -f -r $(HOME)/.@PACKAGE@/@VERSION_BASE@; \
-	fi
-	if test -d $(HOME)/.@PACKAGE@ && test -z "`ls -A $(HOME)/.@PACKAGE@`"; then \
-	  rm -f -r $(HOME)/.@PACKAGE@; \
-	fi
+# Remove data, config, and empty folders for 'make uninstall'.
+# Use 'hook' instead of 'local' so as to properly remove *empty* folders (e.g. scripts).
+# The last echo prevents getting error from failed rmdir command.
+uninstall-hook:
+	@if test -f $(top_builddir)/install.log ; then \
+	  rmdir $(DESTDIR)$(povlibdir)/scripts; \
+	  echo "Using install info from $(top_builddir)/install.log"; \
+	  echo "Removing data, documentation, and configuration files..."; \
+	  for f in `cat $(top_builddir)/install.log` ; do \
+	    test -f $$f && rm -f $$f ; \
+	  done; \
+	  echo "Removing empty directories..."; \
+	  for f in `cat $(top_builddir)/install.log` ; do \
+	    test -d $$f && rmdir $$f ; \
+	  done; \
+	  echo "Removing $(top_builddir)/install.log" && rm -f $(top_builddir)/install.log ; \
+	else \
+	  "Removing all data unconditionally"; \
+	  rm -f -r $(DESTDIR)$(povlibdir); \
+	  rm -f -r $(DESTDIR)$(povdocdir); \
+	  rm -f    $(DESTDIR)$(povconfdir)/povray.ini; \
+	  rmdir    $(DESTDIR)$(povconfdir); \
+	  rmdir    $(DESTDIR)$(sysconfdir)/@PACKAGE@; \
+	  rm -f    $(povconfuser)/povray.conf; \
+	  rm -f    $(povconfuser)/povray.ini; \
+	  rmdir    $(povconfuser); \
+	  rmdir    $(povuser); \
+	fi; \
+	echo "Uninstall finished"

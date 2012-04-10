@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: rad_def_test.pov
-// Vers: 3.5
 // Desc: rad_def.inc demo scene
 // Date: May 2001
 // Auth: Christoph Hormann
@@ -8,9 +7,11 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
+
 #include "rad_def.inc"
 global_settings {
-  assumed_gamma 1
+  assumed_gamma 1.0
   radiosity {
     Rad_Settings(Radiosity_Default, off, off)
     //Rad_Settings(Radiosity_Debug, off, off)

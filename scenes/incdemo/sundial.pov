@@ -1,4 +1,4 @@
-// Persistence Of Vision Ray Tracer Scene Description File
+// Persistence Of Vision Raytracer Scene Description File
 // File: sundial.pov
 // Desc: Horizontal and vertical sundail
 //       This sundial model is NOT suitable for the southern hemisphere,
@@ -16,9 +16,10 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-#include "sunpos.inc"
+#version 3.6;
+global_settings { assumed_gamma 1.0 }
 
-global_settings {assumed_gamma 1}
+#include "sunpos.inc"
 
 camera {
    location  <3.0, 5.0, -5.0>

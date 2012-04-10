@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File: phot_met_glass.pov
 // Desc: metal, glass and photons sample
 // Date: August 2001
@@ -7,15 +7,14 @@
 // -w320 -h160
 // -w512 -h256 +a0.3
 
-#version 3.5;
+#version 3.6;
 
 #include "colors.inc"
 #include "glass.inc"
 
 global_settings {
-  assumed_gamma 1
+  assumed_gamma 1.0
   max_trace_level 25
-
   photons {
     spacing 0.03
     autostop 0

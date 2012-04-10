@@ -2,8 +2,10 @@
 //
 // -w320 -h320
 // -w800 -h800 +a0.3
-
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+global_settings { 
+  assumed_gamma 2.2
+}
 
 julia_fractal {
         <.49,.5,-.34,.1>

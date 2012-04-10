@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: PovCatRay.pov
-// Vers: 3.5
 // Desc: A cool cat and his gang
 // Date: 1999/12/04
 // Updated: 2001/07/27
@@ -9,9 +8,13 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 //
+ 
+#version 3.6;
 
-#version 3.5;
-global_settings {assumed_gamma 1.0}
+global_settings {
+  assumed_gamma 1.0
+}
+
 #include "cattext.inc"
 
 // A basic hair creation macro

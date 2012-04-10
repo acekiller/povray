@@ -3,6 +3,11 @@
 //    Last updated: 2001.8.19
 //	   Author: Christoph Hormann
 //    Description: Glass materials using new POV 3.5 features.
+//
+//    Upated: 07Aug2008 (jh)
+//    Use these pigments, finishes and interiors to make a glass "material"
+//    Converted glass_old textures to materials.
+//    See glass_old.inc for examples
 
 #ifndef(Glass_Inc_Temp)
 #declare Glass_Inc_Temp=version;
@@ -98,8 +103,8 @@
 #declare Col_Azurite_04=color rgb<0.1137, 0.1569, 0.4471>;
 
 #declare Col_Citrine_01=color rgb<0.3020, 0.2314, 0.1529>;
-#declare Col_Citrine_01=color rgb<0.4667, 0.3804, 0.2980>;
-#declare Col_Citrine_01=color rgb<0.5020, 0.4118, 0.3529>;
+#declare Col_Citrine_02=color rgb<0.4667, 0.3804, 0.2980>;
+#declare Col_Citrine_03=color rgb<0.5020, 0.4118, 0.3529>;
 
 #declare Col_Emerald_01=color rgb<0.0471, 0.4000, 0.2549>;
 #declare Col_Emerald_02=color rgb<0.2157, 0.6353, 0.4902>;

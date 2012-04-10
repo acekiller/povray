@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File: micro.pov
 // Author: Chris Huff
 // Desc: Playing with emitting media...resembles something under a microscope
@@ -6,13 +6,13 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
+
 #include "colors.inc"
 #include "functions.inc"
 
-#version 3.5;
-
 global_settings {
-    assumed_gamma 1
+  assumed_gamma 2.2
 }
 
 #default {finish {ambient 0}}

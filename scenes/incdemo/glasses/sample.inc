@@ -1,4 +1,4 @@
-// Persistence of Vision Ray Tracer Scene Description File
+// Persistence of Vision Raytracer Scene Description File
 // File: sample.inc
 // Vers: 3.5
 // Desc: general demonstration scene for materials

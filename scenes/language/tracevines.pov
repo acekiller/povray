@@ -1,4 +1,4 @@
-//    Persistence of Vision Raytracer Version 3.5 Scene Description File
+//    Persistence of Vision Raytracer Scene Description File
 //    File: tracevines.pov
 //    Author: Ron Parker
 //    Description: Algorithm shamelessly lifted from
@@ -10,6 +10,9 @@
 // -w800 -h600 +a0.3
 //
 //*******************************************
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 #macro Interfere( A, B, Object )
   #local N=<0,0,0>;

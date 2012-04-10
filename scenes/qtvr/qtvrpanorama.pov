@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: qtvrPanorama.pov
-// Vers: 3
 // Desc: Show how to design a QuickTime VR panoramic movie file.
 //       After rendering this at 384x1248, you need to use
 //       Apple's free application "Make QTVR Panorama" to
@@ -19,16 +18,14 @@
 //
 // -w384 -h1284
 
-#version 3.5;
-
-#include "colors.inc"
-#include "metals.inc"
-
-global_settings
-{
+#version 3.6;
+global_settings {
   assumed_gamma 1.0
   max_trace_level 5
 }
+
+#include "colors.inc"
+#include "metals.inc"
 
 // ----------------------------------------
 camera

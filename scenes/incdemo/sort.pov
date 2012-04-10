@@ -1,10 +1,13 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	Author: Juha Nieminen
 //	Description:
 // Example scene demonstrating the use of the Sort_Array() macro.
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
+
+#version 3.6
+global_settings {assumed_gamma 1.0}
 
 camera { orthographic location -z*10 look_at 0 }
 #default { finish { phong 1 phong_size 5 } }

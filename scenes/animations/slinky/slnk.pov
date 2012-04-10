@@ -1,8 +1,11 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Slinky.pov
 // Three sets of perpendicular rings whose count and position varies
 // as it breathes in and out
 // 01/10/95 - Jeff Bowermaster
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 #declare d = 3.45+1*sin(2*pi*clock);
 #declare d_angle=pow(2,d);

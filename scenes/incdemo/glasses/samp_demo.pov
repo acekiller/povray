@@ -1,11 +1,13 @@
-// Persistence Of Vision Ray Tracer Scene Description File
+// Persistence Of Vision Raytracer Scene Description File
 // File: samp_demo.pov
-// Vers: 3.5
 // Desc: demonstrating use of 'sample.inc'
 // Date: July/August 2001
 // Auth: Christoph Hormann
 
 // -w320 -h240 +sf1 +ef6 +kff10
+
+#version 3.6;
+global_settings { assumed_gamma 1.0 }
 
 #if (!clock_on)
   #warning concat("This scene should be rendered as an animation\n",
@@ -13,7 +15,6 @@
 #end
 
 global_settings {
-  assumed_gamma 1
   max_trace_level 5
 }
 

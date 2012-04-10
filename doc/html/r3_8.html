@@ -1,0 +1,2023 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--  This file copyright Persistence of Vision Raytracer Pty. Ltd. 2009-2011  -->
+
+<html lang="en">
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<title>Reference Section 8</title>
+<link rel="StyleSheet" href="povray37.css" type="text/css">
+<link rel="shortcut icon" href="favicon.ico">
+
+<!--  NOTE: In order to help users find information about POV-Ray using web      -->
+<!--  search engines, we ask that you *not* let them index documentation         -->
+<!--  mirrors because effectively, when searching, users will get hundreds of    -->
+<!--  results containing the same information! For this reason, these meta tags  -->
+<!--  below disable archiving of this page by search engines.                    -->
+
+<meta name="robots" content="noarchive">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+</head>
+<body>
+
+<div class="Page">
+
+<!-- NavPanel Begin -->
+<div class="NavPanel">
+<table class="NavTable">
+<tr>
+  <td class="FixedPanelHeading"><a title="3.8" href="#r3_8">Quick Reference</a></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.1" href="#r3_8_1">Quick Reference Contents</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.2" href="#r3_8_2">The Scene</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.3" href="#r3_8_3">Language Basics</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.3.1" href="#r3_8_3_1">Floats</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.3.2" href="#r3_8_3_2">Vectors</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.3.3" href="#r3_8_3_3">Colors</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.3.4" href="#r3_8_3_4">User defined Functions</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.3.5" href="#r3_8_3_5">Strings</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.3.6" href="#r3_8_3_6">Arrays</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.3.7" href="#r3_8_3_7">Splines</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.4" href="#r3_8_4">Language Directives</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.1" href="#r3_8_4_1">File Inclusion</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.2" href="#r3_8_4_2">Identifier Declaration</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.3" href="#r3_8_4_3">File Input/Output</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.4" href="#r3_8_4_4">Default Texture</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.5" href="#r3_8_4_5">Version Identifier</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.6" href="#r3_8_4_6">Control Flow Directives</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.7" href="#r3_8_4_7">Message Streams</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.8" href="#r3_8_4_8">Macro</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.4.9" href="#r3_8_4_9">Embedded Directives</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.5" href="#r3_8_5">Transformations</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.6" href="#r3_8_6">Camera</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.7" href="#r3_8_7">Lights</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.7.1" href="#r3_8_7_1">Lightgroup</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.8" href="#r3_8_8">Objects</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.8.1" href="#r3_8_8_1">Finite Solid Objects</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.8.2" href="#r3_8_8_2">Finite Patch Objects</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.8.3" href="#r3_8_8_3">Infinite Solid Objects</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.8.4" href="#r3_8_8_4">CSG</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.9" href="#r3_8_9">Object Modifiers</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.9.1" href="#r3_8_9_1">UV Mapping</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.9.2" href="#r3_8_9_2">Material</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.9.3" href="#r3_8_9_3">Interior</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.9.4" href="#r3_8_9_4">Interior Texture</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.10" href="#r3_8_10">Texture</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.10.1" href="#r3_8_10_1">Plain Texture</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.10.2" href="#r3_8_10_2">Layered Texture</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.10.3" href="#r3_8_10_3">Patterned Texture</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.10.4" href="#r3_8_10_4">Pigment</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.10.5" href="#r3_8_10_5">Normal</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.10.6" href="#r3_8_10_6">Finish</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.10.7" href="#r3_8_10_7">Pattern</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.10.8" href="#r3_8_10_8">Pattern Modifiers</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.11" href="#r3_8_11">Media</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.12" href="#r3_8_12">Atmospheric Effects</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.12.1" href="#r3_8_12_1">Background</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.12.2" href="#r3_8_12_2">Fog</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.12.3" href="#r3_8_12_3">Sky Sphere</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.12.4" href="#r3_8_12_4">Rainbow</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.8.13" href="#r3_8_13">Global Settings</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.13.1" href="#r3_8_13_1">Radiosity</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.13.2" href="#r3_8_13_2">Photons</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.8.13.3" href="#r3_8_13_3">Subsurface</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh1">&nbsp;</div></td>
+</tr>
+<tr>
+  <td><div class="divh1">&nbsp;</div></td>
+</tr>
+</table>
+</div>
+<!-- NavPanel End -->
+
+<div class="Content">
+<table class="HeaderFooter" width="100%">
+<tr>
+  <td colspan=5 align="left" class="HeaderFooter">
+    POV-Ray for Unix <strong class="HeaderFooter">version 3.7</strong>
+  </td>
+</tr>
+<tr >
+  <td colspan=5>
+    <hr align="right" width="70%">
+  </td>
+</tr>
+<tr>
+  <td width="30%"></td>
+  <td class="NavBar"><a href="index.html" title="The Front Door">Home</a></td>
+  <td class="NavBar"><a href="u1_0.html" title="Unix Table of Contents">POV-Ray for Unix</a></td>
+  <td class="NavBar"><a href="t2_0.html" title="Tutorial Table of Contents">POV-Ray Tutorial</a></td>
+  <td class="NavBar"><a href="r3_0.html" title="Reference Table of Contents">POV-Ray Reference</a></td>
+</tr>
+</table>
+
+<a name="r3_8"></a>
+<div class="content-level-h2" contains="Quick Reference" id="r3_8">
+<h2>3.8 Quick Reference</h2>
+<p>This is a consolidation of the entire syntax for the POV-Ray's Scene Description Language.  Note that the syntax
+conventions used here are slightly different than those used in the user documentation.</p>
+
+<p>The following syntax conventions are used:</p>
+<dl class="Explain">
+<dt><code>ITEM</code></dt>
+<dd>An item not in brackets indicates that it is a required item.</dd>
+<dt><code>[ITEM]</code></dt>
+<dd>Brackets surround an optional item.  If brackets are part of the item, that is noted where applicable.</dd>
+<dt><code>ITEM...</code></dt>
+<dd>An ellipsis indicates an item that may be used one or more times.</dd>
+<dt><code>[ITEM...]</code></dt>
+<dd>An ellipsis within brackets indicates an item that may be used zero or more times.</dd>
+<dt><code>ITEM&nbsp;ITEM</code></dt>
+<dd>Two or more juxtaposed items indicates that they should be used in the given order.</dd>
+<dt><code>ITEM&nbsp;|&nbsp;ITEM</code></dt>
+<dd>A pipe separates two or more alternatives from which only one item should be used.</dd>
+<dt><code>ITEM&nbsp;&amp;&nbsp;ITEM&nbsp;&nbsp;</code></dt>
+<dd>An ampersand separates two or more items that may be used in any order.</dd>
+</dl>
+
+<p>Juxtaposition has precedence over the pipe or ampersand.  In the following example, you would select one of the keyword and vector pairs.  For that last pair, the keyword itself is optional.</p>
+
+<p class="Explain"><strong><code>rgb</code></strong>&nbsp;3D_VECTOR | <strong><code>rgbf</code></strong>&nbsp;4D_VECTOR | <strong><code>rgbt</code></strong>&nbsp;4D_VECTOR | [<strong><code>rgbft</code></strong>]&nbsp;5D_VECTOR</p>
+
+<p>Some item names are simply descriptive in nature.  An indication of the item's type is given by a prefix on the item name, as follows:</p>
+<dl class="Explain" compact>
+<dt><code>F_</code></dt>
+<dd>A FLOAT item</dd>
+<dt><code>I_</code></dt>
+<dd>An INT item</dd>
+<dt><code>V_</code></dt>
+<dd>A VECTOR item</dd>
+<dt><code>V4_&nbsp;</code></dt>
+<dd>A 4-D VECTOR item</dd>
+</dl>
+
+<p class="Note"><strong>Note:</strong> This document provides only the syntax of the Scene Description Language (SDL). 
+The intent is to provide a single reference for all statements and keywords. It does not provide definitions for the numerous keywords nor explain their usage.</p>
+</div>
+<a name="r3_8_1"></a>
+<div class="content-level-h3" contains="Quick Reference Contents" id="r3_8_1">
+<h3>3.8.1 Quick Reference Contents</h3>
+<table class="Contents" summary="Quick Reference Overview" width="100%">
+<tr valign="top">
+<td width="50%">
+<dl>
+<dt><a href="r3_8.html#r3_8_2">The Scene</a></dt>                  
+<dt><a href="r3_8.html#r3_8_3">Language Basics</a></dt>           
+<dd><a href="r3_8.html#r3_8_3_1">Floats</a></dd>         
+<dd><a href="r3_8.html#r3_8_3_2">Vectors</a></dd>                     
+<dd><a href="r3_8.html#r3_8_3_3">Colors</a></dd>                     
+<dd><a href="r3_8.html#r3_8_3_4">User-Defined Functions</a></dd>    
+<dd><a href="r3_8.html#r3_8_3_5">Strings</a></dd>                    
+<dd><a href="r3_8.html#r3_8_3_6">Arrays</a></dd>                     
+<dd><a href="r3_8.html#r3_8_3_7">Splines</a></dd>                     
+<dt><a href="r3_8.html#r3_8_4">Language Directives</a></dt>        
+<dd><a href="r3_8.html#r3_8_4_1">File Inclusion</a></dd>             
+<dd><a href="r3_8.html#r3_8_4_2">Identifier Declaration</a></dd>    
+<dd><a href="r3_8.html#r3_8_4_3">File Input/Output</a></dd>         
+<dd><a href="r3_8.html#r3_8_4_4">Default Texture</a></dd>           
+<dd><a href="r3_8.html#r3_8_4_5">Version Compatibility</a></dd>     
+<dd><a href="r3_8.html#r3_8_4_6">Conditional Directives</a></dd>    
+<dd><a href="r3_8.html#r3_8_4_7">Message Streams</a></dd>           
+<dd><a href="r3_8.html#r3_8_4_8">Macros</a></dd>
+<dd><a href="r3_8.html#r3_8_4_9">Embedded Directives</a></dd>                    
+<dt><a href="r3_8.html#r3_8_5">Transformations</a></dt>              
+<dt><a href="r3_8.html#r3_8_6">Camera</a></dt>
+<dt><a href="r3_8.html#r3_8_7">Lights</a></dt>                      
+<dd><a href="r3_8.html#r3_8_7">Light Source</a></dd>
+<dd><a href="r3_8.html#r3_8_7_1">Light Group</a></dd>                
+<dt><a href="r3_8.html#r3_8_8">Objects</a></dt>
+<dd><a href="r3_8.html#r3_8_8_1">Finite Solid Objects</a></dd>
+<dd><a href="r3_8.html#r3_8_8_2">Finite Patch Objects</a></dd>
+<dd><a href="r3_8.html#r3_8_8_3">Infinite Solid Objects</a></dd>
+<dd><a href="r3_8.html#r3_8_8_4">Constructive Solid Geometry</a></dd>
+</dl>
+</td>
+<td width="50%">
+<dl>
+<dt><a href="r3_8.html#r3_8_9">Object Modifiers</a></dt>
+<dd><a href="r3_8.html#r3_8_9_1">UV Mapping</a></dd>
+<dd><a href="r3_8.html#r3_8_9_2">Material</a></dd>
+<dd><a href="r3_8.html#r3_8_9_3">Interior</a></dd>
+<dd><a href="r3_8.html#r3_8_9_4">Interior Texture</a></dd>
+<dt><a href="r3_8.html#r3_8_10">Texture</a></dt>
+<dd><a href="r3_8.html#r3_8_10_1">Plain Texture</a></dd>
+<dd><a href="r3_8.html#r3_8_10_2">Layered Texture</a></dd>
+<dd><a href="r3_8.html#r3_8_10_3">Patterned Texture</a></dd>
+<dd><a href="r3_8.html#r3_8_10_4">Pigment</a></dd>
+<dd><a href="r3_8.html#r3_8_10_5">Normal</a></dd>
+<dd><a href="r3_8.html#r3_8_10_6">Finish</a></dd>
+<dd><a href="r3_8.html#r3_8_10_7">Pattern</a></dd>
+<dd><a href="r3_8.html#r3_8_10_8">Pattern Modifiers</a></dd>
+<dt><a href="r3_8.html#r3_8_11">Media</a></dt>
+<dt><a href="r3_8.html#r3_8_12">Atmospheric Effects</a></dt>
+<dd><a href="r3_8.html#r3_8_12_1">Background</a></dd>
+<dd><a href="r3_8.html#r3_8_12_2">Fog</a></dd>
+<dd><a href="r3_8.html#r3_8_12_3">Sky Sphere</a></dd>
+<dd><a href="r3_8.html#r3_8_12_4">Rainbow</a></dd>
+<dt><a href="r3_8.html#r3_8_13">Global Settings</a></dt>
+<dd><a href="r3_8.html#r3_8_13_1">Radiosity</a></dd>
+<dd><a href="r3_8.html#r3_8_13_2">Photons</a></dd>
+<dd><a href="r3_8.html#r3_8_13_3">Subsurface</a></dd>
+</dl>
+</td>
+</tr>
+</table>
+
+</div>
+<a name="r3_8_2"></a>
+<div class="content-level-h3" contains="The Scene" id="r3_8_2">
+<h3>3.8.2 The Scene</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Describe a POV-Ray scene:</dt>
+<dt>SCENE:</dt>
+<dd><code>SCENE_ITEM...</code></dd>
+<dt>SCENE_ITEM:</dt>
+<dd><code>LANGUAGE_DIRECTIVE | CAMERA | LIGHT | OBJECT | ATMOSPHERIC_EFFECT | GLOBAL_SETTINGS</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_3"></a>
+<div class="content-level-h3" contains="Language Basics" id="r3_8_3">
+<h3>3.8.3 Language Basics</h3>
+</div>
+<a name="r3_8_3_1"></a>
+<div class="content-level-h4" contains="Floats" id="r3_8_3_1">
+<h4>3.8.3.1 Floats</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Float Expressions</dt>
+<dt>FLOAT:</dt>  
+<dd><code>NUMERIC_TERM [SIGN NUMERIC_TERM]...</code></dd>
+<dt>SIGN:</dt>  
+<dd><code><strong>+</strong> | <strong>-</strong></code></dd>
+<dt>NUMERIC_TERM:</dt>
+<dd><code>NUMERIC_FACTOR [MULT NUMERIC_FACTOR]...</code></dd>
+<dt>MULT:</dt>
+<dd><code><strong>*</strong> | <strong>/</strong></code></dd>
+<dt>NUMERIC_FACTOR:</dt>
+<dd><code>FLOAT_LITERAL | FLOAT_IDENTIFIER | SIGN&nbsp;NUMERIC_FACTOR | FLOAT_FUNCTION | FLOAT_BUILT_IN_IDENT |
+<strong>(</strong>&nbsp;FULL_EXPRESSION&nbsp;<strong>)</strong> | <strong>!</strong>&nbsp;NUMERIC_FACTOR | VECTOR_FACTOR DECIMAL_POINT DOT_ITEM | <a href="r3_8.html#r3_8_3_4">FLOAT_FUNCTION_INVOCATION</a></code></dd>
+<dt>FLOAT_LITERAL:</dt>
+<dd><code>MANTISSA [EXP [SIGN] DIGIT...]</code></dd>
+<dt>MANTISSA:</dt>
+<dd><code>DIGIT... [DECIMAL_POINT [DIGIT...]] | DECIMAL_POINT DIGIT...</code></dd>
+<dt>DIGIT:</dt>
+<dd><code><strong>0</strong> | <strong>1</strong> | <strong>2</strong> | <strong>3</strong> | <strong>4</strong> | <strong>5</strong> | <strong>6</strong> | <strong>7</strong> | <strong>8</strong> | <strong>9</strong></code></dd>
+<dt>DECIMAL_POINT:</dt>
+<dd><code>.</code></dd>
+<dt>EXP:</dt>
+<dd><code><strong>e</strong> | <strong>E</strong></code></dd>
+<dt>FLOAT_FUNCTION:</dt>
+<dd><code><strong>abs&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>acos&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>acosh&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>asc&nbsp;(</strong>STRING<strong>)</strong> | <strong>asin&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>asinh&nbsp;(</strong>FLOAT<strong>)</strong> |
+<strong>atan&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>atanh&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>atan2&nbsp;(</strong>FLOAT,FLOAT<strong>)</strong> | <strong>ceil&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>cos&nbsp;(</strong>FLOAT<strong>)</strong> |
+<strong>cosh&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>defined&nbsp;(</strong>IDENTIFIER<strong>)</strong> | <strong>degrees&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>dimensions&nbsp;(</strong>ARRAY_IDENTIFIER<strong>)</strong> |
+<strong>dimension_size&nbsp;(</strong>ARRAY_IDENTIFIER,INT<strong>)</strong> | <strong>div&nbsp;(</strong>FLOAT,FLOAT<strong>)</strong> | <strong>exp&nbsp;(</strong>FLOAT<strong>)</strong> |
+<strong>file_exists&nbsp;(</strong>STRING<strong>)</strong> | <strong>floor&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>int&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>inside&nbsp;(</strong>SOLID_OBJECT_IDENT, VECTOR<strong>)</strong> | <strong>ln&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>log&nbsp;(</strong>FLOAT<strong>)</strong> |
+<strong>max&nbsp;(</strong>FLOAT,FLOAT[,FLOAT]...<strong>)</strong> | <strong>min&nbsp;(</strong>FLOAT,FLOAT[,FLOAT]...<strong>)</strong> | <strong>mod&nbsp;(</strong>FLOAT,FLOAT<strong>)</strong> | <strong>pow&nbsp;(</strong>FLOAT,FLOAT<strong>)</strong> |
+<strong>radians&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>rand&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>seed&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>select&nbsp;(</strong>FLOAT,FLOAT,FLOAT,[FLOAT]<strong>)</strong> | <strong>sin&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>sinh&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>sqrt&nbsp;(</strong>FLOAT<strong>)</strong> |
+<strong>strcmp&nbsp;(</strong>STRING,STRING<strong>)</strong> | <strong>strlen&nbsp;(</strong>STRING<strong>)</strong> | <strong>tan&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>tanh&nbsp;(</strong>FLOAT<strong>)</strong> | <strong>val&nbsp;(</strong>STRING<strong>)</strong> |
+<strong>vdot&nbsp;(</strong>VECTOR,VECTOR<strong>)</strong> | <strong>vlength&nbsp;(</strong>VECTOR<strong>)</strong></code></dd>
+<dt>FLOAT_BUILT_IN_IDENT:</dt>
+<dd><code>BOOLEAN_KEYWORD | <strong>clock</strong> | <strong>clock_delta</strong> | <strong>clock_on</strong> | <strong>final_clock</strong> | <strong>final_frame</strong> |
+<strong>frame_number</strong> | <strong>image_height</strong> | <strong>image_width</strong> | <strong>initial_clock</strong> | <strong>initial_frame</strong> | <strong>pi</strong> | <strong>version</strong></code></dd>
+<dt>BOOLEAN_KEYWORD:</dt>
+<dd><code><strong>true</strong> | <strong>yes</strong> | <strong>on</strong> | <strong>false</strong> | <strong>no</strong> | <strong>off</strong></code></dd>
+<dt>FULL_EXPRESSION:</dt>
+<dd><code>FLOAT | LOGICAL_EXPRESSION [<strong>?</strong> FULL_EXPRESSION <strong>:</strong> FULL_EXPRESSION]</code></dd>
+<dt>LOGICAL_EXPRESSION:</dt>
+<dd><code>REL_TERM [LOGICAL_OPERATOR REL_TERM]...</code></dd>
+<dt>LOGICAL_OPERATOR:</dt> 
+<dd><code><strong>&amp;</strong> | <strong>|</strong></code></dd>
+<dt>REL_TERM:</dt>
+<dd><code>FLOAT [REL_OPERATOR FLOAT]... | STRING REL_OPERATOR STRING</code></dd>
+<dt>REL_OPERATOR:</dt>
+<dd><code><strong>&lt;</strong> | <strong>&lt;=</strong> | <strong>=</strong> | <strong>&gt;=</strong> | <strong>&gt;</strong> | <strong>!=</strong></code></dd>
+<dt>DOT_ITEM:</dt>
+<dd><code><strong>x</strong> | <strong>y</strong> | <strong>z</strong> | <strong>t</strong> | <strong>u</strong> | <strong>v</strong> | <strong>red</strong> | <strong>green</strong> | <strong>blue</strong> | <strong>filter</strong> | <strong>transmit</strong> | <strong>gray</strong></code></dd>
+<dt>INT:</dt>
+<dd><code>FLOAT</code></dd>
+<dd class="ItemNote">Any fractional part is discarded.</dd>
+<dt>BOOL:</dt>
+<dd><code>BOOLEAN_KEYWORD | LOGICAL_EXPRESSION</code></dd>
+<dt>&nbsp;</dt>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_3_2"></a>
+<div class="content-level-h4" contains="Vectors" id="r3_8_3_2">
+<h4>3.8.3.2 Vectors</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Vector Expressions</dt>
+<dt>VECTOR:</dt>
+<dd><code>VECTOR_TERM [SIGN VECTOR_TERM]...</code></dd>
+<dt>VECTOR_TERM:</dt>
+<dd><code>VECTOR_FACTOR [MULT VECTOR_FACTOR]...</code></dd>
+<dt>VECTOR_FACTOR:</dt>
+<dd><code>VECTOR_LITERAL | VECTOR_IDENTIFIER | SIGN&nbsp;VECTOR_FACTOR | VECTOR_FUNCTION | VECTOR_BUILT_IN_IDENT | (&nbsp;VECTOR_FULL_EXPRESSION&nbsp;) |
+<strong>!</strong>&nbsp;VECTOR_FACTOR | FLOAT_FACTOR |
+<a href="r3_8.html#r3_8_3_4">VECTOR_FUNCTION_INVOCATION</a> |
+<a href="r3_8.html#r3_8_3_4">COLOR_FUNCTION_INVOCATION</a> |
+<a href="r3_8.html#r3_8_3_7">SPLINE_INVOCATION</a></code></dd>
+<dt>VECTOR_LITERAL:</dt>
+<dd><code><strong>&lt;</strong> FLOAT, FLOAT [, FLOAT [, FLOAT [, FLOAT ]]] <strong>&gt;</strong></code></dd>
+<dt>VECTOR_FUNCTION:</dt>
+<dd><code><strong>min_extent&nbsp;(</strong>OBJECT_IDENTIFIER<strong>)</strong> | <strong>max_extent&nbsp;(</strong>OBJECT_IDENTIFIER<strong>)</strong> |
+<strong>trace&nbsp;(</strong>OBJECT_IDENTIFIER,VECTOR,VECTOR[,VECTOR_IDENTIFIER]<strong>)</strong> |
+<strong>vaxis_rotate&nbsp;(</strong>VECTOR,VECTOR,FLOAT<strong>)</strong> | <strong>vcross&nbsp;(</strong>VECTOR,VECTOR<strong>)</strong> | <strong>vrotate&nbsp;(</strong>VECTOR,VECTOR<strong>)</strong> |
+<strong>vnormalize&nbsp;(</strong>VECTOR<strong>)</strong> | <strong>vturbulence&nbsp;(</strong>FLOAT,FLOAT,FLOAT,VECTOR<strong>)</strong></code></dd>
+<dt>VECTOR_BUILT_IN_IDENT:</dt> 
+<dd><code><strong>x</strong> | <strong>y</strong> | <strong>z</strong> | <strong>t</strong> | <strong>u</strong> | <strong>v</strong></code></dd>
+<dt>VECTOR_FULL_EXPRESSION:</dt>
+<dd><code>VECTOR | LOGICAL_EXPRESSION <strong>?</strong> VECTOR_FULL_EXPRESSION <strong>:</strong> VECTOR_FULL_EXPRESSION</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_3_3"></a>
+<div class="content-level-h4" contains="Colors" id="r3_8_3_3">
+<h4>3.8.3.3 Colors</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Color Expressions</dt>
+<dt>COLOR:</dt>
+<dd><code>[<strong>color</strong>] COLOR_BODY | <strong>colour</strong> COLOR_BODY</code></dd>
+<dt>COLOR_BODY:</dt>
+<dd><code>COLOR_VECTOR | COLOR_KEYWORD_GROUP | COLOR_IDENTIFIER</code></dd>
+<dt>COLOR_VECTOR:</dt>
+<dd><code><strong>rgb</strong> 3D_VECTOR | <strong>rgbf</strong> 4D_VECTOR | <strong>rgbt</strong> 4D_VECTOR | [<strong>rgbft</strong>] 5D_VECTOR | <strong>srgb</strong> 3D_VECTOR | <strong>srgbf</strong> 4D_VECTOR | <strong>srgbt</strong> 4D_VECTOR | <strong>srgbft</strong> 5D_VECTOR</code></dd>
+<dt>COLOR_KEYWORD_GROUP:</dt>
+<dd><code>[COLOR_IDENTIFIER] COLOR_KEYWORD_ITEMS</code></dd>
+<dt>COLOR_KEYWORD_ITEMS:</dt>
+<dd><code>[<strong>red</strong> FLOAT] &amp; [<strong>green</strong> FLOAT] &amp; [<strong>blue</strong> FLOAT] &amp; [<strong>filter</strong> FLOAT] &amp; [<strong>transmit</strong> FLOAT]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_3_4"></a>
+<div class="content-level-h4" contains="User defined Functions" id="r3_8_3_4">
+<h4>3.8.3.4 User defined Functions</h4>
+<dl class="Syntax">
+<dt class="SubDesc">User-Defined Functions</dt>
+<dt>USER_FUNCTION:</dt>
+<dd><code>FLOAT_USER_FUNCTION | VECTOR_USER_FUNCTION | COLOR_USER_FUNCTION</code></dd>
+<dt>FLOAT_USER_FUNCTION:</dt>
+<dd><code><strong>function&nbsp;{</strong>&nbsp;FN_FLOAT&nbsp;<strong>}</strong> | <strong>function&nbsp;(</strong>IDENT_LIST<strong>)&nbsp;{</strong>&nbsp;FN_FLOAT&nbsp;<strong>}</strong> | <strong>function&nbsp;{&nbsp;pattern&nbsp;{</strong>&nbsp;PATTERN&nbsp;[PATTERN_MODIFIERS]<strong>}&nbsp;}</strong></code></dd>
+<dt>IDENT_LIST:</dt>
+<dd><code>IDENT_ITEM [, IDENT_LIST]</code></dd>
+<dd class="ItemNote">The maximum number of parameter identifiers is 56.  An identifier may not be repeated in the list.</dd>
+<dt>IDENT_ITEM:</dt>
+<dd><code><strong>x</strong> | <strong>y</strong> | <strong>z</strong> | <strong>u</strong> | <strong>v</strong> | PARAM_IDENTIFIER</code></dd>
+<dt>PATTERN:</dt>
+<dd><code>MAP_PATTERN | <strong>brick</strong> <!--<linkto "quickref, brick_item">[BRICK_ITEM]</linkto>---><a href="r3_8.html#r3_8_10_3">[BRICK_ITEM]</a> | <strong>checker</strong> | <strong>hexagon</strong> | <strong>object {</strong><a href="r3_8.html#r3_8_10_3"> LIST_OBJECT </a><strong>}</strong></code></dd>
+<dt>VECTOR_USER_FUNCTION:</dt>
+<dd><code><strong>function&nbsp;{</strong>&nbsp;SPECIAL_VECTOR_FUNCTION&nbsp;<strong>}</strong></code></dd>
+<dt>SPECIAL_VECTOR_FUNCTION:</dt>
+<dd><code>TRANSFORM | SPLINE</code></dd>
+<dt>COLOR_USER_FUNCTION:</dt>
+<dd><code><strong>function&nbsp;{</strong>&nbsp;PIGMENT&nbsp;<strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Specify a float expression in a user-defined function:</dt>
+<dt>FN_FLOAT</dt>
+<dd><code>LOGIC_AND [OR LOGIC_AND]</code></dd>
+<dt>OR:</dt>
+<dd><code><strong>|</strong></code></dd>
+<dt>LOGIC_AND:</dt>
+<dd><code>REL_TERM [AND REL_TERM]</code></dd>
+<dt>AND:</dt>
+<dd><code><strong>&amp;</strong></code></dd>
+<dt>REL_TERM:</dt>
+<dd><code>TERM [REL_OPERATOR TERM]</code></dd>
+<dt>REL_OPERATOR:</dt>
+<dd><code><strong>&lt;</strong> | <strong>&lt;=</strong> | <strong>=</strong> | <strong>&gt;=</strong> | <strong>&gt;</strong> | <strong>!=</strong></code></dd>
+<dt>TERM:</dt>
+<dd><code>FACTOR [SIGN FACTOR]</code></dd>
+<dt>SIGN:</dt>
+<dd><code><strong>+</strong> | <strong>-</strong></code></dd>
+<dt>FACTOR:</dt>
+<dd><code>EXPRESSION [MULT EXPRESSION]</code></dd>
+<dt>MULT:</dt>
+<dd><code><strong>*</strong> | <strong>/</strong></code></dd>
+<dt>EXPRESSION:</dt>
+<dd><code>FLOAT_LITERAL | FLOAT_IDENTIFIER | FN_FLOAT_FUNCTION | FLOAT_BUILT_IN_IDENT |
+<strong>(</strong>&nbsp;FN_FLOAT&nbsp;<strong>)</strong> | IDENT_ITEM | SIGN&nbsp;EXPRESSION |
+VECTOR_FUNCTION_INVOCATION<strong>.</strong>FN_DOT_ITEM | COLOR_FUNCTION_INVOCATION<strong>.</strong>FN_DOT_ITEM |
+FLOAT_FUNCTION_INVOCATION</code></dd>
+<dt>FN_DOT_ITEM:</dt>
+<dd><code><a href="r3_8.html#r3_8_3_1">DOT_ITEM</a> | <strong>hf</strong></code></dd>
+<dt>FN_FLOAT_FUNCTION:</dt>
+<dd><code><strong>abs&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>acos&nbsp;(</strong>FN_FLOAT<strong>)</strong>
+| <strong>acosh&nbsp;(</strong>FN_FLOAT<strong>)</strong> |
+<strong>asin&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>asinh&nbsp;(</strong>FN_FLOAT<strong>)</strong> |
+<strong>atan&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>atanh&nbsp;(</strong>FN_FLOAT<strong>)</strong> |
+<strong>atan2&nbsp;(</strong>FN_FLOAT,FN_FLOAT<strong>)</strong> | <strong>ceil&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>cos&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>cosh&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>degrees&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>exp&nbsp;(</strong>FN_FLOAT<strong>)</strong> |
+<strong>floor&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>int&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>ln&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>log&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>max&nbsp;(</strong>FN_FLOAT,FN_FLOAT[,FN_FLOAT]...<strong>)</strong> |
+<strong>min&nbsp;(</strong>FN_FLOAT,FN_FLOAT[,FN_FLOAT]...<strong>)</strong> | <strong>mod&nbsp;(</strong>FN_FLOAT,FN_FLOAT<strong>)</strong> | <strong>pow&nbsp;(</strong>FN_FLOAT,FN_FLOAT<strong>)</strong> | <strong>prod&nbsp;(</strong>IDENTIFIER, FN_FLOAT, FN_FLOAT, FN_FLOAT<strong>)</strong> | <strong>radians&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>sin&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>sinh&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>sqrt&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>sum&nbsp;(</strong>IDENTIFIER, FN_FLOAT, FN_FLOAT, FN_FLOAT<strong>)</strong> |<strong>tan&nbsp;(</strong>FN_FLOAT<strong>)</strong> |
+<strong>tanh&nbsp;(</strong>FN_FLOAT<strong>)</strong> | <strong>select&nbsp;(</strong>FN_FLOAT,FN_FLOAT,FN_FLOAT [,FN_FLOAT]<strong>)</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Create an identifier for a user-defined function:</dt>
+<dt>USER_FUNCTION_DECLARATION:</dt>
+<dd><code><strong>#declare</strong> FLOAT_FUNCTION_IDENTIFIER <strong>=</strong> FLOAT_USER_FUNCTION |<br>
+<strong>#local</strong> FLOAT_FUNCTION_IDENTIFIER <strong>=</strong> FLOAT_USER_FUNCTION |<br>
+<strong>#declare</strong> VECTOR_FUNCTION_IDENTIFIER <strong>=</strong> VECTOR_USER_FUNCTION |<br>
+<strong>#local</strong> VECTOR_FUNCTION_IDENTIFIER <strong>=</strong> VECTOR_USER_FUNCTION |<br>
+<strong>#declare</strong> COLOR_FUNCTION_IDENTIFIER <strong>=</strong> COLOR_USER_FUNCTION |<br>
+<strong>#local</strong> COLOR_FUNCTION_IDENTIFIER <strong>=</strong> COLOR_USER_FUNCTION</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Reference a user-defined function:</dt>
+<dt>FLOAT_FUNCTION_INVOCATION:</dt>
+<dd><code>FLOAT_FUNCTION_IDENTIFIER <strong>(</strong>FN_PARAM_LIST<strong>)</strong></code></dd>
+<dt>VECTOR_FUNCTION_INVOCATION:</dt>
+<dd><code>VECTOR_FUNCTION_IDENTIFIER <strong>(</strong>FN_PARAM_LIST<strong>)</strong></code></dd>
+<dt>COLOR_FUNCTION_INVOCATION:</dt>
+<dd><code>COLOR_FUNCTION_IDENTIFIER <strong>(</strong>FN_PARAM_LIST<strong>)</strong></code></dd>
+<dt>FN_PARAM_LIST:</dt>
+<dd><code>FN_PARAM_ITEM [, FN_PARAM_LIST]</code></dd>
+<dt>FN_PARAM_ITEM:</dt>
+<dd><code><strong>x</strong> | <strong>y</strong> | <strong>z</strong> | <strong>u</strong> | <strong>v</strong> | FLOAT</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_3_5"></a>
+<div class="content-level-h4" contains="Strings" id="r3_8_3_5">
+<h4>3.8.3.5 Strings</h4>
+<dl class="Syntax">
+<dt class="SubDesc">String Expressions</dt>
+<dt>STRING:</dt>
+<dd><code>STRING_FUNCTION | STRING_IDENTIFIER | STRING_LITERAL</code></dd>
+<dt>STRING_FUNCTION:</dt>
+<dd><code><strong>chr&nbsp;(</strong>INT<strong>)</strong> | <strong>concat&nbsp;(</strong>STRING,STRING[,STRING]...<strong>)</strong> | <strong>str&nbsp;(</strong>FLOAT,INT,INT<strong>)</strong> | <strong>strlwr&nbsp;(</strong>STRING<strong>)</strong> |
+<strong>strupr&nbsp;(</strong>STRING<strong>)</strong> | <strong>substr&nbsp;(</strong>STRING,INT,INT<strong>)</strong> | <strong>vstr&nbsp;(</strong>INT,VECTOR,STRING,INT,INT<strong>)</strong></code></dd>
+<dt>STRING_LITERAL:</dt>
+<dd><code>QUOTE [CHARACTER...] QUOTE</code></dd>
+<dd class="ItemNote">Limited to 256 characters.</dd>
+<dt>QUOTE:</dt>
+<dd><code><strong>&quot;</strong></code></dd>
+<dt>CHARACTER:</dt>
+<dd>Any ASCII or Unicode character, depending on the <strong>charset</strong> setting in <strong>global_settings</strong>.
+The following escape sequences might be useful when writing to files or message streams:</dd>
+<dd>
+<strong><code>\a</code></strong> - alarm<br>
+<strong><code>\b</code></strong> - backspace<br>
+<strong><code>\f</code></strong> - form feed<br>
+<strong><code>\n</code></strong> - new line<br>
+<strong><code>\r</code></strong> - carriage return<br>
+<strong><code>\t</code></strong> - horizontal tab<br>
+<strong><code>\u</code></strong><code><em>NNNN</em></code> - unicode character four-digit code<br>
+<strong><code>\v</code></strong> - vertical tab<br>
+<strong><code>\\</code></strong> - backslash<br>
+<strong><code>\'</code></strong> - single quote<br>
+<strong><code>\&quot;</code></strong> - double quote<br>
+</dd>
+<dt>STRING_REL_TERM:</dt>
+<dd><code>STRING_LITERAL [STRING_REL_OPERATOR STRING_LITERAL]...</code></dd>
+<dt>STRING_REL_OPERATOR:</dt>
+<dd><code><strong>&lt;</strong> | <strong>&lt;=</strong> | <strong>=</strong> | <strong>&gt;=</strong> | <strong>&gt;</strong> | <strong>!=</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_3_6"></a>
+<div class="content-level-h4" contains="Arrays" id="r3_8_3_6">
+<h4>3.8.3.6 Arrays</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Define an array:</dt>
+<dt>ARRAY_DECLARATION:</dt>
+<dd><code><strong>#declare</strong> ARRAY_IDENTIFIER <strong>= array</strong> DIMENSION... [ARRAY_INITIALIZER] |<br>
+<strong>#local</strong> ARRAY_IDENTIFIER <strong>= array</strong> DIMENSION... [ARRAY_INITIALIZER]</code></dd>
+<dd class="ItemNote">Limited to five dimensions.</dd>
+<dt>DIMENSION:</dt>
+<dd><code><strong>[</strong> INT <strong>]</strong></code></dd>
+<dd class="ItemNote">The brackets here are part of the dimension specification.  The integer must be greater than zero.</dd>
+<dt>ARRAY_INITIALIZER:</dt>
+<dd><code><strong>{</strong> ARRAY_INITIALIZER [, ARRAY_INITIALIZER]... <strong>}</strong> |<br>
+<strong>{</strong> RVALUE [, RVALUE]... <strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Place a value into an array:</dt>
+<dt>ARRAY_ELEMENT_ASSIGNMENT:</dt>
+<dd><code><strong>#declare</strong> ARRAY_REFERENCE <strong>=</strong> <a href="r3_8.html#r3_8_4_2">RVALUE</a> [<strong>;</strong>] |<br>
+<strong>#local</strong> ARRAY_REFERENCE <strong>=</strong> RVALUE [<strong>;</strong>]</code></dd>
+<dd class="ItemNote">The semicolon is required for a FLOAT, VECTOR or COLOR assignment.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Reference an array:</dt>
+<dt>ARRAY_REFERENCE:</dt>
+<dd><code>ARRAY_IDENTIFIER ELEMENT...</code></dd>
+<dt>ELEMENT:</dt>
+<dd><code><strong>[</strong> INT <strong>]</strong></code></dd>
+<dd class="ItemNote">The brackets here are part of the element specification.</dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_3_7"></a>
+<div class="content-level-h4" contains="Splines" id="r3_8_3_7">
+<h4>3.8.3.7 Splines</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Define a spline:</dt>
+<dt>SPLINE:</dt>
+<dd><code><strong>spline {</strong> SPLINE_ITEMS <strong>}</strong></code></dd>
+<dt>SPLINE_ITEMS</dt>
+<dd><code>[SPLINE_TYPE] PATH_LIST | SPLINE_IDENTIFIER [SPLINE_TYPE][PATH_LIST]</code></dd>
+<dt>SPLINE_TYPE:</dt>
+<dd><code><strong>linear_spline</strong> | <strong>quadratic_spline</strong> | <strong>cubic_spline</strong> | <strong>natural_spline</strong></code></dd>
+<dt>PATH_LIST:</dt>
+<dd><code>FLOAT, VECTOR [[,] PATH_LIST]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Reference a spline:</dt>
+<dt>SPLINE_INVOCATION:</dt>
+<dd><code>SPLINE_IDENTIFIER <strong>(</strong> FLOAT [, SPLINE_TYPE] <strong>)</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4"></a>
+<div class="content-level-h3" contains="Language Directives" id="r3_8_4">
+<h3>3.8.4 Language Directives</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Control the parsing of sections of the scene file:</dt>
+<dt>LANGUAGE_DIRECTIVE:</dt>  
+<dd><code>INCLUDE_DIRECTIVE | IDENTIFIER_DECLARATION | UNDEF_DIRECTIVE | FOPEN_DIRECTIVE | FCLOSE_DIRECTIVE | READ_DIRECTIVE | WRITE_DIRECTIVE | DEFAULT_DIRECTIVE | VERSION_DIRECTIVE | IF_DIRECTIVE | IFDEF_DIRECTIVE | IFNDEF_DIRECTIVE | SWITCH_DIRECTIVE | WHILE_DIRECTIVE | FOR_DIRECTIVE | TEXT_STREAM_DIRECTIVE | MACRO_DEFINITION</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4_1"></a>
+<div class="content-level-h4" contains="File Inclusion" id="r3_8_4_1">
+<h4>3.8.4.1 File Inclusion</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Insert content of another scene file:</dt>
+<dt>INCLUDE_DIRECTIVE:</dt>
+<dd><code><strong>#include</strong> FILE_NAME</code></dd>
+<dd class="ItemNote">File inclusion may be nested at most 10 levels deep.</dd>
+<dt>FILE_NAME:</dt>
+<dd><code>STRING</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4_2"></a>
+<div class="content-level-h4" contains="Identifier Declaration" id="r3_8_4_2">
+<h4>3.8.4.2 Identifier Declaration</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Create an identifier for a value, object, etc.</dt>
+<dt>IDENTIFIER_DECLARATION:</dt>
+<dd><code><strong>#declare</strong> [deprecated] IDENTIFIER <strong>=</strong> RVALUE [<strong>;</strong>] |<br>
+<strong>#local</strong> [deprecated] IDENTIFIER <strong>=</strong> RVALUE [<strong>;</strong>]</code></dd>
+<dd class="ItemNote">Up to 127 characters, starting with a letter, consisting of letters, digits and/or the underscore.  The semicolon is required for a FLOAT, VECTOR or COLOR declaration.</dd>
+<dt>RVALUE:</dt>
+<dd><code>FLOAT | VECTOR | COLOR | USER_FUNCTION | STRING | ARRAY_REFERENCE | SPLINE | TRANSFORM | CAMERA | LIGHT | OBJECT | MATERIAL |
+INTERIOR | TEXTURE | TEXTURE_MAP | PIGMENT | COLOR_MAP | PIGMENT_MAP | NORMAL | SLOPE_MAP | NORMAL_MAP | FINISH | MEDIA | DENSITY |
+DENSITY_MAP | FOG | RAINBOW | SKY_SPHERE</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Destroy an identifier:</dt>
+<dt>UNDEF_DIRECTIVE:</dt>
+<dd><code><strong>#undef</strong> IDENTIFIER</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+
+
+<a name="r3_8_4_3"></a>
+<div class="content-level-h4" contains="File Input/Output" id="r3_8_4_3">
+<h4>3.8.4.3 File Input/Output</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Open a text file:</dt>
+<dt>FOPEN_DIRECTIVE:</dt>
+<dd><code><strong>#fopen</strong> FILE_HANDLE_IDENTIFIER FILE_NAME OPEN_TYPE</code></dd>
+<dt>OPEN_TYPE:</dt>
+<dd><code><strong>read</strong> | <strong>write</strong> | <strong>append</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Close a text file:</dt>
+<dt>FCLOSE_DIRECTIVE:</dt>
+<dd><code><strong>#fclose</strong> FILE_HANDLE_IDENTIFIER</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Read string, float and/or vector values from a text file:</dt>
+<dt>READ_DIRECTIVE:</dt>
+<dd><code><strong>#read (</strong> FILE_HANDLE_IDENTIFIER, DATA_IDENTIFIER [, DATA_IDENTIFIER]... <strong>)</strong></code></dd>
+<dd class="ItemNote">Use <strong>defined (</strong>FILE_HANDLE_IDENTIFIER<strong>)</strong> to detect end-of-file after a read.</dd>
+<dt>DATA_IDENTIFIER:</dt>
+<dd><code>UNDECLARED_IDENTIFIER | FLOAT_IDENTIFIER | VECTOR_IDENTIFIER | STRING_IDENTIFIER | ARRAY_REFERENCE</code></dd>
+<dd class="ItemNote">May read a value into an array reference if the array element's type has already been established.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Write string, float and/or vector values to a file:</dt>
+<dt>WRITE_DIRECTIVE:</dt>
+<dd><code><strong>#write (</strong> FILE_HANDLE_IDENTIFIER, [BINARY_WORD_TYPE,] DATA_ITEM [, DATA_ITEM]... <strong>)</strong></code></dd>
+<dt>BINARY_WORD_TYPE:</dt>
+<dd><code>uint8 | sint8 | uint16be | uint16le | sint16be | sint16le | sint32be | sint32le
+</code></dd>
+<dt>DATA_ITEM:</dt>
+<dd><code>FLOAT | VECTOR | STRING</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4_4"></a>
+<div class="content-level-h4" contains="Default Texture" id="r3_8_4_4">
+<h4>3.8.4.4 Default Texture</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Specify a default texture, pigment, normal or finish:</dt>
+<dt>DEFAULT_DIRECTIVE:</dt>
+<dd><code><strong>#default {</strong> DEFAULT_ITEM <strong>}</strong></code></dd>
+<dt>DEFAULT_ITEM:</dt>
+<dd><code>PLAIN_TEXTURE | PIGMENT | NORMAL | FINISH</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4_5"></a>
+<div class="content-level-h4" contains="Version Identifier" id="r3_8_4_5">
+<h4>3.8.4.5 Version Identifier</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Specify the POV-Ray compatibility version number:</dt>
+<dt>VERSION_DIRECTIVE:</dt>
+<dd><code><strong>#version</strong> FLOAT<strong>;</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4_6"></a>
+<div class="content-level-h4" contains="Control Flow Directives" id="r3_8_4_6">
+<h4>3.8.4.6 Control Flow Directives</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Conditionally parse a section of the scene file, depending on a boolean expression:</dt>
+<dt>IF_DIRECTIVE:</dt>
+<dd><code><strong>#if (</strong> BOOL <strong>)</strong> TOKENS [<strong>#elseif (</strong> BOOL  <strong>)</strong>&nbsp;TOKENS] [<strong>#else</strong>&nbsp;TOKENS] <strong>#end</strong></code></dd>
+<dt>TOKENS:</dt>
+<dd class="ItemNote">Any number of POV-Ray keywords, identifiers, values and/or punctuation.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Conditionally parse a section of the scene file, depending on the existence of an identifier:</dt>
+<dt>IFDEF_DIRECTIVE:</dt>
+<dd><code><strong>#ifdef (</strong> IDENTIFIER <strong>)</strong> TOKENS [<strong>#elseif (</strong> IDENTIFER  <strong>)</strong>&nbsp;TOKENS] [<strong>#else</strong>&nbsp;TOKENS] <strong>#end</strong></code></dd>
+<dt>IFNDEF_DIRECTIVE:</dt>
+<dd><code><strong>#ifndef (</strong> IDENTIFIER <strong>)</strong> TOKENS [<strong>#elseif (</strong> IDENTIFER  <strong>)</strong>&nbsp;TOKENS] [<strong>#else</strong>&nbsp;TOKENS] <strong>#end</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Conditionally parse a section of the scene file, depending on the value of a float expression:</dt>
+<dt>SWITCH_DIRECTIVE:</dt>
+<dd><code><strong>#switch (</strong> FLOAT <strong>)</strong> SWITCH_CLAUSE... [<strong>#else</strong>&nbsp;TOKENS] <strong>#end</strong></code></dd>
+<dt>SWITCH_CLAUSE:</dt>
+<dd><code><strong>#case (</strong> FLOAT <strong>)</strong> TOKENS [<strong>#break</strong>] |<br>
+<strong>#range (</strong> F_LOW, F_HIGH <strong>)</strong> TOKENS [<strong>#break</strong>]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Repeat a section of the scene file while a boolean condition is true:</dt>
+<dt>WHILE_DIRECTIVE:</dt>
+<dd><code><strong>#while (</strong><a href="r3_8.html#r3_8_3_1"> LOGICAL_EXPRESSION </a><strong>)</strong> TOKENS [<strong>#break</strong>] <strong>#end</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Increment an Identifier from Start to End (inclusive) with the given Step size:</dt>
+<dt>FOR_DIRECTIVE:</dt>
+<dd><code><strong>#for (</strong>Identifier, Start, End [, Step]<strong>)</strong> TOKENS [<strong>#break</strong>] <strong>#end</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4_7"></a>
+<div class="content-level-h4" contains="Message Streams" id="r3_8_4_7">
+<h4>3.8.4.7 Message Streams</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Send a message to a text stream:</dt>
+<dt>TEXT_STREAM_DIRECTIVE:</dt>
+<dd><code><strong>#debug</strong> STRING | <strong>#error</strong> STRING | <strong>#warning</strong> STRING</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4_8"></a>
+<div class="content-level-h4" contains="Macro" id="r3_8_4_8">
+<h4>3.8.4.8 Macro</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Define a macro:</dt>
+<dt>MACRO_DEFINITION:</dt>
+<dd><code><strong>#macro</strong> MACRO_IDENTIFIER <strong>(</strong> [PARAM_IDENTIFIER [, PARAM_IDENTIFIER]...] <strong>)</strong> TOKENS [<strong>#break</strong>] <strong>#end</strong></code></dd>
+<dd class="ItemNote">A parameter identifier may not be repeated in the list.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Invoke a macro:</dt>
+<dt>MACRO_INVOCATION:</dt>
+<dd><code>MACRO_IDENTIFIER <strong>(</strong> [ACTUAL_PARAM [, ACTUAL_PARAM]...] <strong>)</strong></code></dd>
+<dt>ACTUAL_PARAM:</dt>
+<dd><code>IDENTIFIER | <a href="r3_8.html#r3_8_4_2">RVALUE</a></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_4_9"></a>
+<div class="content-level-h4" contains="Embedded Directives" id="r3_8_4_9">
+<h4>3.8.4.9 Embedded Directives</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Some directives may be embedded in CAMERA, LIGHT, OBJECT and ATMOSPHERIC_EFFECT statements.
+However, the directives should only include items (if any) that are valid for a given statement.
+Also, they should not disrupt the required order of items, where applicable.</dt>
+<dt>EMBEDDED_DIRECTIVE:</dt>
+<dd><code>IDENTIFIER_DECLARATION | UNDEF_DIRECTIVE | READ_DIRECTIVE | WRITE_DIRECTIVE | IF_DIRECTIVE |
+IFDEF_DIRECTIVE | IFNDEF_DIRECTIVE | SWITCH_DIRECTIVE | WHILE_DIRECTIVE | TEXT_STREAM_DIRECTIVE</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_5"></a>
+<div class="content-level-h3" contains="Transformations" id="r3_8_5">
+<h3>3.8.5 Transformations</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Rotate, resize, move, or otherwise manipulate the coordinates of an object or texture</dt>
+<dt>TRANSFORMATION:</dt>
+<dd><code><strong>rotate</strong>&nbsp;VECTOR | <strong>scale</strong>&nbsp;VECTOR | <strong>translate</strong>&nbsp;VECTOR | TRANSFORM | MATRIX</code></dd>
+<dt>TRANSFORM:</dt>
+<dd><code><strong>transform</strong> TRANSFORM_IDENTIFIER | <strong>transform {</strong> [TRANSFORM_ITEM...] <strong>}</strong></code></dd>
+<dt>TRANSFORM_ITEM:</dt>
+<dd><code>TRANSFORM_IDENTIFIER | TRANSFORMATION | <strong>inverse</strong></code></dd>
+<dt>MATRIX:</dt>
+<dd><code><strong>matrix &lt;</strong> F_VAL00, F_VAL01, F_VAL02, F_VAL10, F_VAL11, F_VAL12, F_VAL20, F_VAL21, F_VAL22, F_VAL30, F_VAL31, F_VAL32&nbsp;<strong>&gt;</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_6"></a>
+<div class="content-level-h3" contains="Camera" id="r3_8_6">
+<h3>3.8.6 Camera</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Describe the position, projection type and properties of the camera viewing the scene</dt>
+<dt>CAMERA:</dt>
+<dd class="Jump"><a href="r3_3.html#r3_3_1">Jump to SDL</a></dd>
+<dd><code><strong>camera {</strong> [CAMERA_TYPE] [CAMERA_ITEMS] [CAMERA_MODIFIERS] <strong>}</strong> |</code></dd>
+<dd><code><strong>camera {</strong> CAMERA_IDENTIFIER [TANSFORMATIONS ...] <strong>}</strong></code></dd>
+<dt>CAMERA_TYPE:</dt>
+<dd><code><strong>perspective</strong> | <strong>orthographic</strong> | <strong>mesh_camera {</strong>MESHCAM_MODIFIERS<strong>} location direction smooth</strong> | <strong>fisheye</strong> | <strong>ultra_wide_angle</strong> | <strong>omnimax</strong> | <strong>panoramic</strong> | <strong>spherical</strong> | <strong>cylinder</strong>&nbsp;CYLINDER_TYPE</code></dd>
+<dt>CYLINDER_TYPE:</dt>
+<dd><code><strong>1</strong> | <strong>2</strong> | <strong>3</strong> | <strong>4</strong></code></dd>
+<dt>CAMERA_ITEMS:</dt>
+<dd><code>[<strong>location</strong>&nbsp;VECTOR] &amp; [<strong>right</strong>&nbsp;VECTOR] &amp; [<strong>up</strong>&nbsp;VECTOR] &amp; [<strong>direction</strong>&nbsp;VECTOR] &amp; [<strong>sky</strong>&nbsp;VECTOR]</code></dd>
+<dt>CAMERA_MODIFIERS:</dt>
+<dd><code> [<strong>angle</strong>&nbsp;[angle F_HORIZONTAL] [,F_VERTICAL]] &amp; [<strong>look_at</strong>&nbsp;VECTOR] &amp; [FOCAL_BLUR] &amp; [NORMAL] &amp; [TRANSFORMATION...]</code></dd>
+<dt>FOCAL_BLUR:</dt>
+<dd><code><strong>aperture</strong>&nbsp;FLOAT &amp; <strong>blur_samples</strong>&nbsp;[MIN_SAMPLES,]&nbsp;MAX_SAMPLES &amp; [<strong>focal_point</strong>&nbsp;VECTOR] &amp; [<strong>confidence</strong>&nbsp;FLOAT] &amp; [<strong>variance</strong>&nbsp;FLOAT]  &amp; [<strong>bokeh {pigment {BOKEH}}</strong>]</code></dd>
+<dt>MESHCAM_MODIFIERS:</dt>
+<dd><code>RAYS_PER_PIXEL & DISTRIBUTION_TYPE & [MAX_DISTANCE] & MESH_OBJECT & [MESH_OBJECT...]</code></dd>
+<dt>RAYS_PER_PIXEL:</dt>
+<dd><code>FLOAT &gt; 1</code></dd>
+<dt>DISTRIBUTION_TYPE:</dt>
+<dd><code><strong>0</strong> | <strong>1</strong> | <strong>2</strong> | <strong>3</strong></code></dd>
+<dt>MAX_DISTANCE:</dt>
+<dd><code>FLOAT &gt; EPSILON</code></dd>
+<dt>MIN_SAMPLES:</dt>
+<dd><code>INT</code></dd>
+<dt>MAX_SAMPLES:</dt>
+<dd><code>INT</code></dd>
+<dt>BOKEH:</dt>
+<dd><code>COLOR_VECTOR in the range of &lt;0,0,0&gt; ... &lt;1,1,0&gt;</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_7"></a>
+<div class="content-level-h3" contains="Lights" id="r3_8_7">
+<h3>3.8.7 Lights</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Specify light sources for the scene or for specific objects</dt>
+<dt>LIGHT:</dt>
+<dd><code>LIGHT_SOURCE | LIGHT_GROUP</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Describe the position, type and properties of a light source for the scene:</dt>
+<dt>LIGHT_SOURCE:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_5">Jump to SDL</a></dd>
+<dd><code><strong>light_source {</strong> V_LOCATION, COLOR [LIGHT_SOURCE_ITEMS] <strong>}</strong></code></dd>
+<dt>LIGHT_SOURCE_ITEMS:</dt>
+<dd><code>[LIGHT_TYPE] &amp; [AREA_LIGHT_ITEMS] &amp; [LIGHT_MODIFIERS]</code></dd>
+<dt>LIGHT_TYPE:</dt>
+<dd><code><strong>spotlight</strong>&nbsp;[SPOTLIGHT_ITEMS] | <strong>cylinder</strong>&nbsp;[SPOTLIGHT_ITEMS]</code></dd>
+<dt>SPOTLIGHT_ITEMS:</dt>
+<dd><code>[<strong>radius</strong>&nbsp;FLOAT] &amp; [<strong>falloff</strong>&nbsp;FLOAT] &amp; [<strong>tightness</strong>&nbsp;FLOAT] &amp; [<strong>point_at</strong>&nbsp;VECTOR]</code></dd>
+<dt>AREA_LIGHT_ITEMS:</dt>
+<dd><code><strong>area_light</strong> V_AXIS1, V_AXIS2, I_SIZE1, I_SIZE2 [AREA_LIGHT_MODIFIERS]</code></dd>
+<dt>AREA_LIGHT_MODIFIERS:</dt>
+<dd><code>[<strong>adaptive</strong>&nbsp;INT] &amp; [<strong>jitter</strong>] &amp; [<strong>circular</strong>] &amp; [<strong>orient</strong>] &amp; [<strong>area_illumination [BOOL]</strong>]</code></dd>
+<dt>LIGHT_MODIFIERS:</dt>
+<dd><code>[LIGHT_PHOTONS] &amp; [<strong>looks_like&nbsp;{</strong>&nbsp;OBJECT&nbsp;<strong>}</strong>] &amp; [TRANSFORMATION...] &amp; [<strong>fade_distance</strong>&nbsp;FLOAT] &amp;[<strong>fade_power</strong>&nbsp;FLOAT] &amp; [<strong>media_attenuation</strong>&nbsp;[BOOL]] &amp; [<strong>media_interaction</strong>&nbsp;[BOOL]] &amp;[<strong>shadowless</strong>] &amp; [<strong>projected_through&nbsp;{</strong>&nbsp;OBJECT_IDENTIFIER&nbsp;<strong>}</strong>] &amp; [<strong>parallel</strong>&nbsp;[<strong>point_at</strong>&nbsp;VECTOR]]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Specify how a light source should interact with photons:</dt>
+<dt>LIGHT_PHOTONS:</dt>
+<dd><code><strong>photons {</strong> LIGHT_PHOTON_ITEMS <strong>}</strong></code></dd>
+<dt>LIGHT_PHOTON_ITEMS:</dt>
+<dd><code>[<strong>refraction</strong>&nbsp;BOOL] &amp; [<strong>reflection</strong>&nbsp;BOOL] &amp; [<strong>area_light</strong>]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_7_1"></a>
+<div class="content-level-h4" contains="Lightgroup" id="r3_8_7_1">
+<h4>3.8.7.1 Lightgroup</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Assign objects to specific light sources:</dt>
+<dt>LIGHT_GROUP:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_6">Jump to SDL</a></dd>
+<dd><code><strong>light_group {</strong> LIGHT_GROUP_ITEM... [LIGHT_GROUP_MODIFIERS] <strong>}</strong></code></dd>
+<dt>LIGHT_GROUP_ITEM:</dt>
+<dd><code>LIGHT_SOURCE | OBJECT | LIGHT_GROUP</code></dd>
+<dt>LIGHT_GROUP_MODIFIERS:</dt>
+<dd><code>[<strong>global_lights</strong> BOOL] &amp; [TRANSFORMATION...]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_8"></a>
+<div class="content-level-h3" contains="Objects" id="r3_8_8">
+<h3>3.8.8 Objects</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Describe an object in the scene</dt>
+<dt>OBJECT:</dt>
+<dd><code>FINITE_SOLID_OBJECT | FINITE_PATCH_OBJECT | INFINITE_SOLID_OBJECT | ISOSURFACE | PARAMETRIC | CSG_OBJECT | OBJECT_STATEMENT</code></dd>
+<dt>OBJECT_STATEMENT:</dt>
+<dd><code><strong>object {</strong> OBJECT_IDENTIFIER [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_8_1"></a>
+<div class="content-level-h4" contains="Finite Solid Objects" id="r3_8_8_1">
+<h4>3.8.8.1 Finite Solid Objects</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe a solid finite shape:</dt>
+<dt>FINITE_SOLID_OBJECT:</dt>
+<dd><code>BLOB | BOX | CONE | CYLINDER | HEIGHT_FIELD | ISOSURFACE | JULIA_FRACTAL | LATHE | OVUS | PARAMETRIC | PRISM | SPHERE | SPHERE_SWEEP | SUPERELLIPSOID | SOR | TEXT | TORUS</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The blob object:</dt>
+<dt>BLOB:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_1">Jump to SDL</a></dd>
+<dd><code><strong>blob {</strong> [<strong>threshold</strong> FLOAT] BLOB_ITEM... [BLOB_MODIFIERS] <strong>}</strong></code></dd>
+<dt>BLOB_ITEM:</dt>
+<dd><code><strong>sphere {</strong> V_CENTER, F_RADIUS, [<strong>strength</strong>]&nbsp;F_STRENGTH [COMPONENT_MODIFIERS] <strong>}</strong> |<br>
+<strong>cylinder {</strong> V_END1, V_END2, F_RADIUS, [<strong>strength</strong>]&nbsp;F_STRENGTH [COMPONENT_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+<dt>COMPONENT_MODIFIERS:</dt>
+<dd><code>[TEXTURE] &amp; [PIGMENT] &amp; [NORMAL] &amp; [FINISH] &amp; [TRANSFORMATION...]</code></dd>
+<dt>BLOB_MODIFIERS:</dt>
+<dd><code>[<strong>hierarchy</strong>&nbsp;[BOOL]] &amp; [<strong>sturm</strong>&nbsp;[BOOL]] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The box object:</dt>
+<dt>BOX:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_2">Jump to SDL</a></dd>
+<dd><code><strong>box {</strong> V_CORNER1, V_CORNER2 [BOX_MODIFIERS] <strong>}</strong></code></dd>
+<dt>BOX_MODIFIERS:</dt>
+<dd><code>[UV_MAPPING] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The cone object:</dt>
+<dt>CONE:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_3">Jump to SDL</a></dd>
+<dd><code><strong>cone {</strong> V_BASE_CENTER, F_BASE_RADIUS, V_CAP_CENTER, F_CAP_RADIUS [<strong>open</strong>] [OBJECT_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The cylinder object:</dt>
+<dt>CYLINDER:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_4">Jump to SDL</a></dd>
+<dd><code><strong>cylinder {</strong> V_BASE_CENTER, V_CAP_CENTER, F_RADIUS [<strong>open</strong>] [OBJECT_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The height field object:</dt>
+<dt>HEIGHT_FIELD:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_5">Jump to SDL</a></dd>
+<dd><code><strong>height_field {</strong> HF_IMAGE [HF_MODIFIERS] <strong>}</strong></code></dd>
+<dt>HF_IMAGE:</dt>
+<dd><code><a href="r3_8.html#r3_8_10_8">FUNCTION_IMAGE</a> | [HF_TYPE]&nbsp;FILE_NAME&nbsp;[gamma HF_GAMMA] [premultiplied BOOL]</code></dd>
+<dt>HF_TYPE:</dt>
+<dd><code><strong>exr</strong> | <strong>gif</strong> | <strong>hdr</strong> | <strong>iff</strong> | <strong>jpeg</strong> | <strong>pgm</strong> | <strong>png</strong> | <strong>ppm</strong> |  <strong>sys</strong> | <strong>tga</strong> | <strong>tiff</strong></code></dd>
+<dt>HF_GAMMA:</dt>
+<dd><code>FLOAT | <strong>srgb</strong></code></dd>
+<dt>HF_MODIFIERS:</dt>
+<dd><code>[<strong>hierarchy</strong>&nbsp;[BOOL]] &amp; [<strong>smooth</strong>] &amp; [<strong>water_level</strong>&nbsp;FLOAT] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The isosurface object:</dt>
+<dt>ISOSURFACE:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_6">Jump to SDL</a></dd>
+<dd><code><strong>isosurface {</strong> FLOAT_USER_FUNCTION [ISOSURFACE_ITEMS] [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+<dt>ISOSURFACE_ITEMS:</dt>
+<dd><code>[<strong>contained_by {</strong>&nbsp;CONTAINER&nbsp;<strong>}</strong>] &amp; [<strong>threshold</strong>&nbsp;FLOAT] &amp; [<strong>accuracy</strong>&nbsp;FLOAT] &amp; [<strong>max_gradient</strong>&nbsp;FLOAT&nbsp;[<strong>evaluate</strong>&nbsp;F_MIN_ESTIMATE,&nbsp;F_MAX_ESTIMATE,&nbsp;F_ATTENUATION]] &amp; [<strong>open</strong>] &amp; [INTERSECTION_LIMIT]</code></dd>
+<dt>CONTAINER:</dt>
+<dd><code><strong>sphere { </strong>V_CENTER, F_RADIUS <strong>}</strong> | <strong>box { </strong>V_CORNER1, V_CORNER2 <strong>}</strong></code></dd>
+<dt>INTERSECTION_LIMIT:</dt>
+<dd><code><strong>max_trace</strong> INT | <strong>all_intersections</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The Julia fractal object:</dt>
+<dt>JULIA_FRACTAL:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_7">Jump to SDL</a></dd>
+<dd><code><strong>julia_fractal {</strong> 4D_VECTOR [JF_ITEMS] [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+<dt>JF_ITEMS:</dt>
+<dd><code>[ALGEBRA_ITEM] &amp; [<strong>max_iteration</strong>&nbsp;INT] &amp; [<strong>precision</strong>&nbsp;FLOAT] &amp; [<strong>slice</strong>&nbsp;V4_NORMAL,&nbsp;F_DISTANCE]</code></dd>
+<dt>ALGEBRA_ITEM:</dt>
+<dd><code><strong>quaternion</strong>&nbsp;[QUATER_FUNCTION] | <strong>hypercomplex</strong>&nbsp;[HYPER_FUNCTION]</code></dd>
+<dt>QUATER_FUNCTION:</dt>
+<dd><code><strong>sqr</strong> | <strong>cube</strong></code></dd>
+<dt>HYPER_FUNCTION:</dt>
+<dd><code><strong>sqr</strong> | <strong>cube</strong> | <strong>exp</strong> | <strong>reciprocal</strong> | <strong>sin</strong> | <strong>asin</strong> | <strong>sinh</strong> | <strong>asinh</strong> | <strong>cos</strong> | <strong>acos</strong> | <strong>cosh</strong> | <strong>acosh</strong> | <strong>tan</strong> | <strong>atan</strong> | <strong>tanh</strong> | <strong>atanh</strong> | <strong>ln</strong> | <strong>pwr&nbsp;(</strong>FLOAT,FLOAT<strong>)</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The lathe object:</dt>
+<dt>LATHE:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_8">Jump to SDL</a></dd>
+<dd><code><strong>lathe {</strong> [LATHE_SPLINE_TYPE] I_NUM_POINTS, POINT_LIST [LATHE_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+<dt>LATHE_SPLINE_TYPE:</dt>
+<dd><code><strong>linear_spline</strong> | <strong>quadratic_spline</strong> | <strong>cubic_spline</strong> | <strong>bezier_spline</strong></code></dd>
+<dt>POINT_LIST:</dt>
+<dd><code>2D_VECTOR [,&nbsp;2D_VECTOR]...</code></dd>
+<dd class="ItemNote">The quantity of 2D_VECTORs is specified by the I_NUM_POINTS value.</dd>
+<dt>LATHE_MODIFIERS:</dt>
+<dd><code>[<strong>sturm</strong> [BOOL]] &amp; [UV_MAPPING] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The ovus object:</dt>
+<dt>OVUS:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_9">Jump to SDL</a></dd>
+<dd><code><strong>ovus {</strong> BOTTOM_RADIUS, TOP_RADIUS [OBJECT_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The parametric object:</dt>
+<dt>PARAMETRIC:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_10">Jump to SDL</a></dd>
+<dd><code><strong>parametric {</strong> FLOAT_USER_FUNCTION, FLOAT_USER_FUNCTION, FLOAT_USER_FUNCTION 2D_VECTOR, 2D_VECTOR [PARAMETRIC_ITEMS] [UV_MAPPING] &amp; [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+<dt>PARAMETRIC_ITEMS:</dt>
+<dd><code>[<strong>contained_by {</strong>&nbsp;CONTAINER&nbsp;<strong>}</strong>] &amp; [<strong>max_gradient</strong>&nbsp;FLOAT] &amp; [<strong>accuracy</strong>&nbsp;FLOAT] &amp; [<strong>precompute</strong>&nbsp;I_DEPTH,&nbsp;<strong>x,&nbsp;y,&nbsp;z</strong>]</code></dd>
+<dt>CONTAINER:</dt>
+<dd><code><strong>sphere { </strong>V_CENTER, F_RADIUS <strong>}</strong> | <strong>box { </strong>V_CORNER1, V_CORNER2 <strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The prism object:</dt>
+<dt>PRISM:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_11">Jump to SDL</a></dd>
+<dd><code><strong>prism {</strong> [PRISM_ITEMS] F_HEIGHT1, F_HEIGHT2, I_NUM_POINTS, POINT_LIST [<strong>open</strong>] [PRISM_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+<dt>PRISM_ITEMS:</dt>
+<dd><code>[PRISM_SPLINE_TYPE] &amp; [PRISM_SWEEP_TYPE]</code></dd>
+<dt>PRISM_SPLINE_TYPE:</dt>
+<dd><code><strong>linear_spline</strong> | <strong>quadratic_spline</strong> | <strong>cubic_spline</strong> | <strong>bezier_spline</strong></code></dd>
+<dt>PRISM_SWEEP_TYPE:</dt>
+<dd><code><strong>linear_sweep</strong> | <strong>conic_sweep</strong></code></dd>
+<dt>PRISM_MODIFIERS:</dt>
+<dd><code>[<strong>sturm</strong> [BOOL]] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The sphere object:</dt>
+<dt>SPHERE:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_12">Jump to SDL</a></dd>
+<dd><code><strong>sphere {</strong> V_CENTER, F_RADIUS [SPHERE_MODIFIERS] <strong>}</strong></code></dd>
+<dt>SPHERE_MODIFIERS:</dt>
+<dd><code>[UV_MAPPING] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The sphere sweep object:</dt>
+<dt>SPHERE_SWEEP:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_13">Jump to SDL</a></dd>
+<dd><code><strong>sphere_sweep {</strong> SWEEP_SPLINE_TYPE I_NUM_SPHERES, SPHERE_LIST [<strong>tolerance</strong>&nbsp;F_DEPTH_TOLERANCE] [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+<dt>SWEEP_SPLINE_TYPE:</dt>
+<dd><code><strong>linear_spline</strong> | <strong>b_spline</strong> | <strong>cubic_spline</strong></code></dd>
+<dt>SPHERE_LIST:</dt>
+<dd><code>V_CENTER, F_RADIUS [,&nbsp;SPHERE_LIST]</code></dd>
+<dd class="ItemNote">The quantity of V_CENTER, F_RADIUS pairs is specified by the I_NUM_SPHERES value.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The superquadric ellipsoid object:</dt>
+<dt>SUPERELLIPSOID:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_14">Jump to SDL</a></dd>
+<dd><code><strong>superellipsoid {</strong> &lt;&nbsp;FLOAT,&nbsp;FLOAT&nbsp;&gt; [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The surface of revolution object:</dt>
+<dt>SOR:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_15">Jump to SDL</a></dd>
+<dd><code><strong>sor {</strong> I_NUM_POINTS, POINT_LIST [<strong>open</strong>] [SOR_MODIFIERS] <strong>}</strong></code></dd>
+<dt>SOR_MODIFIERS:</dt>
+<dd><code>[<strong>sturm</strong> [BOOL]] &amp; [UV_MAPPING] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The text object:</dt>
+<dt>TEXT:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_16">Jump to SDL</a></dd>
+<dd><code><strong>text { ttf</strong> FILE_NAME STRING F_THICKNESS, V_OFFSET [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The torus object:</dt>
+<dt>TORUS:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_1_17">Jump to SDL</a></dd>
+<dd><code><strong>torus {</strong> F_MAJOR_RADIUS, F_MINOR_RADIUS [TORUS_MODIFIERS] <strong>}</strong></code></dd>
+<dt>TORUS_MODIFIERS:</dt>
+<dd><code>[<strong>sturm</strong> [BOOL]] &amp; [UV_MAPPING] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_8_2"></a>
+<div class="content-level-h4" contains="Finite Patch Objects" id="r3_8_8_2">
+<h4>3.8.8.2 Finite Patch Objects</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe a totally thin, finite shape:</dt>
+<dt>FINITE_PATCH_OBJECT:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_2">Jump to SDL</a></dd>
+<dd><code>BICUBIC_PATCH | DISC | MESH | MESH2 | POLYGON | TRIANGLE | SMOOTH_TRIANGLE</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The bicubic patch object:</dt>
+<dt>BICUBIC_PATCH:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_2_1">Jump to SDL</a></dd>
+<dd><code><strong>bicubic_patch {</strong> PATCH_ITEMS [PATCH_UV_VECTORS] CONTROL_POINTS [BICUBIC_PATCH_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+<dt>PATCH_ITEMS:</dt>
+<dd><code><strong>type</strong>&nbsp;PATCH_TYPE &amp; [<strong>u_steps</strong>&nbsp;INT] &amp; [<strong>v_steps</strong>&nbsp;INT] &amp; [<strong>flatness</strong>&nbsp;FLOAT]</code></dd>
+<dt>PATCH_TYPE:</dt>
+<dd><code><strong>0</strong> | <strong>1</strong></code></dd>
+<dt>PATCH_UV_VECTORS:</dt>
+<dd><code><strong>uv_vectors</strong> V2_CORNER1, V2_CORNER2, V2_CORNER3, V2_CORNER4</code></dd>
+<dt>CONTROL_POINTS:</dt>
+<dd class="ItemNote">16 VECTORs, optionally separated by commas.</dd>
+<dt>BICUBIC_PATCH_MODIFIERS:</dt>
+<dd><code>[UV_MAPPING] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The disc object:</dt>
+<dt>DISC:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_2_2">Jump to SDL</a></dd>
+<dd><code><strong>disc {</strong> V_CENTER, V_NORMAL, F_RADIUS [,&nbsp;F_HOLE_RADIUS] [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The mesh object:</dt>
+<dt>MESH:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_2_3">Jump to SDL</a></dd>
+<dd><code><strong>mesh {</strong> MESH_TRIANGLE... [MESH_MODIFIERS] <strong>}</strong></code></dd>
+<dt>MESH_TRIANGLE:</dt>
+<dd><code><strong>triangle {</strong> V_CORNER1, V_CORNER2, V_CORNER3 [MESH_UV_VECTORS] [MESH_TEXTURE]&nbsp;<strong>}</strong> |<br>
+<strong>smooth_triangle {</strong> V_CORNER1, V_NORMAL1, V_CORNER2, V_NORMAL2, V_CORNER3, V_NORMAL3 [MESH_UV_VECTORS] [MESH_TEXTURE]&nbsp;<strong>}</strong></code></dd>
+<dt>MESH_UV_VECTORS:</dt>
+<dd><code><strong>uv_vectors</strong> V2_CORNER1, V2_CORNER2, V2_CORNER3</code></dd>
+<dt>MESH_TEXTURE:</dt>
+<dd><code><strong>texture {</strong> TEXTURE_IDENTIFIER <strong>}</strong> |<br>
+<strong>texture_list {</strong> TEXTURE_IDENTIFIER TEXTURE_IDENTIFIER TEXTURE_IDENTIFIER <strong>}</strong></code></dd>
+<dt>MESH_MODIFIERS:</dt>
+<dd><code>[<strong>inside_vector</strong> V_DIRECTION] &amp; [<strong>hierarchy</strong> [BOOL]] &amp; [UV_MAPPING] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The mesh2 object:</dt>
+<dt>MESH2:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_2_4">Jump to SDL</a></dd>
+<dd><code><strong>mesh2 {</strong> MESH2_VECTORS [TEXTURE_LIST] MESH2_INDICES [MESH2_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+<dt>MESH2_VECTORS:</dt>
+<dd><code>VERTEX_VECTORS [NORMAL_VECTORS] [UV_VECTORS]</code></dd>
+<dt>VERTEX_VECTORS:</dt>
+<dd><code><strong>vertex_vectors {</strong> I_NUM_VERTICES, VECTOR [,&nbsp;VECTOR]... <strong>}</strong></code></dd>
+<dt>NORMAL_VECTORS:</dt>
+<dd><code><strong>normal_vectors {</strong> I_NUM_NORMALS, VECTOR [,&nbsp;VECTOR]... <strong>}</strong></code></dd>
+<dt>UV_VECTORS:</dt>
+<dd><code><strong>uv_vectors {</strong> I_NUM_UV_VECTORS, 2D_VECTOR [,&nbsp;2D_VECTOR]... <strong>}</strong></code></dd>
+<dt>TEXTURE_LIST:</dt>
+<dd><code><strong>texture_list {</strong> I_NUM_TEXTURES, TEXTURE [,&nbsp;TEXTURE]... <strong>}</strong></code></dd>
+<dt>MESH2_INDICES:</dt>
+<dd><code>FACE_INDICES [NORMAL_INDICES] [UV_INDICES]</code></dd>
+<dt>FACE_INDICES:</dt>
+<dd><code><strong>face_indices {</strong> I_NUM_FACES, FACE_INDICES_ITEM [,&nbsp;FACE_INDICES_ITEM]... <strong>}</strong></code></dd>
+<dt>FACE_INDICES_ITEM:</dt>
+<dd><code>VECTOR [,&nbsp;I_TEXTURE_INDEX [,&nbsp;I_TEXTURE_INDEX, I_TEXTURE_INDEX ]]</code></dd>
+<dt>NORMAL_INDICES:</dt>
+<dd><code><strong>normal_indices {</strong> I_NUM_FACES, VECTOR [,&nbsp;VECTOR]... <strong>}</strong></code></dd>
+<dt>UV_INDICES:</dt>
+<dd><code><strong>uv_indices {</strong> I_NUM_FACES, VECTOR [,&nbsp;VECTOR]... <strong>}</strong></code></dd>
+<dt>MESH2_MODIFIERS:</dt>
+<dd><code>[<strong>inside_vector</strong> V_DIRECTION] &amp; [UV_MAPPING] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The polygon object:</dt>
+<dt>POLYGON:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_2_5">Jump to SDL</a></dd>
+<dd><code><strong>polygon {</strong> I_NUM_POINTS, V_POINT [,&nbsp;V_POINT]... [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+<dd class="ItemNote">The quantity of V_POINTs is specified by the I_NUM_POINTS value.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The triangle object:</dt>
+<dt>TRIANGLE:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_2_6">Jump to SDL</a></dd>
+<dd><code><strong>triangle {</strong> V_CORNER1, V_CORNER2, V_CORNER3 [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The smooth triangle object:</dt>
+<dt>SMOOTH_TRIANGLE:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_2_6">Jump to SDL</a></dd>
+<dd><code><strong>smooth_triangle {</strong> V_CORNER1, V_NORMAL1, V_CORNER2, V_NORMAL2, V_CORNER3, V_NORMAL3 [OBJECT_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+
+
+<a name="r3_8_8_3"></a>
+<div class="content-level-h4" contains="Infinite Solid Objects" id="r3_8_8_3">
+<h4>3.8.8.3 Infinite Solid Objects</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe a solid, possibly infinite, shape:</dt>
+<dt>INFINITE_SOLID_OBJECT:</dt>
+<dd><code>PLANE | POLY | CUBIC | QUARTIC | QUADRIC</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The plane object:</dt>
+<dt>PLANE:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_3_1">Jump to SDL</a></dd>
+<dd><code><strong>plane {</strong> V_NORMAL, F_DISTANCE [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The poly object:</dt>
+<dt>POLY:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_3_2">Jump to SDL</a></dd>
+<dd><code><strong>poly {</strong> ORDER, &lt;&nbsp;POLY_COEFFICIENTS&nbsp;&gt; [POLY_MODIFIERS] <strong>}</strong></code></dd>
+<dt>ORDER:</dt>
+<dd class="ItemNote">An integer value between 2 and 35 inclusive.</dd>
+<dt>POLY_COEFFICIENTS:</dt>
+<dd class="ItemNote">A quantity <strong>n</strong> of FLOATs separated by commas, where <strong>n</strong> is <code>((ORDER+1)*(ORDER+2)*(ORDER+3))/6.</code></dd>
+<dt>POLY_MODIFIERS:</dt>
+<dd><code>[<strong>sturm</strong> [BOOL]] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The polynomial object:</dt>
+<dt>POLYNOMIAL:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_3_2">Jump to SDL</a></dd>
+<dd><code><strong>polynomial {</strong> ORDER, [POLYNOMIAL_COEFFICIENTS]... [POLY_MODIFIERS] <strong>}</strong></code></dd>
+<dt>ORDER:</dt>
+<dd class="ItemNote">An integer value between 2 and 35 inclusive. The sum of X_POWER, Y_POWER and Z_POWER of any xyz(): coefficient must never be greater than this integer.</dd>
+<dt>POLYNOMIAL_COEFFICIENTS:</dt>
+<dd><code><strong>xyz(</strong> X_POWER <strong>,</strong> Y_POWER <strong>,</strong> Z_POWER<strong>):</strong>VALUE [<strong>,</strong>]</code></dd>
+<dt>X_POWER<!--</dt>-->
+<dd class="ItemNote">The power of x for that coefficient. It's a positive or null integer.<!--</dd>-->
+<dt>Y_POWER<!--</dt>-->
+<dd class="ItemNote">The power of y for that coefficient. It's a positive or null integer.<!--</dd>-->
+<dt>Z_POWER<!--</dt>-->
+<dd class="ItemNote">The power of z for that coefficient. It's a positive or null integer.<!--</dd>-->
+<dt>VALUE<!--</dt>-->
+<dd class="ItemNote">The value as a FLOAT of the coefficient of the polynomial equation for that powers of x,y and z. If a coefficient is not specified, its value defaults to 0.<!--</dd>-->
+<dt>POLY_MODIFIERS:</dt>
+<dd><code>[<strong>sturm</strong> [BOOL]] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The cubic object:</dt>
+<dt>CUBIC:</dt>
+<dd><code><strong>cubic {</strong> &lt;&nbsp;CUBIC_COEFFICIENTS&nbsp;&gt; [POLY_MODIFIERS] <strong>}</strong></code></dd>
+<dt>CUBIC_COEFFICIENTS:</dt>
+<dd class="ItemNote">20 FLOATs separated by commas.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The quartic object:</dt>
+<dt>QUARTIC:</dt>
+<dd><code><strong>quartic {</strong> &lt;&nbsp;QUARTIC_COEFFICIENTS&nbsp;&gt; [POLY_MODIFIERS] <strong>}</strong></code></dd>
+<dt>QUARTIC_COEFFICIENTS:</dt>
+<dd class="ItemNote">35 FLOATs separated by commas.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">The quadric object:</dt>
+<dt>QUADRIC:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_3_3">Jump to SDL</a></dd>
+<dd><code><strong>quadric {</strong> &lt;&nbsp;FLOAT, FLOAT, FLOAT&nbsp;&gt;, &lt;&nbsp;FLOAT, FLOAT, FLOAT&nbsp;&gt;, &lt;&nbsp;FLOAT, FLOAT, FLOAT&nbsp;&gt;, FLOAT [OBJECT_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_8_4"></a>
+<div class="content-level-h4" contains="CSG" id="r3_8_8_4">
+<h4>3.8.8.4 CSG</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe one complex shape from multiple shapes:</dt>
+<dt>CSG_OBJECT:</dt>
+<dd class="Jump"><a href="r3_4.html#r3_4_4">Jump to SDL</a></dd>
+<dd><code>UNION | INTERSECTION | DIFFERENCE | MERGE</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Combine multiple shapes into one:</dt>
+<dt>UNION:</dt>
+<dd><code><strong>union {</strong> UNION_OBJECT UNION_OBJECT... [UNION_MODIFIERS] <strong>}</strong></code></dd>
+<dt>UNION_OBJECT:</dt>
+<dd><code>OBJECT | LIGHT</code></dd>
+<dt>UNION_MODIFIERS:</dt>
+<dd><code>[<strong>split_union</strong> BOOL] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Create a new shape from the overlapping portions of multiple shapes:</dt>
+<dt>INTERSECTION:</dt>
+<dd><code><strong>intersection {</strong> SOLID_OBJECT SOLID_OBJECT... [INTERSECTION_MODIFIERS] <strong>}</strong></code></dd>
+<dt>SOLID_OBJECT:</dt>
+<dd><code>FINITE_SOLID_OBJECT | INFINITE_SOLID_OBJECT | ISOSURFACE | CSG_OBJECT</code></dd>
+<dt>INTERSECTION_MODIFIERS:</dt>
+<dd><code>[<strong>cutaway_textures</strong>] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Subtract one or more shapes from another:</dt>
+<dt>DIFFERENCE:</dt>
+<dd><code><strong>difference {</strong> SOLID_OBJECT SOLID_OBJECT... [DIFFERENCE_MODIFIERS] <strong>}</strong></code></dd>
+<dt>DIFFERENCE_MODIFIERS:</dt>
+<dd><code>[<strong>cutaway_textures</strong>] &amp; [OBJECT_MODIFIERS]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Combine multiple shapes into one, removing internal surfaces:</dt>
+<dt>MERGE:</dt>
+<dd><code><strong>merge {</strong> SOLID_OBJECT SOLID_OBJECT... [OBJECT_MODIFIERS] <strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_9"></a>
+<div class="content-level-h3" contains="Object Modifiers" id="r3_8_9">
+<h3>3.8.9 Object Modifiers</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Manipulate the appearance of an object</dt>
+<dt>OBJECT_MODIFIERS:</dt>
+<dd><code>[OBJECT_PHOTONS] &amp; [CLIPPED_BY] &amp; [BOUNDED_BY] &amp; [MATERIAL] &amp; [INTERIOR] &amp; [INTERIOR_TEXTURE] &amp;[TEXTURE] &amp; [PIGMENT] &amp; [NORMAL] &amp; [FINISH] &amp; [TRANSFORMATION...] &amp; [<strong>no_shadow</strong>] &amp; [<strong>no_image</strong>[BOOL]] &amp; [<strong>no_radiosity</strong>[BOOL]] &amp; [<strong>no_reflection</strong>[BOOL]] &amp; [<strong>inverse</strong>] &amp; [<strong>double_illuminate</strong>[BOOL]] &amp; [<strong>hollow</strong>&nbsp;[BOOL]] &amp; [<strong>radiosity { importance</strong> IMPORTANCE <strong>}]</strong></code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Specify how an object should interact with photons:</dt>
+<dt>OBJECT_PHOTONS:</dt>
+<dd class="Jump"><a href="r3_6.html#r3_6_3_2_2">Jump to SDL</a></dd>
+<dd><code><strong>photons {</strong> OBJECT_PHOTON_ITEMS <strong>}</strong></code></dd>
+<dt>OBJECT_PHOTON_ITEMS:</dt>
+<dd><code>[<strong>target</strong> [F_SPACING_MULT]] &amp; [<strong>refraction</strong>&nbsp;BOOL] &amp; [<strong>reflection</strong>&nbsp;BOOL] &amp; [<strong>collect</strong>&nbsp;BOOL] &amp; [<strong>pass_through</strong>&nbsp;[BOOL]]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Slice a portion of a shape:</dt>
+<dt>CLIPPED_BY:</dt>
+<dd><code><strong>clipped_by {</strong> UNTEXTURED_SOLID_OBJECT... <strong>}</strong> |<br>
+<strong>clipped_by { bounded_by }</strong></code></dd>
+<dt>UNTEXTURED_SOLID_OBJECT:</dt>
+<dd><code>FINITE_SOLID_OBJECT | INFINITE_SOLID_OBJECT</code></dd>
+<dd class="ItemNote">Use neither with a texture applied.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Specify a bounding shape for an object:</dt>
+<dt>BOUNDED_BY:</dt>
+<dd><code><strong>bounded_by {</strong> UNTEXTURED_SOLID_OBJECT... <strong>}</strong> |<br>
+<strong>bounded_by { clipped_by }</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_9_1"></a>
+<div class="content-level-h4" contains="UV Mapping" id="r3_8_9_1">
+<h4>3.8.9.1 UV Mapping</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Map a texture to an object using surface coordinates:</dt>
+<dt>UV_MAPPING:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_7">Jump to SDL</a></dd>
+<dd><code><strong>uv_mapping</strong> PIGMENT | <strong>pigment&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="r3_8.html#r3_8_10_4">PIGMENT_BODY</a>&nbsp;<strong>}</strong> |<br>
+<strong>uv_mapping</strong> NORMAL | <strong>normal&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="r3_8.html#r3_8_10_5">NORMAL_BODY</a>&nbsp;<strong>}</strong> |<br>
+<strong>uv_mapping</strong> TEXTURE | <strong>texture&nbsp;{&nbsp;uv_mapping</strong>&nbsp;<a href="r3_8.html#r3_8_10_3">TEXTURE_BODY</a>&nbsp;<strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_9_2"></a>
+<div class="content-level-h4" contains="Material" id="r3_8_9_2">
+<h4>3.8.9.2 Material</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Group together surface textures and interior properties:</dt>
+<dt>MATERIAL:</dt>
+<dd><code><strong>material {</strong> [MATERIAL_IDENTIFIER] [MATERIAL_ITEM ...] <strong>}</strong></code></dd>
+<dt>MATERIAL_ITEMS:</dt>
+<dd><code>TEXTURE | INTERIOR_TEXTURE | INTERIOR | TRANSFORMATION</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_9_3"></a>
+<div class="content-level-h4" contains="Interior" id="r3_8_9_3">
+<h4>3.8.9.3 Interior</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe the interior of an object:</dt>
+<dt>INTERIOR:</dt>
+<dd class="Jump"><a href="r3_6.html#r3_6_1">Jump to SDL</a></dd>
+<dd><code><strong>interior {</strong> [INTERIOR_IDENTIFIER] [INTERIOR_ITEMS] <strong>}</strong></code></dd>
+<dt>INTERIOR_ITEMS:</dt>
+<dd><code>[<strong>ior</strong> FLOAT] &amp; [<strong>dispersion</strong>&nbsp;FLOAT] &amp; [<strong>dispersion_samples</strong>&nbsp;INT] &amp; [<strong>caustics</strong>&nbsp;FLOAT] &amp; [<strong>fade_distance</strong>&nbsp;FLOAT] &amp; [<strong>fade_power</strong>&nbsp;FLOAT] &amp; [<strong>fade_color</strong>&nbsp;COLOR] &amp; [MEDIA...]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_9_4"></a>
+<div class="content-level-h4" contains="Interior Texture" id="r3_8_9_4">
+<h4>3.8.9.4 Interior Texture</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe the interior surface of an object:</dt>
+<dt>INTERIOR_TEXTURE:</dt>
+<dd><code><strong>interior_texture {</strong> <a href="r3_8.html#r3_8_10_3">TEXTURE_BODY</a> <strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_10"></a>
+<div class="content-level-h3" contains="Texture" id="r3_8_10">
+<h3>3.8.10 Texture</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Describe the surface of an object</dt>
+<dt>TEXTURE:</dt>
+<dd><code>PLAIN_TEXTURE | LAYERED_TEXTURE | PATTERNED_TEXTURE</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_10_1"></a>
+<div class="content-level-h4" contains="Plain Texture" id="r3_8_10_1">
+<h4>3.8.10.1 Plain Texture</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe a texture consisting of a single pigment, normal and finish:</dt>
+<dt>PLAIN_TEXTURE:</dt>
+<dd><code><strong>texture {</strong> PLAIN_TEXTURE_BODY <strong>}</strong></code></dd>
+<dt>PLAIN_TEXTURE_BODY:</dt>
+<dd><code>[PLAIN_TEXTURE_IDENT] [PNF_IDENTIFIERS] [PNF_ITEMS]</code></dd>
+<dt>PNF_IDENTIFIERS:</dt>
+<dd><code>[PIGMENT_IDENTIFIER] &amp; [NORMAL_IDENTIFIER] &amp; [FINISH_IDENTIFIER]</code></dd>
+<dt>PNF_ITEMS:</dt>
+<dd><code>[PIGMENT] &amp; [NORMAL] &amp; [FINISH] &amp; [TRANSFORMATION...]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_10_2"></a>
+<div class="content-level-h4" contains="Layered Texture" id="r3_8_10_2">
+<h4>3.8.10.2 Layered Texture</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe a texture consisting of two or more semi-transparent layers:</dt>
+<dt>LAYERED_TEXTURE:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_6">Jump to SDL</a></dd>
+<dd><code><strong>texture {</strong> LAYERED_TEXTURE_IDENT <strong>}</strong> |<br> PLAIN_TEXTURE PLAIN_TEXTURE...</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_10_3"></a>
+<div class="content-level-h4" contains="Patterned Texture" id="r3_8_10_3">
+<h4>3.8.10.3 Patterned Texture</h4>
+<dl class="Syntax">
+<dt  class="SubDesc">Describe a texture using a pattern or blending function:</dt>
+<dt>PATTERNED_TEXTURE:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_5">Jump to SDL</a></dd>
+<dd><code><strong>texture {</strong> PATTERNED_TEXTURE_BODY <strong>}</strong></code></dd>
+<dt>PATTERNED_TEXTURE_BODY:</dt>
+<dd><code>PATTERNED_TEXTURE_IDENT [TRANSFORMATION...] | TEXTURE_PATTERN [PATTERN_MODIFIERS] | MATERIAL_MAP [TRANSFORMATION...]</code></dd>
+<dt>TEXTURE_PATTERN:</dt>
+<dd><code>TEXTURE_LIST_PATTERN | MAP_PATTERN TEXTURE_MAP</code></dd>
+<dt>TEXTURE_LIST_PATTERN:</dt>
+<dd><code><strong>brick</strong> TEXTURE, TEXTURE [BRICK_ITEMS] |<br>
+<strong>checker</strong> TEXTURE, TEXTURE |<br>
+<strong>hexagon</strong> TEXTURE, TEXTURE, TEXTURE |<br>
+<strong>object {</strong> LIST_OBJECT TEXTURE, TEXTURE <strong>}</strong><br>
+<strong>square</strong> TEXTURE, TEXTURE, TEXTURE, TEXTURE |<br>
+<strong>tiling</strong> [PATTERN_NUMBER] [TEXTURE_MAP] |<br>
+<strong>triangular</strong> TEXTURE, TEXTURE, TEXTURE, TEXTURE, TEXTURE, TEXTURE<br></code>
+</dd>
+<dt>BRICK_ITEMS:</dt>
+<dd><code>[<strong>brick_size</strong>&nbsp;VECTOR] &amp; [<strong>mortar</strong>&nbsp;FLOAT]</code></dd>
+<dt>LIST_OBJECT:</dt>
+<dd><code>UNTEXTURED_SOLID_OBJECT | UNTEXTURED_SOLID_OBJECT_IDENT</code></dd>
+<dt>TEXTURE_MAP:</dt>
+<dd><code><strong>texture_map {</strong> TEXTURE_MAP_BODY <strong>}</strong> <!--<linkto "quickref, blend_map_modifiers">[BLEND_MAP_MODIFIERS]</linkto>---><a href="r3_8.html#r3_8_10_8">[BLEND_MAP_MODIFIERS]</a></code></dd>
+<dt>TEXTURE_MAP_BODY:</dt>
+<dd><code>TEXTURE_MAP_IDENTIFIER | TEXTURE_MAP_ENTRY...</code></dd>
+<dd class="ItemNote">There may be from 2 to 256 map entries.</dd>
+<dt>TEXTURE_MAP_ENTRY:</dt>
+<dd><code><strong>[</strong> FLOAT TEXTURE_BODY <strong>]</strong></code></dd>
+<dd class="ItemNote">The brackets here are part of the map entry.</dd>
+<dt>TEXTURE_BODY:</dt>
+<dd><code>PLAIN_TEXTURE_BODY | LAYERED_TEXTURE_IDENT | PATTERNED_TEXTURE_BODY</code></dd>
+<dt>MATERIAL_MAP:</dt>
+<dd><code><strong>material_map {</strong> <a href="r3_8.html#r3_8_10_8">BITMAP_IMAGE</a> [BITMAP_MODIFIERS] TEXTURE... <strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_10_4"></a>
+<div class="content-level-h4" contains="Pigment" id="r3_8_10_4">
+<h4>3.8.10.4 Pigment</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe a color or pattern of colors for a texture:</dt>
+<dt>PIGMENT:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_1">Jump to SDL</a></dd>
+<dd><code><strong>pigment {</strong> PIGMENT_BODY <strong>}</strong></code></dd>
+<dt>PIGMENT_BODY:</dt>
+<dd><code>[PIGMENT_IDENTIFIER] [PIGMENT_TYPE] [PIGMENT_MODIFIERS] [PAVEMENT_MODIFIERS]</code></dd>
+<dt>PIGMENT_TYPE:</dt>
+<dd><code>COLOR | COLOR_LIST_PATTERN | PIGMENT_LIST_PATTERN | IMAGE_MAP | MAP_PATTERN&nbsp;[COLOR_MAP] | MAP_PATTERN&nbsp;PIGMENT_MAP</code></dd>
+<dt>COLOR_LIST_PATTERN:</dt>
+<dd><code><strong>brick</strong> [COLOR [, COLOR]] <!--<linkto "quickref, brick_item">[BRICK_ITEMS]</linkto>---><a href="r3_8.html#r3_8_10_3">[BRICK_ITEMS]</a> |<br>
+<strong>checker</strong> [COLOR [, COLOR]] |<br>
+<strong>hexagon</strong> [COLOR [, COLOR [, COLOR]]] |<br>
+<strong>object {</strong> <a href="r3_8.html#r3_8_10_3">LIST_OBJECT]] [COLOR [, COLOR</a> <strong>}</strong> |<br>
+<strong>square</strong> [COLOR_1 [, COLOR_2 [, COLOR_3 [, COLOR_4]]]] |<br>
+<strong>tiling</strong> [PATTERN_NUMBER] [COLOR_MAP] |<br>
+<strong>triangular</strong> [COLOR_1 [, COLOR_2 [, COLOR_3 [, COLOR_4 [, COLOR_5  [, COLOR_6]]]]]]</code>
+</dd>
+<dt>PIGMENT_LIST_PATTERN:</dt>
+<dd><code><strong>brick</strong> PIGMENT, PIGMENT <!--<linkto "quickref, brick_item">[BRICK_ITEMS]</linkto>---><a href="r3_8.html#r3_8_10_3">[BRICK_ITEMS]</a> |<br>
+<strong>checker</strong> PIGMENT, PIGMENT |<br>
+<strong>hexagon</strong> PIGMENT, PIGMENT, PIGMENT |<br>
+<strong>object {</strong> <a href="r3_8.html#r3_8_10_3">LIST_OBJECT</a> PIGMENT, PIGMENT <strong>}</strong> |<br>
+<strong>square</strong> [COLOR_1 [, COLOR_2 [, COLOR_3 [, COLOR_4]]]] |<br>
+<strong>tiling</strong> [PATTERN_NUMBER] [PIGMENT_MAP] |<br>
+<strong>triangular</strong> [COLOR_1 [, COLOR_2 [, COLOR_3 [, COLOR_4 [, COLOR_5  [, COLOR_6]]]]]]</code>
+</dd>
+<dt>IMAGE_MAP:</dt>
+<dd><code><strong>image_map {</strong><a href="r3_8.html#r3_8_10_8">BITMAP_IMAGE</a> [IMAGE_MAP_MODIFIER...] [BITMAP_MODIFIERS] <strong>}</strong></code></dd>
+<dt>IMAGE_MAP_MODIFIER:</dt>
+<dd><code><strong>filter</strong>&nbsp;I_PALETTE,&nbsp;F_AMOUNT | <strong>filter&nbsp;all</strong>&nbsp;F_AMOUNT | <strong>transmit</strong>&nbsp;I_PALETTE,&nbsp;F_AMOUNT | <strong>transmit&nbsp;all</strong>&nbsp;F_AMOUNT</code></dd>
+<dt>COLOR_MAP:</dt>
+<dd><code><strong>color_map {</strong> COLOR_MAP_BODY <strong>}</strong> <!--<linkto "quickref, blend_map_modifiers">[BLEND_MAP_MODIFIERS]</linkto>---><a href="r3_8.html#r3_8_10_3">[BLEND_MAP_MODIFIERS]</a> |<br>
+<strong>colour_map {</strong> COLOR_MAP_BODY <strong>}</strong> [BLEND_MAP_MODIFIERS]</code></dd>
+<dt>COLOR_MAP_BODY:</dt>
+<dd><code>COLOR_MAP_IDENTIFIER | COLOR_MAP_ENTRY...</code></dd>
+<dd class="ItemNote">There may be from 2 to 256 map entries.</dd>
+<dt>COLOR_MAP_ENTRY:</dt>
+<dd><code><strong>[</strong> FLOAT COLOR <strong>]</strong></code></dd>
+<dd class="ItemNote">The brackets here are part of the map entry.</dd>
+<dt>PATTERN_NUMBER:</dt>
+<dd><code><strong>[</strong> INT <strong>]</strong></code></dd>
+<dd class="ItemNote">1 of 24 different patterns.</dd>
+<dt>PIGMENT_MAP:</dt>
+<dd><code><strong>pigment_map {</strong> PIGMENT_MAP_BODY <strong>}</strong> <!--<linkto "quickref, blend_map_modifiers">[BLEND_MAP_MODIFIERS]</linkto>---><a href="r3_8.html#r3_8_10_3">[BLEND_MAP_MODIFIERS]</a></code></dd>
+<dt>PIGMENT_MAP_BODY:</dt>
+<dd><code>PIGMENT_MAP_IDENTIFIER | PIGMENT_MAP_ENTRY...</code></dd>
+<dd class="ItemNote">There may be from 2 to 256 map entries.</dd>
+<dt>PIGMENT_MAP_ENTRY:</dt>
+<dd><code><strong>[</strong> FLOAT PIGMENT_BODY <strong>]</strong></code></dd>
+<dd class="ItemNote">The brackets here are part of the map entry.</dd>
+<dt>PAVEMENT_MODIFIERS:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_11_27">Jump to SDL</a></dd>
+<dd><code>pavement number_of_sides SIDES_VALUE | number_of_tiles TILES_VALUE | pattern PATTERN_VALUE | exterior EXTERIOR_VALUE | interior INTERIOR_VALUE | form FORM_VALUE | PATTERN_MODIFIERS</code></dd>
+<dt>PIGMENT_MODIFIERS:</dt>
+<dd><code>[QUICK_COLOR] &amp; [PATTERN_MODIFIERS]</code></dd>
+<dt>QUICK_COLOR:</dt>
+<dd><code><strong>quick_color</strong>&nbsp;COLOR | <strong>quick_colour</strong>&nbsp;COLOR</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+
+
+<a name="r3_8_10_5"></a>
+<div class="content-level-h4" contains="Normal" id="r3_8_10_5">
+<h4>3.8.10.5 Normal</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Simulate the visual or tactile surface characteristics of a texture:</dt>
+<dt>NORMAL:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_2">Jump to SDL</a></dd>
+<dd><code><strong>normal {</strong> NORMAL_BODY <strong>}</strong></code></dd>
+<dt>NORMAL_BODY:</dt>
+<dd><code>[NORMAL_IDENTIFIER] [NORMAL_TYPE] [NORMAL_MODIFIERS]</code></dd>
+<dt>NORMAL_TYPE:</dt>
+<dd><code>NORMAL_PATTERN | BUMP_MAP</code></dd>
+<dt>NORMAL_PATTERN:</dt>
+<dd><code>NORMAL_LIST_PATTERN |<br>
+MAP_PATTERN [F_DEPTH] [SLOPE_MAP] |<br>
+MAP_PATTERN NORMAL_MAP</code></dd>
+<dt>NORMAL_LIST_PATTERN:</dt>
+<dd><code><strong>brick</strong> NORMAL, NORMAL <!--<linkto "quickref, brick_item">[BRICK_ITEMS]</linkto>---><a href="r3_8.html#r3_8_10_3">[BRICK_ITEMS]</a> | <strong>brick</strong>&nbsp;[F_DEPTH]&nbsp;[BRICK_ITEMS] |<br>
+<strong>checker</strong> NORMAL, NORMAL | <strong>checker</strong>&nbsp;[F_DEPTH] |<br>
+<strong>hexagon</strong> NORMAL, NORMAL, NORMAL | <strong>hexagon</strong>&nbsp;[F_DEPTH] |<br>
+<strong>object {</strong>  <a href="r3_8.html#r3_8_10_3">LIST_OBJECT</a> NORMAL, NORMAL <strong>}</strong> | <strong>object&nbsp;{</strong>&nbsp;LIST_OBJECT&nbsp;<strong>}</strong>&nbsp;[F_DEPTH]</code></dd>
+<dt>NORMAL_MAP:</dt>
+<dd><code><strong>normal_map {</strong> NORMAL_MAP_BODY <strong>}</strong> <!--<linkto "quickref, blend_map_modifiers">[BLEND_MAP_MODIFIERS]</linkto>---><a href="r3_8.html#r3_8_10_8">[BLEND_MAP_MODIFIERS]</a></code></dd>
+<dt>NORMAL_MAP_BODY:</dt>
+<dd><code>NORMAL_MAP_IDENTIFIER | NORMAL_MAP_ENTRY...</code></dd>
+<dd class="ItemNote">There may be from 2 to 256 map entries.</dd>
+<dt>NORMAL_MAP_ENTRY:</dt>
+<dd><code><strong>[</strong> FLOAT NORMAL_BODY <strong>]</strong></code></dd>
+<dd class="ItemNote">The brackets here are part of the map entry.</dd>
+<dt>SLOPE_MAP:</dt>
+<dd><code><strong>slope_map {</strong> SLOPE_MAP_BODY <strong>}</strong> <!--<linkto "quickref, blend_map_modifiers">[BLEND_MAP_MODIFIERS]</linkto>---><a href="r3_8.html#r3_8_10_8">[BLEND_MAP_MODIFIERS]</a></code></dd>
+<dt>SLOPE_MAP_BODY:</dt>
+<dd><code>SLOPE_MAP_IDENTIFIER | SLOPE_MAP_ENTRY...</code></dd>
+<dd class="ItemNote">There may be from 2 to 256 map entries.</dd>
+<dt>SLOPE_MAP_ENTRY:</dt>
+<dd><code><strong>[</strong> FLOAT, &lt; F_HEIGHT, F_SLOPE &gt; <strong>]</strong></code></dd>
+<dd class="ItemNote">The brackets here are part of the map entry.</dd>
+<dt>BUMP_MAP:</dt>
+<dd><code><strong>bump_map {</strong> <a href="r3_8.html#r3_8_10_8">BITMAP_IMAGE</a> [BUMP_MAP_MODIFIERS] <strong>}</strong></code></dd>
+<dt>BUMP_MAP_MODIFIERS:</dt>
+<dd><code><!--<linkto "quickref, bitmap">[BITMAP_MODIFIERS]</linkto>---><a href="r3_8.html#r3_8_10_8">[BITMAP_MODIFIERS]</a> &amp; [BUMP_METHOD] &amp; [<strong>bump_size</strong>&nbsp;FLOAT]</code></dd>
+<dt>BUMP_METHOD:</dt>
+<dd><code><strong>use_index</strong> | <strong>use_color</strong> | <strong>use_colour</strong></code></dd>
+<dt>NORMAL_MODIFIERS:</dt>
+<dd><code>[PATTERN_MODIFIERS] &amp; [<strong>bump_size</strong>&nbsp;FLOAT] &amp; [<strong>no_bump_scale</strong>&nbsp;[BOOL]] &amp; [<strong>accuracy</strong>&nbsp;FLOAT]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_10_6"></a>
+<div class="content-level-h4" contains="Finish" id="r3_8_10_6">
+<h4>3.8.10.6 Finish</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Describe the reflective properties of a surface:</dt>
+<dt>FINISH:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_3">Jump to SDL</a></dd>
+<dd><code><strong>finish {</strong> [FINISH_IDENTIFIER] [FINISH_ITEMS] <strong>}</strong></code></dd>
+<dt>FINISH_ITEMS:</dt>
+<dd><code>[<strong>ambient</strong> COLOR] &amp; [<strong>diffuse</strong>&nbsp;[albedo]&nbsp;FLOAT&nbsp;[, FLOAT]] &amp; [<strong>brilliance</strong>&nbsp;FLOAT] &amp; [PHONG] &amp; [SPECULAR] &amp;&nbsp;[REFLECTION] &amp; [IRID] &amp; [<strong>crand</strong>&nbsp;FLOAT] &amp; [SUBSURFACE] &amp; [<strong>conserve_energy</strong>&nbsp;[BOOL]]</code></dd>
+<dt>PHONG:</dt>
+<dd><code><strong>phong</strong>&nbsp;[albedo]&nbsp;FLOAT &amp; [<strong>phong_size</strong>&nbsp;FLOAT] &amp; [<strong>metallic</strong>&nbsp;[FLOAT]]</code></dd>
+<dt>SPECULAR:</dt>
+<dd><code><strong>specular</strong>&nbsp;[albedo]&nbsp;FLOAT &amp; [<strong>roughness</strong>&nbsp;FLOAT] &amp; [<strong>metallic</strong>&nbsp;[FLOAT]]</code></dd>
+<dt>REFLECTION:</dt>
+<dd><code><strong>reflection</strong> COLOR [<strong>reflection_exponent</strong>&nbsp;FLOAT] |<br>
+<strong>reflection {</strong> [COLOR,] COLOR [REFLECTION_ITEMS] <strong>}</strong></code></dd>
+<dt>REFLECTION_ITEMS:</dt>
+<dd><code>[<strong>fresnel</strong> BOOL] &amp; [<strong>falloff</strong>&nbsp;FLOAT] &amp; [<strong>exponent</strong>&nbsp;FLOAT] &amp; [<strong>metallic</strong>&nbsp;[FLOAT]]</code></dd>
+<dd class="ItemNote">Must also use <code><strong>interior&nbsp;{ior</strong>&nbsp;FLOAT<strong>}</strong></code> in the object when <strong><code>fresnel</code></strong> is used.</dd>
+<dt>IRID:</dt>
+<dd><code><strong>irid {</strong> F_AMOUNT [IRID_ITEMS] <strong>}</strong></code></dd>
+<dt>IRID_ITEMS:</dt>
+<dd><code>[<strong>thickness</strong> FLOAT] &amp; [<strong>turbulence</strong>&nbsp;FLOAT]</code></dd>
+<dt>SUBSURFACE:</dt>
+<dd><code><strong>subsurface { translucency</strong> COLOR <strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_10_7"></a>
+<div class="content-level-h4" contains="Pattern" id="r3_8_10_7">
+<h4>3.8.10.7 Pattern</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Specify a pattern function for a texture, pigment, normal or density:</dt>
+<dt>MAP_PATTERN:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_11">Jump to SDL</a></dd>
+<dd><code>AGATE | <strong>aoi</strong> | <strong>average</strong> | <strong>boxed</strong> | <strong>bozo</strong> | <strong>bumps</strong> | <strong>cells</strong> | CRACKLE | <strong>cubic</strong> | <strong>cylindrical</strong> | DENSITY_FILE |
+<strong>dents</strong> | FACETS | FRACTAL | <strong>function {</strong> <a href="r3_8.html#r3_8_3_4">FN_FLOAT</a> <strong>}</strong> | <strong>gradient</strong>&nbsp;VECTOR | <strong>granite</strong> | IMAGE_PATTERN |
+<strong>leopard</strong> | <strong>marble</strong> | <strong>onion</strong> | <strong>pigment_pattern&nbsp;{</strong>&nbsp;<a href="r3_8.html#r3_8_10_4">PIGMENT_BODY</a>&nbsp;<strong>}</strong> | <strong>planar</strong> | QUILTED | <strong>radial</strong> |
+<strong>ripples</strong> | SLOPE [SLOPE_EXTENSION] | <strong>spherical</strong> | <strong>spiral1</strong>&nbsp;I_NUM_ARMS | <strong>spiral2</strong>&nbsp;I_NUM_ARMS | <strong>spotted</strong> | <strong>waves</strong> |
+<strong>wood</strong> | <strong>wrinkles</strong></code></dd>
+<dt>AGATE:</dt>
+<dd><code><strong>agate</strong> [<strong>agate_turb</strong> FLOAT]</code></dd>
+<dt>CRACKLE:</dt>
+<dd><code><strong>crackle</strong> [CRACKLE_TYPES]</code></dd>
+<dt>CRACKLE_TYPES:</dt>
+<dd><code>[<strong>form</strong> VECTOR] &amp; [<strong>metric</strong>&nbsp;FLOAT] &amp; [<strong>offset</strong>&nbsp;FLOAT] &amp; [<strong>solid</strong>]</code></dd>
+<dt>DENSITY_FILE:</dt>
+<dd><code><strong>density_file df3</strong> FILE_NAME [<strong>interpolate</strong>&nbsp;DENSITY_INTERPOLATE]</code></dd>
+<dt>DENSITY_INTERPOLATE:</dt>
+<dd><code><strong>0</strong> | <strong>1</strong> | <strong>2</strong></code></dd>
+<dt>FACETS:</dt>
+<dd><code><strong>facets</strong> FACETS_TYPE</code></dd>
+<dd class="ItemNote">Note, <code><strong>facets</strong></code> can only be used as a <code><strong>normal</strong></code> pattern.</dd>
+<dt>FACETS_TYPE:</dt>
+<dd><code><strong>coords</strong> F_SCALE | <strong>size</strong>&nbsp;F_SIZE_FACTOR</code></dd>
+<dt>FRACTAL:</dt>
+<dd><code>MANDELBROT_FRACTAL | JULIA_FRACTAL | MAGNET_MANDEL_FRACTAL | MAGNET_JULIA_FRACTAL</code></dd>
+<dt>MANDELBROT_FRACTAL:</dt>
+<dd><code><strong>mandel</strong> I_ITERATIONS [<strong>exponent</strong>&nbsp;INT] [<strong>exterior</strong>&nbsp;EXTERIOR_TYPE,&nbsp;F_FACTOR] [<strong>interior</strong>&nbsp;INTERIOR_TYPE,&nbsp;F_FACTOR]</code></dd>
+<dt>JULIA_FRACTAL:</dt>
+<dd><code><strong>julia</strong> V2_COMPLEX, I_ITERATIONS [<strong>exponent</strong>&nbsp;INT] [<strong>exterior</strong>&nbsp;EXTERIOR_TYPE,&nbsp;F_FACTOR] [<strong>interior</strong>&nbsp;INTERIOR_TYPE,&nbsp;F_FACTOR]</code></dd>
+<dt>MAGNET_MANDEL_FRACTAL:</dt>
+<dd><code><strong>magnet</strong> MAGNET_TYPE <strong>mandel</strong>&nbsp;I_ITERATIONS [<strong>exterior</strong>&nbsp;EXTERIOR_TYPE,&nbsp;F_FACTOR] [<strong>interior</strong>&nbsp;INTERIOR_TYPE,&nbsp;F_FACTOR]</code></dd>
+<dt>MAGNET_TYPE:</dt>
+<dd><code><strong>1</strong> | <strong>2</strong></code></dd>
+<dt>MAGNET_JULIA_FRACTAL:</dt>
+<dd><code><strong>magnet</strong> MAGNET_TYPE <strong>julia</strong> V2_COMPLEX, I_ITERATIONS [<strong>exterior</strong>&nbsp;EXTERIOR_TYPE,&nbsp;F_FACTOR] [<strong>interior</strong>&nbsp;INTERIOR_TYPE,&nbsp;F_FACTOR]</code></dd>
+<dt>EXTERIOR_TYPE:</dt>
+<dd><code><strong>0</strong> | <strong>1</strong> | <strong>2</strong> | <strong>3</strong> | <strong>4</strong> | <strong>5</strong> | <strong>6</strong> | <strong>7</strong> | <strong>8</strong></code></dd>
+<dt>INTERIOR_TYPE:</dt>
+<dd><code><strong>0</strong> | <strong>1</strong> | <strong>2</strong> | <strong>3</strong> | <strong>4</strong> | <strong>5</strong> | <strong>6</strong></code></dd>
+<dt>IMAGE_PATTERN:</dt>
+<dd><code><strong>image_pattern {</strong><a href="r3_8.html#r3_8_10_8">BITMAP_IMAGE</a> [IMAGE_PATTERN_MODIFIERS] <strong>}</strong></code></dd>
+<dt>IMAGE_PATTERN_MODIFIERS:</dt>
+<dd><code><!--<linkto "quickref, bitmap">[BITMAP_MODIFIERS]</linkto>---><a href="r3_8.html#r3_8_10_8">[BITMAP_MODIFIERS]</a> &amp; [<strong>use_alpha</strong>]</code></dd>
+<dt>QUILTED:</dt>
+<dd><code><strong>quilted</strong> [<strong>control0</strong>&nbsp;FLOAT] [<strong>control1</strong>&nbsp;FLOAT]</code></dd>
+<dt>SLOPE:</dt>
+<dd><code><strong>slope {</strong> V_DIRECTION [, F_LOW_SLOPE, F_HIGH_SLOPE ] [<strong>altitude</strong>&nbsp;VECTOR [, F_LOW_ALT, F_HIGH_ALT ]] <strong>}</strong></code></dd>
+<dd class="ItemNote">The <code><strong>slope</strong></code> pattern does not work in media densities.</dd>
+<dt>SLOPE_EXTENSION:</dt>
+<dd><code><strong>slope { point_at</strong> REFERENCE_POINT [, F_LOW_SLOPE, F_HIGH_SLOPE ] <strong>}</strong></code></dd>
+<dd class="ItemNote">This variant currently does not allow for the <code>altitude</code> keyword to be used.</dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_10_8"></a>
+<div class="content-level-h4" contains="Pattern Modifiers" id="r3_8_10_8">
+<h4>3.8.10.8 Pattern Modifiers</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Modify the evaluation of a pattern function:</dt>
+<dt>PATTERN_MODIFIERS:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_12">Jump to SDL</a></dd>
+<dd><code>[TURBULENCE] &amp; [WARP...] &amp; [TRANSFORMATION...] &amp; [<strong>noise_generator</strong>&nbsp;NG_TYPE]</code></dd>
+<dt>NG_TYPE:</dt>
+<dd><code><strong>1</strong> | <strong>2</strong> | <strong>3</strong></code></dd>
+<dt>TURBULENCE:</dt>
+<dd><code><strong>turbulence</strong> VECTOR &amp; [<strong>octaves</strong>&nbsp;INT] &amp; [<strong>omega</strong>&nbsp;FLOAT] &amp; [<strong>lambda</strong>&nbsp;FLOAT]</code></dd>
+<dt>WARP:</dt>
+<dd><code><strong>warp {</strong> WARP_ITEM <strong>}</strong></code></dd>
+<dt>WARP_ITEM:</dt>
+<dd><code>REPEAT_WARP | BLACK_HOLE_WARP | TURBULENCE | CYLINDRICAL_WARP | SPHERICAL_WARP | TOROIDAL_WARP | PLANAR_WARP | cubic</code></dd>
+<dt>REPEAT_WARP:</dt>
+<dd><code><strong>repeat</strong> VECTOR [<strong>offset</strong>&nbsp;VECTOR] [<strong>flip</strong>&nbsp;VECTOR]</code></dd>
+<dt>BLACK_HOLE_WARP:</dt>
+<dd><code><strong>black_hole</strong> V_LOCATION, F_RADIUS [BLACK_HOLE_ITEMS]</code></dd>
+<dt>BLACK_HOLE_ITEMS:</dt>
+<dd><code>[<strong>strength</strong> FLOAT] &amp; [<strong>falloff</strong>&nbsp;FLOAT] &amp; [<strong>inverse</strong>] &amp; [<strong>repeat</strong>&nbsp;VECTOR&nbsp;[<strong>turbulence</strong>&nbsp;VECTOR]]</code></dd>
+<dt>CYLINDRICAL_WARP:</dt>
+<dd><code><strong>cylindrical</strong> [<strong>orientation</strong>&nbsp;VECTOR] [<strong>dist_exp</strong>&nbsp;FLOAT]</code></dd>
+<dt>SPHERICAL_WARP:</dt>
+<dd><code><strong>spherical</strong> [<strong>orientation</strong>&nbsp;VECTOR] [<strong>dist_exp</strong>&nbsp;FLOAT]</code></dd>
+<dt>TOROIDAL_WARP:</dt>
+<dd><code><strong>toroidal</strong> [<strong>orientation</strong>&nbsp;VECTOR] [<strong>dist_exp</strong>&nbsp;FLOAT] [<strong>major_radius</strong>&nbsp;FLOAT]</code></dd>
+<dt>PLANAR_WARP:</dt>
+<dd><code><strong>planar</strong> [V_NORMAL, F_DISTANCE]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Modify the usage of a blend map:</dt>
+<dt>BLEND_MAP_MODIFIERS:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_12_2">Jump to SDL</a></dd>
+<dd>[<strong>frequency</strong> FLOAT] &amp; [<strong>phase</strong> FLOAT] &amp; [WAVEFORM]</dd>
+<dt>WAVEFORM:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_12_3">Jump to SDL</a></dd>
+<dd><code><strong>ramp_wave</strong> | <strong>triangle_wave</strong> | <strong>sine_wave</strong> | <strong>scallop_wave</strong> | <strong>cubic_wave</strong> | <strong>poly_wave</strong>&nbsp;[F_EXPONENT]</code></dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Specify a two-dimensional bitmap image for a pattern:</dt>
+<dt>BITMAP_IMAGE:</dt>
+<dd><code>FUNCTION_IMAGE | BITMAP_TYPE&nbsp;FILE_NAME&nbsp;[gamma BITMAP_GAMMA] [premultiplied CAVEAT]
+</code></dd>
+<dt>FUNCTION_IMAGE:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_11_18">Jump to SDL</a></dd>
+<dd><code><strong>function</strong> I_WIDTH, I_HEIGHT <strong>{</strong>&nbsp;FUNCTION_IMAGE_BODY&nbsp;<strong>}</strong></code></dd>
+<dt>FUNCTION_IMAGE_BODY:</dt>
+<dd><code>PIGMENT | <a href="r3_8.html#r3_8_3_4">FN_FLOAT</a> | <strong>pattern&nbsp;{</strong>&nbsp;PATTERN [PATTERN_MODIFIERS]&nbsp;<strong>}</strong></code></dd>
+<dt>PATTERN:</dt>
+<dd><code>MAP_PATTERN | <strong>brick</strong> <!--<linkto "quickref, brick_item">[BRICK_ITEMS]</linkto>---><a href="r3_8.html#r3_8_10_3">[BRICK_ITEMS]</a> | <strong>checker</strong> | <strong>hexagon</strong> | <strong>object {</strong> <a href="r3_8.html#r3_8_10_3">LIST_OBJECT</a> <strong>}</strong></code></dd>
+<dt>BITMAP_TYPE:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_1_5">Jump to SDL</a></dd>
+<dd><code><strong>exr</strong> | <strong>gif</strong> | <strong>hdr</strong> | <strong>iff</strong> | <strong>jpeg</strong> | <strong>pgm</strong> | <strong>png</strong> | <strong>ppm</strong> |  <strong>sys</strong> | <strong>tga</strong> | <strong>tiff</strong></code></dd>
+<dt>BITMAP_GAMMA:</dt>
+<dd><code>FLOAT | <strong>srgb</strong></code></dd>
+<dt>CAVEAT:</dt>
+<dd class="ItemNote">Accepts a <code><strong>BOOL</strong></code> argument. This option does <em>NOT</em> apply when using <code>material_map</code>.</dd>
+</dl>
+
+<dl class="Syntax">
+<dt class="SubDesc">Modify how a 2-D bitmap is to be applied to a 3-D surface:</dt>
+<dt>BITMAP_MODIFIERS:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_12_7">Jump to SDL</a></dd>
+<dd><code>[<strong>once</strong>] &amp; [<strong>map_type</strong>&nbsp;MAP_TYPE] &amp; [<strong>interpolate</strong>&nbsp;INTERPOLATE_TYPE]</code></dd>
+<dt>MAP_TYPE:</dt>
+<dd><code><strong>0</strong> | <strong>1</strong> | <strong>2</strong> | <strong>5</strong></code></dd>
+<dt>INTERPOLATE_TYPE:</dt>
+<dd><code><strong>2</strong> | <strong>3</strong> | <strong>4</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_11"></a>
+<div class="content-level-h3" contains="Media" id="r3_8_11">
+<h3>3.8.11 Media</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Describe particulate matter</dt>
+<dt>MEDIA:</dt>
+<dd class="Jump"><a href="r3_6.html#r3_6_2">Jump to SDL</a></dd>
+<dd><code><strong>media {</strong> [MEDIA_IDENTIFIER] [MEDIA_ITEMS] <strong>}</strong></code></dd>
+<dt>MEDIA_ITEMS:</dt>
+<dd><code>[<strong>method</strong> METHOD_TYPE] &amp; [<strong>intervals</strong>&nbsp;INT] &amp; [<strong>samples</strong>&nbsp;I_MIN,&nbsp;I_MAX] &amp; [<strong>confidence</strong>&nbsp;FLOAT] &amp;&nbsp;[<strong>variance</strong>&nbsp;FLOAT] &amp; [<strong>ratio</strong>&nbsp;FLOAT] &amp; [<strong>absorption</strong>&nbsp;COLOR] &amp; [<strong>emission</strong>&nbsp;COLOR] &amp;&nbsp;[<strong>aa_threshold</strong>&nbsp;FLOAT] &amp; [<strong>aa_level</strong>&nbsp;INT] &amp; [SCATTERING] &amp; [DENSITY...] &amp; [TRANSFORMATION...] &amp; [<strong>collect</strong>&nbsp;BOOL]</code></dd>
+<dt>METHOD_TYPE:</dt>
+<dd><code><strong>1</strong> | <strong>2</strong> | <strong>3</strong></code></dd>
+<dt>SCATTERING:</dt>
+<dd><code><strong>scattering {</strong> SCATTERING_TYPE, COLOR [<strong>eccentricity</strong>&nbsp;FLOAT] [<strong>extinction</strong>&nbsp;FLOAT] <strong>}</strong></code></dd>
+<dt>SCATTERING_TYPE:</dt>
+<dd><code><strong>1</strong> | <strong>2</strong> | <strong>3</strong> | <strong>4</strong> | <strong>5</strong></code></dd>
+<dt>DENSITY:</dt>
+<dd><code><strong>density {</strong> DENSITY_BODY <strong>}</strong></code></dd>
+<dt>DENSITY_BODY:</dt>
+<dd><code>[DENSITY_IDENTIFIER] [DENSITY_TYPE] [PATTERN_MODIFIERS]</code></dd>
+<dt>DENSITY_TYPE:</dt>
+<dd><code>COLOR | <a href="r3_8.html#r3_8_10_4">COLOR_LIST_PATTERN</a> | DENSITY_LIST_PATTERN | MAP_PATTERN&nbsp;<!--<linkto "quickref, pigment">[COLOR_MAP]</linkto>---><a href="r3_8.html#r3_8_10_4">[COLOR_MAP]</a> | MAP_PATTERN&nbsp;DENSITY_MAP</code></dd>
+<dt>DENSITY_LIST_PATTERN:</dt>
+<dd><code><strong>brick</strong> DENSITY, DENSITY <!--<linkto "quickref, brick_item">[BRICK_ITEMS]</linkto>---><a href="r3_8.html#r3_8_10_3">[BRICK_ITEMS]</a> |<br>
+<strong>checker</strong> DENSITY, DENSITY |<br>
+<strong>hexagon</strong> DENSITY, DENSITY, DENSITY |<br>
+<strong>object {</strong> LIST_OBJECT DENSITY, DENSITY <strong>}</strong></code></dd>
+<dt>DENSITY_MAP:</dt>
+<dd><code><strong>density_map {</strong> DENSITY_MAP_BODY <strong>}</strong> [BLEND_MAP_MODIFIERS]</code></dd>
+<dt>DENSITY_MAP_BODY:</dt>
+<dd><code>DENSITY_MAP_IDENTIFIER | DENSITY_MAP_ENTRY...</code></dd>
+<dd class="ItemNote">There may be from 2 to 256 map entries.</dd>
+<dt>DENSITY_MAP_ENTRY:</dt>
+<dd><code><strong>[</strong> FLOAT DENSITY_BODY <strong>]</strong></code></dd>
+<dd class="ItemNote">The brackets here are part of the map entry.</dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_12"></a>
+<div class="content-level-h3" contains="Atmospheric Effects" id="r3_8_12">
+<h3>3.8.12 Atmospheric Effects</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Describe various background and atmospheric features</dt>
+<dt>ATMOSPHERIC_EFFECT:</dt>
+<dd><code>MEDIA | BACKGROUND | FOG | SKY_SPHERE | RAINBOW</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_12_1"></a>
+<div class="content-level-h4" contains="Background" id="r3_8_12_1">
+<h4>3.8.12.1 Background</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Specify a background color for the scene:</dt>
+<dt>BACKGROUND:</dt>
+<dd class="Jump"><a href="r3_3.html#r3_3_2_2">Jump to SDL</a></dd>
+<dd><code><strong>background {</strong> COLOR <strong>}</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_12_2"></a>
+<div class="content-level-h4" contains="Fog" id="r3_8_12_2">
+<h4>3.8.12.2 Fog</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Simulate a hazy or foggy atmosphere:</dt>
+<dt>FOG:</dt>
+<dd class="Jump"><a href="r3_3.html#r3_3_2_3">Jump to SDL</a></dd>
+<dd><code>CONSTANT_FOG | GROUND_FOG</code></dd>
+<dt>CONSTANT_FOG:</dt>
+<dd><code><strong>fog {</strong> [FOG_IDENTIFIER] [<strong>fog_type&nbsp;1</strong>] FOG_ITEMS <strong>}</strong></code></dd>
+<dt>FOG_ITEMS:</dt>
+<dd><code><strong>distance</strong> FLOAT &amp; COLOR &amp; <!--<linkto "quickref, pattern modifiers">[TURBULENCE</linkto>---><a href="r3_8.html#r3_8_10_8">[TURBULENCE]]&nbsp;[<strong>turb_depth</strong>&nbsp;FLOAT</a></code></dd>
+<dt>GROUND_FOG:</dt>
+<dd><code><strong>fog {</strong> [FOG_IDENTIFIER] <strong>fog_type&nbsp;2</strong> GROUND_FOG_ITEMS <strong>}</strong></code></dd>
+<dt>GROUND_FOG_ITEMS:</dt>
+<dd><code>FOG_ITEMS &amp; <strong>fog_offset</strong>&nbsp;FLOAT &amp; <strong>fog_alt</strong>&nbsp;FLOAT &amp; [<strong>up</strong>&nbsp;VECTOR&nbsp;[TRANSFORMATION...]]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_12_3"></a>
+<div class="content-level-h4" contains="Sky Sphere" id="r3_8_12_3">
+<h4>3.8.12.3 Sky Sphere</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Specify a sky pigment:</dt>
+<dt>SKY_SPHERE:</dt>
+<dd class="Jump"><a href="r3_3.html#r3_3_2_4">Jump to SDL</a></dd>
+<dd><code><strong>sky_sphere {</strong> [SKY_SPHERE_IDENTIFIER] [SKY_SPHERE_ITEM...] <strong>}</strong></code></dd>
+<dt>SKY_SPHERE_ITEM:</dt>
+<dd><code>PIGMENT | TRANSFORMATION</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_12_4"></a>
+<div class="content-level-h4" contains="Rainbow" id="r3_8_12_4">
+<h4>3.8.12.4 Rainbow</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Specify a rainbow arc:</dt>
+<dt>RAINBOW:</dt>
+<dd class="Jump"><a href="r3_3.html#r3_3_2_5">Jump to SDL</a></dd>
+<dd><code><strong>rainbow {</strong> [RAINBOW_IDENTIFIER] [RAINBOW_ITEMS] <strong>}</strong></code></dd>
+<dt>RAINBOW_ITEMS:</dt>
+<dd><code><strong>direction</strong> VECTOR &amp; <strong>angle</strong>&nbsp;FLOAT &amp; <strong>width</strong>&nbsp;FLOAT &amp; <strong>distance</strong>&nbsp;FLOAT &amp; <a href="r3_8.html#r3_8_10_4">COLOR_MAP</a> &amp; [<strong>jitter</strong>&nbsp;FLOAT] &amp;&nbsp;[<strong>up</strong>&nbsp;VECTOR] &amp; [<strong>arc_angle</strong>&nbsp;FLOAT] &amp; [<strong>falloff_angle</strong>&nbsp;FLOAT]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_13"></a>
+<div class="content-level-h3" contains="Global Settings" id="r3_8_13">
+<h3>3.8.13 Global Settings</h3>
+<dl class="Syntax">
+<dt class="SubDesc">Specify various settings that apply to the entire scene</dt>
+<dt>GLOBAL_SETTINGS:</dt>
+<dd class="Jump"><a href="r3_3.html#r3_3_3">Jump to SDL</a></dd>
+<dd><code><strong>global_settings {</strong> GLOBAL_SETTING_ITEMS <strong>}</strong></code></dd>
+<dt>GLOBAL_SETTING_ITEMS:</dt>
+<dd><code>[<strong>adc_bailout</strong> FLOAT] &amp; [<strong>ambient_light</strong>&nbsp;COLOR] &amp; [<strong>assumed_gamma</strong>&nbsp;GAMMA_VALUE] &amp; [<strong>hf_gray_16</strong>&nbsp;[BOOL]] &amp; [<strong>irid_wavelength</strong>&nbsp;COLOR] &amp; [<strong>charset</strong>&nbsp;GLOBAL_CHARSET] &amp; [<strong>max_intersections</strong>&nbsp;INT] &amp; [<strong>max_trace_level</strong>&nbsp;INT] &amp; [<strong>mm_per_unit</strong>&nbsp;INT] &amp; [<strong>number_of_waves</strong>&nbsp;INT] &amp; [<strong>noise_generator</strong>&nbsp;NG_TYPE] &amp; [RADIOSITY] &amp; [PHOTONS] &amp; [SUBSURFACE]</code></dd>
+<dt>GAMMA_VALUE:</dt>
+<dd><code>FLOAT | <strong>srgb</strong></code></dd>
+<dt>GLOBAL_CHARSET:</dt>
+<dd><code><strong>ascii</strong> | <strong>utf8</strong> | <strong>sys</strong></code></dd>
+<dt>NG_TYPE:</dt>
+<dd><code><strong>1</strong> | <strong>2</strong> | <strong>3</strong></code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_13_1"></a>
+<div class="content-level-h4" contains="Radiosity" id="r3_8_13_1">
+<h4>3.8.13.1 Radiosity</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Enable radiosity to compute diffuse inter-reflection of light:</dt>
+<dt>RADIOSITY:</dt>
+<dd class="Jump"><a href="r3_3.html#r3_3_4">Jump to SDL</a></dd>
+<dd><code><strong>radiosity {</strong> [RADIOSITY_ITEMS] <strong>}</strong></code></dd>
+<dt>RADIOSITY_ITEMS:</dt>
+<dd><code>[<strong>adc_bailout</strong> FLOAT] &amp; [<strong>always_sample</strong>&nbsp;BOOL] &amp; [<strong>brightness</strong>&nbsp;FLOAT] &amp; [<strong>count</strong>&nbsp;INT[,INT]] &amp;&nbsp;[<strong>error_bound</strong>&nbsp;FLOAT] &amp; [<strong>gray_threshold</strong>&nbsp;FLOAT] &amp; [<strong>low_error_factor</strong>&nbsp;FLOAT] &amp; [<strong>max_sample</strong>&nbsp;FLOAT] &amp; [<strong>maximum_reuse</strong>&nbsp;FLOAT] &amp; [<strong>media</strong>&nbsp;BOOL] &amp; [<strong>minimum_reuse</strong>&nbsp;FLOAT] &amp;&nbsp;[<strong>nearest_count</strong>&nbsp;INT[,INT]] &amp; [<strong>normal</strong>&nbsp;BOOL] &amp; [<strong>pretrace_end</strong>&nbsp;FLOAT] &amp; [<strong>pretrace_start</strong>&nbsp;FLOAT] &amp;&nbsp;[<strong>recursion_limit</strong>&nbsp;INT] &amp;&nbsp;[<strong>subsurface</strong>&nbsp;BOOL]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_13_2"></a>
+<div class="content-level-h4" contains="Photons" id="r3_8_13_2">
+<h4>3.8.13.2 Photons</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Enable photon mapping to render reflective and refractive caustics:</dt>
+<dt>PHOTONS:</dt>
+<dd class="Jump"><a href="r3_6.html#r3_6_3_2_1">Jump to SDL</a></dd>
+<dd><code><strong>photons {</strong> PHOTON_QUANTITY [PHOTON_ITEMS] <strong>}</strong></code></dd>
+<dt>PHOTON_QUANTITY:</dt>
+<dd><code><strong>spacing</strong> FLOAT | <strong>count</strong>&nbsp;INT</code></dd>
+<dt>PHOTON_ITEMS:</dt>
+<dd><code>[<strong>gather</strong> I_MIN, I_MAX] &amp; [<strong>media</strong>&nbsp;I_MAX_STEPS&nbsp;[,&nbsp;F_FACTOR]] &amp; [<strong>jitter</strong>&nbsp;FLOAT] &amp;&nbsp;[<strong>max_trace_level</strong>&nbsp;INT] &amp; [<strong>adc_bailout</strong>&nbsp;FLOAT] &amp; [<strong>save_file</strong>&nbsp;FILE_NAME] &amp; [<strong>load_file</strong>&nbsp;FILE_NAME] &amp;&nbsp;[<strong>autostop</strong>&nbsp;FLOAT] &amp; [<strong>expand_thresholds</strong>&nbsp;F_INCREASE,&nbsp;F_MIN] &amp; [<strong>radius</strong>&nbsp;[FLOAT, FLOAT, FLOAT, FLOAT]]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+<a name="r3_8_13_3"></a>
+<div class="content-level-h4" contains="Subsurface" id="r3_8_13_3">
+<h4>3.8.13.3 Subsurface</h4>
+<dl class="Syntax">
+<dt class="SubDesc">Enable and configure subsurface scattering:</dt>
+<dt>SUBSURFACE:</dt>
+<dd class="Jump"><a href="r3_5.html#r3_5_3_3_4">Jump to SDL</a></dd>
+<dd><code><strong>subsurface {</strong> [SUBSURFACE_ITEMS] <strong>}</strong></code></dd>
+<dt>SUBSURFACE_ITEMS:</dt>
+<dd><code>[<strong>radiosity</strong>&nbsp;BOOL] &amp; [<strong>samples </strong>&nbsp;INT,&nbsp;INT]</code></dd>
+</dl>
+<p><a href="r3_8.html#r3_8_1">Quick Reference Contents</a></p>
+
+</div>
+
+</div>
+
+</div>
+</body>
+</html>

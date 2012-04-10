@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
@@ -15,8 +15,12 @@
 //   You can enhance the image using PicLab's gamma, brightness, and
 //   contrast command when you post-process the image.
 
+#version 3.6;
 
-global_settings { assumed_gamma 0.8 max_trace_level 5 }
+global_settings {
+  assumed_gamma 0.8
+  max_trace_level 5
+}
 
 #include "colors.inc"
 #include "textures.inc"

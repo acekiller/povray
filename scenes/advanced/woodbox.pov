@@ -1,5 +1,5 @@
 // woodbox.pov
-// POV-Ray 3.5 scene file by Dan Farmer
+// POV-Ray scene file by Dan Farmer
 // Copyright POV-Team, 1995
 // Demonstrates some of the woods.inc textures.
 // Several wooden spheres (and one glass one), in and around
@@ -8,6 +8,8 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
+
 #include "colors.inc"
 #include "textures.inc"
 #include "shapes.inc"
@@ -15,7 +17,7 @@
 #include "glass.inc"
 #include "woods.inc"
 
-global_settings {max_trace_level 5}
+global_settings {max_trace_level 5 assumed_gamma 1.0}
 
 camera {
    location <-5, 10, -15>
@@ -213,7 +215,17 @@ union {
     }
 
     // Outside of box
-    sphere { <-5.5, 0.95, 0.8>, 0.95 texture { T_Glass4 } interior {I_Glass caustics 1} }
+    sphere { <-5.5, 0.95, 0.8>, 0.95
+      // texture { T_Glass4 } interior {I_Glass caustics 1}
+      // converted to material 26Sep2008 (jh)
+      material {
+        texture {
+          pigment { color rgbf <0.98, 1.0, 0.99, 0.75> }
+          finish { F_Glass4 }
+          }
+        interior {I_Glass caustics 1}
+        }
+      }
     // Outside of box
     sphere { <-5.00, 0.75, -2.0>, 0.75 texture { T_Copper_2B} }
     // Outside of box

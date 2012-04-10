@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision Raytracer sample file.
 // Created by Fabien Mosen - April 8 2001
 // This file contains the environnement objects for the camera
 // demo files.

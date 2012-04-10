@@ -11,13 +11,14 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
+
 #include "colors.inc"
 #include "shapes.inc"
 #include "textures.inc"
 
-
-global_settings { 
-  assumed_gamma 2.2 
+global_settings {
+  assumed_gamma 2.2
   max_trace_level 5
 }
 
@@ -27,8 +28,6 @@ camera {
    up  <0, 1, 0>
    right <4/3, 0, 0>
    look_at <0.25, 0.15, 0>
-
-
 }
 
 light_source { <-5, 50, -5> colour red 0.85 green 0.85 blue 0.85 }

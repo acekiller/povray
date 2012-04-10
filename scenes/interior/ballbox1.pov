@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File by Dan Farmer
 // Demonstrates glass textures, CGS with box primitives, one of Mike Miller's
 // fabulous marble textures, modified with an "octaves" change, and doesn't
@@ -7,11 +7,13 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { 
-  assumed_gamma 2.2 
-  max_trace_level 5
-}
+#version 3.6;
 
+global_settings {
+  assumed_gamma 2.2
+  max_trace_level 5
+  }
+  
 #include "colors.inc"
 #include "shapes.inc"
 #include "textures.inc"
@@ -33,18 +35,20 @@ light_source {< 32, 11, -20> color LightGray}
 union {
    // A green glass ball inside of a box-shaped frame
    sphere { <0, 0, 0>, 1.75
-      interior{
-         caustics 1.0
-         ior 1.5
-      }
-      texture {
-         T_Glass1
+      // converted to material 07Aug2008 (jh)
+      material {
+        texture {
          pigment {color green 0.90 filter 0.85}
          finish {
             phong 1 phong_size 300         // Very tight highlights
             reflection 0.15                // Needs a little reflection added
+            }
          }
-      }
+       interior{
+         caustics 1.0
+         ior 1.5
+         }
+       }
    }
 
    // A box-shaped frame surrounding a green glass ball

@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Demo using the spiral1 texture ... by Dieter Bayer, May 1994
 //
 // 9 discs with different spiral1 textures.
@@ -13,8 +13,8 @@
 // -w800 -h600 +a0.3
 //
 
-
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+global_settings {assumed_gamma 2.2}
 
 #include "colors.inc"
 #include "shapes.inc"

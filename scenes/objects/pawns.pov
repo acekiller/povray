@@ -4,12 +4,14 @@
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
-
-global_settings { assumed_gamma 1.8 }
+#version 3.6;
+global_settings { 
+  assumed_gamma 1.8
+}
 
 #include "colors.inc"
 #include "shapes.inc"
-#include "textures.inc"
+//#include "textures.inc"
 
 //
 //   Yellow pine, close grained

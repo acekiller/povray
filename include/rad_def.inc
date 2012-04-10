@@ -1,12 +1,13 @@
 //    Persistence of Vision Ray Tracer version 3.5 Include File
 //    File: rad_def.inc
-//    Last updated: 2001.7.26
+//    Last updated: 2010.5.24
 //    Description: Set some common radiosity settings.
+
 // These settings are extremely general and are intended for
 // ease of use, and don't necessarily give the best results.
 
-//Modified 2001.7.26: Made Normal and Media parameters work
-//no matter what setting is used. (Chris Huff)
+// Modified 2001.7.26: Made Normal and Media parameters work
+// no matter what setting is used. (Chris Huff)
 
 #ifndef(Rad_Def2_Inc_Temp)
 #declare Rad_Def2_Inc_Temp = version;
@@ -39,7 +40,6 @@
 //   }
 // }
 //
-// ####### DON NOT FORGET TO USE THE +QR/Radiosity=on OPTION ########
 //
 // for first parameter use one of the above constants
 //
@@ -55,7 +55,7 @@
 
   #switch(Nbr)
 
-    // An empty raddiosiy block uses deault settings
+    // An empty radiosity block using default settings
     #case (Radiosity_Default)
     #debug "\nRadiosity_Default in use\n"
     #break

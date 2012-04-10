@@ -6,13 +6,15 @@
 //       textures in woods.inc
 // Date: 2001/07/28
 // Auth: Ingo Janssen
-//
- 
-#version 3.5;
+#version 3.6;
+global_settings { 
+  assumed_gamma 1.0
+}
+
 #include "colors.inc"
 #include "woods.inc"
 #include "html_gen.inc"
-global_settings {assumed_gamma 1.0}
+
 
 #declare Generate_HTML=yes;
 #declare Generate_Images=yes;
@@ -67,8 +69,8 @@ global_settings {assumed_gamma 1.0}
    
    union {
       plane {y, 0}
-      difference {
-         sphere{0,1 scale <0.6,0.3,0.6>}
+      sphere{0, 1
+         scale <0.6,0.3,0.6>
          translate<0.55,0,0.5>
       }
       texture{textureArr[frame_number-1]}

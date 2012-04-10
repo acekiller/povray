@@ -467,7 +467,7 @@ color_map {
 color_map {
     [0.00 0.30 color rgb <0.35, 0.175, 0.0875> 
                color rgb <1.00, 0.500, 0.2500> ]
-    [0.30 1.00 color Clear color Clear]
+    [0.30 1.00 color rgbf 1 color rgbf 1]
 }
 #version Woodmaps_Inc_Temp;
 #end

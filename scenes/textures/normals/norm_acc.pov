@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: norm_acc.pov
-// Vers: 3.5
 // Desc: normal accuracy sample
 // Date: April 2001
 // Auth: Christoph Hormann
@@ -8,15 +7,15 @@
 // -w512 -h384
 // -w640 -h480 +a0.3
 
-#version 3.5;
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+  max_trace_level 5
+}
 
 #include "colors.inc"
 #include "woods.inc"
-
-global_settings {
-  assumed_gamma 1
-  max_trace_level 5
-}
 
 light_source {
   <1.5, 0.3, 1.8>*10000

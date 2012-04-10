@@ -1,13 +1,16 @@
 // Persistence Of Vision Ray Tracer Include File
 // File: table_cloth.inc
-// Vers: 3.5
 // Desc: table cloth for 'balcony.pov' demonstration scene
 // Date: July/August 2001
 // Auth: Christoph Hormann
 
+// Updated: 09Aug2008 (jh) for v3.7 distribution
+
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-#version 3.5;
+#if (version < 3.7)
+  #version 3.5;
+#end
 
 #declare ClCol01=color rgb <0.8, 0.7, 0.4>;
 #declare ClCol02=color rgb <0.07, 0.12, 0.4>;

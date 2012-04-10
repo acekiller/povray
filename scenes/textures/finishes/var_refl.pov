@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: var_refl.pov
-// Vers: 3.5
 // Desc: Demo of the three reflection types
 // Date: 2001/04/15
 // Auth: ingo
@@ -9,8 +8,11 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-#version 3.5;
-global_settings {assumed_gamma 1.0}
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+}
 
 light_source {
    < 100, 500,-500>

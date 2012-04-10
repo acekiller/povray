@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Bump map example
 // File by Drew Wells
 // NOTE: Calls for "bumpmap_.png", but any 320x200 gif will work.
@@ -6,7 +6,11 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+}
 
 #include "colors.inc"
 

@@ -1,23 +1,23 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 
 //--------------------- Spiral Twist or SexWorms
 
 #declare Stem1_Inc_Temp = version;
-#version 1.0
+#version 3.5;
 
 #declare ccc = texture {
  pigment {
    marble
    turbulence 0.4
    colour_map {
-      [0.000 0.210   colour red  0.333  green  0.467  blue  0.404  alpha  0.000
-                     colour red  0.341  green  0.302  blue  0.039  alpha  0.000]
-      [0.210 0.555   colour red  0.341  green  0.302  blue  0.039  alpha  0.000
-                     colour red  0.584  green  0.388  blue  0.373  alpha  0.000]
-      [0.555 0.773   colour red  0.584  green  0.388  blue  0.373  alpha  0.000
-                     colour red  0.816  green  0.647  blue  0.518  alpha  0.000]
-      [0.773 1.001   colour red  0.816  green  0.647  blue  0.518  alpha  0.000
-                     colour red  0.333  green  0.467  blue  0.404  alpha  0.000]
+      [0.000 0.210   colour red  0.333  green  0.467  blue  0.404  filter  0.000
+                     colour red  0.341  green  0.302  blue  0.039  filter  0.000]
+      [0.210 0.555   colour red  0.341  green  0.302  blue  0.039  filter  0.000
+                     colour red  0.584  green  0.388  blue  0.373  filter  0.000]
+      [0.555 0.773   colour red  0.584  green  0.388  blue  0.373  filter  0.000
+                     colour red  0.816  green  0.647  blue  0.518  filter  0.000]
+      [0.773 1.001   colour red  0.816  green  0.647  blue  0.518  filter  0.000
+                     colour red  0.333  green  0.467  blue  0.404  filter  0.000]
 
    }
   }

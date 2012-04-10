@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //============================================
 // The field, new improved version  October. 2001
 // Copyright Gilles Tran 2001 
@@ -7,13 +7,18 @@
 // Render with a 2.67 ratio such as 320*120, 640*240, 1024*384, 1280*480
 //--------------------------------------------
 // -w320 -h120
-// -w640 -h240 +a0.3
-// -w1024 -h384 +a0.3
+// -w640 -h240 +a0.1
+// -w768 -h288 +a0.1
+// -w1024 -h384 +a0.1
 
 // Uncomment AreaOK=true below to turn on the area light
 // This will blur the shadow under the submarine
 // but the rendering time will extremely slow
-global_settings{max_trace_level 15}
+
+#version 3.6;
+
+global_settings{max_trace_level 15 assumed_gamma 1.0}
+
 #declare AreaOK=false;
 //#declare AreaOK=true;
 

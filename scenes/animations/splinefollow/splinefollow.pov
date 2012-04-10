@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File: splinefollow.pov
 // Desc: Spline demo animation that shows how to make an object or
 //       the camera fly along a spline. This is a cyclic animation.
@@ -14,6 +14,9 @@
 // in FIRST PERSON MODE:
 // 
 // +kff120 +kc declare=fp=1
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 #include "math.inc"
 #include "transforms.inc"

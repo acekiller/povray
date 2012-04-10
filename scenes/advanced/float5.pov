@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: float5.pov
 //	Author:
 //	Description: Demonstrates various new float math functions and #while loop
@@ -7,7 +7,11 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { assumed_gamma 1.0 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+  }
 
 #include "colors.inc"
 

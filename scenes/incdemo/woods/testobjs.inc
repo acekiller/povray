@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision Raytracer sample file.
 // Test object arrangement for the wood_x.pov files.
 
 union {

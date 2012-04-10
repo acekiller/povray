@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //
 // Features pseudo-Gaussian distribution and use of trace function
 // Scene concept and collision algorithm by Greg M. Johnson 2001
@@ -19,6 +19,8 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
+
 #declare WriteFile=true;  // turns on the generation of the stacks and write them to a file
 #declare WriteFile=false; // turns off the generation of the file, just read them from the previous file
 // ------------------------------
@@ -35,6 +37,7 @@
 #include "glass.inc"
 
 global_settings{
+    assumed_gamma 1.0
     max_trace_level 50
     adc_bailout 0.01
 }
@@ -55,7 +58,7 @@ camera {
         look_at CamEye
 }
 light_source{<0,-100,-50> color White*5 fade_distance 100 fade_power 2}
-plane{y,0 texture{pigment{rgbf <0.89, 0.98, 1.0, 0.95>}finish{F_Glass5}} hollow}
+plane{y,0 texture{pigment{rgbf <0.89, 0.98, 1.0, 0.95>}} finish{F_Glass5} interior {ior 1.5} hollow}
 
 sky_sphere{
     pigment{

@@ -1,6 +1,6 @@
 #!/bin/sh
 # ==============================================================================
-# POV-Ray 3.6 
+# POV-Ray 3.7 
 # allscene.sh - render all POV-Ray sample scenes
 # ==============================================================================
 # written November 2003 - January 2004 by Christoph Hormann
@@ -20,7 +20,7 @@
 #                   options for running
 # scene_directory:  if specified the sample scene in this directory are rendered, 
 #                   otherwise the scene directory is determined form the main 
-#                   povray ini file (usually /usr/local/share/povray-3.6/scenes).
+#                   povray ini file (usually /usr/local/share/povray-3.7/scenes).
 # html_file:        if specified a HTML file with links to the rendered 
 #                   images is written.  If Imagemagick 'convert' is installed
 #                   thumbnails for the images are generated as well.
@@ -30,7 +30,7 @@
 # test mode
 #SCENE_DIR=.
 
-VERSION=3.6
+VERSION=3.7
 VER_DIR=povray-$VERSION
 DEFAULT_DIR=/usr/local
 SYSCONFDIR=$DEFAULT_DIR/etc
@@ -57,18 +57,18 @@ case "$OPTIONS" in
   *log* | *LOG* | *Log* )
     DATE=`date`
     LOG_FILE="log.txt"
-    echo "log file for POV-Ray 3.6 sample scene render $DATE" > "$LOG_FILE"
+    echo "log file for POV-Ray 3.7 sample scene render $DATE" > "$LOG_FILE"
     ;;
   *all* | *ALL* | *All* )
     RENDER_ALL=--all
     ;;
 esac
 
-test "$1" == "-d" && SCENE_DIR="$2"
-test "$2" == "-d" && SCENE_DIR="$3"
-test "$3" == "-d" && SCENE_DIR="$4"
-test "$4" == "-d" && SCENE_DIR="$5" 
-test "$5" == "-d" && SCENE_DIR="$6"
+test "$1" = "-d" && SCENE_DIR="$2"
+test "$2" = "-d" && SCENE_DIR="$3"
+test "$3" = "-d" && SCENE_DIR="$4"
+test "$4" = "-d" && SCENE_DIR="$5" 
+test "$5" = "-d" && SCENE_DIR="$6"
 
 if [ -z "$SCENE_DIR" ] ; then
   INSTALL_DIR="`install_dir`"
@@ -99,11 +99,11 @@ if [ ! -d "$SCENE_DIR" ] ; then
   exit
 fi
 
-test "$1" == "-o" && OUTPUT_DIR="$2"
-test "$2" == "-o" && OUTPUT_DIR="$3"
-test "$3" == "-o" && OUTPUT_DIR="$4"
-test "$4" == "-o" && OUTPUT_DIR="$5" 
-test "$5" == "-o" && OUTPUT_DIR="$6"
+test "$1" = "-o" && OUTPUT_DIR="$2"
+test "$2" = "-o" && OUTPUT_DIR="$3"
+test "$3" = "-o" && OUTPUT_DIR="$4"
+test "$4" = "-o" && OUTPUT_DIR="$5" 
+test "$5" = "-o" && OUTPUT_DIR="$6"
 
 if [ -z "$OUTPUT_DIR" ] ; then
   if [ ! -w "$SCENE_DIR" ] ; then
@@ -133,12 +133,12 @@ fi
 
 HTML_FILE=
 
-test "$1" == "-h" && HTML_FILE="$2"
-test "$2" == "-h" && HTML_FILE="$3"
-test "$3" == "-h" && HTML_FILE="$4"
-test "$4" == "-h" && HTML_FILE="$5"
-test "$5" == "-h" && HTML_FILE="$6"
-test "$6" == "-h" && HTML_FILE="$7"
+test "$1" = "-h" && HTML_FILE="$2"
+test "$2" = "-h" && HTML_FILE="$3"
+test "$3" = "-h" && HTML_FILE="$4"
+test "$4" = "-h" && HTML_FILE="$5"
+test "$5" = "-h" && HTML_FILE="$6"
+test "$6" = "-h" && HTML_FILE="$7"
 
 if [ ! -z "$HTML_FILE" ] ; then
 

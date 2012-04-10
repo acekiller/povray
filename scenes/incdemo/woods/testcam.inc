@@ -1,7 +1,6 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision Raytracer sample file.
 // Camera and default test object definition for the wood_x.pov files.
 
-global_settings { assumed_gamma 2.2 }
 #include "colors.inc"
 #include "textures.inc"
 #include "shapes.inc"

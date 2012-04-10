@@ -8,10 +8,20 @@
 // by the PNG, TGA and PPM image types. For example the command
 // line setting +fn will set the output image type to PNG. See
 // the documentation for details. ) 
+//                                                      
+// In POV-Ray 3.7 and later 'hf_gray_16' has to be specified as
+// an option on the command-line (e.g. '+FNg'), in an INI file
+// (e.g. 'Grayscale_Output=true'), or (on some platforms) in a dialog.
+// See the documentation for more details.
 //
-// -w512 -h384
+// -w512 -h384 +FNg
 
-global_settings { assumed_gamma 2.2 hf_gray_16 }
+#version 3.6;
+global_settings { 
+  assumed_gamma 2.2
+  hf_gray_16
+}
+
 
 #include "colors.inc"
 

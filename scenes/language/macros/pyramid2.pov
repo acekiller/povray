@@ -1,4 +1,4 @@
-// Persistence Of Vision Ray Tracer POV-Ray 3.5 sample Scene
+// Persistence Of Vision Ray Tracer POV-Ray sample Scene
 // by Chris Young
 //    Based on a POV-Ray 3.0 file by
 //    Sven Hilscher * 3D-Max usergroup germany
@@ -19,6 +19,10 @@
 //   Z:  position of sphere
 //   R:  radius of sphere
 //   L:  level of recursion
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
+
 #macro Pyramid(X,Y,Z,R,L,D)
 
   sphere { <X,Y,Z>,R}

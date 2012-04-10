@@ -1,12 +1,14 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
+
 #include "colors.inc"
 #include "woods.inc"
 
-global_settings {max_trace_level 5}
+global_settings {max_trace_level 5 assumed_gamma 1.0}
 
 #declare IOR = 1.45;
 #declare Fade_Distance = 2;

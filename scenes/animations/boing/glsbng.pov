@@ -1,9 +1,14 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // GlassBoing animation by Joel NewKirk
+
+#version 3.6;
 
 #include "glass.inc"
 #include "colors.inc"
-global_settings { assumed_gamma 2.2 }
+
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #declare xfactor = clock*4;
 #declare spherey = 5+abs(50*sin((clock)*2*pi));
@@ -62,15 +67,20 @@ plane { z, 40 hollow on texture { Brick }}                            // back wa
 plane { y, 0 texture { Brick } translate -y*5 }             // floor
 
 sphere { <spherex,spherey, 0>, 10
-    texture {
+    // converted to material 26Sep2008 (jh)
+    /*texture {
         pigment { White filter 0.95}
         finish { F_Glass3 }
     }
-        interior{I_Glass
-            caustics 1
-//             fade_distance 30
-//             fade_power 1
+    interior{I_Glass
+        caustics 1
+        }*/
+    material {
+      texture {
+        pigment {White filter 0.95}
+        finish {F_Glass3}
         }
-
+      interior{I_Glass caustics 1}
+      }
 }
 

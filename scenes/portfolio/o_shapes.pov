@@ -6,14 +6,15 @@
 //       objects in shapes.inc
 // Date: 2001/08/13
 // Auth: Ingo Janssen
-//
+#version 3.6;
+global_settings { 
+  assumed_gamma 1.0
+}
 
-#version 3.5;
 #include "colors.inc"
 #include "shapes.inc"
 #include "functions.inc"
 #include "html_gen.inc"
-global_settings {assumed_gamma 1.0}
 
 #declare Generate_HTML=yes;
 #declare Generate_Images=yes;

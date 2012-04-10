@@ -7,13 +7,10 @@
 
 // -w320 -h240
 // -w512 -h384 +a0.3
-
-#version 3.5;
-
-global_settings {
-  assumed_gamma 1
+#version 3.6;
+global_settings { 
+  assumed_gamma 1.0
 }
-
 
 light_source {
   <-0.6, 1.6, 3.7>*10000

@@ -3,9 +3,9 @@
 #
 # Process this file with autoconf to produce the configure script.
 #
-# from Persistence of Vision(tm) Ray Tracer version 3.6.
+# from Persistence of Vision(tm) Ray Tracer version 3.7.
 # Copyright 1991-2003 Persistence of Vision Team
-# Copyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd.
+# Copyright 2003-2007 Persistence of Vision Raytracer Pty. Ltd.
 #---------------------------------------------------------------------------
 # NOTICE: This source code file is provided so that users may experiment
 # with enhancements to POV-Ray and to port the software to platforms other
@@ -21,120 +21,98 @@
 # DKBTrace was originally written by David K. Buck.
 # DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
 #---------------------------------------------------------------------------
-# $File: //depot/povray/3.6-release/unix/configure.ac $
-# $Revision: #7 $
-# $Change: 3032 $
-# $DateTime: 2004/08/02 18:43:41 $
+# $File: //depot/povray/smp/unix/configure.ac $
+# $Revision: #45 $
+# $Change: 5364 $
+# $DateTime: 2011/01/06 17:39:19 $
 # $Author: chrisc $
 # $Log$
 ##############################################################################
 
-# configure.ac for the source distribution of POV-Ray 3.6 for UNIX
-# Written by Nicolas Calimet <pov4grasp@free.fr>
-
-# This 'configure.ac' file is a full rewrite of the former 'configure.in'
-# prepared by Mark Gordon and distributed with the official POV-Ray 3.5
-# for Unix/Linux.  The hope is that the 'configure' script derived from
-# 'configure.ac' will work on most *nix architectures (and not only Linux).
-# 'configure.ac' comes with a set of supporting files that are needed to
-# generate a fresh 'configure'.  In particular, the 'acinclude.m4' file
-# defines all POV_* macros used throughout the present file.
-#
-# New features (among others):
-# * The supporting libraries (Zlib, PNG, JPEG, and TIFF) are included in
-#   the compilation process when they are either not found on the system
-#   or too old.  Otherwise the POV-Ray executable is linked against the
-#   shared libraries available on the system.  Full static linking is also
-#   possible through the --disable-shared option.
-# * Compilation flags (mostly for code optimization) are tested at
-#   configure time.  For now those flags are essentially oriented towards
-#   the GNU gcc compiler, but further tweaking might come along with
-#   experience in other compilers (e.g. Intel C/C++).
-# * It is no longer required to hand-edit the source/optout.h file to update
-#   the "Compiled by..." heading message.  Instead, configure uses the
-#   COMPILED_BY environment variable (required).
-
+# configure.ac for the source distribution of POV-Ray 3.7 for UNIX
+# Written by Nicolas Calimet <nicolas.calimet@povray.org>
+# Report bugs via http://bugs.povray.org/
+# Based on configure.ac from POV-Ray 3.6
 
 # Required autoconf version.
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 
 # Inits.
-# Cannot use a variable to define the POV-Ray version string.
-AC_INIT([POV-Ray], [3.6.1], [pov4grasp@free.fr], [povray])
-VERSION_BASE=3.6
-AC_SUBST([VERSION_BASE])
-AC_DEFINE_UNQUOTED([VERSION_BASE],
-  ["$VERSION_BASE"],
-  [Base version number of package]
-)
-AC_CONFIG_AUX_DIR([config])
-AC_CONFIG_HEADERS([conf.h])
-AC_CONFIG_SRCDIR([unix/unix.cpp])
 
-# Required versions of the supporting libraries.
+# The file VERSION must contain only the version string MAJOR.MINOR(.PATCHLEVEL)
+AC_INIT([POV-Ray], m4_normalize(m4_include([VERSION])), [unix-bugreports-2011@povray.org], [povray])
+
+# VERSION_BASE is then defined as MAJOR.MINOR
+VERSION_BASE=`echo $PACKAGE_VERSION | sed 's,\([[0-9]]*.[[0-9]]*\).*,\1,g'`
+AC_SUBST([VERSION_BASE])
+AC_DEFINE_UNQUOTED([VERSION_BASE], ["$VERSION_BASE"], [Base version number of package.])
+AC_CONFIG_AUX_DIR([unix/config])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_SRCDIR([unix/disp_text.cpp])
+
+# Additional autoconf macros.
+m4_include([unix/config/acx_pthread.m4])
+m4_include([unix/config/ax_arg_enable.m4])
+m4_include([unix/config/ax_arg_with.m4])
+m4_include([unix/config/ax_boost_base.m4])
+m4_include([unix/config/ax_boost_thread.m4])
+m4_include([unix/config/ax_test_compiler_flags.m4])
+m4_include([unix/config/ax_check_lib.m4])
+m4_include([unix/config/ax_check_libjpeg.m4])
+m4_include([unix/config/ax_check_libsdl.m4])
+m4_include([unix/config/ax_check_libtiff.m4])
+m4_include([unix/config/ax_check_openexr.m4])
+m4_include([unix/config/ax_compare_version.m4])
+m4_include([unix/config/ax_compiler_vendor.m4])
+m4_include([unix/config/ax_compiler_version.m4])
+m4_include([unix/config/ax_fix_incorrect_path.m4])
+m4_include([unix/config/ax_prog_ld_static.m4])
+m4_include([unix/config/ax_x86_arch.m4])
+
+# Required versions of the support libraries.
 # Must be declared after AC_INIT.
+required_libboost_version="1.37"
 required_libz_version="1.2.1"
 required_libpng_version="1.2.5"
 required_libjpeg_version="6b"
 required_libtiff_version="3.6.1"
+required_libsdl_version="1.2"
+required_openexr_version="1.2"
 
 # Supported options.
-POV_ARG_ENABLE([--enable-watch-cursor],
-  [enable a watch cursor over the display while rendering (X Window only)]
-)
-POV_ARG_ENABLE([--enable-strip],
-  [enable stripping all symbols from the object files (smaller binary)]
-)
-POV_ARG_ENABLE([--enable-debug],
-  [enable compiler debugging mode]
-)
-POV_ARG_ENABLE([--enable-profile],
-  [enable program execution profiling]
-)
-POV_ARG_ENABLE([--disable-optimiz],
-  [disable all compiler optimizations]
-)
-POV_ARG_ENABLE([--disable-pipe],
-  [disable usage of pipes during compilation (use temporary files instead)]
-)
-POV_ARG_ENABLE([--disable-shared],
-  [disable linking with shared libraries (build static binary)]
-)
-POV_ARG_ENABLE([--disable-lib-checks],
-  [disable checking for supporting image libraries (force compiling)]
-)
-POV_ARG_ENABLE([--disable-vsnprintf-check],
-  [disable checking for the C99 vsnprintf() function (systems without this functions will fail compiling the program)]
-)
-# cannot use $PACKAGE_NAME instead of litteral POV-Ray
-POV_ARG_ENABLE([--disable-io-restrictions],
-  [disable POV-Ray's mechanism for control of I/O operations]
-)
+AX_ARG_ENABLE([--enable-watch-cursor],     [enable a watch cursor over the display while rendering (X Window only)])
+AX_ARG_ENABLE([--enable-debug],            [enable compiler debugging mode])
+AX_ARG_ENABLE([--enable-profile],          [enable program execution profiling])
+AX_ARG_ENABLE([--enable-static],           [enable the linker to create static executable (no run-time dependancy to external libraries, larger binary)])
+AX_ARG_ENABLE([--disable-optimiz],         [disable all compiler optimizations])
+AX_ARG_ENABLE([--disable-optimiz-arch],    [disable architecture-specific compiler optimizations])
+AX_ARG_ENABLE([--disable-pipe],            [disable usage of pipes during compilation (use temporary files instead)])
+AX_ARG_ENABLE([--disable-strip],           [disable stripping all symbols from the object files (larger binary)])
+AX_ARG_ENABLE([--disable-shared],          [disable linking with shared libraries (same as --enable-static)])
+AX_ARG_ENABLE([--disable-io-restrictions], [disable POV-Ray's mechanism for control of I/O operations])
 
-POV_ARG_WITH([--without-cygwin-dll],
-  [don't link with the Cygwin DLL (MinGW required)]
-)
-POV_ARG_WITH([--with-svga],
-  [use the SVGA library (Linux only)]
-)
+AX_ARG_WITH([--without-cygwin-dll], [],    [don't link with the Cygwin DLL (MinGW required)])
+AX_ARG_WITH([--with-zlib],          [DIR], [use the ZLIB library (in directory DIR)])
+AX_ARG_WITH([--with-libpng],        [DIR], [use the PNG library (in directory DIR)])
+AX_ARG_WITH([--with-libjpeg],       [DIR], [use the JPEG library (in directory DIR)])
+AX_ARG_WITH([--with-libtiff],       [DIR], [use the TIFF library (in directory DIR)])
+AX_ARG_WITH([--with-libsdl],        [DIR], [use the SDL library (in directory DIR)])
+AX_ARG_WITH([--with-libmkl],        [DIR], [use the Intel(R) Math Kernel Library (in directory DIR)])
+AX_ARG_WITH([--with-openexr],       [DIR], [use the OpenEXR library (in directory DIR)]) 
 
-AC_ARG_VAR([COMPILED_BY],
-  [customize the "unofficial version" message which defaults to user@machine]
-)
-AC_ARG_VAR([C99_COMPATIBLE_RADIOSITY],
-  [adapt radiosity code to non-IEEE 754 floating point, requires ISO C99 compiler and library (see source/octree.cpp for details)]
-)
+AC_ARG_VAR([COMPILED_BY], [customize the "unofficial version" message (required argument)])
+AC_ARG_VAR([NON_REDISTRIBUTABLE_BUILD], [see the installation documentation])
+AC_ARG_VAR([C99_COMPATIBLE_RADIOSITY], [adapt radiosity code to non-IEEE 754 floating point, requires ISO C99 compiler and library (see octree.cpp for details)])
 
 
 ###############################################################################
-
 
 # Remove povray.ini unconditionally.
 rm -f ./povray.ini
 
 
 # Instruction message.
-if test -z "$COMPILED_BY"; then
+if test x"$COMPILED_BY" = x""; then
   echo "
 Welcome to the $PACKAGE_NAME $PACKAGE_VERSION configure script.
 
@@ -160,6 +138,7 @@ installation instructions.
   exit 1
 fi
 
+pov_no_distrib="${NON_REDISTRIBUTABLE_BUILD:-no}"
 
 # Don't use 'echo' (not saved into config.log / doesn't honor --silent).
 # Don't use AC_MSG_NOTICE which prints things first.
@@ -172,10 +151,7 @@ This is an unofficial version compiled by:
  $COMPILED_BY
 The POV-Ray Team(tm) is not responsible for supporting this version.])
 
-AC_DEFINE_UNQUOTED([DISTRIBUTION_MESSAGE_2],
-  [" $COMPILED_BY"],
-  [Who compiled this binary.]
-)
+AC_DEFINE_UNQUOTED([DISTRIBUTION_MESSAGE_2], [" $COMPILED_BY"], [Who compiled this binary.])
 
 
 ###############################################################################
@@ -187,15 +163,11 @@ Environment
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([1.7 dist-bzip2])
+AM_INIT_AUTOMAKE([1.9 dist-bzip2])
 AM_MAINTAINER_MODE
 
-POV_CHECK_PATH(C_INCLUDE_PATH, ".",
-  [pov_warn_path="$pov_warn_path C_INCLUDE_PATH"]
-)
-POV_CHECK_PATH(CPLUS_INCLUDE_PATH, ".",
-  [pov_warn_path="$pov_warn_path CPLUS_INCLUDE_PATH"]
-)
+AX_FIX_INCORRECT_PATH(C_INCLUDE_PATH, ".", [pov_warn_path="$pov_warn_path C_INCLUDE_PATH"])
+AX_FIX_INCORRECT_PATH(CPLUS_INCLUDE_PATH, ".", [pov_warn_path="$pov_warn_path CPLUS_INCLUDE_PATH"])
 
 
 ###############################################################################
@@ -204,20 +176,47 @@ AC_MSG_RESULT([
 Programs
 --------])
 
-# Check for C++ compiler and version.
-# Inits compiler flags to avoid defaults such as '-g -O2'.
-CXXFLAGS="$CXXFLAGS"
-POV_PROG_CXX_VERSION
-AC_DEFINE_UNQUOTED([COMPILER_VER],
-  [" ($pov_prog_cxx_version @ $host)"],
-  [Compiler version.]
-)
-
-# Check for C compiler for CFLAGS passed to supporting libraries.
-# Inits compiler flags to avoid defaults such as '-g -O2'.
+# Check for the C compiler (used in some library checks).
+# Init compiler flags to avoid defaults such as '-g -O2'.
 CFLAGS="$CFLAGS"
 AC_PROG_CC
 AC_PROG_CPP
+
+# Force checking essential (ANSI-compliant) headers.
+AC_CHECK_HEADERS([stdlib.h])
+
+
+# Check for the C++ compiler and version.
+# Init compiler flags to avoid defaults such as '-g -O2'.
+AC_LANG([C++])
+CXXFLAGS="$CXXFLAGS"
+AC_PROG_CXX
+AC_MSG_CHECKING([whether the $CXX compiler works])
+AC_LINK_IFELSE([AC_LANG_PROGRAM],
+  [AC_MSG_RESULT([yes])],
+  [
+    AC_MSG_RESULT([no])
+    AC_MSG_FAILURE([C++ compiler cannot create executables])
+  ]
+)
+AC_PROG_CXXCPP
+
+AX_COMPILER_VENDOR
+AX_COMPILER_VERSION
+pov_compiler=`echo $CXX | sed 's,.*/,,'`  # equivalent to `basename $CXX`
+pov_compiler_vendor="$ax_cv_cxx_compiler_vendor"
+pov_compiler_version="$pov_compiler"
+if test "$ax_compiler_version"; then
+  pov_compiler_version="$pov_compiler $ax_compiler_version"
+fi
+
+pov_built_for="$host"  # default
+AC_DEFINE_UNQUOTED([BUILD_ARCH], ["$build"], [Build architecture.])
+AC_DEFINE_UNQUOTED([COMPILER_VENDOR], ["$pov_compiler_vendor"], [Compiler vendor.])
+AC_DEFINE_UNQUOTED([COMPILER_VERSION], ["$pov_compiler_version"], [Compiler version.])
+AC_DEFINE_UNQUOTED([COMPILER_VER], [" ($pov_compiler_version @ $build)"], [Compiler version (processed).])
+
+
 
 # Not necessary when AM_MAINTAINER_MODE is called above.
 ###AC_PROG_MAKE_SET
@@ -228,33 +227,24 @@ AC_PROG_RANLIB
 ###############################################################################
 
 AC_MSG_RESULT([
-Language constructs and functions
----------------------------------])
+Libraries
+---------])
 
-AC_LANG(C++)
-
-# Don't link with the cygwin DLL.
-# Must be placed before any other header or function checks.
+# Link with or without the cygwin DLL.
 AC_MSG_CHECKING([whether to link with cygwin DLL])
 if test x"$with_cygwin_dll" = x"no"; then
   AC_MSG_RESULT([no])
-  case "$host" in
+  case "$build" in
     *cygwin*)
       pov_flags="-mno-cygwin"
       pov_cygwin_save_cxxflags="$CXXFLAGS"
-      pov_cygwin_save_cflags="$CFLAGS"
-      POV_PROG_CXX_FLAGS([$pov_flags],
+      AX_TEST_COMPILER_FLAGS([$pov_flags],
         [
-          POV_PROG_CC_FLAGS([$pov_flags],
+          AC_CHECK_LIB([mingw32], [main],
             [
-              AC_CHECK_LIB([mingw32], [main],
-                [
-                  LDFLAGS="$LDFLAGS $pov_flags"
-                  # -D__CYGWIN is required for tiffio.h (incl. in tiff_pov.cpp)
-                  CPPFLAGS="$CPPFLAGS -D__CYGWIN $pov_flags" 
-                ],
-                [with_cygwin_dll="yes"]
-              )
+              LDFLAGS="$LDFLAGS $pov_flags"
+              # -D__CYGWIN is required for tiffio.h (incl. in tiff_pov.cpp)
+              CPPFLAGS="$CPPFLAGS -D__CYGWIN $pov_flags" 
             ],
             [with_cygwin_dll="yes"]
           )
@@ -264,12 +254,11 @@ if test x"$with_cygwin_dll" = x"no"; then
       if test x"$with_cygwin_dll" != x"no"; then
         AC_MSG_WARN([Cannot link without Cygwin DLL])
         CXXFLAGS="$pov_cygwin_save_cxxflags"
-        CFLAGS="$pov_cygwin_save_cflags"
       fi
     ;;
   esac
 else
-  case "$host" in
+  case "$build" in
     *cygwin*)
       AC_MSG_RESULT([yes])
     ;;
@@ -279,9 +268,268 @@ else
   esac
 fi
 
+# Link with static library, update LDFLAGS.
+if test x"$enable_static" = x"yes" && test x"$enable_shared" != x"yes"; then
+  enable_shared="no"
+fi
+AC_MSG_CHECKING([whether to enable static linking])
+if test x"$enable_shared" = x"no"; then
+  AC_MSG_RESULT([yes])
+  AX_PROG_LD_STATIC
+else
+  AC_MSG_RESULT([no])
+fi
+
+# Try to use the -v compiler flag for better debugging.
+if test ! `$CXX -v < /dev/null 2> /dev/null`; then
+  pov_lib_save_cxxflags="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -v"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM()])
+  CXXFLAGS="$pov_lib_save_cxxflags"
+fi
+
+# Posix threads
+ACX_PTHREAD
+CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"  # append
+LIBS="$LIBS $PTHREAD_CFLAGS $PTHREAD_LIBS"  # append
+
+# Boost; required library
+# the following macro stops with error when boost is not found
+AX_BOOST_BASE([$required_libboost_version])
+AX_BOOST_THREAD
+if test x"$ax_cv_boost_thread" != x"yes"; then
+  AC_MSG_ERROR([cannot find a suitable boost thread library])
+else
+  CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"  # append
+  LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"     # append
+  LIBS="$BOOST_THREAD_LIB $LIBS"
+fi
+AC_MSG_CHECKING([whether the boost thread library is usable])
+AC_RUN_IFELSE(
+  [AC_LANG_PROGRAM([[
+#include <boost/thread/thread.hpp>
+    ]],
+    [[boost::defer_lock_t(); return 0;]])],
+  [AC_MSG_RESULT([yes])],
+  [
+    AC_MSG_RESULT([no])
+    AC_MSG_FAILURE([cannot link with the boost thread library])
+  ],
+  [AC_MSG_RESULT([cross-compiling])]  # FIXME
+)
+AC_DEFINE([USE_OFFICIAL_BOOST], [], [Use the official Boost libraries.])
+
+# Intel Math Kernel library
+pov_save_ldflags="$LDFLAGS"
+test x"$with_libmkl" != x"" && LDFLAGS="-L$with_libmkl $LDFLAGS"
+AC_CHECK_LIB([mkl], [sin]) 
+test x"ac_cv_lib_mkl_sin" = x"no" && LDFLAGS="$pov_save_ldflags"
+
+# libm
+AC_CHECK_LIB([m], [sin])
+
+# real-time clock
+AC_CHECK_LIB([rt], [clock_gettime])
+
+# libz; required library for distributable builds
+AC_MSG_CHECKING([whether to use the ZLIB library])
+if test x"$pov_no_distrib" = x"yes" && test x"$with_zlib" = x"no"; then
+  AC_MSG_RESULT([no (NON DISTRIBUTABLE BUILD)])
+  AC_MSG_WARN([all program features using the ZLIB library are disabled])
+  AC_DEFINE([LIBZ_MISSING], [], [Don't use libz.])
+else
+  if test x"$with_zlib" = x"no"; then
+    AC_MSG_ERROR([disabling support for ZLIB requires NON_REDISTRIBUTABLE_BUILD=yes])
+  fi
+  AC_MSG_RESULT([yes])
+  AX_CHECK_LIB([z], [$required_libz_version], [z], [zlibVersion], [zlib.h], [zlibVersion()], [$with_zlib])
+  if test x"$ax_check_lib" != x"ok"; then
+    AC_MSG_ERROR([cannot find a suitable ZLIB library])
+  else
+    pov_libz=ok
+  fi
+fi
+
+# libpng; required library for distributable builds
+AC_MSG_CHECKING([whether to use the PNG library])
+if test x"$pov_no_distrib" = x"yes" && test x"$with_libpng" = x"no"; then
+  AC_MSG_RESULT([no (NON DISTRIBUTABLE BUILD)])
+  AC_MSG_WARN([all program features using the PNG library are disabled])
+  AC_DEFINE([LIBPNG_MISSING], [], [Don't use libpng.])
+else
+  if test x"$with_libpng" = x"no"; then
+    AC_MSG_ERROR([disabling support for PNG requires NON_REDISTRIBUTABLE_BUILD=yes])
+  fi
+  AC_MSG_RESULT([yes])
+  AX_CHECK_LIB([png], [$required_libpng_version], [png14 png png12 png], [png_get_libpng_ver], [png.h], [png_get_libpng_ver(NULL)], [$with_libpng])
+  ### FIXME: do not allow for 1.4.x
+	# This doesn't appear to be needed now that we're allowing 1.4 (jh)
+  # AC_MSG_CHECKING([for libpng version < 1.4 (not supported at the moment!)])
+  # AX_COMPARE_VERSION([$ax_check_lib_version], [ge], [1.4], [ax_check_lib="bad"], [ax_check_lib="ok"])
+  # AC_MSG_RESULT([$ax_check_lib])
+  ###
+  if test x"$ax_check_lib" != x"ok"; then
+    AC_MSG_ERROR([cannot find a suitable PNG library])
+  else
+    pov_libpng=ok
+  fi
+fi
+
+# FIXME: what about cygwin?
+# libjpeg; required library for distributable builds
+AC_MSG_CHECKING([whether to use the JPEG library])
+if test x"$pov_no_distrib" = x"yes" && test x"$with_libjpeg" = x"no"; then
+  AC_MSG_RESULT([no (NON DISTRIBUTABLE BUILD)])
+  AC_MSG_WARN([all program features using the JPEG library are disabled])
+  AC_DEFINE([LIBJPEG_MISSING], [], [Don't use libjpeg.])
+else
+  if test x"$with_libjpeg" = x"no"; then
+    AC_MSG_ERROR([disabling support for JPEG requires NON_REDISTRIBUTABLE_BUILD=yes])
+  fi
+  AC_MSG_RESULT([yes])
+  AX_CHECK_LIBJPEG([$required_libjpeg_version], [$with_libjpeg])
+  if test x"$ax_check_libjpeg" != x"ok"; then
+    AC_MSG_ERROR([cannot find a suitable JPEG library])
+  else
+    # create jversion.h in builddir
+    test -d "./source" || mkdir ./source
+    echo "#define JVERSION \"${ax_check_libjpeg_version}\"" > ./source/jversion.h
+    pov_libjpeg=ok
+  fi
+fi
+
+# libtiff; required library for distributable builds
+AC_MSG_CHECKING([whether to use the TIFF library])
+if test x"$pov_no_distrib" = x"yes" && test x"$with_libtiff" = x"no"; then
+  AC_MSG_RESULT([no (NON DISTRIBUTABLE BUILD)])
+  AC_MSG_WARN([all program features using the TIFF library are disabled])
+  AC_DEFINE([LIBTIFF_MISSING], [], [Don't use libtiff.])
+else
+  if test x"$with_libtiff" = x"no"; then
+    AC_MSG_ERROR([disabling support for TIFF requires NON_REDISTRIBUTABLE_BUILD=yes])
+  fi
+  AC_MSG_RESULT([yes])
+  AX_CHECK_LIBTIFF([$required_libtiff_version], [$with_libtiff])
+  if test x"$ax_check_libtiff" != x"ok"; then
+    AC_MSG_ERROR([cannot find a suitable TIFF library])
+  else
+    pov_libtiff=ok
+  fi
+fi
+
+# OpenEXR; optional library
+AC_MSG_CHECKING([whether to use the OpenEXR library])
+if test x"$with_openexr" = x"no"; then
+  AC_MSG_RESULT([no])
+else
+  AC_MSG_RESULT([yes])
+  AX_CHECK_OPENEXR([$required_openexr_version])
+  if test x"$ax_check_openexr" = x"ok"; then
+    pov_libopenexr=ok
+  fi
+fi
+if test x"$pov_libopenexr" != x"ok"; then
+  AC_MSG_WARN([all program features using the OpenEXR library are disabled])
+  AC_DEFINE([OPENEXR_MISSING], [], [Don't use OpenEXR.])
+fi
+
+# Unix-specific display libraries.
+if test x"$with_cygwin_dll" = x"no"; then
+
+  # disable preview displays under Cygwin/MinGW
+  AC_MSG_NOTICE([X Window display will be disabled])
+  AC_MSG_NOTICE([SVGAlib display will be disabled])
+  AC_DEFINE([X_DISPLAY_MISSING], [], [Don't use the X Window System.])
+  pov_xwin_msg="disabled"
+
+else 
+
+  # libX11
+  # first add default paths to help finding X11
+  test x"$x_includes"  = x"NONE" && x_includes="/usr/include"
+  test x"$x_libraries" = x"NONE" && x_libraries="/usr/lib"
+
+  pov_xwin_msg="disabled"
+  AC_PATH_XTRA
+  if test x"$have_x" = x"yes"; then
+    AC_CHECK_HEADER([X11/Xlib.h],
+      [
+        AC_CHECK_LIB([X11], [XFlush],
+          [
+            # X_CFLAGS should actually be X_CPPFLAGS since it only adds -Idir
+            CPPFLAGS="$CPPFLAGS $X_CFLAGS"  # append
+            LDFLAGS="$LDFLAGS $X_LIBS"      # append
+            LIBS="$X_PRE_LIBS -lX11 $X_EXTRA_LIBS $LIBS"  # $PTHREAD_LIBS is already in $LIBS
+            pov_xwin_msg="enabled"
+          ],
+          [
+            AC_MSG_NOTICE([X Window display will be disabled])
+            AC_DEFINE([X_DISPLAY_MISSING],[1])
+          ],
+          [$X_PRE_LIBS $X_EXTRA_LIBS $PTHREAD_LIBS]
+        )
+      ]
+    )
+  else
+    AC_MSG_NOTICE([X Window display will be disabled])
+  fi
+
+  # color icon (libXpm) and X Window cursor
+  if test x"$pov_xwin_msg" = x"enabled"; then
+    AC_CHECK_HEADER([X11/xpm.h], [AC_CHECK_LIB([Xpm], [XpmCreatePixmapFromData])])
+    AC_MSG_CHECKING([whether to enable the watch cursor])
+    if test x"$enable_watch_cursor" = x"yes"; then
+      AC_MSG_RESULT([yes])
+      AC_CHECK_HEADER([X11/cursorfont.h],
+        [
+          AC_CHECK_FUNC([XCreateFontCursor],
+            [AC_DEFINE([USE_CURSOR], [], [Use a watch cursor while rendering.])],
+            [AC_MSG_NOTICE([watch cursor will be disabled])]
+          )
+        ]
+      )
+    else
+      AC_MSG_RESULT([no])
+    fi
+  fi
+
+  ### Note from Warp <warp@tag.povray.org> :
+  # Using "-static" for static linking in Solaris causes a linkage error.
+  # For some reason the X libraries in Solaris are not designed for static
+  # linking. [...] So at least for Solaris the '-static' flag should
+  # definitely be turned off by default.
+  if test x"$ax_cv_prog_ld_static" != x"" && test x"$ac_cv_lib_X11_XFlush" = x"yes"; then
+    case "$build" in
+      sparc-*)
+        AC_MSG_WARN([Using $ax_cv_prog_ld_static might cause a linkage error])
+      ;;
+    esac
+  fi
+
+  # libSDL
+  if test x"$pov_xwin_msg" = x"enabled"; then
+    AX_CHECK_LIBSDL([$required_libsdl_version])
+    if test x"$ax_check_libsdl" = x"ok"; then
+      pov_libsdl=ok
+      pov_xwin_msg="$pov_xwin_msg (using SDL)"
+    else
+      AC_MSG_WARN([the preview display is disabled])
+      pov_xwin_msg="disabled"  # FIXME
+    fi
+  fi
+
+fi  # with_cygwin_dll
+
+
+###############################################################################
+
+AC_MSG_RESULT([
+Language constructs and functions
+---------------------------------])
+
 # Compiling on the mingw32 platform (e.g. using MSYS) also requires
 # the -D__CYGWIN flag for tiff_pov.cpp
-case "$host" in
+case "$build" in
   *mingw32*)  CPPFLAGS="$CPPFLAGS -D__CYGWIN";;
 esac
 
@@ -289,33 +537,31 @@ esac
 # Language constructs.
 
 AC_HEADER_TIME
-AC_CHECK_HEADERS([limits.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([time.h limits.h sys/resource.h sys/time.h unistd.h])
 
 AC_TYPE_SIZE_T
 AC_STRUCT_TM
 
 AC_CHECK_SIZEOF([int])
 AC_CHECK_SIZEOF([long int])	# check for 64 bit support
-AC_CHECK_SIZEOF([size_t])       # check for 64 bit support
+AC_CHECK_SIZEOF([size_t])	# check for 64 bit support
 AC_CHECK_SIZEOF([float])
 
 
 # Checks for functions.
 
 # the test for memcmp does not work well with C++
-AC_LANG_PUSH(C)
+AC_LANG_PUSH([C])
 AC_FUNC_MEMCMP
-AC_LANG_POP(C)
+AC_LANG_POP([C])
 
-AC_TYPE_SIGNAL
-#AC_FUNC_STRFTIME
-#AC_FUNC_VPRINTF
+#AC_FUNC_STRFTIME  # FIXME
+#AC_FUNC_VPRINTF   # FIXME
 
 # vsnprintf <stdarg.h> (C99)
-if test x"$enable_vsnprintf_check" != x"no"; then
-  AC_CHECK_FUNC([vsnprintf],
-    [],
-    [AC_MSG_ERROR([
+AC_CHECK_FUNC([vsnprintf],
+  [],
+  [AC_MSG_ERROR([
 *** This system does not provide the C99 vsnprintf() function which
 *** is required to compile $PACKAGE_NAME.  You should consider updating
 *** your C library as it is too old.  Alternatively you might install
@@ -326,12 +572,11 @@ if test x"$enable_vsnprintf_check" != x"no"; then
 *** this function (meaning that compilation *will* fail unless you provide
 *** a replacement function), try the --disable-vsnprintf-check option.
 ])
-    ]
-  )
-fi
+  ]
+)
 
 # getcwd or its equivalent with getenv <unistd.h>
-AC_LANG_PUSH(C)
+AC_LANG_PUSH([C])
 AC_CHECK_FUNCS([getcwd],
   [],
   [
@@ -357,7 +602,7 @@ int main(void) { return (getenv("PWD") == NULL); }]
     )
   ]
 )
-AC_LANG_POP(C)
+AC_LANG_POP([C])
 
 # readlink <unistd.h>
 if test x"$enable_io_restrictions" != x"no"; then
@@ -370,32 +615,17 @@ if test x"$enable_io_restrictions" != x"no"; then
   )
 fi
 
+# nanosleep <time.h>
+AC_CHECK_FUNCS([nanosleep])
+
+# clock_gettime <time.h>
+AC_CHECK_FUNCS([clock_gettime])
+
+# getrusage <sys/resource.h>
+AC_CHECK_FUNCS([getrusage])
+
 # gettimeofday <sys/time.h>
-AC_CHECK_FUNCS([gettimeofday],
-  [AC_DEFINE([PRECISION_TIMER_AVAILABLE], [1], [Precision timer.])],
-  [AC_DEFINE([PRECISION_TIMER_AVAILABLE], [0], [Precision timer.])]
-)
-
-
-###############################################################################
-
-AC_MSG_RESULT([
-Libraries
----------])
-
-# Link with static library, update LDFLAGS.
-AC_MSG_CHECKING([whether to enable static linking])
-if test x"$enable_shared" = x"no"; then
-  AC_MSG_RESULT([yes])
-  POV_PROG_CXX_STATIC
-else
-  AC_MSG_RESULT([no])
-fi
-
-
-# libm
-AC_CHECK_LIB([m], [sin])
-
+AC_CHECK_FUNCS([gettimeofday])
 
 # asinh and friends (requires libm)
 AC_CHECK_FUNCS([asinh],
@@ -403,18 +633,15 @@ AC_CHECK_FUNCS([asinh],
   [AC_DEFINE([NEED_INVHYP], [], [Inverse hyperbolic functions.])]
 )
 
-
-# support for non-ieee compilers (requires libm)
-if test "$C99_COMPATIBLE_RADIOSITY" \
-|| test x"$ac_cv_sizeof_int" != x"4" \
-|| test x"$ac_cv_sizeof_float" != x"4"; then
+# support for non-IEEE compilers (requires libm)
+if test x"$C99_COMPATIBLE_RADIOSITY" != x"" || test x"$ac_cv_sizeof_int" != x"4" || test x"$ac_cv_sizeof_float" != x"4"; then
   AC_CHECK_FUNCS([copysign],
     [],
     [AC_MSG_ERROR([
 *** Cannot find the 'copysign' function required for non-ieee platform
 ])]
   )
-  if test -z "$C99_COMPATIBLE_RADIOSITY"; then  # auto-detection
+  if test x"$C99_COMPATIBLE_RADIOSITY" = x""; then  # auto-detection
     AC_CHECK_FUNCS([ilogbf],
       [AC_DEFINE([C99_COMPATIBLE_RADIOSITY], [2], [See source/octree.cpp for details.])],
       [AC_CHECK_FUNCS([ilogb],
@@ -446,259 +673,6 @@ if test "$C99_COMPATIBLE_RADIOSITY" \
 fi
 
 
-# Let's try to use the -v compiler flag for better debugging.
-# Backup compiler flags first.
-pov_lib_save_cflags="$CFLAGS"
-if ! test `$CC -v < /dev/null 2> /dev/null`; then
-  CFLAGS="$CFLAGS -v"
-fi
-pov_lib_save_cxxflags="$CXXFLAGS"
-if ! test `$CXX -v < /dev/null 2> /dev/null`; then
-  CXXFLAGS="$CXXFLAGS -v"
-fi
-
-
-# don't even look for libvga/libX11 under Cygwin/MinGW
-if test x"$with_cygwin_dll" = x"no"; then
-
-  AC_MSG_NOTICE([X Window display will be disabled])
-  AC_MSG_NOTICE([SVGAlib display will be disabled])
-  AC_DEFINE([X_DISPLAY_MISSING], [], [Don't use the X Window System.])
-  pov_xwin_msg="disabled"
-  pov_svga_msg="disabled"
-
-else 
-
-  # libvga and libvgagl
-  pov_svga_msg="disabled"
-  if test x"$with_svga" != x"no"; then
-    AC_CHECK_LIB([vga], [vga_init],
-      [AC_CHECK_LIB([vgagl], [gl_setcontextvga], [pov_svga_msg="enabled"], [], [-lvga])]
-    )
-    if test x"$pov_svga_msg" = x"disabled"; then
-      AC_MSG_NOTICE([SVGAlib display will be disabled])
-    fi
-  fi
-
-  # libX11
-  # Some systems seem to have libz in the X11 paths, so let's
-  # check for libX11 first.
-
-  # IRIX cannot find X headers/libraries, so set defaults.
-  case "$host" in
-    *irix*)
-      if test x"${x_includes}" = x"NONE"; then
-        x_includes="/usr/include"
-      fi
-      if test x"$x_libraries" = x"NONE"; then
-        x_libraries=""
-	# IRIX ld32/64 have weird use of -L flags (they exclude default paths)
-        # Add the content of LD_LIBRARY*_PATHS before system path
-        # Note that the first path is intentionnaly not prefixed with -L
-        if test x"$ac_cv_sizeof_long_int" = x"4"; then
-          if test "$LD_LIBRARYN32_PATH"; then
-            x_libraries=`echo $LD_LIBRARYN32_PATH | sed s,:," -L",g`
-          fi
-          x_libraries="$x_libraries -L/usr/lib32"
-        else
-          if test "$LD_LIBRARY64_PATH"; then
-            x_libraries=`echo $LD_LIBRARY64_PATH | sed s,:," -L",g`
-          fi
-          x_libraries="$x_libraries -L/usr/lib64"
-        fi
-      fi
-    ;;
-  esac
-
-  pov_xwin_msg="disabled"
-  AC_PATH_XTRA
-  if test x"$have_x" = x"yes"; then
-    AC_CHECK_LIB([X11], [XFlush],
-      [
-        # X_CFLAGS should actually be X_CPPFLAGS since it only adds -Idir
-        CPPFLAGS="$X_CFLAGS $CPPFLAGS"
-        LDFLAGS="$X_LIBS $LDFLAGS"
-        LIBS="$X_EXTRA_LIBS $X_PRE_LIBS -lX11 $LIBS"
-        pov_xwin_msg="enabled"
-      ],
-      [
-        AC_MSG_NOTICE([X Window display will be disabled])
-        AC_DEFINE([X_DISPLAY_MISSING],[1])
-      ],
-      [-L$x_libraries -lX11]
-    )
-  else
-    AC_MSG_NOTICE([X Window display will be disabled])
-  fi
-
-  if test x"$pov_xwin_msg" = x"enabled"; then
-    # Color icon and X Window cursor.
-    AC_CHECK_LIB([Xpm], [XpmCreatePixmapFromData])
-    AC_MSG_CHECKING([whether to enable the watch cursor])
-    if test x"$enable_watch_cursor" = x"yes"; then
-      AC_MSG_RESULT([yes])
-      AC_CHECK_FUNC([XCreateFontCursor],
-        [AC_DEFINE([USE_CURSOR], [], [Use a watch cursor while rendering.])],
-        [AC_MSG_NOTICE([watch cursor will be disabled])]
-      )
-    else
-      AC_MSG_RESULT([no])
-    fi
-  fi
-
-  ### Note from Warp <warp@tag.povray.org> :
-  # Using "-static" for static linking in Solaris causes a linkage error.
-  # For some reason the X libraries in Solaris are not designed for static
-  # linking. [...] So at least for Solaris the '-static' flag should
-  # definitely be turned off by default.
-  if test "$pov_cv_prog_cc_static" \
-  && test x"$ac_cv_lib_X11_XFlush" = x"yes"; then
-    case "$host" in
-      sparc-*)
-        AC_MSG_WARN([Using $pov_cv_prog_cc_static might cause a linkage error])
-      ;;
-    esac
-  fi
-
-fi  # with_cygwin_dll
-
-
-AC_MSG_CHECKING([for installed supporting libraries])
-if test x"$enable_lib_checks" != x"no"; then
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no, build them all])
-fi
-
-
-# Force the C compiler for testing the supporting libraries.
-# This may prevent build failure on some systems.
-AC_LANG_PUSH(C)
-
-
-# libz
-if test x"$enable_lib_checks" != x"no"; then
-  POV_CHECK_LIB([z], [$required_libz_version], [z],
-    [zlibVersion], [zlib.h], [zlibVersion()]
-  )
-fi
-if test x"$pov_check_lib" != x"ok"; then
-  if test x"$enable_lib_checks" != x"no"; then
-    AC_MSG_NOTICE([zlib will be built and statically linked to $PACKAGE_NAME])
-  fi
-  AC_CONFIG_SUBDIRS([libraries/zlib])
-  if test "$ac_cv_search_zlibVersion"; then
-    LIBS=`echo $LIBS | sed s,$ac_cv_search_zlibVersion,,g`
-  fi
-  INCZ="-I\$(top_srcdir)/libraries/zlib"
-  LIBZ="../libraries/zlib/libz.a"
-  export INCZ		# tell libpng and libtiff to use the provided zlib.
-fi
-AC_SUBST([INCZ])
-AC_SUBST([LIBZ])
-
-
-# libpng, depends on libz
-# if libz needs to be compiled, force compiling libpng as well
-if test x"$pov_check_lib" = x"ok"; then
-  if test x"$enable_lib_checks" != x"no"; then
-    # check libpng and update ${pov_check_lib}
-    POV_CHECK_LIB([png], [$required_libpng_version], [png12 png],
-      [png_get_libpng_ver], [png.h], [png_get_libpng_ver(NULL)]
-    )
-  fi
-elif test x"$enable_lib_checks" != x"no"; then
-  AC_MSG_CHECKING([for libpng])
-  AC_MSG_RESULT([forced by libz])
-fi
-if test x"$pov_check_lib" != x"ok"; then
-  if test x"$enable_lib_checks" != x"no"; then
-    AC_MSG_NOTICE([libpng will be built and statically linked to $PACKAGE_NAME])
-  fi
-  AC_CONFIG_SUBDIRS([libraries/png])
-  if test "$ac_cv_search_png_get_libpng_ver"; then
-    LIBS=`echo $LIBS | sed s,$ac_cv_search_png_get_libpng_ver,,g`
-  fi
-  INCPNG="-I\$(top_srcdir)/libraries/png"
-  LIBPNG="../libraries/png/libpng.a"
-fi
-AC_SUBST([INCPNG])
-AC_SUBST([LIBPNG])
-
-
-# libjpeg
-# always build it under cygwin which may use a custom jpeglib.h file
-case "$host" in
-  *cygwin*)
-    AC_MSG_CHECKING([for libjpeg])
-    AC_MSG_RESULT([forced by cygwin])
-  ;;
-
-  *)
-  if test x"$enable_lib_checks" != x"no"; then
-    POV_CHECK_LIBJPEG([$required_libjpeg_version])
-  fi
-  ;;
-esac
-if test x"$pov_check_libjpeg" != x"ok"; then
-  if test x"$enable_lib_checks" != x"no"; then
-    AC_MSG_NOTICE([libjpeg will be built and statically linked to $PACKAGE_NAME])
-  fi
-  AC_CONFIG_SUBDIRS([libraries/jpeg])
-  if test "$ac_cv_search_jpeg_std_error"; then
-    LIBS=`echo $LIBS | sed s,$ac_cv_search_jpeg_std_error,,g`
-  fi
-  INCJPEG="-I\$(top_srcdir)/libraries/jpeg"
-  LIBJPEG="../libraries/jpeg/libjpeg.a"
-  export INCJPEG	# tell libtiff to use the provided jpeg library.
-else
-  # create jversion.h in builddir
-  if ! test -d "./source"; then
-    mkdir ./source
-  fi
-  echo "#define JVERSION \"${pov_check_libjpeg_version}\"" > ./source/jversion.h
-fi
-AC_SUBST([INCJPEG])
-AC_SUBST([LIBJPEG])
-
-
-# libtiff, depends on libz and libjpeg
-if test -z "$INCZ"  &&  test -z "$INCJPEG"; then
-  if test x"$enable_lib_checks" != x"no"; then
-    POV_CHECK_LIBTIFF([$required_libtiff_version])
-  fi
-elif test x"$enable_lib_checks" != x"no"; then
-  AC_MSG_CHECKING([for libtiff])
-  if test "$INCZ"; then
-    AC_MSG_RESULT([forced by libz])
-  else
-    AC_MSG_RESULT([forced by libjpeg])
-  fi
-fi
-if test x"$pov_check_libtiff" != x"ok"; then
-  if test x"$enable_lib_checks" != x"no"; then
-    AC_MSG_NOTICE([libtiff will be built and statically linked to $PACKAGE_NAME])
-  fi
-  AC_CONFIG_SUBDIRS([libraries/tiff])
-  if test "$ac_cv_search_TIFFGetVersion"; then
-    LIBS=`echo $LIBS | sed s,$ac_cv_search_TIFFGetVersion,,g`
-  fi
-  INCTIFF="-I\$(top_srcdir)/libraries/tiff/libtiff -I\$(top_builddir)/libraries/tiff/libtiff"
-  LIBTIFF="../libraries/tiff/libtiff/libtiff.a"
-fi
-AC_SUBST([INCTIFF])
-AC_SUBST([LIBTIFF])
-
-
-# Revert to previous compiler (C++).
-AC_LANG_POP(C)
-
-
-# Restore initial compiler flags.
-CFLAGS="$pov_lib_save_cflags"
-CXXFLAGS="$pov_lib_save_cxxflags"
-
-
 ###############################################################################
 
 AC_MSG_RESULT([
@@ -706,9 +680,7 @@ Compiling
 ---------])
 
 # Start with no flags at all, so back them up first.
-pov_comp_save_cflags="$CFLAGS"
-pov_comp_save_cxxflags="$CXXFLAGS"
-CFLAGS=
+pov_save_cxxflags="$CXXFLAGS"
 CXXFLAGS=
 
 
@@ -718,23 +690,24 @@ if test x"$enable_pipe" = x"no"; then
   AC_MSG_RESULT([no])
 else
   AC_MSG_RESULT([yes])
-  pov_flags="-pipe"
-  POV_PROG_CXX_FLAGS([$pov_flags],
-    [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-  )
+  AX_TEST_COMPILER_FLAGS([-pipe])
 fi
 
 
 # Language.
 
 # don't use -ansi since it can make compilation fail (e.g. on cygwin).
-#POV_PROG_CXX_FLAGS([-ansi], [], [POV_PROG_CXX_FLAGS([-Aa])])
+#AX_TEST_COMPILER_FLAGS([-ansi], [], [AX_TEST_COMPILER_FLAGS([-Aa])])
 
 # -w would prevent all warning messages, even if -W... is given later on.
 # we don't want to clutter the compiling with lots of warnings.
-#POV_PROG_CXX_FLAGS([-W])
-#POV_PROG_CXX_FLAGS([-Wall], [], [POV_PROG_CXX_FLAGS([-fullwarn])])
-POV_PROG_CXX_FLAGS([-Wno-multichar])
+#AX_TEST_COMPILER_FLAGS([-W])
+#AX_TEST_COMPILER_FLAGS([-Wall], [], [AX_TEST_COMPILER_FLAGS([-fullwarn])])
+AX_TEST_COMPILER_FLAGS([-Wno-multichar])
+AX_TEST_COMPILER_FLAGS([-Wno-write-strings])
+if test x"$pov_compiler_vendor" = x"gnu"; then
+  AX_TEST_COMPILER_FLAGS([-fno-enforce-eh-specs])
+fi
 
 
 # I/O restrictions.
@@ -754,18 +727,10 @@ AC_MSG_CHECKING([whether to enable debugging])
 
 if test x"$enable_debug" = x"yes"; then
   AC_MSG_RESULT([yes])
-  pov_flags="-g"
-  POV_PROG_CXX_FLAGS([$pov_flags],
-    [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi],
-    [AC_MSG_WARN([Cannot set debugging mode])]
-  )
-  AC_DEFINE([MEM_STATS], [2], [Memory statistics.])
-  AC_DEFINE([MEM_TRACE], [],  [Memory tracing.])
-  AC_DEFINE([MEM_GUARD], [],  [Memory guard.])
-  AC_DEFINE([MEM_TAG],   [],  [Memory tag.])
+  AX_TEST_COMPILER_FLAGS([-g], [], [AC_MSG_WARN([Cannot set debugging mode])])
+  AC_DEFINE([UNIX_DEBUG], [], [Unix-specific debug messages.])
 else
   AC_MSG_RESULT([no])
-  AC_DEFINE([MEM_STATS], [1], [Memory statistics.])
 fi
 
 
@@ -775,18 +740,10 @@ AC_MSG_CHECKING([whether to enable profiling])
 
 if test x"$enable_profile" = x"yes"; then
   AC_MSG_RESULT([yes])
-  if test -z "$pov_cv_prog_cxx_flags_g"; then
-    pov_flags="-g"
-    POV_PROG_CXX_FLAGS([$pov_flags],
-      [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi],
-      [AC_MSG_WARN([Cannot set debugging mode])]
-    )
+  if test x"$ax_cv_prog_cxx_flags_g" = x""; then
+    AX_TEST_COMPILER_FLAGS([-g], [], [AC_MSG_WARN([Cannot set debugging mode])])
   fi
-  pov_flags="-pg"
-  POV_PROG_CXX_FLAGS([$pov_flags],
-    [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi],
-    [AC_MSG_WARN([Cannot set profiling mode])]
-  )
+  AX_TEST_COMPILER_FLAGS([-pg], [], [AC_MSG_WARN([Cannot set profiling mode])])
 else
   AC_MSG_RESULT([no])
 fi
@@ -796,19 +753,15 @@ fi
 
 AC_MSG_CHECKING([whether to enable stripping])
 
-if test x"$enable_strip" = x"yes"; then
+if test x"$enable_strip" = x"no"; then
+  AC_MSG_RESULT([no])
+else
   if test x"$enable_debug" = x"yes" || test x"$enable_profile" = x"yes"; then
     AC_MSG_RESULT([no, debugging/profiling mode is on])
   else
     AC_MSG_RESULT([yes])
-    pov_flags="-s"
-    POV_PROG_CXX_FLAGS([$pov_flags],
-      [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi],
-      [AC_MSG_WARN([Cannot set stripping mode])]
-    )
+    AX_TEST_COMPILER_FLAGS([-s], [], [AC_MSG_WARN([Cannot set stripping mode])])
   fi
-else
-  AC_MSG_RESULT([no])
 fi
 
 
@@ -821,264 +774,169 @@ if test x"$enable_optimiz" != x"no"; then
   AC_MSG_RESULT([yes])
 
   # don't try -fast (makes ICC fail when linking due to implied -ipo flag).
-  pov_flags="-O3"
-  POV_PROG_CXX_FLAGS([$pov_flags],
-    [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi],
-    [
-      pov_flags="-O2"
-      POV_PROG_CXX_FLAGS([$pov_flags],
-        [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi],
-        [
-          pov_flags="-O"
-          POV_PROG_CXX_FLAGS([$pov_flags],
-            [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-          )
-        ]
-      )
-    ]
-  )
+  AX_TEST_COMPILER_FLAGS([-O3], [], [AX_TEST_COMPILER_FLAGS([-O2], [], [AX_TEST_COMPILER_FLAGS([-O])])])
 
-  # gcc-specific flags.
-  if test x"$CXX" = x"g++"; then
-    if test x"$pov_cv_prog_cxx_flags_O" = x"yes"; then  # -O was set
-      for pov_flags in "-fexpensive-optimizations" "-finline-functions" "-foptimize-sibling-calls"; do
-        POV_PROG_CXX_FLAGS([$pov_flags],
-          [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-        )
-      done
-    elif test x"$pov_cv_prog_cxx_flags_O2" = x"yes"; then  # -O2 was set
-      pov_flags="-finline-functions"
-      POV_PROG_CXX_FLAGS([$pov_flags],
-        [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-      )
-    fi
-  # icc-specific flags.
-  elif test x"$CXX" = x"icc"; then
-    pov_flags="-ip"
-    POV_PROG_CXX_FLAGS([$pov_flags],
-      [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-    )
-  fi
-
-  # Arch-specific tuning, alphabetically ordered for conveniency.
-  case "$host" in
-
-    alphaev*6*)
-      ### Suggested by Christopher Endsley <endsley@yokuts.csustan.edu> .
-      for pov_flags in "-mcpu=ev56" "-mno-soft-float"; do
-        POV_PROG_CXX_FLAGS([$pov_flags],
-          [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-        )
-      done
+  # compiler-specific flags.
+  case "$pov_compiler_vendor" in
+    gnu)
+      if test x"$ax_cv_prog_cxx_flags_O" = x"yes"; then  # -O was set
+        for pov_flags in "-fexpensive-optimizations" "-finline-functions" "-foptimize-sibling-calls"
+        do
+          AX_TEST_COMPILER_FLAGS([$pov_flags])
+        done
+      elif test x"$ax_cv_prog_cxx_flags_O2" = x"yes"; then  # -O2 was set
+        AX_TEST_COMPILER_FLAGS([-finline-functions])
+      fi
+      AX_TEST_COMPILER_FLAGS([-ffast-math])
       ;;
 
-    i?86-* | k?-* | *86*64*)
-      if test x"$cross_compiling" != x"yes"; then
-        # head is used to handle SMP/HT systems
-        # check whether 'head -n 1' is supported; otherwise use older 'head -1'
-        if test -z "`head -n 1 /dev/null 2>&1`"; then
-          head_1='head -n 1'
-        else
-          head_1='head -1'
-        fi
+    intel)
+      AX_TEST_COMPILER_FLAGS([-ip])
+      ;;
+  esac
 
-        if test -r /proc/cpuinfo ; then  # Linux
-          pov_cpuinfo=/proc/cpuinfo
-        elif test -r /compat/linux/proc/cpuinfo ; then # FreeBSD using linprocfs
-          pov_cpuinfo=/compat/linux/proc/cpuinfo
-        elif test "`dmesg 2> /dev/null`"; then  # FreeBSD 4.9 at least
-          pov_modelname=`dmesg | grep CPU | $head_1 | cut -d: -f2 | tr A-Z a-z`
-          pov_cpuflags=`dmesg | grep Features | $head_1 | cut -d'<' -f2 | sed 's/[,>]/ /g' | tr A-Z a-z`
-          pov_vendorid=`dmesg | grep Origin | $head_1 | cut -d'"' -f2`
-        fi
-      fi
+  # Arch-specific tuning, alphabetically ordered for conveniency.
+  # Perform checks only when not cross-compiling.
+  AC_MSG_CHECKING([whether to enable architecture-specific optimizations])
+  if test x"$cross_compiling" != x"no"; then
+    AC_MSG_RESULT([no, cross-compiling])
+    pov_built_for="$pov_built_for (cross-compiled)"
+  elif test x"$enable_optimiz_arch" != x"no"; then
+    AC_MSG_RESULT([yes])
 
-      if test "$pov_cpuinfo"; then
-        pov_modelname=`cat $pov_cpuinfo | grep 'model name' | $head_1 | cut -d: -f2 | tr A-Z a-z`
-        pov_cpuflags=`cat $pov_cpuinfo | grep flags | $head_1 | cut -d: -f2`
-        pov_cpuflags=`echo $pov_cpuflags`  # remove leading/trailing blanks
-        pov_vendorid=`cat $pov_cpuinfo | grep vendor_id | $head_1 | cut -d: -f2`
-        pov_vendorid=`echo $pov_vendorid`
-      fi
+    case "$build" in
 
-      # log values
-      AC_TRY_COMMAND([echo pov_cpuinfo   = $pov_cpuinfo   > /dev/null])
-      AC_TRY_COMMAND([echo pov_modelname = $pov_modelname > /dev/null])
-      AC_TRY_COMMAND([echo pov_vendorid  = $pov_vendorid  > /dev/null])
-      AC_TRY_COMMAND([echo pov_cpuflags  = $pov_cpuflags  > /dev/null])
-
-      for flag in $pov_cpuflags ; do
-        case "$flag" in
-          sse)
-            pov_flags="-m$flag"
-            POV_PROG_CXX_FLAGS([$pov_flags],
-              [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-            )
-            pov_flags="-mfpmath=$flag"
-            POV_PROG_CXX_FLAGS([$pov_flags],
-              [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-            )
-            ;;
-          sse?)  # sse2, sse3
-            pov_flags="-m$flag"
-            POV_PROG_CXX_FLAGS([$pov_flags],
-              [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-            )
-            ;;
+      alphaev*6*)
+        ### Suggested by Christopher Endsley <endsley@yokuts.csustan.edu>
+        for pov_flags in "-mcpu=ev56" "-mno-soft-float"
+        do
+          AX_TEST_COMPILER_FLAGS([$pov_flags])
+        done
+        case "$CXXFLAGS" in
+          *-mcpu=ev56*)  pov_built_for="$pov_built_for | DEC Alpha EV5 with BWX extensions" ;;
         esac
-      done
+        ;;
 
-      if test -z "$pov_arch"; then
-        case "$host" in
-          i486-*)         pov_arch="i486";;
-          i586-*)         pov_arch="pentium";;  # for GCC / ICC
-          i686-*|i386-*)  # FreeBSD seems to only report i386
-            pov_cpu=${pov_modelname:-`uname -p 2> /dev/null`}
-            case "$pov_cpu" in
-              # Intel
-              *pentium*4*|*xeon*)  pov_arch="pentium4";;  # for GCC / ICC
-              *pentium*mmx*)       pov_arch="pentium";;   # catch this first
-              *pentium*m*)
-                if test x"$CXX" = x"icc"; then
-                  pov_arch="pentium4"
-                else
-                  pov_arch="pentium-m"
-                fi
-                ;;
-              *pentium*iii*|*celeron*)  # assume all celerons belong here
-                if test x"$CXX" = x"icc"; then
-                  pov_arch="pentiumiii"
-                else
-                  pov_arch="pentium3"
-                fi
-                ;;
-              *pentium*ii*)
-                if test x"$CXX" = x"icc"; then
-                  pov_arch="pentiumii"
-                else
-                  pov_arch="pentium2"
-                fi
-                ;;
-              *pentium*pro*)       pov_arch="pentiumpro";;  # for GCC / ICC
-              *pentium*)           pov_arch="pentium";;     # for GCC / ICC
-              # AMD
-              *athlon*xp*)         pov_arch="athlon-xp";;
-              *athlon*mp*)         pov_arch="athlon-mp";;
-              *athlon*|*duron*)    pov_arch="athlon";;
-              # others
-              *)                   pov_arch="i686";;  # don't support true i386
-            esac
-            pov_arch_fallback="i686"
-            ;;
-          k6-*)           pov_arch="k6"; pov_arch_fallback="i686";;
-          k7-*)           pov_arch="k7"; pov_arch_fallback="i686";;
-          k8-*|x86_64-*)  pov_arch="k8"; pov_arch_fallback="i686";;
-          *)              pov_arch="unknown";;
+      i?86-* | k?-* | *86*64*)
+        case "$build" in
+          i?86-* | k?-*)  AX_TEST_COMPILER_FLAGS([-malign-double]);;
         esac
-      fi
-      if test x"$pov_arch" != x"unknown"; then
-        POV_PROG_CXX_FLAGS([-march=$pov_arch -mtune=$pov_arch],
-          [
-            if test "$subdirs"; then
-              {
-                POV_PROG_CC_FLAGS([-march=$pov_arch -mtune=$pov_arch],
+        AX_TEST_COMPILER_FLAGS([-xHost],            # ICC >= 11.0
+          [pov_built_for="$pov_built_for (using -xHost)"],
+          [AX_TEST_COMPILER_FLAGS([-march=native],  # GCC >= 4.2
+            [pov_built_for="$pov_built_for (using -march=native)"],
+            [AC_MSG_CHECKING([processor type])
+            AX_X86_ARCH
+            AC_MSG_RESULT([$ax_x86_cpumodel_nofreq])
+            AC_MSG_CHECKING([whether SSE instruction sets are supported])
+            test x"$ax_x86_cpuflags_SSE_list" = x"" && ax_x86_cpuflags_SSE_list=no
+            AC_MSG_RESULT([$ax_x86_cpuflags_SSE_list])
+            if test x"$ax_x86_arch" != x"unknown"; then
+              if test x"$pov_compiler_vendor" = x"intel"; then
+                case "$ax_x86_arch" in
+                  core2)
+                    AX_TEST_COMPILER_FLAGS([-xT]) ;;
+                  prescott|pentium4)  # Prescott, Northwood, Willamette
+                    AX_TEST_COMPILER_FLAGS([-xP], [], [AX_TEST_COMPILER_FLAGS([-xN], [], [AX_TEST_COMPILER_FLAGS([-xW])])]) ;;
+                  #pentium-m)  # Banias; option deprecated in ICC >= 10.0
+                  #  AX_TEST_COMPILER_FLAGS([-xB]) ;;
+                  pentium3)
+                    AX_TEST_COMPILER_FLAGS([-xK]) ;;
+                  pentium2)
+                    AX_TEST_COMPILER_FLAGS([-march=pentiumii]) ;;
+                esac
+              else
+                AX_TEST_COMPILER_FLAGS([-march=$ax_x86_arch],
                   [],
-                  [POV_PROG_CC_FLAGS([-march=$pov_arch -mcpu=$pov_arch])]
-                )
-              }
-            fi
-          ],
-          [
-            POV_PROG_CXX_FLAGS([-march=$pov_arch -mcpu=$pov_arch],
-              [
-                if test "$subdirs"; then
-                  { POV_PROG_CC_FLAGS([-march=$pov_arch -mcpu=$pov_arch]) }
-                fi
-              ],
-              [
-                POV_PROG_CXX_FLAGS([-march=$pov_arch],
                   [
-                    if test "$subdirs"; then
-                      { POV_PROG_CC_FLAGS([-march=$pov_arch]) }
-                    fi
-                  ],
-                  [
-                    if test "$pov_arch_fallback"; then
-                      {
-                        POV_PROG_CXX_FLAGS([-march=$pov_arch_fallback],
-                          [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_arch_fallback]) }; fi]
-                        )
-                      }
+                    if test x"$ax_x86_arch_fallback" != x""; then
+                      AX_TEST_COMPILER_FLAGS([-march=$ax_x86_arch_fallback], [ax_x86_arch=$ax_x86_arch_fallback], [ax_x86_arch=])
                     fi
                   ]
                 )
-              ]
-            )
-          ]
+                if test x"$pov_compiler_vendor" = x"gnu"; then
+                  for sse_flag in $ax_x86_cpuflags_SSE_list
+                  do
+                    sse_flag=`echo $sse_flag | tr A-Z a-z`
+                    AX_TEST_COMPILER_FLAGS([-m$sse_flag])
+                  done
+                  case "$ax_x86_cpuflags_SSE_list" in
+                    *SSE2*|*SSE3*|*SSSE3*|*SSE4*)  AX_TEST_COMPILER_FLAGS([-mfpmath=sse]);;  # -march or -msse required
+                  esac
+                fi
+              fi
+            else
+              ax_x86_arch=
+            fi
+            if test x"$ax_x86_arch" != x""; then
+              pov_built_for="$pov_built_for | $ax_x86_cpumodel_nofreq"
+            fi
+          ])])
+        ;;
+
+      *irix*)
+        AX_TEST_COMPILER_FLAGS([-mips4],
+          [pov_built_for="$pov_built_for | MIPS 4"],
+          [AX_TEST_COMPILER_FLAGS([-mips2], [pov_built_for="$pov_built_for | MIPS 2"])]
         )
-      fi
+        ;;
 
-      # gcc says -malign-double makes no sense in the 64bit mode and reject it
-      for pov_flags in "-malign-double" "-minline-all-stringops"; do
-        POV_PROG_CXX_FLAGS([$pov_flags],
-          [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-        )
-      done
-      ;;
+      powerpc*)
+        ### Suggested by Thorsten Froehlich <thorsten@trf.de> :
+        # Note that the different parameters for mcpu and mtune are intentional:
+        # The PPC 7450 processor has a much longer pipeline and thus scheduling
+        # for that pipeline always yields good results even on processors with
+        # a shorter pipeline.  On the other hand, most PowerPC processors only
+        # support the instructions also found in the PPC 750 processor (aka G3).
+        # That is why it is selected in the mcpu parameter.  Using 7450 (aka G4+)
+        # in mcpu would make the code incompatible with anything prior to the
+        # PPC 7400 (aka G4).  To be precise, the vector instructions are new
+        # in the four digit model number PowerPC processors (aka G4), but gcc
+        # cannot (as of February 2003) use them automatically anyway! [trf]
+        #
+        # 2007-01-24 after gentoo patch for powerpc64 (http://bugs.gentoo.org/show_bug.cgi?id=118156)
+        if "$build" != powerpc64* ; then
+          for pov_flags in "-mpowerpc" "-mcpu=750 -mtune=7450"
+          do
+            AX_TEST_COMPILER_FLAGS([$pov_flags])
+          done
+          case "$CXXFLAGS" in
+            *-mcpu=750*)  pov_built_for="$pov_built_for | PowerPC G3/G4" ;;
+            *)            pov_built_for="$pov_built_for | PowerPC" ;;
+          esac
+        else
+          pov_built_for="$pov_built_for | PowerPC G5"
+        fi
+        for pov_flags in "-mmultiple" "-mstring" "-mfused-madd"
+        do
+          AX_TEST_COMPILER_FLAGS([$pov_flags])
+        done
+        ;;
 
-    *irix*)
-      pov_flags="-mips4"
-      POV_PROG_CXX_FLAGS([$pov_flags],
-        [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi],
-        [
-          pov_flags="-mips2"
-          POV_PROG_CXX_FLAGS([$pov_flags],
-            [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-          )
-        ]
-      )
-      ;;
+      sparc-*)
+        # Commented out for now.
+        #AX_TEST_COMPILER_FLAGS([-march=ultrasparc])
+        #AX_TEST_COMPILER_FLAGS([-mvis])
+        ;;
 
-    powerpc*)
-      ### Suggested by Thorsten Froehlich <thorsten@trf.de> :
-      # Note that the different parameters for mcpu and mtune are intentional:
-      # The PPC 7450 processor has a much longer pipeline and thus scheduling
-      # for that pipeline always yields good results even on processors with
-      # a shorter pipeline.  On the other hand, most PowerPC processors only
-      # support the instructions also found in the PPC 750 processor (aka G3).
-      # That is why it is selected in the mcpu parameter.  Using 7450 (aka G4+)
-      # in mcpu would make the code incompatible with anything prior to the
-      # PPC 7400 (aka G4).  To be precise, the vector instructions are new
-      # in the four digit model number PowerPC processors (aka G4), but gcc
-      # cannot (as of February 2003) use them automatically anyway! [trf]
-      for pov_flags in "-mpowerpc" "-mcpu=750 -mtune=7450" "-mmultiple" "-mstring" "-mfused-madd"; do
-        POV_PROG_CXX_FLAGS([$pov_flags],
-          [if test "$subdirs"; then { POV_PROG_CC_FLAGS([$pov_flags]) }; fi]
-        )
-      done
-      ;;
+    esac
 
-    sparc-*)
-      # Commented out for now.
-      #POV_PROG_CXX_FLAGS([-march=ultrasparc])
-      #POV_PROG_CXX_FLAGS([-mvis])
-      ;;
-
-  esac
+    AC_MSG_CHECKING([which architecture to optimize for])
+    AC_MSG_RESULT([$pov_built_for])
+  else
+    AC_MSG_RESULT([no])  # no arch-specific optimizations
+  fi
 
 else
-
-  AC_MSG_RESULT([no])
-
+  AC_MSG_RESULT([no])  # no optimizations
 fi
+
+AC_DEFINE_UNQUOTED([BUILT_FOR], ["$pov_built_for"], [Host platform.])
 
 
 # Add flags specified at the command line.
-CXXFLAGS="$CXXFLAGS $pov_comp_save_cxxflags"
-
-# Flags for supporting libraries.
-CFLAGS="$CFLAGS $pov_comp_save_cflags"
-export CFLAGS CPPFLAGS LDFLAGS
+CXXFLAGS=`echo $CXXFLAGS $pov_save_cxxflags`
+AC_DEFINE_UNQUOTED([CXXFLAGS], ["$CXXFLAGS"], [Compiler flags.])
 
 
 ###############################################################################
@@ -1087,48 +945,15 @@ AC_MSG_RESULT([
 Makefiles
 ---------])
 
-# Supporting libraries to be included in the compilation/linking process.
-AC_SUBST([POVLIBS])
-if test "$LIBZ"; then
-  POVLIBS="zlib"
-fi
-if test "$LIBPNG"; then
-  POVLIBS="$POVLIBS png"
-fi
-if test "$LIBJPEG"; then
-  POVLIBS="$POVLIBS jpeg"
-fi
-# Does not compile all in tiff/ but only the library itself.
-# This is required to avoid errors due to some dependencies in tiff/tools .
-if test "$LIBTIFF"; then
-  POVLIBS="$POVLIBS tiff/port tiff/libtiff"
-fi
-
-# For 'make distclean' to clean also the supporting libraries.
-# It is different from POVLIBS since tiff/libtiff has no distclean target.
-POVLIBSCLEAN=`echo $POVLIBS | sed -e 's,tiff/port,,g' -e 's,/libtiff,,g'`
-AC_SUBST([POVLIBSCLEAN])
-
 AC_CONFIG_FILES([\
   Makefile \
-  libraries/Makefile \
   source/base/Makefile \
+  source/backend/Makefile \
   source/frontend/Makefile \
   source/Makefile \
+  vfe/Makefile \
   unix/Makefile \
 ])
-
-
-###############################################################################
-
-if test "$subdirs"; then
-  AC_CONFIG_COMMANDS([config.log],
-    [AC_MSG_RESULT([
-Supporting libraries
---------------------])]
-  )
-fi
-AC_OUTPUT
 
 
 ###############################################################################
@@ -1138,27 +963,93 @@ if test x"$enable_io_restrictions" = x"no"; then
 else
   pov_io_msg="enabled"
 fi
+
+# image format support
+pov_img_fmt_builtin="gif tga iff ppm pgm hdr"
+
+for format in png jpeg tiff openexr
+do
+  eval fmt=\$pov_lib$format
+  if test x"$fmt" != x""; then
+    pov_img_fmt_enabled="$pov_img_fmt_enabled $format"
+  else
+    pov_img_fmt_disabled="$pov_img_fmt_disabled $format"
+  fi
+done
+pov_img_fmt_enabled=`echo $pov_img_fmt_enabled`
+pov_img_fmt_disabled=`echo $pov_img_fmt_disabled`
+test x"$pov_img_fmt_disabled" = x"" && pov_img_fmt_disabled="-"
+
+
+AC_DEFINE_UNQUOTED([BUILTIN_IO_RESTRICTIONS], ["$pov_io_msg"], [I/O restrictions.])
+AC_DEFINE_UNQUOTED([BUILTIN_XWIN_DISPLAY], ["$pov_xwin_msg"], [X Window display.])
+AC_DEFINE_UNQUOTED([BUILTIN_IMG_FORMATS], ["$pov_img_fmt_builtin $pov_img_fmt_enabled"], [Supported image formats.])
+AC_DEFINE_UNQUOTED([MISSING_IMG_FORMATS], ["$pov_img_fmt_disabled"], [Unsupported image formats.])
+
+
+AC_OUTPUT
+
+
+###############################################################################
+
+# recursively expand the following variables for displaying
+for i in bindir sysconfdir datadir mandir
+do
+  eval povtemp=\$$i
+  while test x"$povtemp" != x"$oldpovtemp"
+  do
+    oldpovtemp=$povtemp
+    eval povtemp=$povtemp
+  done
+  eval pov$i=$povtemp
+done
+
 AC_MSG_RESULT([
 ===============================================================================
-$PACKAGE_NAME $PACKAGE_VERSION has been configured with the following features:
-  I/O restrictions: ${pov_io_msg}
-  X Window display: ${pov_xwin_msg}
-  SVGAlib display : ${pov_svga_msg}
+$PACKAGE_NAME $PACKAGE_VERSION has been configured.
+])
 
-Type 'make' to build, and 'make install' to install all files in the hierarchy
-${prefix}])
-
-if test "$pov_warn_path"; then
-  echo "
-WARNING: configure has detected that the list of search paths specified
-by the following environment variables
- $pov_warn_path
-erroneously contain the \".\" directory, which may cause a build failure.
-In order to build POV-Ray successfully, the package has been configured
-with all \".\" directory entries removed from the variables above.  You're
-strongly advised to correct your configuration accordingly."
+if test x"$pov_no_distrib" = x"yes"; then
+  AC_MSG_WARN([the resulting binary is NOT REDISTRIBUTABLE.
+])
 fi
 
-AC_MSG_RESULT(
-[===============================================================================
+if test x"$pov_warn_path" != x""; then
+  AC_MSG_WARN(
+[configure has detected that the list of search paths
+specified by the following environment variable(s)
+ $pov_warn_path
+erroneously contain the "." directory, which may cause a build failure.
+In order to build POV-Ray successfully, the package has been configured
+with all "." directory entries removed from the variables above.  You're
+strongly advised to correct your configuration accordingly.
+])
+fi
+
+AC_MSG_RESULT([Built-in features:
+  I/O restrictions:          ${pov_io_msg}
+  X Window display:          ${pov_xwin_msg}
+  Supported image formats:   $pov_img_fmt_builtin $pov_img_fmt_enabled
+  Unsupported image formats: $pov_img_fmt_disabled
+
+Compilation settings:
+  Build architecture:  $build 
+  Built/Optimized for: $pov_built_for
+  Compiler vendor:     $pov_compiler_vendor
+  Compiler version:    $pov_compiler_version
+  Compiler flags:      $CXXFLAGS
+
+Type 'make check' to build the program and run a test render.
+Type 'make install' to install $PACKAGE_NAME on your system.
+
+The $PACKAGE_NAME components will be installed in the following directories:
+  Program (executable):       ${povbindir}
+  System configuration files: ${povsysconfdir}/$PACKAGE/$VERSION_BASE
+  User configuration files:   ${HOME}/.$PACKAGE/$VERSION_BASE
+  Standard include files:     ${povdatadir}/$PACKAGE-$VERSION_BASE/include
+  Standard INI files:         ${povdatadir}/$PACKAGE-$VERSION_BASE/ini
+  Standard demo scene files:  ${povdatadir}/$PACKAGE-$VERSION_BASE/scenes
+  Documentation (text, HTML): ${povdatadir}/doc/$PACKAGE-$VERSION_BASE
+  Unix man page:              ${povmandir}
+===============================================================================
 ])

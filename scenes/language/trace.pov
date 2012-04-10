@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: trace_dem.pov
-// Vers: 3.5
 // Desc: Basic Scene Example using trace(). This scene is
 //intended to be run as an animation.
 // Date: 2001/08/13
@@ -9,11 +8,13 @@
 
 // +w320 +h240 +a0.3 +kfi0 +kff24
 
-#version 3.5;
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+}
 
 #include "math.inc"
-
-global_settings {assumed_gamma 1.0}
 
 camera {
   location <0.0, 1.0, -12.0>

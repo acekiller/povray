@@ -1,6 +1,5 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File: Sombrero.POV
-// Vers: 3
 // Desc: Create the famous Sinusoidal rippled surface,
 //       using a 3-D sheet of spheres.
 //       Shows off the use of the while loop for creating a surface,
@@ -11,8 +10,11 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
 
-global_settings { assumed_gamma 1.0 }
+global_settings {
+  assumed_gamma 1.0
+}
 
 // ------------------------------------------------------------------
 // Look down at an angle at our creation

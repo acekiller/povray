@@ -6,7 +6,15 @@
 // Auth: ingo
 //
 
+// Added to comply with common version preservation scheme
+// 04Aug2008 (jh)
+#ifndef(Lemon_Inc_Temp)
+#declare Lemon_Inc_Temp=version;
 #version 3.5;
+
+#ifdef(View_POV_Include_Stack)
+    #debug "including lemon.inc\n"
+#end
 
 #declare SS=seed(7);
 #declare R_uit= 3;
@@ -247,3 +255,8 @@ light_source{
 
 object { LemonSlice}
 */
+
+// Added to comply with common version preservation scheme
+// 04Aug2008 (jh)
+#version Lemon_Inc_Temp;
+#end

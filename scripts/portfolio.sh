@@ -1,6 +1,6 @@
 #!/bin/sh
 # ==============================================================================
-# POV-Ray 3.6 
+# POV-Ray 3.7 
 # portfolio.sh - render the POV-Ray portfolio
 # ==============================================================================
 # written November 2003 by Christoph Hormann
@@ -19,13 +19,13 @@
 # scene_directory:  if specified the portfolio scene in this directory are
 #                   rendered, otherwise the scene directory is determined form
 #                   the main povray ini file.
-#                   (usually /usr/local/share/povray-3.6/scenes/portfolio).
+#                   (usually /usr/local/share/povray-3.7/scenes/portfolio).
 # ==============================================================================
 
 # test mode
 #SCENE_DIR=.
 
-VERSION=3.6
+VERSION=3.7
 VER_DIR=povray-$VERSION
 DEFAULT_DIR=/usr/local
 SYSCONFDIR=$DEFAULT_DIR/etc
@@ -52,14 +52,14 @@ case "$OPTIONS" in
   *log* | *LOG* | *Log* )
     DATE=`date`
     LOG_FILE="log.txt"
-    echo "log file for POV-Ray 3.6 sample scene render $DATE" > "$LOG_FILE"
+    echo "log file for POV-Ray 3.7 sample scene render $DATE" > "$LOG_FILE"
     ;;
 esac
 
-test "$1" == "-d" && SCENE_DIR="$2"
-test "$2" == "-d" && SCENE_DIR="$3"
-test "$3" == "-d" && SCENE_DIR="$4"
-test "$4" == "-d" && SCENE_DIR="$5"
+test "$1" = "-d" && SCENE_DIR="$2"
+test "$2" = "-d" && SCENE_DIR="$3"
+test "$3" = "-d" && SCENE_DIR="$4"
+test "$4" = "-d" && SCENE_DIR="$5"
 
 if [ -z "$SCENE_DIR" ] ; then
   INSTALL_DIR="`install_dir`"
@@ -94,10 +94,10 @@ if [ -d "$SCENE_DIR/portfolio" ] ; then
   SCENE_DIR="$SCENE_DIR/portfolio"
 fi
 
-test "$1" == "-o" && OUTPUT_DIR="$2"
-test "$2" == "-o" && OUTPUT_DIR="$3"
-test "$3" == "-o" && OUTPUT_DIR="$4"
-test "$4" == "-o" && OUTPUT_DIR="$5"
+test "$1" = "-o" && OUTPUT_DIR="$2"
+test "$2" = "-o" && OUTPUT_DIR="$3"
+test "$3" = "-o" && OUTPUT_DIR="$4"
+test "$4" = "-o" && OUTPUT_DIR="$5"
 
 if [ -z "$OUTPUT_DIR" ] ; then
   if [ -w "$SCENE_DIR" ] ; then

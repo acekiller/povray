@@ -1,12 +1,12 @@
-/****************************************************************************
- *               processoptions.cpp
+/*******************************************************************************
+ * processoptions.cpp
  *
  * This module contains the C++ interface for option processing.
  *
- * from Persistence of Vision(tm) Ray Tracer version 3.6.
+ * from Persistence of Vision Ray Tracer ('POV-Ray') version 3.7.
  * Copyright 1991-2003 Persistence of Vision Team
- * Copyright 2003-2004 Persistence of Vision Raytracer Pty. Ltd.
- *---------------------------------------------------------------------------
+ * Copyright 2003-2009 Persistence of Vision Raytracer Pty. Ltd.
+ * ---------------------------------------------------------------------------
  * NOTICE: This source code file is provided so that users may experiment
  * with enhancements to POV-Ray and to port the software to platforms other
  * than those supported by the POV-Ray developers. There are strict rules
@@ -16,29 +16,96 @@
  *
  * These licences may be found online, linked from the end-user license
  * agreement that is located at http://www.povray.org/povlegal.html
- *---------------------------------------------------------------------------
- * This program is based on the popular DKB raytracer version 2.12.
+ * ---------------------------------------------------------------------------
+ * POV-Ray is based on the popular DKB raytracer version 2.12.
  * DKBTrace was originally written by David K. Buck.
  * DKBTrace Ver 2.0-2.12 were written by David K. Buck & Aaron A. Collins.
- *---------------------------------------------------------------------------
- * $File: //depot/povray/3.6-release/source/base/processoptions.cpp $
- * $Revision: #2 $
- * $Change: 2939 $
- * $DateTime: 2004/07/04 13:43:26 $
- * $Author: root $
- * $Log$
- *****************************************************************************/
+ * ---------------------------------------------------------------------------
+ * $File: //depot/povray/smp/source/base/processoptions.cpp $
+ * $Revision: #25 $
+ * $Change: 5270 $
+ * $DateTime: 2010/12/15 06:16:14 $
+ * $Author: chrisc $
+ *******************************************************************************/
+
+/*********************************************************************************
+ * NOTICE
+ *
+ * This file is part of a BETA-TEST version of POV-Ray version 3.7. It is not
+ * final code. Use of this source file is governed by both the standard POV-Ray
+ * licences referred to in the copyright header block above this notice, and the
+ * following additional restrictions numbered 1 through 4 below:
+ *
+ *   1. This source file may not be re-distributed without the written permission
+ *      of Persistence of Vision Raytracer Pty. Ltd.
+ *
+ *   2. This notice may not be altered or removed.
+ *   
+ *   3. Binaries generated from this source file by individuals for their own
+ *      personal use may not be re-distributed without the written permission
+ *      of Persistence of Vision Raytracer Pty. Ltd. Such personal-use binaries
+ *      are not required to have a timeout, and thus permission is granted in
+ *      these circumstances only to disable the timeout code contained within
+ *      the beta software.
+ *   
+ *   4. Binaries generated from this source file for use within an organizational
+ *      unit (such as, but not limited to, a company or university) may not be
+ *      distributed beyond the local organizational unit in which they were made,
+ *      unless written permission is obtained from Persistence of Vision Raytracer
+ *      Pty. Ltd. Additionally, the timeout code implemented within the beta may
+ *      not be disabled or otherwise bypassed in any manner.
+ *
+ * The following text is not part of the above conditions and is provided for
+ * informational purposes only.
+ *
+ * The purpose of the no-redistribution clause is to attempt to keep the
+ * circulating copies of the beta source fresh. The only authorized distribution
+ * point for the source code is the POV-Ray website and Perforce server, where
+ * the code will be kept up to date with recent fixes. Additionally the beta
+ * timeout code mentioned above has been a standard part of POV-Ray betas since
+ * version 1.0, and is intended to reduce bug reports from old betas as well as
+ * keep any circulating beta binaries relatively fresh.
+ *
+ * All said, however, the POV-Ray developers are open to any reasonable request
+ * for variations to the above conditions and will consider them on a case-by-case
+ * basis.
+ *
+ * Additionally, the developers request your co-operation in fixing bugs and
+ * generally improving the program. If submitting a bug-fix, please ensure that
+ * you quote the revision number of the file shown above in the copyright header
+ * (see the '$Revision:' field). This ensures that it is possible to determine
+ * what specific copy of the file you are working with. The developers also would
+ * like to make it known that until POV-Ray 3.7 is out of beta, they would prefer
+ * to emphasize the provision of bug fixes over the addition of new features.
+ *
+ * Persons wishing to enhance this source are requested to take the above into
+ * account. It is also strongly suggested that such enhancements are started with
+ * a recent copy of the source.
+ *
+ * The source code page (see http://www.povray.org/beta/source/) sets out the
+ * conditions under which the developers are willing to accept contributions back
+ * into the primary source tree. Please refer to those conditions prior to making
+ * any changes to this source, if you wish to submit those changes for inclusion
+ * with POV-Ray.
+ *
+ *********************************************************************************/
 
 #include <cstdarg>
+#include <cctype>
 
-#include "configbase.h"
+// configbase.h must always be the first POV file included within base *.cpp files
+#include "base/configbase.h"
+#include "base/povmscpp.h"
+#include "base/processoptions.h"
+#include "base/stringutilities.h"
+#include "base/povmsgid.h"
+#include "base/pov_err.h"
 
-#include "processoptions.h"
-#include "stringutilities.h"
-#include "povmsgid.h"
-#include "pov_err.h"
+// this must be the last file included
+#include "base/povdebug.h"
 
-BEGIN_POV_BASE_NAMESPACE
+namespace pov_base
+{
 
 ProcessOptions::ProcessOptions(INI_Parser_Table *pit, Cmd_Parser_Table *pct)
 {
@@ -167,13 +234,23 @@ int ProcessOptions::ParseFile(const char *filespec, POVMSObjectPtr obj)
 				{
 					char *plainstring = NULL;
 
-					if((token == '\"') || (token == '\''))
-						plainstring = Parse_INI_String(file, token, true);
-					// if there were no quotes, just read up to the next space or newline
-					else
-						plainstring = Parse_INI_String(file, -1, true);
+					if((token != '\"') && (token != '\''))
+					{
+						// if there were no quotes, just read up to the next space or newline
+						plainstring = Parse_INI_String(file, -2, true);
 
-					err = ProcessUnknownString(plainstring, obj);
+						// see if it is probably a standard INI file entry which wasn't recognised
+						if(plainstring != NULL)
+						{
+							if(strchr(plainstring, '=') != NULL)
+								err = kParseErr;
+						}
+					}
+					else
+						plainstring = Parse_INI_String(file, token, true);
+
+					if(err == kFalseErr)
+						err = ProcessUnknownString(plainstring, obj);
 
 					if(plainstring != NULL)
 						delete[] plainstring;
@@ -279,11 +356,23 @@ int ProcessOptions::ParseString(const char *commandline, POVMSObjectPtr obj, boo
 			}
 			// if there were no quotes, just read up to the next space or newline
 			else if(singleswitch == false) // see if quotes had been stripped outside POV-Ray
-				plainstring = Parse_CL_String(commandline);
+			{
+				const char *oldcmdline = commandline;
+
+				plainstring = Parse_CL_String(commandline, -2);
+
+				// check if it is probably a standard INI file entry which wasn't recognised
+				if((plainstring != NULL) && (strchr(plainstring, '=') != NULL))
+				{
+					err = kParseErr;
+					commandline = oldcmdline; // so it will be printed
+				}
+			}
 			else
 				plainstring = Parse_CL_String(commandline, 0);
 
-			err = ProcessUnknownString(plainstring, obj);
+			if(err == kFalseErr)
+				err = ProcessUnknownString(plainstring, obj);
 
 			if(plainstring != NULL)
 				delete[] plainstring;
@@ -296,17 +385,15 @@ int ProcessOptions::ParseString(const char *commandline, POVMSObjectPtr obj, boo
 		if(*commandline != 0)
 		{
 			ParseError("Cannot process command-line at '%s' due to a parse error.\n"
-			           "This is not a valid command-line. Check the command-line for syntax errors, correct them, and try again!\n"
-			           "Valid command-line switches are explained in detail in the reference part of the documentation.\n"
-			           "To get a short list of command-line switches, use either the '-h', '-?', '-help' or '--help' switch.",
+			           "This is not a valid command-line. Check the command-line for syntax errors, correct them, and try again.\n"
+			           "Valid command-line switches are explained in detail in the reference part of the documentation.",
 			           commandline);
 		}
 		else
 		{
 			ParseError("Cannot process command-line due to a parse error.\n"
-			           "This is not a valid command-line. Check the command-line for syntax errors, correct them, and try again!\n"
-			           "Valid command-line switches are explained in detail in the reference part of the documentation.\n"
-			           "To get a short list of command-line switches, use either the '-h', '-?', '-help' or '--help' switch.");
+			           "This is not a valid command-line. Check the command-line for syntax errors, correct them, and try again.\n"
+			           "Valid command-line switches are explained in detail in the reference part of the documentation.");
 		}
 	}
 
@@ -344,6 +431,186 @@ int ProcessOptions::WriteFile(const char *filename, POVMSObjectPtr obj)
 	delete ini_file;
 
 	return err;
+}
+
+bool ProcessOptions::IsTrue(const char *value)
+{
+	return (Matches("on",value)  || Matches("true",value) ||
+	        Matches("yes",value) || Matches("1",value));
+}
+
+bool ProcessOptions::IsFalse(const char *value)
+{
+	return (Matches("off",value)  || Matches("false",value) ||
+	        Matches("no",value)   || Matches("0",value));
+}
+
+bool ProcessOptions::Matches(const char *v1, const char *v2)
+{
+   int i = 0;
+   int ans = 1;
+
+   while((ans) && (v1[i] != 0) && (v2[i] != 0))
+   {
+      ans = ans && (int)(v1[i] == tolower(v2[i]));
+      i++;
+   }
+
+   return (ans != 0);
+}
+
+int ProcessOptions::POVMSAttr_SetUTF8String(POVMSAttributePtr attr, POVMSType type, const char *s)
+{
+	UCS2 *ustr = new UCS2[strlen(s) + 1];
+	size_t len = ConvertUTF8ToUCS2(s, ustr);
+	int err = POVMSAttr_Set(attr, type, (void *)ustr, (int(len) * 2) + 2);
+
+	delete[] ustr;
+
+	return err;
+}
+
+int ProcessOptions::POVMSAttr_GetUTF8String(POVMSAttributePtr attr, POVMSType type, char *s, int *maxdatasize)
+{
+	int ulen = 0;
+	int err = POVMSAttr_Size(attr, &ulen);
+	UCS2 *ustr = new UCS2[ulen / 2 + 1];
+
+	if(err == kNoErr)
+		err = POVMSAttr_Get(attr, type, (void *)ustr, &ulen);
+
+	if(err == kNoErr)
+		*maxdatasize = ConvertUCS2ToUTF8(ustr, s);
+	else
+		*maxdatasize = 0;
+
+	delete[] ustr;
+
+	return err;
+}
+
+int ProcessOptions::POVMSUtil_SetUTF8String(POVMSObjectPtr object, POVMSType key, const char *s)
+{
+	UCS2 *ustr = new UCS2[strlen(s) + 1];
+	size_t len = ConvertUTF8ToUCS2(s, ustr);
+	int err = POVMSUtil_SetUCS2String(object, key, ustr);
+
+	delete[] ustr;
+
+	return err;
+}
+
+const unsigned char gUTF8SequenceArray[256] =
+{
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
+};
+
+const unsigned int gUTF8Offsets[6] =
+{
+	0x00000000UL,
+	0x00003080UL,
+	0x000E2080UL,
+	0x03C82080UL,
+	0xFA082080UL,
+	0x82082080UL
+};
+
+// Note that this is duplicate code, but cleaning up all the string handling is beyond the scope of POV-Ray 3.7 :-( [trf]
+size_t ProcessOptions::ConvertUTF8ToUCS2(const char *text_array, UCS2 *char_array)
+{
+	UCS4 chr;
+	int i, j, k, seqlen;
+	int text_array_size = strlen(text_array);
+
+	for(i = 0, k = 0; i < text_array_size; k++, i++)
+	{
+		seqlen = gUTF8SequenceArray[text_array[i]];
+		chr = 0;
+		for(j = seqlen; j > 0; j--)
+		{
+			chr += text_array[i];
+			chr <<= 6;
+			i++;
+		}
+
+		chr += text_array[i];
+		chr -= gUTF8Offsets[seqlen];
+
+		if(chr <= 0x0000FFFFUL)
+			char_array[k] = chr;
+		else
+			char_array[k] = 0x0000FFFDUL;
+	}
+
+	char_array[k] = 0;
+
+	return k;
+}
+
+size_t ProcessOptions::ConvertUCS2ToUTF8(const UCS2 *char_array, char *text_array)
+{
+	int i, k, len;
+	char *retstr = NULL;
+	unsigned int chr;
+
+	for(len = 0, i = 0; char_array[i] != 0; i++)
+	{
+		if(char_array[i] < 0x00000080)
+			len += 1;
+		else if(char_array[i] < 0x00000800)
+			len += 2;
+		else
+			len += 3;
+	}
+
+	for(i = 0, k = 0; (char_array[i] != 0) && (k < len); i++)
+	{
+		chr = char_array[i];
+
+		if(chr < 0x00000080)
+		{
+			text_array[k] = char(chr);
+			k++;
+		}
+		else if (chr < 0x00000800)
+		{
+			text_array[k] = ((chr >> 6) | 0xC0);
+			k++;
+			text_array[k] = ((chr | 0x80) & 0xBF);
+			k++;
+		}
+		else
+		{
+			if(chr >= 0x00010000)
+				chr = (unsigned int)0x0000FFFDUL;
+
+			text_array[k] = ((chr >> 12) | 0xE0);
+			k++;
+			text_array[k] = (((chr >> 6) | 0x80) & 0xBF);
+			k++;
+			text_array[k] = ((chr | 0x80) & 0xBF);
+			k++;
+		}
+	}
+
+	text_array[k] = 0;
+
+	return size_t(len);
 }
 
 int ProcessOptions::ReadSpecialOptionHandler(INI_Parser_Table *, char *, POVMSObjectPtr)
@@ -403,7 +670,7 @@ void ProcessOptions::ParseErrorAt(ITextStream *file, const char *format, ...)
 	vsnprintf(error_buffer, 1023, format, marker);
 	va_end(marker);
 
-	fprintf(stderr, "%s\nFile '%s' at line '%d'", error_buffer, file->name(), file->line());
+	fprintf(stderr, "%s\nFile '%s' at line '%d'", error_buffer, UCS2toASCIIString(file->name()).c_str(), (unsigned int) file->line());
 }
 
 void ProcessOptions::WriteError(const char *format, ...)
@@ -447,7 +714,7 @@ int ProcessOptions::Output_INI_Option(INI_Parser_Table *option, POVMSObjectPtr o
 					file->printf("%s=Off\n", option->keyword);
 			}
 			break;
-		case kPOVObjectClass_File:
+		case kPOVMSType_CString:
 			err = POVMSObject_Get(obj, &item, option->key);
 			if(err != 0)
 				break;
@@ -461,11 +728,31 @@ int ProcessOptions::Output_INI_Option(INI_Parser_Table *option, POVMSObjectPtr o
 				if(POVMSAttr_Get(&item, kPOVMSType_CString, bufptr, &l) == 0)
 					file->printf("%s=\"%s\"\n", option->keyword, bufptr);
 				delete[] bufptr;
-			} 
+			}
+			(void)POVMSAttr_Delete(&item);
+			break;
+		case kPOVMSType_UCS2String:
+			err = POVMSObject_Get(obj, &item, option->key);
+			if(err != 0)
+				break;
+			// get the file name and path string
+			l = 0;
+			err = POVMSAttr_Size(&item, &l);
+			if(l > 0)
+			{
+				bufptr = new char[l * 3];
+				bufptr[0] = 0;
+				if(POVMSAttr_GetUTF8String(&item, kPOVMSType_UCS2String, bufptr, &l) == 0)
+					file->printf("%s=\"%s\"\n", option->keyword, bufptr);
+				delete[] bufptr;
+			}
 			(void)POVMSAttr_Delete(&item);
 			break;
 		case kPOVMSType_WildCard:
 			WriteSpecialOptionHandler(option, obj, file);
+			break;
+		case 0:
+			// deprecated option, skip
 			break;
 		default:
 			WriteError("Ignoring unknown INI option.");
@@ -624,15 +911,31 @@ int ProcessOptions::Parse_INI_Option(ITextStream *file, POVMSObjectPtr obj)
 	// skip any spaces
 	(void)Parse_INI_Skip_Space(file, false);
 
-	// if the string is quoted, parse it matching quotes
-	chr = file->getchar();
-	if((chr == '\"') || (chr == '\''))
-		value = Parse_INI_String(file, chr);
-	// if there were no quotes, just read up to the next space or newline
+	// TODO: whether or not to apply special parsing ought to be encoded into the INI_Parser_Table,
+	// but for now it's hard-coded here. special raw parsing is applied to INI options that we don't
+	// want to do much processing on (such as removing quotes or guessing if they are filenames).
+	// currently shellout commands are in that category since they may contain quoted paths or
+	// quoted/escaped options. We only apply this special case here, where we know the input data
+	// is a file (as it's also possible to specify INI options on the command-line).
+	if (toupper(table->keyword[strlen(table->keyword) - 1]) == 'D' && // the command and return keywords have the same kPOVAttrib_ values; we only want the command
+	    (table->key == kPOVAttrib_PostFrameCommand || table->key == kPOVAttrib_PreFrameCommand ||
+	     table->key == kPOVAttrib_PostSceneCommand || table->key == kPOVAttrib_PreSceneCommand ||
+	     table->key == kPOVAttrib_UserAbortCommand || table->key == kPOVAttrib_FatalErrorCommand))
+	{
+		value = Parse_Raw_INI_String(file);
+	}
 	else
 	{
-		file->ungetchar(chr);
-		value = Parse_INI_String(file, -2, true);
+		// if it looks like a quoted string, attempt to extract and handle that
+		chr = file->getchar();
+		if((chr == '\"') || (chr == '\''))
+			value = Parse_INI_String(file, chr);
+		// if there were no quotes, just read up to the next space or newline
+		else
+		{
+			file->ungetchar(chr);
+			value = Parse_INI_String(file, -2, true);
+		}
 	}
 
 	if(value == NULL)
@@ -641,7 +944,11 @@ int ProcessOptions::Parse_INI_Option(ITextStream *file, POVMSObjectPtr obj)
 		return kParseErr;
 	}
 
-	err = Process_INI_Option(table, value, obj);
+	if(table->key == 0)
+		ParseErrorAt(file, "INI option '%s' is no longer used and will result in an error in future versions of POV-Ray.", table->keyword);
+	else
+		err = Process_INI_Option(table, value, obj);
+
 	delete[] value;
 	value = NULL;
 
@@ -842,6 +1149,78 @@ char *ProcessOptions::Parse_INI_String(ITextStream *file, int endchr, bool smart
 	return str;
 }
 
+// special case of parsing an INI string: we don't want to interpret anything other than
+// a comment character or end-of-line, as the string itself will be passed on to other
+// code that requires it more or less verbatim. an example of this is the shellout commands,
+// which may contain a quoted program name (perhaps because it embeds spaces) followed by
+// unquoted or quoted parameters.
+// NB returned string may have trailing blanks.
+char *ProcessOptions::Parse_Raw_INI_String(ITextStream *file)
+{
+	char *str = new char[65536];
+	char *pos = str;
+	bool inSQ = false;
+	bool inDQ = false;
+	bool hadEscape = false;
+	const char *msg = "Possible unbalanced quotes detected in INI option being parsed in raw mode";
+
+	str[0] = 0;
+	for (int i = 0; i < 65536; i++, *pos = 0)
+	{
+		char ch = file->getchar();
+		if (hadEscape && (ch == '"' || ch == '\'' || ch == '\\'))
+		{
+			hadEscape = false;
+			*pos++ = ch;
+			continue;
+		}
+		hadEscape = false;
+		switch (ch)
+		{
+			case EOF:
+				if (inSQ || inDQ)
+					ParseErrorAt(file, msg);
+				return str;
+
+			case '\r':
+			case '\n':
+				file->ungetchar(ch);
+				if (inSQ || inDQ)
+					ParseErrorAt(file, msg);
+				return str;
+
+			case ';':
+			case '#':
+				if (!inSQ && !inDQ)
+				{
+					file->ungetchar(ch);
+					return str;
+				}
+				break;
+
+			case '\\':
+				hadEscape = true;
+				break;
+
+			case '"':
+				inDQ = !inDQ;
+				break;
+
+			case '\'':
+				inSQ = !inSQ;
+				break ;
+
+			default:
+				break;
+		}
+		*pos++ = ch;
+	}
+
+	if (inSQ || inDQ)
+		ParseErrorAt(file, msg);
+	return str;
+}
+
 bool ProcessOptions::Parse_INI_String_Smartmode(ITextStream *file)
 {
 	ITextStream::FilePos backtrackpos = file->tellg();
@@ -860,7 +1239,7 @@ bool ProcessOptions::Parse_INI_String_Smartmode(ITextStream *file)
 		case ';':
 		case '#':
 			break; // return false, this is a comment which terminates the string
-		// INI value list separator 
+		// INI value list separator
 		case ',':
 			break; // return false, this is a value list of unquoted strings
 		// POV-Ray-style INI file with command-line switch
@@ -1143,10 +1522,18 @@ int ProcessOptions::Process_INI_Option(INI_Parser_Table *option, char *param, PO
 		case kPOVMSType_Bool:
 			err = POVMSUtil_SetBool(obj, option->key, IsTrue(param));
 			break;
-		case kPOVObjectClass_File:
-			// make the file object
+		case kPOVMSType_CString:
 			if(err == kNoErr)
 				err = POVMSUtil_SetString(obj, option->key, param);
+			else
+			{
+				ParseError("String parameter expected for option '%s', found '%s'.", option->keyword, param);
+				err = kParseErr;
+			}
+			break;
+		case kPOVMSType_UCS2String:
+			if(err == kNoErr)
+				err = POVMSUtil_SetUTF8String(obj, option->key, param);
 			else
 			{
 				ParseError("File name or path parameter expected for option '%s', found '%s'.", option->keyword, param);
@@ -1202,10 +1589,18 @@ int ProcessOptions::Process_Switch(Cmd_Parser_Table *option, char *param, POVMSO
 		case kPOVMSType_Bool:
 			err = POVMSUtil_SetBool(obj, option->key, IsTrue(param));
 			break;
-		case kPOVObjectClass_File:
-			// make the file object
+		case kPOVMSType_CString:
 			if(err == kNoErr)
 				err = POVMSUtil_SetString(obj, option->key, param);
+			else
+			{
+				ParseError("String parameter expected for switch '%s', found '%s'.", option->command, param);
+				err = kParseErr;
+			}
+			break;
+		case kPOVMSType_UCS2String:
+			if(err == kNoErr)
+				err = POVMSUtil_SetUTF8String(obj, option->key, param);
 			else
 			{
 				ParseError("File name or path parameter expected for switch '%s', found '%s'.", option->command, param);
@@ -1225,30 +1620,4 @@ int ProcessOptions::Process_Switch(Cmd_Parser_Table *option, char *param, POVMSO
 	return err;
 }
 
-bool ProcessOptions::Matches(const char *v1, const char *v2)
-{
-   int i = 0;
-   int ans = 1;
-
-   while((ans) && (v1[i] != 0) && (v2[i] != 0))
-   {
-      ans = ans && (int)(v1[i] == tolower(v2[i]));
-      i++;
-   }
-
-   return (ans != 0);
 }
-
-bool ProcessOptions::IsTrue(const char *value)
-{
-   return (Matches("on",value)  || Matches("true",value) || 
-           Matches("yes",value) || Matches("1",value));
-}
-
-bool ProcessOptions::IsFalse(const char *value)
-{
-   return (Matches("off",value)  || Matches("false",value) || 
-           Matches("no",value)   || Matches("0",value));
-}
-
-END_POV_BASE_NAMESPACE

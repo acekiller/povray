@@ -1,11 +1,14 @@
-// Persistence Of Vision Ray Tracer Scene Description File
+// Persistence Of Vision Raytracer Scene Description File
 // File: glass.pov
-// Vers: 3.5
 // Desc: glass.inc sample scene (using sample.inc include file)
 // Date: July 2001
 // Auth: Christoph Hormann (modified by Chris Huff, adding photons)
 
 // -w320 -h240 +a0.3 +sf1 +ef4 +kff5
+
+#version 3.6;
+global_settings { assumed_gamma 1.0 }
+
 
 #if (!clock_on)
   #warning concat("This scene should be rendered as an animation\n",
@@ -13,7 +16,6 @@
 #end
 
 global_settings {
-	assumed_gamma 1
 	max_trace_level 8
 }
 

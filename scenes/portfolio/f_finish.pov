@@ -6,13 +6,14 @@
 //       finishes in finish.inc
 // Date: 2001/07/30
 // Auth: Ingo Janssen
-//
+#version 3.6;
+global_settings { 
+  assumed_gamma 1.0
+}
 
-#version 3.5;
 #include "colors.inc"
 #include "finish.inc"
 #include "html_gen.inc"
-global_settings {assumed_gamma 1.0}
 
 #declare Generate_HTML=yes;
 #declare Generate_Images=yes;

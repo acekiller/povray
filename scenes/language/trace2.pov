@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: trace2.pov
 //	Last updated: 8/25/01
 //	Author: Chris Huff
@@ -9,13 +9,13 @@
 //
 //*******************************************
 
+#version 3.6;
+
 #declare GridXRes = 16;
 #declare GridZRes = 16;
 // Total # of pins will be GridXRes*GridZRes...be careful
 //not to use too high of a number.
 #declare PinHeight = 0.25;
-
-#version 3.5;
 
 #include "functions.inc"
 #include "math.inc"
@@ -23,8 +23,9 @@
 #include "colors.inc"
 
 //-------------------------------------------
+
 global_settings {
-	assumed_gamma 1
+  assumed_gamma 1.0
 }
 
 #default {finish {ambient 0 diffuse 1}}

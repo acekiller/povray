@@ -24,16 +24,15 @@
 // -w800 -h600 +a0.3
 //
 //*******************************************
-
-#version 3.5;
+#version 3.6;
+global_settings { 
+  assumed_gamma 1.0
+}
 
 #include "colors.inc"
 #include "functions.inc"
 
 //-------------------------------------------
-global_settings {
-	assumed_gamma 1
-}
 
 #declare CamLoc = < 0, 0,-10>;
 

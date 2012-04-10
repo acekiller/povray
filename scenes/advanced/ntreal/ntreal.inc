@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Twister Object: This file is used with NtReal.dat
 
 // This is a twisted, macaroni, virus sort of object .
@@ -6,6 +6,7 @@
 // - Drew Wells 1990
 //   cis 73767,1244
 
+// Updated: 09Aug2008 (jh) for v3.7 distribution
 
 object { It rotate 2.25*y translate 0.00*y }
 object { It rotate 4.50*y translate 0.05*y }

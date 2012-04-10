@@ -1,0 +1,1658 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--  This file copyright Persistence of Vision Raytracer Pty. Ltd. 2009-2011  -->
+
+<html lang="en">
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<title>Reference Section 6</title>
+<link rel="StyleSheet" href="povray37.css" type="text/css">
+<link rel="shortcut icon" href="favicon.ico">
+
+<!--  NOTE: In order to help users find information about POV-Ray using web      -->
+<!--  search engines, we ask that you *not* let them index documentation         -->
+<!--  mirrors because effectively, when searching, users will get hundreds of    -->
+<!--  results containing the same information! For this reason, these meta tags  -->
+<!--  below disable archiving of this page by search engines.                    -->
+
+<meta name="robots" content="noarchive">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+</head>
+<body>
+
+<div class="Page">
+
+<!-- NavPanel Begin -->
+<div class="NavPanel">
+<table class="NavTable">
+<tr>
+  <td class="FixedPanelHeading"><a title="3.6" href="#r3_6">Interior &amp; Media &amp; Photons</a></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.6.1" href="#r3_6_1">Interior</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.1.1" href="#r3_6_1_1">Why are Interior and Media Necessary?</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.1.2" href="#r3_6_1_2">Empty and Solid Objects</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.1.3" href="#r3_6_1_3">Scaling objects with an interior</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.1.4" href="#r3_6_1_4">Refraction</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.1.5" href="#r3_6_1_5">Dispersion</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.1.5.1" href="#r3_6_1_5_1">Dispersion & Caustics</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.1.6" href="#r3_6_1_6">Attenuation</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.1.7" href="#r3_6_1_7">Simulated Caustics</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.1.8" href="#r3_6_1_8">Object-Media</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.6.2" href="#r3_6_2">Media</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.2.1" href="#r3_6_2_1">Media Types</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.2.1.1" href="#r3_6_2_1_1">Absorption</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.2.1.2" href="#r3_6_2_1_2">Emission</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.2.1.3" href="#r3_6_2_1_3">Scattering</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.2.2" href="#r3_6_2_2">Sampling Parameters & Methods</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.2.3" href="#r3_6_2_3">Density</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.2.3.1" href="#r3_6_2_3_1">General Density Modifiers</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.2.3.2" href="#r3_6_2_3_2">Density with color_map</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.2.3.3" href="#r3_6_2_3_3">Density Maps and Density Lists</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.2.3.4" href="#r3_6_2_3_4">Multiple Density vs. Multiple Media</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.6.3" href="#r3_6_3">Photons</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.3.1" href="#r3_6_3_1">Overview</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.1.1" href="#r3_6_3_1_1">Examples</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.3.2" href="#r3_6_3_2">Using Photon Mapping in Your Scene</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.2.1" href="#r3_6_3_2_1">Photon Global Settings</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.2.2" href="#r3_6_3_2_2">Shooting Photons at an Object</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.2.3" href="#r3_6_3_2_3">Photons and Light Sources</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.2.4" href="#r3_6_3_2_4">Photons and Media</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.3.3" href="#r3_6_3_3">Photons FAQ</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.3.4" href="#r3_6_3_4">Photon Tips</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.6.3.5" href="#r3_6_3_5">Advanced Techniques</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.5.1" href="#r3_6_3_5_1">Autostop</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.5.2" href="#r3_6_3_5_2">Adaptive Search Radius</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.5.3" href="#r3_6_3_5_3">Photons and Dispersion</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.6.3.5.4" href="#r3_6_3_5_4">Saving and Loading Photon Maps</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh1">&nbsp;</div></td>
+</tr>
+<tr>
+  <td><div class="divh1">&nbsp;</div></td>
+</tr>
+</table>
+</div>
+<!-- NavPanel End -->
+
+<div class="Content">
+<table class="HeaderFooter" width="100%">
+<tr>
+  <td colspan=5 align="left" class="HeaderFooter">
+    POV-Ray for Unix <strong class="HeaderFooter">version 3.7</strong>
+  </td>
+</tr>
+<tr >
+  <td colspan=5>
+    <hr align="right" width="70%">
+  </td>
+</tr>
+<tr>
+  <td width="30%"></td>
+  <td class="NavBar"><a href="index.html" title="The Front Door">Home</a></td>
+  <td class="NavBar"><a href="u1_0.html" title="Unix Table of Contents">POV-Ray for Unix</a></td>
+  <td class="NavBar"><a href="t2_0.html" title="Tutorial Table of Contents">POV-Ray Tutorial</a></td>
+  <td class="NavBar"><a href="r3_0.html" title="Reference Table of Contents">POV-Ray Reference</a></td>
+</tr>
+</table>
+
+<a name="r3_6"></a>
+<div class="content-level-h2" contains="Interior &amp; Media &amp; Photons" id="r3_6">
+<h2>3.6 Interior &amp; Media &amp; Photons</h2>
+</div>
+<a name="r3_6_1"></a>
+<div class="content-level-h3" contains="Interior" id="r3_6_1">
+<h3>3.6.1 Interior</h3>
+<p>Introduced in POV-Ray 3.1 is an object modifier statement called <code>
+interior</code>. The syntax is:</p>
+<pre>
+INTERIOR:
+  interior { [INTERIOR_IDENTIFIER] [INTERIOR_ITEMS...] }
+INTERIOR_ITEM:
+  ior Value | caustics Value | dispersion Value | 
+  dispersion_samples Samples | fade_distance Distance | 
+  fade_power Power | fade_color &lt;Color&gt;
+  MEDIA...
+</pre>
+
+<p>Interior default values:</p>
+<pre>
+ior                : 1.0
+caustics           : 0.0
+dispersion         : 1.0
+dispersion_samples : 7
+fade_distance      : 0.0 
+fade_power         : 0.0
+fade_color         : &lt;0,0,0&gt;
+</pre>
+
+<p>The <code>interior</code> contains items which describe the properties of the interior of the object. This is in contrast to the <code>texture</code> and <code>interior_texture</code> which describe the surface properties only. The interior of an object is only of interest if it has a transparent texture which allows you to see inside the object. It also applies only to solid objects which have a well-defined inside/outside distinction.</p>
+<p class="Note"><strong>Note:</strong> The <code>open</code> keyword, or <code>clipped_by</code> modifier also allows you to see inside but interior features may not render properly. They should be avoided if accurate interiors are required.</p>
+<p>
+Interior identifiers may be declared to make scene files more readable and to parameterize scenes so that changing a single declaration changes many values. An identifier is declared as follows.</p>
+<pre>
+INTERIOR_DECLARATION:
+  #declare IDENTIFIER = INTERIOR |
+  #local IDENTIFIER = INTERIOR
+</pre>
+
+<p>Where <em>IDENTIFIER</em> is the name of the identifier up to 40 characters long and <em>INTERIOR</em> is any valid <code><a href="r3_8.html#r3_8_9_3">interior</a></code>
+statement. See <a href="r3_2.html#r3_2_2_2_2">#declare vs. #local</a> for information on identifier scope.</p>
+
+</div>
+<a name="r3_6_1_1"></a>
+<div class="content-level-h4" contains="Why are Interior and Media Necessary?" id="r3_6_1_1">
+<h4>3.6.1.1 Why are Interior and Media Necessary?</h4>
+<p>In previous versions of POV-Ray, most of the items in the <code>interior</code> statement were previously part of the <code><a href="r3_5.html#r3_5_3">finish</a></code> statement. Also the <code>halo</code> statement which was once part of the <code><a href="r3_5.html#r3_5_4">texture</a></code> statement has been discontinued and has been replaced by the <code><a href="r3_6.html#r3_6_2">media</a></code> statement which is part of <code>interior</code>.</p>
+<p>
+You are probably asking <strong>WHY?</strong> As explained earlier, the <code>interior</code> contains items which describe the properties of the interior of the object. This is in contrast to the <code>texture</code> which describes the surface properties only. However this is not just a philosophical change. There were serious inconsistencies in the old model.</p>
+<p>
+The main problem arises when a <code><a href="r3_5.html#r3_5_5_1">texture_map</a></code> or other patterned texture is used. These features allow you to create 
+textures that are a blend of two textures and which vary the entire texture from one point to another. It does its blending by fully evaluating the apparent color as though only one texture was applied and then fully 
+reevaluating it with the other texture. The two final results are blended.</p>
+<p> It is totally illogical to have a ray enter an object with one index or refraction and then recalculate with another index. The result is not an average of the two ior values. Similarly it makes no sense to have a ray enter at one ior and exit at a different ior without transitioning between them along the way. POV-Ray only calculates refraction as the ray enters or leaves. It cannot incrementally compute a changing ior through the interior of an object. Real world objects such as optical fibers or no-line bifocal eyeglasses can have variable iors but POV-Ray cannot simulate them.</p>
+<p>
+Similarly the <code>halo</code> calculations were not performed as the
+syntax implied. Using a <code>halo</code> in such multi-textured objects did
+not vary the <code>halo</code> through the interior of the object. Rather,
+it computed two separate halos through the whole object and averaged the
+results. The new design for <code>media</code> which replaces <code>
+halo</code> makes it possible to have media that varies throughout the
+interior of the object according to a pattern but it does so independently of
+the surface texture. Because there are other changes in the design of this
+feature which make it significantly different, it was not only moved to the
+<code>interior</code> but the name was changed.</p>
+<p>
+During our development, someone asked if we will create patterned interiors
+or a hypothetical <code>interior_map</code> feature. We will not. That would
+defeat the whole purpose of moving these features in the first place. They
+cannot be patterned and have logical or self-consistent results.</p>
+
+</div>
+<a name="r3_6_1_2"></a>
+<div class="content-level-h4" contains="Empty and Solid Objects" id="r3_6_1_2">
+<h4>3.6.1.2 Empty and Solid Objects</h4>
+<p>It is very important that you know the basic concept behind empty and
+solid objects in POV-Ray to fully understand how features like interior and
+translucency are used. Objects in POV-Ray can either be solid, empty or
+filled with (small) particles.</p>
+<p>
+A solid object is made from the material specified by its pigment and finish
+statements (and to some degree its normal statement). By default all objects
+are assumed to be solid. If you assign a stone texture to a sphere you will
+get a ball made completely of stone. It is like you had cut this ball from
+a block of stone. A glass ball is a massive sphere made of glass. You should
+be aware that solid objects are conceptual things. If you clip away parts of
+the sphere you will clearly see that the interior is empty and it just has
+a very thin surface.</p>
+<p>
+This is not contrary to the concept of a solid object used in POV-Ray. It is
+assumed that all space inside the sphere is covered by the sphere's
+<code>interior</code>. Light passing through the object is affected by
+attenuation and refraction properties. However there is no room for any other
+particles like those used by fog or interior media.</p>
+<p>
+Empty objects are created by adding the <code>hollow</code> keyword (see
+<a href="r3_4.html#r3_4_7_4">Hollow</a>) to the object statement. An empty (or hollow) object is
+assumed to be made of a very thin surface which is of the material specified
+by the pigment, finish and normal statements. The object's interior is
+empty, it normally contains air molecules.</p>
+<p>
+An empty object can be filled with particles by adding fog or atmospheric
+media to the scene or by adding an interior media to the object. It is very
+important to understand that in order to fill an object with any kind of
+particles it first has to be made hollow.</p>
+<p>
+There is a pitfall in the empty/solid object implementation that you have to
+be aware of.</p>
+<p>
+In order to be able to put solid objects inside a media or fog, a test has
+to be made for every ray that passes through the media. If this ray travels
+through a solid object the media will not be calculated. This is what anyone
+will expect. A solid glass sphere in a fog bank does not contain fog.</p>
+<p>
+The problem arises when the camera ray is inside any non-hollow object. In
+this case the ray is already traveling through a solid object and even if the
+media's container object is hit and it is hollow, the media will not be
+calculated. There is no way of telling between these two cases.</p>
+<p>
+POV-Ray has to determine whether the camera is inside any object prior to
+tracing a camera ray in order to be able to correctly render medias when the
+camera is inside the container object. There is no way around doing
+this.</p>
+<p>
+The solution to this problem (that will often happen with infinite objects
+like planes) is to make those objects hollow too. Thus the ray will travel
+through a hollow object, will hit the container object and the media will be
+calculated.</p>
+
+</div>
+<a name="r3_6_1_3"></a>
+<div class="content-level-h4" contains="Scaling objects with an interior" id="r3_6_1_3">
+<h4>3.6.1.3 Scaling objects with an interior</h4>
+<p>All the statements that can be put in an interior represent aspects of 
+the matter that an object is made of. Scaling an object, changing its size, does not change 
+its matter. Two pieces of the same quality steel, one twice as big as 
+the other, both have the same density. The bigger piece is quite a bit 
+heavier though.</p>
+
+<p> So, in POV-Ray, if you design a lens from a glass with an ior of 1.5 
+and you scale it bigger, the focal distance of the lens will get longer 
+as the ior stays the same. For light attenuation it means that an object will be
+<em>darker</em> after being scaled up. The light intensity decreases a certain
+amount per pov-unit. The object has become bigger, more pov-units, so more light is faded.
+The <code>fade_distance, fade_power</code> themselves have not been changed.</p>
+
+<p> The same applies to media. Imagine media as a density of particles, 
+you specify 100 particles per cubic pov-unit. If we scale a 1 cubic 
+pov-unit object to be twice as big in every direction, we will have a 
+total of 800 particles in the object. The object will look different, 
+as we have more particles to look through. Yet the objects density is 
+still 100 particles per cubic pov-unit. In media this <em>particle
+density</em> is set by the color after <code>emission</code>, <code>absorption</code>, or in 
+the <code>scattering</code> statement</p>
+
+<pre>
+#version 3.5;
+global_settings {
+  assumed_gamma 1.0
+  }
+
+camera {location &lt;0, 0,-12.0&gt; look_at 0 angle 30 }
+
+#declare Container_T =
+  texture {
+    pigment {rgbt &lt;1,1,1,1&gt;}
+  finish {ambient 0 diffuse 0}
+  }
+
+#declare Scale=2;
+
+box {                             //The reference
+  &lt;-1,-1,0&gt;,&lt;1,1,.3&gt;
+  hollow
+  texture {Container_T}
+  interior {
+    media {
+      intervals 1         
+      samples 1,1          
+      emission 1
+      }
+    }
+  translate &lt;-2.1,0,0&gt;
+  }
+
+box {                             //Object scaled twice as big
+  &lt;-1,-1,0&gt;,&lt;1,1,.3&gt;  //looks different but same
+  hollow                          //particle density
+  texture {Container_T}
+    interior {
+      media {
+        intervals 1         
+        samples 1,1          
+        emission 1
+        }
+      }
+  scale Scale
+  translate&lt;0,0,12&gt;
+  }
+
+box {                             //Object scaled twice as big       
+  &lt;-1,-1,0&gt;,&lt;1,1,.3&gt;  //looks the same but particle
+  hollow                          //density scaled down
+  texture {Container_T}
+    interior {
+      media {
+        intervals 1         
+        samples 1,1          
+        emission 1/Scale
+        }
+      }
+  scale Scale
+  translate&lt;0,0,12&gt;
+  translate&lt;4.2,0,0&gt;
+  }
+</pre>
+
+<p>The third object in the scene above, shows what to do, if you want to scale
+the object <em>and</em> want it to keep the same look as before. The interior 
+feature has to be divided by the same amount, that the object was scaled by. 
+This is only possible when the object is scaled uniform.</p>
+
+<p>In general, the correct approach is to scale the media density proportionally to
+the change in container volume. For non-uniform scaling to get an unambiguous result,
+that can be explained in physical terms, we need to do:</p>
+<pre>
+Density*sqrt(3)/vlength(Scale)
+</pre>
+<p>where Density is your original media density and Scale is the scaling
+vector applied to the container.</p>
+
+<p class="Note"><strong>Note:</strong> The density modifiers inside the <code>density{}</code> 
+statement are scaled along with the object.</p>
+
+</div>
+<a name="r3_6_1_4"></a>
+<div class="content-level-h4" contains="Refraction" id="r3_6_1_4">
+<h4>3.6.1.4 Refraction</h4>
+<p>When light passes through a surface either into or out of a dense medium
+the path of the ray of light is bent. Such bending is called <em>
+refraction</em>. The amount of bending or refracting of light depends upon
+the density of the material. Air, water, crystal and diamonds all have
+different densities and thus refract differently. The <em>index of
+refraction</em> or <em>ior</em> value is used by scientists to describe the
+relative density of substances. The <code>ior</code> keyword is used in
+POV-Ray in the <code>interior</code> to turn on refraction and to specify the
+ior value. For example:</p>
+<pre>
+object { MyObject pigment {Clear } interior { ior 1.5 } }
+</pre>
+
+<p>The default ior value of 1.0 will give no refraction. The index of
+refraction for air is 1.0, water is 1.33, glass is 1.5 and diamond is
+2.4.</p>
+<p>
+Normally transparent or semi-transparent surfaces in POV-Ray do not refract
+light. Earlier versions of POV-Ray required you to use the <code>
+refraction</code> keyword in the <code>finish</code> statement to turn on
+refraction. This is no longer necessary. Any non-zero <code>ior</code> value
+now turns refraction on.</p>
+<p>
+In addition to turning refraction on or off, the old <code>refraction</code>
+keyword was followed by a float value from 0.0 to 1.0. Values in between 0.0
+and 1.0 would darken the refracted light in ways that do not correspond to
+any physical property. Many POV-Ray scenes were created with intermediate
+refraction values before this bug was discovered so the feature has been
+maintained. A more appropriate way to reduce the brightness of refracted
+light is to change the <code><a href="r3_2.html#r3_2_1_5">filter</a></code> or
+<code><a href="r3_2.html#r3_2_1_5">transmit</a></code> value in the colors 
+specified in the pigment statement or to use the <code><a href="r3_6.html#r3_6_1">fade_power</a></code> 
+and <code><a href="r3_6.html#r3_6_1">fade_distance</a></code> keywords.
+See <a href="r3_6.html#r3_6_1_6">Attenuation</a>.</p>
+<p class="Note"><strong>Note:</strong> Neither the <code>ior</code> nor <code>refraction</code> keywords cause the 
+object to be transparent. Transparency only occurs if there is a non-zero 
+<code>filter</code> or <code>transmit</code> value in the color.</p>
+<p>
+The <code>refraction</code> and <code>ior</code> keywords were originally
+specified in <code>finish</code> but are now properly specified in <code>
+interior</code>. They are accepted in <code><a href="r3_5.html#r3_5_3">finish</a></code>
+for backward compatibility and generate a warning message.</p>
+
+</div>
+<a name="r3_6_1_5"></a>
+<div class="content-level-h4" contains="Dispersion" id="r3_6_1_5">
+<h4>3.6.1.5 Dispersion</h4>
+<p>For all materials with a ior different from 1.0 the refractive index is not
+constant throughout the spectrum. It changes as a function of wavelength.
+Generally the refractive index decreases as the wavelength increases. Therefore
+light passing through a material will be separated according to wavelength.
+This is known as chromatic dispersion.</p>
+
+<p>By default POV-Ray does not calculate dispersion as light travels through a
+transparent object. In order to get a more realistic effect the <code>dispersion
+</code> and <code>dispersion_samples</code> keywords can be added to the
+<code>interior{}</code> block. They will simulate dispersion by creating a
+prismatic color effect in the object.</p>
+
+<p>The <code>dispersion</code> value is the ratio of refractive indices for violet to 
+red. It controls the strength of dispersion (how much the colors are spread out) used.
+A DISPERSION_VALUE of 1 will give no dispersion, good values are 1.01 to 1.1.</p>
+<p class="Note"><strong>Note:</strong> There will be no dispersion, unless the <code>ior</code> keyword has
+been specified in <code>interior{ }</code>. An ior of 1 is legal. The ior has no 
+influence on the dispersion strength, only on the angle of refraction.</p>
+
+<p>As POV-Ray does not use wavelengths for raytracing, a spectrum is simulated.
+The <code>dispersion_samples</code> value controls the amount of color-steps and
+smoothness in the spectrum. The default value is 7, the minimum is 2. Values up to
+100 or higher may be needed to get a very smooth result.</p>
+
+</div>
+<a name="r3_6_1_5_1"></a>
+<div class="content-level-h5" contains="Dispersion & Caustics" id="r3_6_1_5_1">
+<h5>3.6.1.5.1 Dispersion & Caustics</h5>
+<p>Dispersion only affects the interior of an object and has no effect on faked
+caustics (See <a href="r3_6.html#r3_6_1_7">Faked Caustics</a>).
+<br>To see the effects of dispersion in caustics, photon mapping is needed (See the sections
+<a href="r3_6.html#r3_6_3_2">Photons</a> and <a href="r3_6.html#r3_6_3_5_3">Photons &amp; Dispersion</a>).  
+</p>
+
+</div>
+<a name="r3_6_1_6"></a>
+<div class="content-level-h4" contains="Attenuation" id="r3_6_1_6">
+<h4>3.6.1.6 Attenuation</h4>
+<p>Light attenuation is used to model the decrease in light intensity as 
+the light travels through a transparent object. The keywords <code>fade_power</code>, <code>fade_distance</code> and <code>fade_color</code> are specified in the <code>interior</code> statement.</p>
+<p>The <code>fade_distance</code> value determines the distance the light has to travel to reach half intensity while the <code>fade_power</code> value determines how fast the light will fall off. <code>fade_color</code> colorizes the attenuation. For realistic effects a fade power of 1 to 2 should be used. Default values for <code>fade_power</code> and <code>fade_distance</code> is 0.0 which turns this feature off. Default for <code>fade_color</code> is <code>&lt;0,0,0&gt;</code>, if <code>fade_color</code> is <code>&lt;1,1,1&gt;</code> there is no attenuation. The actual colors give colored attenuation. <code>&lt;1,0,0&gt;</code> looks red, not cyan as in media.</p>
+
+<p>The attenuation is calculated by a formula similar to that used for light
+source attenuation.</p>
+
+<table class="centered" width="415x" cellpadding="0" cellspacing="10">
+<tr>
+  <td>
+    <!--<img src="ref_tex/medatten.tex" alt="">---><img class="center" width="395px" src="images/8/81/RefImgMedatten.png">
+  </td>
+</tr>
+<tr>
+  <td>
+    <p class="caption">Media Attenuation</p>
+  </td>
+</tr>
+</table>
+
+<p>If you set fade_power in the interior of an object at 1000 or above, 
+a realistic exponential attenuation function will be used:</p>
+<pre>   Attenuation = exp(-depth/fade_dist)</pre>
+
+<p>The <code>fade_power</code> and <code>fade_distance</code> keywords were
+originally specified in <code>finish</code> but are now properly specified in
+<code>interior</code>. They are accepted in <code>finish</code> for backward
+compatibility and generate a warning message.</p>
+
+</div>
+<a name="r3_6_1_7"></a>
+<div class="content-level-h4" contains="Simulated Caustics" id="r3_6_1_7">
+<h4>3.6.1.7 Simulated Caustics</h4>
+<p>Caustics are light effects that occur if light is reflected or refracted
+by specular reflective or refractive surfaces. Imagine a glass of water
+standing on a table. If sunlight falls onto the glass you will see spots of
+light on the table. Some of the spots are caused by light being reflected by
+the glass while some of them are caused by light being refracted by the water
+in the glass.</p>
+<p>
+Since it is a very difficult and time-consuming process to actually calculate
+those effects (though it is not impossible, see the sections <a href="r3_6.html#r3_6_3_2">Photons</a>)
+POV-Ray uses a quite simple
+method to simulate caustics caused by refraction. The method calculates the
+angle between the incoming light ray and the surface normal. Where they are
+nearly parallel it makes the shadow brighter. Where the angle is greater, the
+effect is diminished. Unlike real-world caustics, the effect does not vary
+based on distance. This caustic effect is limited to areas that are shaded by
+the transparent object. You will get no caustic effects from reflective
+surfaces nor in parts that are not shaded by the object.</p>
+<p>
+The <code>caustics</code> <em><code>Power</code></em> keyword controls the
+effect. Values typically range from 0.0 to 1.0 or higher. Zero is the default
+which is no caustics. Low, non-zero values give broad hot-spots while higher
+values give tighter, smaller simulated focal points.</p>
+<p>
+The <code>caustics</code> keyword was originally specified in <code>
+finish</code> but is now properly specified in <code>interior</code>. It is
+accepted in <code>finish</code> for backward compatibility and generates a
+warning message.</p>
+
+</div>
+<a name="r3_6_1_8"></a>
+<div class="content-level-h4" contains="Object-Media" id="r3_6_1_8">
+<h4>3.6.1.8 Object-Media</h4>
+<p>The <code>interior</code> statement may contain one or more <code>media</code>
+statements. Media is used to simulate suspended particles such as smoke, 
+haze, or dust. Or visible gasses such as steam or fire and explosions. When 
+used with an object interior, the effect is constrained by the object's 
+shape. The calculations begin when the ray enters an object and ends when 
+it leaves the object. This section only discusses media when used with 
+object interior. The complete syntax and an explanation of all of the 
+parameters and options for <code>media</code> is given in the section 
+<a href="r3_6.html#r3_6_2">Media</a>.</p>
+<p>
+Typically the object itself is given a fully transparent texture however
+media also works in partially transparent objects. The texture pattern itself
+does not effect the interior media except perhaps to create shadows on it.
+The texture pattern of an object applies only to the surface shell. Any
+interior media patterns are totally independent of the texture.</p>
+<p>
+In previous versions of POV-Ray, this feature was called <code>halo</code>
+and was part of the <code>texture</code> specification along with <code>
+pigment</code>, <code>normal</code>, and <code>finish</code>. See
+<a href="r3_6.html#r3_6_1_1">Why are Interior and Media Necessary?</a> for an explanation of the reasons for the change.</p>
+
+<p>Media may also be specified outside an object to simulate atmospheric
+media. There is no constraining object in this case. If you only want media
+effects in a particular area, you should use object media rather than only
+relying upon the media pattern. In general it will be faster and more
+accurate because it only calculates inside the constraining object. See
+<a href="r3_3.html#r3_3_2_1">Atmospheric Media</a> for
+details on unconstrained uses of media.</p>
+<p>
+You may specify more than one <code>media</code> statement per <code>
+interior</code> statement. In that case, all of the media participate and
+where they overlap, they add together.</p>
+<p>
+Any object which is supposed to have media effects inside it, whether those
+effects are object media or atmospheric media, must have the <code>hollow on</code>
+keyword applied. Otherwise the media is blocked. See
+<a href="r3_6.html#r3_6_1_2">Empty and Solid Objects</a>
+for details.</p>
+
+
+</div>
+
+<a name="r3_6_2"></a>
+<div class="content-level-h3" contains="Media" id="r3_6_2">
+<h3>3.6.2 Media</h3>
+<p>The <code>media</code> statement is used to specify particulate matter
+suspended in a medium such air or water. It can be used to specify smoke,
+haze, fog, gas, fire, dust etc. Previous versions of POV-Ray had two
+incompatible systems for generating such effects. One was <code>halo</code>
+for effects enclosed in a transparent or semi-transparent object. The other
+was <code>atmosphere</code> for effects that permeated the entire scene. This
+duplication of systems was complex and unnecessary. Both <code>halo</code>
+and <code>atmosphere</code> have been eliminated. See
+<a href="r3_6.html#r3_6_1_1">Why are Interior and Media Necessary?</a>
+for further details on this change. See <a href="r3_6.html#r3_6_1_8">Object Media</a>
+for details on how to use <code>media</code> with objects.
+See <a href="r3_3.html#r3_3_2_1">Atmospheric Media</a>
+for details on using <code>media</code> for atmospheric effects outside of 
+objects. This section and the sub-sections which follow explains the 
+details of the various <code>media</code> options which are useful for 
+either object media or atmospheric media.</p>
+<p>Media works by sampling the density of particles at some specified number of
+points along the ray's path. Sub-samples are also taken until the results
+reach a specified confidence level. POV-Ray provides three methods of sampling.
+When used in an object's <code>interior</code> statement, sampling only 
+occurs inside the object. When used for atmospheric media, the samples run from 
+the camera location until the ray strikes an object. Therefore for localized 
+effects, it is best to use an enclosing object even though the density pattern 
+might only produce results in a small area whether the media was enclosed or not.</p>
+<p>The complete syntax for a <code>media</code> statement is as follows:</p>
+
+<pre>
+MEDIA:
+  media { [MEDIA_IDENTIFIER] [MEDIA_ITEMS...] }
+MEDIA_ITEMS:
+  method Number | intervals Number | samples Min, Max |
+  confidence Value  | variance Value | ratio Value | jitter Value
+  absorption COLOR | emission COLOR | aa_threshold Value |
+  aa_level Value | 
+  scattering { 
+    Type, COLOR [ eccentricity Value ] [ extinction Value ]
+    }  | 
+  density { 
+    [DENSITY_IDENTIFIER] [PATTERN_TYPE] [DENSITY_MODIFIER...]
+    }   | 
+  TRANSFORMATIONS
+DENSITY_MODIFIER:
+  PATTERN_MODIFIER | DENSITY_LIST | COLOR_LIST |
+  color_map { COLOR_MAP_BODY } | colour_map { COLOR_MAP_BODY } |
+  density_map { DENSITY_MAP_BODY }
+</pre>
+
+<p>Media default values:</p>
+<pre>
+aa_level     : 3
+aa_threshold : 0.1
+absorption   : &lt;0,0,0&gt;
+confidence   : 0.9
+emission     : &lt;0,0,0&gt;
+intervals    : 1
+jitter       : 0.0
+method       : 3
+ratio        : 0.9
+samples      : Min 1, Max 1
+variance     : 1/128
+SCATTERING
+COLOR        : &lt;0,0,0&gt;
+eccentricity : 0.0
+extinction   : 1.0
+</pre>
+
+<p>If a media identifier is specified, it must be the first item. All other
+media items may be specified in any order. All are optional. You may have
+multiple <code>density</code> statements in a single <code>media</code>
+statement. See <a href="r3_6.html#r3_6_2_3_4">Multiple Density vs. Multiple Media</a>
+for details. Transformations apply only to the <code>density</code> statements which have
+been already specified. Any <code>density</code> after a transformation is
+not affected. If the <code>media</code> has no <code>density</code>
+statements and none was specified in any media identifier, then the
+transformation has no effect. All other media items except for <code>
+density</code> and transformations override default values or any previously
+set values for this <code>media</code> statement.</p>
+<p class="Note"><strong>Note:</strong> Some media effects depend upon light sources. However the
+participation of a light source depends upon the <code>media_interaction</code>
+and <code>media_attenuation</code> keywords. See <a href="r3_4.html#r3_4_5_10">Atmospheric Media Interaction</a>
+and <a href="r3_4.html#r3_4_5_11">Atmospheric Attenuation</a> for details.</p>
+
+<p class="Note"><strong>Note:</strong> If you specify <code><a href="r3_2.html#r3_2_1_5">transmit</a></code> or <code><a href="r3_2.html#r3_2_1_5">filter</a></code> to create a transparent container object, <code>absorption</code> media will always cast a shadow. The same applies to <code>scattering</code> media unless <code>extinction</code> is set to zero, so if a shadow is not desired, use the <code>no_shadow</code> keyword for the container object. This does not apply to <code>emission</code> media as it never casts a shadow.</p>
+
+</div>
+<a name="r3_6_2_1"></a>
+<div class="content-level-h4" contains="Media Types" id="r3_6_2_1">
+<h4>3.6.2.1 Media Types</h4>
+<p>There are three types of particle interaction in <code>media</code>:
+absorbing, emitting, and scattering. All three activities may occur in a
+single media. Each of these three specifications requires a color. Only the
+red, green, and blue components of the color are used. The filter and
+transmit values are ignored. For this reason it is permissible to use one
+float value to specify an intensity of white color. For example, the following
+two lines are legal and produce the same results:</p>
+<pre>
+emission 0.75
+emission rgb &lt;0.75,0.75,0.75&gt;
+</pre>
+
+</div>
+<a name="r3_6_2_1_1"></a>
+<div class="content-level-h5" contains="Absorption" id="r3_6_2_1_1">
+<h5>3.6.2.1.1 Absorption</h5>
+<p>The <code>absorption</code> keyword specifies a color of light which is
+absorbed when looking through the media. For example, <code>absorption
+rgb&lt;0,1,0&gt;</code> blocks the green light but permits red and blue to
+get through. Therefore a white object behind the media will appear
+magenta.</p>
+<p>
+The default value is <code>rgb&lt;0,0,0&gt;</code> which means no light is
+absorbed -- all light passes through normally.</p>
+
+</div>
+<a name="r3_6_2_1_2"></a>
+<div class="content-level-h5" contains="Emission" id="r3_6_2_1_2">
+<h5>3.6.2.1.2 Emission</h5>
+<p>The <code>emission</code> keyword specifies the color of the light emitted from the particles. Particles which emit light are visible without requiring additional illumination. However, they will only illuminate other objects if radiosity is used with media on.  This is similar to an object with high <code>ambient</code> values. The default value is <code>rgb&lt;0,0,0&gt;</code> which means no light is emitted.</p>
+
+</div>
+<a name="r3_6_2_1_3"></a>
+<div class="content-level-h5" contains="Scattering" id="r3_6_2_1_3">
+<h5>3.6.2.1.3 Scattering</h5>
+<p>The syntax of a <code>scattering</code> statement is:</p>
+<pre>
+SCATTERING:
+  scattering { 
+    Type, COLOR [ eccentricity Value ] [ extinction Value ] 
+    }
+</pre>
+
+<p>The first float value specifies the type of scattering. This is followed by the color of the scattered light. The default value if no <code>scattering</code> statement is given is <code>rgb &lt;0,0,0&gt;</code> which means no scattering occurs.</p>
+
+<p>The scattering effect is only visible when light is shining on the media from a light source. This is similar to <code>diffuse</code> reflection off of an object. In addition to reflecting light, scattering media also absorbs light like an <code>absorption</code> media. The balance between how much absorption occurs for a given amount of scattering is controlled by the optional <code>extinction</code> keyword and a single float value. The default value of 1.0 gives an extinction effect that matches the scattering. Values such as <code>extinction 0.25</code> give 25% the normal amount. Using <code>extinction 0.0</code> turns it off completely. Any value other than the 1.0 default is contrary to the real physical model but decreasing extinction can give you more artistic flexibility.</p>
+<p>
+The integer value <em><code>Type</code></em> specifies one of five different scattering phase functions representing the different models: isotropic, Mie (haze and murky atmosphere), Rayleigh, and Henyey-Greenstein.</p>
+<p>
+Type 1, <em>isotropic scattering</em> is the simplest form of scattering because it is independent of direction. The amount of light scattered by particles in the atmosphere does not depend on the angle between the viewing direction and the incoming light.</p>
+<p>
+Types 2 and 3 are <em>Mie haze</em> and <em>Mie murky</em> scattering which are used for relatively small particles such as minuscule water droplets of fog, cloud particles, and particles responsible for the polluted sky. In this model the scattering is extremely directional in the forward direction, i.e. the amount of scattered light is largest when the incident light is
+anti-parallel to the viewing direction (the light goes directly to the viewer). It is smallest when the incident light is parallel to the viewing direction. The haze and murky atmosphere models differ in their scattering characteristics. The murky model is much more directional than the haze model.</p>
+
+<table class="centered" width="660px" cellpadding="0" cellspacing="10">
+<tr>
+  <td><img class="center" width="640px" src="images/7/7d/RefImgMiehaze.gif"></td>
+</tr>
+<tr>
+  <td>
+    <p class="caption">The Mie haze scattering function</p>
+  </td>
+</tr>
+</table>
+
+<table class="centered" width="660px" cellpadding="0" cellspacing="10">
+<tr>
+  <td><img class="center" width="640px" src="images/1/15/RefImgMiemurky.gif"></td>
+</tr>
+<tr>
+  <td>
+    <p class="caption">The Mie murky scattering function</p>
+  </td>
+</tr>
+</table>
+
+<p>Type 4 <em>Rayleigh scattering</em> models the scattering for extremely small particles such as molecules of the air. The amount of scattered light depends on the incident light angle. It is largest when the incident light is parallel or anti-parallel to the viewing direction and smallest when the incident light is perpendicular to the viewing direction. You should note that the Rayleigh model used in POV-Ray does not take the dependency of scattering on the wavelength into account.</p>
+
+<table class="centered" width="660px" cellpadding="0" cellspacing="10">
+<tr>
+  <td><img class="center" width="640px" src="images/9/95/RefImgRaylscat.gif"></td>
+</tr>
+<tr>
+  <td>
+    <p class="caption">The Rayleigh scattering function</p>
+  </td>
+</tr>
+</table>
+
+<p>Type 5 is the <em>Henyey-Greenstein scattering</em> model. It is based on an analytical function and can be used to model a large variety of different scattering types. The function models an ellipse with a given eccentricity e. This eccentricity is specified by the optional keyword <code>eccentricity</code> which is only used for scattering type five. The default eccentricity value of zero defines isotropic scattering while positive values lead to scattering in the direction of the light and negative values lead to scattering in the opposite direction of the light. Larger values of e (or smaller values in the negative case) increase the directional property of the scattering.</p>
+
+<table class="centered" width="660px" cellpadding="0" cellspacing="10">
+<tr>
+  <td><img class="center" width="640px" src="images/2/2c/RefImgHgscatt.gif"></td>
+</tr>
+<tr>
+  <td>
+    <p class="caption">The Henyey-Greenstein scattering function for different eccentricity values</p>
+  </td>
+</tr>
+</table>
+
+<p class="Note"><strong>Note:</strong> See the section on <a href="r3_4.html#r3_4_6">Light Groups</a> for additional information when using scattering media in a light group.</p>
+
+</div>
+<a name="r3_6_2_2"></a>
+<div class="content-level-h4" contains="Sampling Parameters & Methods" id="r3_6_2_2">
+<h4>3.6.2.2 Sampling Parameters & Methods</h4>
+<p>Media effects are calculated by sampling the media along the path of the ray. It uses a process called <em>Monte Carlo integration.</em> POV-Ray provides three different types of media sampling. The <code>method</code> keyword lets you specify what sampling type is used.</p>
+
+<p>Sample <code>method 3</code> uses adaptive sampling (similar to adaptive anti-aliasing) which is very much like the sampling method used in POV-Ray 3.0 atmosphere. This code was written from the ground-up to work with media. However, adaptive sampling works by taking another sample between two existing samples if there is too much variance in the original two samples. This leads to fewer samples being taken in areas where the effect from the media remains constant. The adaptive sampling is only performed if the minimum samples are set to 3 or more.</p>
+
+<p>You can specify the anti-aliasing recursion depth using the <code>aa_level</code> keyword followed by an integer. You can specify the anti-aliasing threshold by using the <code>aa_threshold</code> followed by a float. The default for <code>aa_level</code> is 4 and the default <code>aa_threshold</code> is 0.1. <code>jitter</code> also works with method 3.</p>
+
+<p class="Note"><strong>Note:</strong> It is usually best to only use one interval with method 3. Too many intervals can lead to artifacts, and POV will create more intervals if it needs them.</p>
+
+<p class="BeAware"><strong>Be Aware:</strong> As of version 3.5 the default sampling <code>method</code> is 3, and it's default for <code>intervals</code> is 1. Sampling methods 1 and 2 have been retained for legacy purposes.</p>
+ 
+<p>Sample <code>method 1</code> used the <code>intervals</code> keyword to specify the integer number of intervals used to sample the ray. For object media, the intervals are spread between the entry and exit points as the ray passes through the container object. For atmospheric media, the intervals spans the entire length of the ray from its start until it hits an object. For media types which interact with spotlights or cylinder lights, the intervals which are not illuminated by these light types are weighted differently than the illuminated intervals when distributing samples.</p>
+
+<p>The <code>ratio</code> keyword distributes intervals differently between lit and unlit areas. The default value of <code>ratio 0.9</code> means that lit intervals get more samples than unlit intervals. Note that the total number of intervals must exceed the number of illuminated intervals. If a ray passes in and out of 8 spotlights but you have only specified 5 intervals then an error occurs.</p>
+
+<p>The <code>samples</code> <em><code>Min</code></em>, <em><code>Max</code></em> keyword specifies the minimum and maximum number of samples taken per interval. The default values are <code>samples 1,1</code>. The value for Max may be omitted, in which case the range Min = Max will be used.</p>
+
+<p>As each interval is sampled, the variance is computed. If the variance is below a threshold value, then no more samples are needed. The <code>variance</code> and <code>confidence</code> keywords specify the permitted variance allowed and the confidence that you are within that variance. The exact calculations are quite complex and involve chi-squared tests and other statistical principles too messy to describe here. The default values are <code>variance 1.0/128</code> and <code>confidence 
+0.9</code>. For slower more accurate results, decrease the variance and increase the confidence.</p>
+
+<p class="Note"><strong>Note:</strong> The maximum number of samples limits the calculations even if the proper variance and confidence are never reached.</p>
+
+<p>Sample <code>method 2</code> distributed samples evenly along the viewing ray or light ray. The latter can make things look smoother sometimes. If you specify a maximum number of samples higher than the minimum number of samples, POV will take additional samples, but they will be random, just like in method 1. Therefore, it is suggested you set the max samples equal to the minimum samples. 
+<code>jitter</code> will cause method 2 to look similar to method 1. It should be followed by a float, and a value of 1 will stagger the samples in the full range between samples.</p>
+
+</div>
+<a name="r3_6_2_3"></a>
+<div class="content-level-h4" contains="Density" id="r3_6_2_3">
+<h4>3.6.2.3 Density</h4>
+<p>Particles of media are normally distributed in constant density throughout
+the media. However, the <code>density</code> statement allows you to vary the
+density across space using any of POV-Ray's pattern functions such as
+those used in textures. If no <code>density</code> statement is given then
+the density remains a constant value of 1.0 throughout the media. More than
+one <code>density</code> may be specified per <code>media</code> statement.
+See <a href="r3_6.html#r3_6_2_3_4">Multiple Density vs. Multiple Media</a>.
+The syntax for <code>density</code> is:</p>
+<pre>
+DENSITY:
+  density {
+    [DENSITY_IDENTIFIER]
+    [DENSITY_TYPE]
+    [DENSITY_MODIFIER...]
+    }
+
+DENSITY_TYPE:
+  PATTERN_TYPE | COLOR 
+  DENSITY_MODIFIER:
+  PATTERN_MODIFIER | DENSITY_LIST | color_map { COLOR_MAP_BODY } |
+  colour_map { COLOR_MAP_BODY } | density_map { DENSITY_MAP_BODY }
+</pre>
+
+<p>The <code>density</code> statement may begin with an optional density
+identifier. All subsequent values modify the defaults or the values in the
+identifier. The next item is a pattern type. This is any one of POV-Ray's
+pattern functions such as <code><a href="r3_5.html#r3_5_11_5">bozo</a></code>, <code><a href="r3_5.html#r3_5_11_42">wood</a></code>, <code><a href="r3_5.html#r3_5_11_19">gradient</a></code>, <code><a href="r3_5.html#r3_5_11_41">waves</a></code>, etc. Of particular usefulness are the <code><a href="r3_5.html#r3_5_11_34">spherical</a></code>, 
+<code><a href="r3_5.html#r3_5_11_29">planar</a></code>, <code><a href="r3_5.html#r3_5_11_12">cylindrical</a></code>, and <code><a href="r3_5.html#r3_5_11_4">boxed</a></code> patterns which were previously available only for use with our discontinued 
+<code>halo</code> feature. All patterns return a value from 0.0 to 1.0. This value is interpreted as the density of the media at that particular point. See <a href="r3_5.html#r3_5_11">Patterns</a> for details on particular pattern types. Although a solid <em>COLOR</em> pattern is legal, in general it is used 
+only when the <code>density</code> statement is inside a <code>density_map</code>.</p>
+
+</div>
+<a name="r3_6_2_3_1"></a>
+<div class="content-level-h5" contains="General Density Modifiers" id="r3_6_2_3_1">
+<h5>3.6.2.3.1 General Density Modifiers</h5>
+<p>A <code>density</code> statement may be modified by any of the general
+pattern modifiers such as transformations, <code>turbulence</code> and <code>
+warp</code>. See <a href="r3_5.html#r3_5_12">Pattern Modifiers</a> for details. In addition, there
+are several density-specific modifiers which can be used.</p>
+
+</div>
+<a name="r3_6_2_3_2"></a>
+<div class="content-level-h5" contains="Density with color_map" id="r3_6_2_3_2">
+<h5>3.6.2.3.2 Density with color_map</h5>
+<p>Typically, a <code>media</code> uses just one constant color throughout.
+Even if you vary the density, it is usually just one color which is specified
+by the <code>absorption</code>, <code>emission</code>, or <code>
+scattering</code> keywords. However, when using <code>emission</code> to
+simulate fire or explosions, the center of the flame (high density area) is
+typically brighter and white or yellow. The outer edge of the flame (less
+density) fades to orange, red, or in some cases deep blue. To model the
+density-dependent change in color which is visible, you may specify a <code>
+color_map</code>. The pattern function returns a value from 0.0 to 1.0 and
+the value is passed to the color map to compute what color or blend of colors
+is used. See <a href="r3_5.html#r3_5_1_3">Color Maps</a> for details on how pattern values work
+with <code>color_map</code>. This resulting color is multiplied by the <code>
+absorption</code>, <code>emission</code> and <code>scattering</code> color.
+Currently there is no way to specify different color maps for each media type
+within the same <code>media</code> statement.</p>
+<p>
+Consider this example:</p>
+<pre>
+media {
+  emission 0.75
+  scattering {1, 0.5}
+  density {
+    spherical
+    color_map {
+      [0.0 rgb &lt;0,0,0.5&gt;]
+      [0.5 rgb &lt;0.8, 0.8, 0.4&gt;]
+      [1.0 rgb &lt;1,1,1&gt;]
+      }
+    }
+  }
+</pre>
+
+<p>The color map ranges from white at density 1.0 to bright yellow at density
+0.5 to deep blue at density 0. Assume we sample a point at density 0.5. The
+emission is 0.75*&lt;0.8,0.8,0.4&gt; or &lt;0.6,0.6,0.3&gt;. Similarly the
+scattering color is 0.5*&lt;0.8,0.8,0.4&gt; or &lt;0.4,0.4,0.2&gt;.</p>
+<p>
+For block pattern types <code>checker</code>, <code>hexagon</code>, and
+<code>brick</code> you may specify a color list such as this:</p>
+<pre>
+density {
+ checker 
+   density {rgb&lt;1,0,0&gt;}
+   density {rgb&lt;0,0,0&gt;}
+   }
+</pre>
+
+<p>See <a href="r3_5.html#r3_5_1_2">Color List Pigments</a>
+which describes how <code>pigment</code> uses a color list. The same principles
+apply when using them with <code>density</code>.</p>
+
+</div>
+<a name="r3_6_2_3_3"></a>
+<div class="content-level-h5" contains="Density Maps and Density Lists" id="r3_6_2_3_3">
+<h5>3.6.2.3.3 Density Maps and Density Lists</h5>
+<p>In addition to specifying blended colors with a color map you may create a
+blend of densities using a <code>density_map</code>. The syntax for a density
+map is identical to a color map except you specify a density in each map
+entry (and not a color).</p>
+<p>
+The syntax for <code>density_map</code> is as follows:</p>
+<pre>
+DENSITY_MAP:
+  density_map { DENSITY_MAP_BODY }
+DENSITY_MAP_BODY:
+  DENSITY_MAP_IDENTIFIER | DENSITY_MAP_ENTRY...
+DENSITY_MAP_ENTRY:
+  [ Value DENSITY_BODY ]
+</pre>
+
+<p>Where <em><code>Value</code></em> is a float value between 0.0 and 1.0
+inclusive and each <em>DENSITY_BODY</em> is anything which can be inside a
+<code>density{...}</code> statement. The <code>density</code> keyword and
+<code>{}</code> braces need not be specified.</p>
+<p class="Note"><strong>Note:</strong> The <code>[]</code> brackets are part of the actual <em>
+DENSITY_MAP_ENTRY</em>. They are not notational symbols denoting optional
+parts. The brackets surround each entry in the density map.</p>
+<p> There may be from
+2 to 256 entries in the map.</p>
+<p>
+Density maps may be nested to any level of complexity you desire. The
+densities in a map may have color maps or density maps or any type of density
+you want.</p>
+<p>
+Entire densities may also be used with the block patterns such as <code>checker</code>, <code>hexagon</code> and <code>brick</code>. For example:</p>
+<pre>
+density {
+  checker
+    density { Flame scale .8 }
+    density { Fire scale .5 }
+    }
+</pre>
+
+<p class="Note"><strong>Note:</strong> In the case of block patterns the <code>density</code> wrapping
+is required around the density information.</p>
+<p>
+A density map is also used with the <code>average</code> density type. See
+<a href="r3_5.html#r3_5_11_3">Average</a> for details.</p>
+<p>
+You may declare and use density map identifiers but the only way to declare a
+density block pattern list is to declare a density identifier for the entire
+density.</p>
+
+</div>
+<a name="r3_6_2_3_4"></a>
+<div class="content-level-h5" contains="Multiple Density vs. Multiple Media" id="r3_6_2_3_4">
+<h5>3.6.2.3.4 Multiple Density vs. Multiple Media</h5>
+<p>It is possible to have more than one <code>media</code> specified per
+object and it is legal to have more than one <code>density</code> per <code>
+media</code>. The effects are quite different. Consider this example:</p>
+<pre>
+object {
+  MyObject
+  pigment { rgbf 1 }
+  interior {
+    media {
+      density { Some_Density }
+      density { Another_Density }
+      }
+    }
+  }
+</pre>
+
+<p>As the media is sampled, calculations are performed for each density
+pattern at each sample point. The resulting samples are multiplied together.
+Suppose one density returned <code>rgb&lt;.8,.8,.4&gt;</code> and the other
+returned <code>rgb&lt;.25,.25,0&gt;</code>. The resulting color is <code>
+rgb&lt;.2,.2,0&gt;</code>.</p>
+<p class="Note"><strong>Note:</strong> In areas where one density returns zero,
+it will wipe out the other density. The end result is that only density areas
+which overlap will be visible. This is similar to a CSG intersection
+operation. Now consider</p>
+<pre>
+object { 
+  MyObject
+  pigment { rgbf 1 }
+  interior {
+    media {
+      density { Some_Density }
+      }
+    media {
+      density { Another_Density }
+      }
+    }
+  }
+</pre>
+
+<p>In this case each media is computed independently. The resulting colors
+are added together. Suppose one density and media returned <code>
+rgb&lt;.8,.8,.4&gt;</code> and the other returned <code>
+rgb&lt;.25,.25,0&gt;</code>. The resulting color is <code>
+rgb&lt;1.05,1.05,.4&gt;</code>. The end result is that density areas which
+overlap will be especially bright and all areas will be visible. This is
+similar to a <a href="r3_4.html#r3_4_4">CSG</a> <a href="r3_4.html#r3_4_4_2">union</a> operation.
+See the sample scene <code>~scenes\interior\media\media4.pov</code> for an example
+which illustrates this.</p>
+
+</div>
+
+<a name="r3_6_3"></a>
+<div class="content-level-h3" contains="Photons" id="r3_6_3">
+<h3>3.6.3 Photons</h3>
+</div>
+<a name="r3_6_3_1"></a>
+<div class="content-level-h4" contains="Overview" id="r3_6_3_1">
+<h4>3.6.3.1 Overview</h4>
+<p>The basic goal of this implementation of the photon map is to render true
+reflective and refractive caustics. The photon map was first introduced by
+Henrik Wann Jensen (see <a href="t2_5.html#t2_5_6">Suggested Reading</a>).</p>
+
+<p>Photon mapping is a technique which uses a forward ray-tracing
+pre-processing step to render refractive and reflective caustics realistically.
+This means that mirrors can reflect light rays and lenses can focus light.</p>
+
+<p>Photon mapping works by shooting packets of light (photons) from light
+sources into the scene. The photons are directed towards specific objects. When
+a photon hits an object after passing through (or bouncing off of) the target
+object, the ray intersection is stored in memory. This data is later used to
+estimate the amount of light contributed by reflective and refractive caustics.</p>
+
+</div>
+<a name="r3_6_3_1_1"></a>
+<div class="content-level-h5" contains="Examples" id="r3_6_3_1_1">
+<h5>3.6.3.1.1 Examples</h5>
+<table class="centered" width="660x" cellpadding="0" cellspacing="10">
+<tr>
+  <td>
+    <p>This image shows refractive caustics from a sphere and a cylinder. Both use an index of refraction of <code>1.2</code>. Also visible is a small amount of reflective caustics from the metal sphere, and also from the clear cylinder and sphere.</p>
+  </td>
+  <td>
+    <img class="right" width="320px" src="images/3/3d/RefImgPhotons1.png">
+  </td>
+</tr>
+<tr>
+  <td></td>
+  <td>
+    <p class="caption">Reflective caustics</p>
+  </td>
+</tr>
+</table>
+
+<table class="centered" width="660x" cellpadding="0" cellspacing="10">
+<tr>
+  <td>
+    <img class="left" width="320px" src="images/6/6c/RefImgPhotons2.png">
+  </td>
+  <td>
+    <p>Here we have three lenses and three light sources. The middle lens has photon mapping turned off. You can also see some reflective caustics from the brass box (some light reflects and hits the blue box, other light bounces through the nearest lens and is focused in the lower left corner of the image).</p>
+  </td>
+</tr>
+<tr>
+  <td>
+    <p class="caption">Photons used for lenses and caustics</p>
+  </td>
+  <td></td>
+</tr>
+</table>
+
+
+</div>
+<a name="r3_6_3_2"></a>
+<div class="content-level-h4" contains="Using Photon Mapping in Your Scene" id="r3_6_3_2">
+<h4>3.6.3.2 Using Photon Mapping in Your Scene</h4>
+<p>When designing a scene with photons, it helps to think of the scene objects
+in two categories.  Objects in the first category will show photon caustics
+when hit by photons.  Objects in the second category cause photon caustics
+by reflecting or refracting photons.  Some objects may be in both
+categories, and some objects may be in neither category.</p>
+
+<p>Category 1 - Objects that show photon caustics</p>
+
+<p>By default, all objects are in the first category.  Whenever a photon hits
+an object, the photon is stored and will later be used to render caustics on
+that object.  This means that, by default, caustics from photons can appear
+on any surface.  To speed up rendering, you can take objects out of this
+category.  You do this with the line: <code>photons{collect off}</code>.  If you use
+this syntax, caustics from photons will not appear on the object.  This will
+save both memory and computational time during rendering.</p>
+
+<p>Category 2 - Objects that cause photon caustics</p>
+
+<p>By default, there are no objects in the second category.  If you want your
+object to cause caustics, you need to do two things.  First, make your object into
+a &quot;target.&quot;  You do this with the <code>target</code> keyword.  This enables light
+sources to shoot photons at your object.  Second, you need to specify if
+your object reflects photons, refracts photons, or both.  This is done with
+the <code>reflection on</code> and <code>refraction on</code> keywords.  To allow an object to
+reflect and refract photons, you would use the following lines of code
+inside the object:
+</p>
+<pre>
+photons{
+  target
+  reflection on
+  refraction on
+  }
+</pre>
+
+<p>Generally speaking, you do not want an object to be in both categories.  Most
+objects that cause photon caustics do not themselves have much color or
+brightness.  Usually they simply refract or reflect their surroundings.  For
+this reason, it is usually a waste of time to display photon caustics on
+such surfaces.  Even if computed, the effects from the caustics would be so
+dim that they would go unnoticed.</p>
+
+<p>Sometimes, you may also wish to add <code>photons{collect off}</code> to other clear or
+reflective objects, even if they are not photon targets.  Again, this is
+done to prevent unnecessary computation of caustic lighting.</p>
+
+<p>Finally, you may wish to enable photon reflection and refraction for a
+surface, even if it is not a target.  This allows indirect photons (photons
+that have already hit a target and been reflected or refracted) to continue
+their journey after hitting this object.</p>
+
+</div>
+<a name="r3_6_3_2_1"></a>
+<div class="content-level-h5" contains="Photon Global Settings" id="r3_6_3_2_1">
+<h5>3.6.3.2.1 Photon Global Settings</h5>
+<pre>
+global_photon_block:
+
+photons {
+  spacing &lt;photon_spacing&gt; | count &lt;photons_to_shoot&gt;
+  [gather &lt;min_gather&gt;, &lt;max_gather&gt;]
+  [media &lt;max_steps&gt; [,&lt;factor&gt;]]
+  [jitter &lt;jitter_amount&gt;]
+  [max_trace_level &lt;photon_trace_level&gt;]
+  [adc_bailout &lt;photon_adc_bailout&gt;]
+  [save_file &quot;filename&quot; | load_file &quot;filename&quot;]
+  [autostop &lt;autostop_fraction&gt;]
+  [expand_thresholds &lt;percent_increase&gt;, &lt;expand_min&gt;]
+  [radius &lt;gather_radius&gt;, &lt;multiplier&gt;, &lt;gather_radius_media&gt;,&lt;multiplier&gt;]
+  }
+</pre>
+
+<p>All photons default values:</p>
+<pre>
+Global :
+expand_min    : 40 
+gather        : 20, 100
+jitter        : 0.4
+media         : 0
+
+Object :
+collect       : on
+refraction    : off
+reflection    : off
+split_union   : on
+target        : 1.0
+
+Light_source:
+area_light    : off
+refraction    : off
+reflection    : off
+</pre>
+
+<p>To specify photon gathering and storage options you need to add a photons
+block to the <code>global_settings</code> section of your scene.</p>
+
+<p>For example:</p>
+
+<pre>
+global_settings {
+  photons {
+    count 20000
+    autostop 0
+    jitter .4
+    }
+  }
+</pre>
+
+<p>The number of photons generated can be set using either the spacing or count
+keywords: </p>
+
+<ul>
+<li>If spacing is used, it specifies approximately the average distance
+between photons on surfaces. If you cut the spacing in half, you will get four
+times as many surface photons, and eight times as many media photons.</li>
+<li>If count is used, POV-Ray will shoot the approximately number of photons
+specified. The actual number of photons that result from this will almost
+always be at least slightly different from the number specified. Still, if you
+double the photons_to_shoot value, then twice as many photons will be shot. If
+you cut the value in half, then half the number of photons will be shot.
+<ul>
+<li>It may be less, because POV shoots photons at a target object's
+bounding box, which means that some photons will miss the target object.</li>
+<li>On the other hand, may be more, because each time one object hits an
+object that has both reflection and refraction, two photons are created
+(one for reflection and one for refraction).</li>
+<li>POV will attempt to compensate for these two factors, but it can only
+estimate how many photons will actually be generated. Sometimes this
+estimation is rather poor, but the feature is still usable.</li>
+</ul></li>
+</ul>
+
+<p>The keyword <code>gather</code> allows you to specify how many photons are
+gathered at each point during the regular rendering step. The first number
+(default 20) is the minimum number to gather, while the second number (default
+100) is the maximum number to gather. These are good values and you should only
+use different ones if you know what you are doing.</p>
+
+<p>The keyword <code>media</code> turns on media photons. The parameter 
+<code>max_steps</code> specifies the maximum number of photons to deposit 
+over an interval. The optional parameter factor specifies the difference in 
+media spacing compared to surface spacing. You can increase factor and 
+decrease max_steps if too many photons are being deposited in media.</p>
+
+<p>The keyword <code>jitter</code> specifies the amount of jitter used in the
+sampling of light rays in the pre-processing step. The default value is good and
+usually does not need to be changed.</p>
+
+<p>The keywords <code>max_trace_level</code> and <code>adc_bailout</code> allow
+you to specify these attributes for the photon-tracing step. If you do not
+specify these, the values for the primary ray-tracing step will be used.</p>
+
+<p>The keywords <code>save_file</code> and <code>load_file</code> allow you to
+save and load photon maps. If you load a photon map, no photons will be shot.
+The photon map file contains all surface (caustic) and media
+photons.</p>
+
+<p><code>radius</code> is used for gathering photons. The larger the radius, the longer it
+takes to gather photons. But if you use too small of a radius, you might
+not get enough photons to get a good estimate. Therefore, choosing a good
+radius is important. Normally POV-Ray looks through the photon map and uses some ad-hoc statistical analysis to determine a reasonable radius. Sometimes it does a good job, sometimes it does not. The radius keyword lets you override or adjust POV-Ray's guess.
+</p>
+<p><code>radius</code> parameters (all are optional):</p>
+<ol>
+<li>Manually set the gather radius for surface photons.  If this is either
+zero or if you leave it out, POV-Ray will analyze and guess.</li>
+<li>Adjust the radius for surface photons by setting a multiplier.  If POV-Ray, for example, is picking a radius that you think is too big (render is too slow), you can use <code>radius ,0.5</code> to lower the radius (multiply by 0.5) and speed up the render at the cost of quality.</li>
+<li>Manually set the gather radius for media photons.</li>
+<li>Adjust the radius for media photons by setting a multiplier.
+</ol>
+
+<p>The keywords <code><a href="r3_6.html#r3_6_3_5_1">autostop</a></code>
+and <code><a href="r3_6.html#r3_6_3_5_2">expand_thresholds</a></code> will be explained later.</p>
+
+</div>
+<a name="r3_6_3_2_2"></a>
+<div class="content-level-h5" contains="Shooting Photons at an Object" id="r3_6_3_2_2">
+<h5>3.6.3.2.2 Shooting Photons at an Object</h5>
+<pre>
+object_photon_block:
+photons {
+  [target [&lt;spacing_multiplier&gt;]]
+  [refraction on|off]
+  [reflection on|off]
+  [collect on|off]
+  [pass_through]
+  }
+</pre>
+
+<p>To shoot photons at an object, you need to tell POV that the object receives
+photons. To do this, create a <code>photons { }</code> block within the object. For example:</p>
+
+<pre>
+object {
+  MyObject
+  photons {
+    target
+    refraction on
+    reflection on
+    collect off
+    }
+  }
+</pre>
+
+<p>In this example, the object both reflects and refracts photons. Either of
+these options could be turned off (by specifying reflection off, for example).
+By using this, you can have an object with a reflective finish which does not
+reflect photons for speed and memory reasons.</p>
+
+<p>The keyword <code>target</code> makes this object a target.</p>
+
+<p>The density of the photons can be adjusted by specifying the 
+<code>spacing_multiplier</code>. If, for example, you specify a 
+<code>spacing_multiplier</code> of 0.5, then the spacing for photons hitting 
+this object will be 1/2 of the distance of the spacing for other objects.</p>
+
+<p class="Note"><strong>Note:</strong> This means four times as many surface photons, and
+eight times as many media photons.</p>
+
+<p>The keyword <code>collect off</code> causes the object to ignore photons.
+Photons are neither deposited nor gathered on that object.</p>
+
+<p>The keyword <code>pass_through</code> causes photons to pass through the 
+object <strong>unaffected</strong> on their way to a target object. Once a 
+photon hits the target object, it will ignore the <code>pass_through</code> 
+flag. This is basically a photon version of the <code>no_shadow</code> 
+keyword, with the exception that media within the object will still be 
+affected by the photons (unless that media specifies collect off). If you 
+use the <code>no_shadow</code> keyword, the object will be tagged as 
+<code>pass_through</code> automatically. You can then turn off 
+<code>pass_through</code> if necessary by simply using <code>photons { 
+pass_through off }</code>.</p>
+
+<p class="Note"><strong>Note:</strong> Photons will not be shot at an object unless you
+specify the <code>target</code> keyword. Simply turning refraction on will not
+suffice.</p>
+
+<p>When shooting photons at a CSG-union, it may sometimes be of advantage to use
+<code><a href="r3_4.html#r3_4_4_2_1">split_union off</a></code> inside the union. 
+POV-Ray will be forced to shoot at the whole object, instead of splitting it up
+and shooting photons at its compound parts.</p>
+
+</div>
+<a name="r3_6_3_2_3"></a>
+<div class="content-level-h5" contains="Photons and Light Sources" id="r3_6_3_2_3">
+<h5>3.6.3.2.3 Photons and Light Sources</h5>
+<pre>
+light_photon_block:
+photons {
+  [refraction on | off]
+  [reflection on | off]
+  [area_light]
+  }
+</pre>
+<p>Example:</p>
+<pre>
+light_source {
+  MyLight
+  photons {
+    refraction on
+    reflection on
+    }
+  }
+</pre>
+
+<p>Sometimes, you want photons to be shot from one light source and not another. In that case, you can turn photons on for an object, but specify <code>photons {reflection off refraction off }</code> in the light source's definition. You can also turn off only reflection or only refraction for any light source.</p>
+<p class="Note"><strong>Note:</strong> The photon shooting <em>performance</em> has been improved with the addition of multiple-thread support. To take advantage of this at the moment, your scene will need multiple light sources. </p>
+
+</div>
+<a name="r3_6_3_2_4"></a>
+<div class="content-level-h5" contains="Photons and Media" id="r3_6_3_2_4">
+<h5>3.6.3.2.4 Photons and Media</h5>
+<pre>
+global_settings {
+  photons {
+    count 10000
+    media 100
+    }
+  }
+</pre>
+
+<p>Photons also interact fully with media. This means that volumetric photons
+are stored in scattering media. This is enabled by using the keyword media
+within the photons block.</p>
+
+<p>To store photons in media, POV deposits photons as it steps through the media
+during the photon-tracing phase of the render. It will deposit these photons as
+it traces caustic photons, so the number of media photons is dependent on the
+number of caustic photons. As a light ray passes through a section of media, the
+photons are deposited, separated by approximately the same distance that
+separates surface photons.</p>
+
+<p>You can specify a factor as a second optional parameter to the media keyword.
+If, for example, factor is set to 2.0, then photons will be spaced twice as far
+apart as they would otherwise have been spaced.</p>
+
+<p>Sometimes, however, if a section of media is very large, using these settings
+could create a large number of photons very fast and overload memory. Therefore,
+following the media keyword, you must specify the maximum number of photons that
+are deposited for each ray that travels through each section of media. A setting
+of 100 should probably work in most cases.</p>
+
+<p>You can put <code>collect off</code> into media to make that media ignore
+photons. Photons will neither be deposited nor gathered in a media that is
+ignoring them. Photons will also not be gathered nor deposited in non-scattering
+media. However, if multiple medias exist in the same space, and at least
+one does not ignore photons and is scattering, then photons will be deposited in
+that interval and will be gathered for use with all media in that interval.</p>
+
+</div>
+<a name="r3_6_3_3"></a>
+<div class="content-level-h4" contains="Photons FAQ" id="r3_6_3_3">
+<h4>3.6.3.3 Photons FAQ</h4>
+<p><em>I made an object with IOR 1.0 and the shadows look weird.</em></p>
+
+<p>If the borders of your shadows look odd when using photon mapping, do not be
+alarmed. This is an unfortunate side-effect of the method. If you increase the
+density of photons (by decreasing spacing and gather radius) you will notice the
+problem diminish. We suggest not using photons if your object does not cause
+much refraction (such as with a window pane or other flat piece of glass or any
+objects with an IOR very close to 1.0).</p>
+
+<p><em>My scene takes forever to render.</em></p>
+
+<p>When POV-Ray builds the photon maps, it continually displays in the status
+bar the number of photons that have been shot. Is POV-Ray stuck in this step and
+does it keep shooting lots and lots of photons?</p>
+
+<p><em>yes</em></p>
+
+<p>If you are shooting photons at an infinite object (like a plane), then you
+should expect this. Either be patient or do not shoot photons at infinite
+objects.</p>
+
+<p>Are you shooting photons at a CSG difference? Sometimes POV-Ray does a bad
+job creating bounding boxes for these objects. And since photons are shot at the
+bounding box, you could get bad results. Try manually bounding the object. You
+can also try the autostop feature (try <code>autostop 0</code>). See the docs
+for more info on autostop.</p>
+
+<p><em>no</em></p>
+
+<p>Does your scene have lots of glass (or other clear objects)? Glass is slow
+and you need to be patient.</p>
+
+<p><em>My scene has polka dots but renders really quickly. Why?</em></p>
+
+<p>You should increase the number of photons (or decrease the spacing).</p>
+
+<p><em>The photons in my scene show up only as small, bright dots. How can I fix
+this?</em></p>
+
+<p>The automatic calculation of the gather radius is probably not working
+correctly, most likely because there are many photons not visible in your scene
+which are affecting the statistical analysis.</p>
+
+<p>You can fix this by either reducing the number of photons that are in your
+scene but not visible to the camera (which confuse the auto-computation), or by
+specifying the initial gather radius manually by using the keyword radius. If
+you must manually specify a gather radius, it is usually best to also use
+spacing instead of count, and then set radius and spacing to a 5:1
+(radius:spacing) ratio.</p>
+
+<p><em>Adding photons slowed down my scene a lot, and I see polka dots.</em></p>
+
+<p>This is usually caused by having both high- and low-density photons in the
+same scene. The low density ones cause polka dots, while the high density ones
+slow down the scene. It is usually best if the all photons are on the same order
+of magnitude for spacing and brightness. Be careful if you are shooting photons
+objects close to and far from a light source. There is an optional parameter to
+the target keyword which allows you to adjust the spacing of photons at the
+target object. You may need to adjust this factor for objects very close to or
+surrounding the light source.</p>
+
+<p><em>I added photons, but I do not see any caustics.</em></p>
+
+<p>When POV-Ray builds the photon maps, it continually displays in the status
+bar the number of photons that have been shot. Did it show any photons being
+shot?</p>
+
+<p><em>no</em></p>
+
+<p>Try avoiding <code>autostop</code>, or you might want to bound your object
+manually.</p>
+
+<p>Try increasing the number of photons (or decreasing the spacing).</p>
+
+<p><em>yes</em></p>
+
+<p><em>Were any photons stored (the number after <code>total</code> in the
+rendering message as POV-Ray shoots photons)?</em></p>
+
+<p><em>no</em></p>
+
+<p>It is possible that the photons are not hitting the target object (because
+another object is between the light source and the other object).</p>
+
+<p><em>yes</em></p>
+<p>The photons may be diverging more than you expect. They are probably there,
+but you cannot see them since they are spread out too much</p>
+
+<p><em>The base of my glass object is really bright.</em></p>
+
+<p>Use <code>collect off</code> with that object.</p>
+
+<p><em>Will area lights work with photon mapping?</em></p>
+
+<p>Photons do work with area lights. However, normally photon mapping ignores
+all area light options and treats all light sources as point lights. If you
+would like photon mapping to use your area light options, you must specify the
+&quot;area_light&quot; keyword <strong>within</strong> the <code>photons {
+}</code> block in your light source's code. Doing this will not increase the
+number of photons shot by the light source, but it might cause regular patterns
+to show up in the rendered caustics (possibly splotchy).</p>
+
+<p><em>What do the stats mean?</em></p>
+
+<p>In the stats, <code>photons shot</code> means how many light rays were shot
+from the light sources. <code>photons stored</code> means how many photons are
+deposited on surfaces in the scene. If you turn on reflection and refraction,
+you could get more photons stored than photons shot, since the each ray can get
+split into two.</p>
+
+</div>
+<a name="r3_6_3_4"></a>
+<div class="content-level-h4" contains="Photon Tips" id="r3_6_3_4">
+<h4>3.6.3.4 Photon Tips</h4>
+<ul>
+<li>Use <code>collect off</code> in objects that photons do not hit. Just
+put <code>photons { collect off }</code> in the object's definition.</li>
+<li>Use <code>collect off</code> in glass objects.</li>
+<li>Use <code>autostop</code> unless it causes problems.</li>
+<li>A big tip is to make sure that all of the final densities of photons are
+of the same general magnitude. You do not want spots with really high 
+density photons and another area with really low density photons. You will
+always have some variation (which is a good thing), but having really big
+differences in photon density is what causes some scenes to take many hours 
+to render.</li>
+</ul>
+
+</div>
+<a name="r3_6_3_5"></a>
+<div class="content-level-h4" contains="Advanced Techniques" id="r3_6_3_5">
+<h4>3.6.3.5 Advanced Techniques</h4>
+
+</div>
+<a name="r3_6_3_5_1"></a>
+<div class="content-level-h5" contains="Autostop" id="r3_6_3_5_1">
+<h5>3.6.3.5.1 Autostop</h5>
+<table class="centered" width="660x" cellpadding="0" cellspacing="10">
+<tr>
+  <td>
+<p>To understand the <code>autostop</code> option, you need to understand the way photons are shot from light sources. Photons are shot in a spiral pattern with uniform angular density. Imagine a sphere with a spiral starting at one of the poles and spiraling out in ever-increasing circles to the equator. Two angles are involved here. The first, phi, is the how far progress has been made in the current circle of the spiral. The second, theta, is how far we are from the pole to the equator. Now, imagine this sphere centered at the light source with the pole where the spiral starts pointed towards the center of the object receiving photons. Now, photons are shot out of the light in this spiral pattern.</p>
+  </td>
+  <td>
+    <img class="right" width="320px" src="images/2/28/RefImgShootph.png">
+  </td>
+</tr>
+<tr>
+  <td></td>
+  <td>
+    <p class="caption">Example of the photon autostop option</p>
+  </td>
+</tr>
+</table>
+
+<p>Normally, POV does not stop shooting photons until the target object's
+entire bounding box has been thoroughly covered. Sometimes, however, an object
+is much smaller than its bounding box. At these times, we want to stop shooting
+if we do a complete circle in the spiral without hitting the object.
+Unfortunately, some objects (such as copper rings), have holes in the middle.
+Since we start shooting at the middle of the object, the photons just go through
+the hole in the middle, thus fooling the system into thinking that
+it is done. To avoid this, the <code>autostop</code> keyword lets you specify
+how far the system must go before this auto-stopping feature kicks in. The value
+specified is a fraction of the object's bounding box. Valid values are 0.0
+through 1.0 (0% through 100%). POV will continue to shoot photons until the
+spiral has exceeded this value or the bounding box is completely covered. If a
+complete circle of photons fails to hit the target object after the spiral has
+passed the autostop threshold, POV will then stop shooting photons.</p>
+
+<p>The <code>autostop</code> feature will also not kick in until at least one
+photon has hit the object. This allows you to use <code>autostop 0</code> even
+with objects that have holes in the middle.</p>
+
+<p class="Note"><strong>Note:</strong> If the light source is within the object's
+bounding box, the photons are shot in all directions from the light source.</p>
+
+</div>
+<a name="r3_6_3_5_2"></a>
+<div class="content-level-h5" contains="Adaptive Search Radius" id="r3_6_3_5_2">
+<h5>3.6.3.5.2 Adaptive Search Radius</h5>
+<p>Unless photons are interacting with media, POV-Ray uses an adaptive search 
+radius while gathering photons. If the minimum number of photons is not found 
+in the original search radius, the radius is expanded and searched again. Using 
+this adaptive search radius can both decrease the amount of time it takes to 
+render the image, and sharpen the borders in the caustic patterns.</p>
+
+<p>Sometimes this adaptive search technique can create unwanted artifacts at
+borders. To remove these artifacts, a few thresholds are used, which can be
+specified by <code>expand_thresholds</code>. For example, if expanding the
+radius increases the estimated density of photons by too much (threshold is
+percent_increase, default is 20%, or 0.2), the expanded search is discarded and
+the old search is used instead. However, if too few photons are gathered in the
+expanded search (<code>expand_min</code>, default is 40), the new search will be
+used always, even if it means more than a 20% increase in photon density.</p>
+
+</div>
+<a name="r3_6_3_5_3"></a>
+<div class="content-level-h5" contains="Photons and Dispersion" id="r3_6_3_5_3">
+<h5>3.6.3.5.3 Photons and Dispersion</h5>
+<p>When dispersion is specified for interior of a transparent object, photons
+will make use of that and show &quot;colored&quot; caustics.</p>
+
+</div>
+<a name="r3_6_3_5_4"></a>
+<div class="content-level-h5" contains="Saving and Loading Photon Maps" id="r3_6_3_5_4">
+<h5>3.6.3.5.4 Saving and Loading Photon Maps</h5>
+<p>It is possible to save and load photon maps to speed up rendering. The photon
+map itself is view-independent, so if you want to animate a scene that contains
+photons and you know the photon map will not change during the animation, you
+can save it on the first frame and then load it for all subsequent frames.</p>
+
+<p>To save the photon map, put the line</p>
+
+<pre>
+save_file &quot;myfile.ph&quot;
+</pre>
+
+<p>into the <code>photons { }</code> block inside the <code>global_settings</code> section.</p>
+
+<p>Loading the photon map is the same, but with <code>load_file</code> instead
+of <code>save_file</code>. You cannot both load and save a photon map in the POV
+file. If you load the photon map, it will load all of the photons. No photons will be shot if the map is loaded
+from a file. All other options (such as gather radius) must still be specified
+in the POV scene file and are not loaded with the photon map.</p>
+
+<p>When can you safely re-use a saved photon map?</p>
+
+<ul>
+<li>Moving the camera is <em>always</em> safe.</li>
+<li>Moving lights that do not cast photons is <em>always</em> safe.</li>
+<li>Moving objects that do not have photons shot at them, that do not receive photons, and would not receive photons in the new location is <em>always</em> safe.</li>
+<li>Moving an object that receives photons to a new location where it does not receive photons is <em>sometimes</em> safe.</li>
+<li>Moving an object to a location where it receives photons is <em>not</em> safe</li>
+<li>Moving an object that has photons shot at it is <em>not</em> safe</li>
+<li>Moving a light that casts photons is <em>not</em> safe.</li>
+<li>Changing the texture of an object that receives photons is safe.</li>
+<li>Changing the texture of an object that has photons shot at it produces
+results that are not realistic, but can be useful sometimes.</li>
+</ul>
+<p>
+In general, changes to the scene geometry require photons to be re-shot.
+Changing the camera parameters or changing the image resolution does
+not.</p>
+
+</div>
+
+</div>
+
+</div>
+</body>
+</html>

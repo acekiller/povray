@@ -1,14 +1,15 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: CoolCat.inc
-// Vers: 3.5
 // Desc: The parts of PovCat Ray
 // Date: 1999/12/04
 // Updated: 2001/07/27
 // Auth: Ingo Janssen
 //
+// Updated: 09Aug2008 (jh) for v3.7 distribution
 
-
-#version 3.5;
+#if (version < 3.7)
+  #version 3.5;
+#end
 
 //====== Some support macros ====
 #macro Vmm(Min,Max,Value)

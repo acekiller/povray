@@ -1,4 +1,4 @@
-// Persistence Of Vision Ray Tracer POV-Ray 3.5 sample Scene
+// Persistence Of Vision Ray Tracer POV-Ray sample Scene
 // by Chris Young
 // MACRO2.POV demonstrates basic use of a macro to modify an
 // identifier parameter, not just do something based upon the
@@ -9,6 +9,9 @@
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 #include "colors.inc"
 

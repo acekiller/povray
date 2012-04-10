@@ -1,8 +1,12 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File by Dan Farmer
 // Ambient values example
 
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #include "colors.inc"
 #include "stdcam.inc"

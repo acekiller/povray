@@ -1,7 +1,6 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: balcony.pov
-// Vers: 3.5
-// Desc: Povray 3.5 demonstration scene
+// Desc: Povray demonstration scene
 // Date: July/August 2001
 // Auth: Christoph Hormann
 //
@@ -37,7 +36,7 @@
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-#version 3.5;
+#version 3.6;
 
 #include "functions.inc"
 #include "colors.inc"
@@ -62,7 +61,7 @@
 global_settings{
   max_trace_level 15
   assumed_gamma 1
-
+    
   #if (Radiosity=on)
     radiosity{
       pretrace_start 0.08

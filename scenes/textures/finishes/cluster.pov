@@ -1,11 +1,16 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Recursive cluster of mirrored spheres
 // After a classic, Sphereflake, by Eric Haines
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { max_trace_level 20  assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  max_trace_level 20
+}
 
 #include "colors.inc"
 
@@ -30,7 +35,7 @@ light_source { <-3, 1, 5> color Gray30 }
 
 plane { z, -0.5
    pigment { color red 1.0 green 0.75 blue 0.33 }
-   finish { diffuse 1 }
+   finish { diffuse 1 } //ambient <0.15,0.1,0 .045>}
 } // ambient .15 .1 .045
 
 /*

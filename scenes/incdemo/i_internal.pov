@@ -1,4 +1,4 @@
-//	Persistence of Vision Ray Tracer Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: i_internal.pov
 //	Date: 11-04-2001
 //	Author: René Smellenbergh
@@ -12,12 +12,14 @@
 // -w320 -h240 +kfi1 +kff78
 // -w800 -h600 +a0.3 +kfi1 +kff78
 
+#version 3.6;
+
 #if (clock_on = 0)
 	#warning " This demo was designed to be used with the clock: \n please read the comments in the scene's header"#end
 #include "functions.inc"
 #declare AreaLightOn = off;	//Specify if you want soft shadows (slower!) or not
 global_settings {
-	assumed_gamma 1.8
+  assumed_gamma 1.8 
 	noise_generator 2
 }
 camera {  

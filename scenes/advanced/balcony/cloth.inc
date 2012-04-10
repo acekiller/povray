@@ -1,4 +1,9 @@
-#version 3.5;
+// Updated: 09Aug2008 (jh) for v3.7 distribution
+
+#if (version < 3.7)
+  #version 3.5;
+#end
+
 #local nx=90;
 #local ny=90;
 #local ZP=0.66003;

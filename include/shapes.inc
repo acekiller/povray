@@ -78,7 +78,6 @@
 // Offset: the offset value for the text object.  Since the front faces of each
 //         letter need to be in the same plane, z values are ignored.
 #macro Bevelled_Text(Font, String, Cuts, BevelAng, BevelDepth, Depth, Offset, UseMerge)
-   #local BBox = text {ttf Font, String Depth, Offset*(x+y)}
    #if(UseMerge)
       merge {
    #else
@@ -99,7 +98,6 @@
          #end
       }
       translate z*BevelDepth
-      bounded_by {box {min_extent(BBox), max_extent(BBox)}}
    }
 #end
 
@@ -887,7 +885,7 @@ Justification: One of the constants Align_Left, Align_Right, or Align_Center
 
    #if(WriteFile)
       #fopen _HFMACRO_OUTPUT_FILE FileName write
-      #write(_HFMACRO_OUTPUT_FILE,"mesh2 {\nvertex_vectors {",xRes*zRes,",\n",
+      #write(_HFMACRO_OUTPUT_FILE,"mesh2 {\nvertex_vectors {\n",xRes*zRes,
    #else
       mesh2 {vertex_vectors{xRes*zRes,
    #end
@@ -896,21 +894,25 @@ Justification: One of the constants Align_Left, Align_Right, or Align_Center
    #while (J<=xRes)
       #local K = 1;
       #while (K<=zRes)
-         PArr[J][K],
+        #if(WriteFile)
+          ",\n",PArr[J][K],
+        #else
+          PArr[J][K],
+        #end
          #declare K = K+1;
       #end
       #declare J = J+1;
    #end
 
    #if(WriteFile)
-      "}\n")
+      "\n}\n")
    #else
       }
    #end
 
    #if (Smooth)
       #if(WriteFile)
-         #write(_HFMACRO_OUTPUT_FILE,"normal_vectors {",xRes*zRes,",\n",
+         #write(_HFMACRO_OUTPUT_FILE,"normal_vectors {\n",xRes*zRes,
       #else
          normal_vectors{xRes*zRes,
       #end
@@ -924,16 +926,17 @@ Justification: One of the constants Align_Left, Align_Right, or Align_Center
       #while (J<=xRes)
          #local K = 1;
          #while (K<=zRes)
-            vnormalize(vcross(
-               PArr[J][K+1]-PArr[J][K-1],
-               PArr[J+1][K]-PArr[J-1][K]
-            )),
+           #if(WriteFile)
+             ",\n",vnormalize(vcross(PArr[J][K+1]-PArr[J][K-1], PArr[J+1][K]-PArr[J-1][K])),
+           #else
+             vnormalize(vcross(PArr[J][K+1]-PArr[J][K-1], PArr[J+1][K]-PArr[J-1][K])),
+           #end
             #declare K = K+1;
          #end
          #declare J = J+1;
       #end
       #if(WriteFile)
-         "}\n")
+         "\n}\n")
       #else
          }
       #end
@@ -941,7 +944,7 @@ Justification: One of the constants Align_Left, Align_Right, or Align_Center
 
    #if (UVtex)
       #if(WriteFile)
-         #write(_HFMACRO_OUTPUT_FILE,"uv_vectors {",xRes*zRes,",\n",
+         #write(_HFMACRO_OUTPUT_FILE,"uv_vectors {\n",xRes*zRes,
       #else
          uv_vectors{xRes*zRes,
       #end
@@ -949,20 +952,24 @@ Justification: One of the constants Align_Left, Align_Right, or Align_Center
       #while (J<=xRes)
          #local K = 1;
          #while (K<=zRes)
-            <(J-1)/(xRes-1),(K-1)/(zRes-1)>,
+           #if(WriteFile)
+             ",\n",<(J-1)/(xRes-1),(K-1)/(zRes-1)>,
+           #else
+             <(J-1)/(xRes-1),(K-1)/(zRes-1)>,
+           #end
             #declare K = K+1;
          #end
          #declare J = J+1;
       #end
       #if(WriteFile)
-         "}\n")
+         "\n}\n")
       #else
          }
       #end
    #end
 
    #if(WriteFile)
-      #write(_HFMACRO_OUTPUT_FILE,"face_indices {",(xRes-1)*(zRes-1)*2,",\n",
+      #write(_HFMACRO_OUTPUT_FILE,"face_indices {\n",(xRes-1)*(zRes-1)*2,
    #else
       face_indices{(xRes-1)*(zRes-1)*2,
    #end
@@ -972,21 +979,25 @@ Justification: One of the constants Align_Left, Align_Right, or Align_Center
    #while (J<xRes-1)
       #local A = J*zRes;
       #while (mod(A+1,zRes))
-         F1+A, F2+A,
+        #if(WriteFile)
+          ",\n",F1+A,",\n",F2+A,
+        #else
+          F1+A, F2+A,
+        #end
          #local A = A+1;
       #end
       #local J = J+1;
    #end
    #if (UVtex)
       #if(WriteFile)
-         "}\nuv_mapping\n}")
+         "\n}\nuv_mapping\n}")
          #fclose _HFMACRO_OUTPUT_FILE
       #else
          } uv_mapping}
       #end
    #else
       #if(WriteFile)
-         "}\n}")
+         "\n}\n}")
          #fclose _HFMACRO_OUTPUT_FILE
       #else
          }}

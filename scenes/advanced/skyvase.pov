@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File by Dan Farmer
 //
 // -w320 -h240
@@ -25,8 +25,11 @@
 // are permitted provided that they have a clearly different filename
 // and do not claim to be the standard benchmark file.
 
+#version 3.6;
 
-global_settings { assumed_gamma 2.2 max_trace_level 20 }
+global_settings {
+  assumed_gamma 2.2
+}
 
 #include "shapes.inc"
 #include "shapes2.inc"

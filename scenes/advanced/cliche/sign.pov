@@ -1,7 +1,11 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File used for cliche.pov by Rune S. Johansen
 // 
 // +w400 +h400 +a0.3
+
+#version 3.6;
+
+global_settings {assumed_gamma 1.0}
 
 camera {
    orthographic

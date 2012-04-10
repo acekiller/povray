@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: hollow3.pov
 //	Author: Dieter Bayer
 //	Description:
@@ -9,7 +9,10 @@
 //
 //*******************************************
 
+#version 3.6;
+
 global_settings {
+  assumed_gamma 1.0
   max_trace_level 5
 }
 

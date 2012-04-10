@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: noise_generator.pov
 //	Last updated: 4/8/01
 //	Author: Chris Huff
@@ -12,13 +12,12 @@
 //
 //*******************************************
 
-#version 3.5;
+#version 3.6;
 
 #include "colors.inc"
 
-//-------------------------------------------
 global_settings {
-	assumed_gamma 1
+  assumed_gamma 1.0
 }
 
 sphere {< 0, 0, 0>, 1 hollow

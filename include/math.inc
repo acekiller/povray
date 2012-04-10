@@ -128,6 +128,7 @@
 
 #declare asind = function (x) {degrees(asin(x))}
 #declare acosd = function (x) {degrees(acos(x))}
+#declare atand = function (x) {degrees(atan(x))} 
 #declare atan2d = function (x, y) {degrees(atan2(x, y))}
 
 

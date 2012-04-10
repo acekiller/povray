@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
@@ -6,10 +6,11 @@
 //===================== RENAISSANCE PATIO =====================================
 
 //===================== RADIANCE AND ENVIRONMENT SETTINGS =====================
+#version 3.6;
 #declare Rad_Quality = 2;
 
 global_settings {
-  assumed_gamma 1
+  assumed_gamma 1.0
 
 #switch (Rad_Quality)
  #case (1)

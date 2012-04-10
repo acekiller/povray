@@ -12,14 +12,16 @@
 //                                                                        //
 //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo//
 
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Copyright 2001 Fabien Mosen
+
+#version 3.6;
 
 #include "colors.inc"
 #include "functions.inc"
 #include "logo.inc"
 
-global_settings {max_trace_level 5}
+global_settings {max_trace_level 5 assumed_gamma 1.0}
 
 camera {location <20,40,28> direction 2*z look_at <0,2,0>}
 

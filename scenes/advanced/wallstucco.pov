@@ -1,5 +1,4 @@
 // Persistence Of Vision Ray Tracer Scene Description File
-// Vers: 3.5
 // Desc: Brick wall & Stucco
 // Date: 2000/03/14
 // Updated: 2001/07/26
@@ -9,9 +8,11 @@
 // -w800 -h600 +a0.3
 //
 
+#version 3.6;
+
 global_settings {
-   assumed_gamma 1.0
-   noise_generator 1 // change to 2 or 3.
+  assumed_gamma 1.0
+  noise_generator 1 // change to 2 or 3.
 }
 
 light_source {

@@ -1,4 +1,4 @@
-//   Persistence of Vision Raytracer Version 3.5 Scene Description File
+//   Persistence of Vision Raytracer Scene Description File
 //   File: shapes.pov
 //   Author: Chris Huff and Rune S. Johansen
 //   Description:
@@ -9,14 +9,14 @@
 //
 //*******************************************
 
-#version 3.5;
+#version 3.6;
 
 #include "stdinc.inc"
 
 //-------------------------------------------
 
 global_settings {
-   assumed_gamma 1
+   assumed_gamma 1.0
    max_trace_level 10
 }
 

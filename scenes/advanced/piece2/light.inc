@@ -1,4 +1,5 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
+// Updated: 09Aug2008 (jh) for v3.7 distribution
 
 #declare light1c = color red 0.1 green 0.1 blue 0.1;
 #declare light2c = color red 0.2 green 0.2 blue 0.2;

@@ -1,4 +1,4 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: transforms.pov
 //	Last updated: 8/19/01
 //	Author: Chris Huff
@@ -9,14 +9,10 @@
 //
 //*******************************************
 
-#version 3.5;
+#version 3.6;
+global_settings { assumed_gamma 1.0 }
 
 #include "stdinc.inc"
-
-//-------------------------------------------
-global_settings {
-	assumed_gamma 1
-}
 
 #default {finish {ambient 0 diffuse 1}}
 

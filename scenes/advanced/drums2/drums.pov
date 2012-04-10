@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Drums, the new improved version  Feb. 1992
 // Copyright Dan Farmer 1992
 // Time: a little over 3 hours no anti-aliasing, 640,480 on 33/486
@@ -24,7 +24,12 @@ Red Newton         { ; Used as backdrop in DRUMS2.PNG
 
 */
 
-global_settings { max_trace_level 20 assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  max_trace_level 20
+}
 
 #include "colors.inc"
 #include "shapes.inc"

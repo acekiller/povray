@@ -1,7 +1,7 @@
 /*
  * eight.pov
  *
- * POV-Ray 35 scene description for two billiard balls
+ * POV-Ray scene description for two billiard balls
  *
  * Copyright (c) 1991, 1996 Ville Saari
  *
@@ -22,7 +22,9 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { assumed_gamma 1 }
+#version 3.6;
+global_settings {assumed_gamma 1.0}
+
 #default { finish { ambient .08 diffuse .92 } }
 camera { location <-15, 8, -10> look_at <0, 5, 5> }
 light_source { <-30, 30, -15> rgb 1 }

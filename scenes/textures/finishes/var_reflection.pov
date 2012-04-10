@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: var_reflection.pov
-// Vers: 3.5
 // Desc: variable reflection demonstration scene
 // Date: August 2001
 // Auth: Christoph Hormann
@@ -19,14 +18,14 @@
 // 6: colored reflection
 // -------------------
 
-#version 3.5;
-
-#include "colors.inc"
+#version 3.6;
 
 global_settings {
-  assumed_gamma 1
+  assumed_gamma 1.0
   max_trace_level 15
 }
+
+#include "colors.inc"
 
 light_source {
   <1.5, -2.5, 2.5>*10000

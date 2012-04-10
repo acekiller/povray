@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File by Drew Wells
 // Title-"Not a Trace of Reality"
 // Compuserve Hall Of Fame award winner
@@ -7,7 +7,12 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { assumed_gamma 2.2 max_trace_level 5 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  max_trace_level 5
+}
 
 #include "shapes.inc"
 #include "colors.inc"

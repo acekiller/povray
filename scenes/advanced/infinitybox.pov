@@ -1,17 +1,19 @@
-//	Persistence of Vision Raytracer Version 3.5 Scene Description File
+//	Persistence of Vision Raytracer Scene Description File
 //	File: InfinityBox.pov
 //	Author: Chris Huff
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
 //*******************************************
+
+#version 3.6;
+
 #include "colors.inc"
 
-#version 3.5;
 //-------------------------------------------
 global_settings {
-	assumed_gamma 1
-	max_trace_level 25
+   assumed_gamma 1.0
+  max_trace_level 25
 }
 
 #default {finish {ambient 0}}

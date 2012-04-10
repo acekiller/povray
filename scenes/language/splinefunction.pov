@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: splinefunction.pov
-// Vers: 3.5
 // Desc: A demonstration of using splines in functions.
 // This scene uses a spline to make a customized gradient pattern.
 // Date: 2001/08/18
@@ -10,8 +9,11 @@
 // -w800 -h600 +a0.3
 //
 
-#version 3.5;
-global_settings {assumed_gamma 1.0}
+#version 3.6;
+global_settings {
+  assumed_gamma 1.0
+}
+
 camera {location <0.0, 0.0, -2.5> look_at 0 angle 40 }
 
 #declare Spl_Pat = function {

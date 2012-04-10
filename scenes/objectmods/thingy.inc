@@ -1,7 +1,9 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //
 //This file contains geometry descriptions for some object modifiers
 //demo scenes.
+
+// Updated: 10Aug2008 (jh) for v3.7 distribution
 
 //some macros first...
 

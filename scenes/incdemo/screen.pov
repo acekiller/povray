@@ -1,6 +1,5 @@
-// Persistence Of Vision Ray Tracer Scene Description File
+// Persistence Of Vision Raytracer Scene Description File
 // File: screen.pov
-// Vers: 3.5
 // Desc: screen.inc demo scene
 // Date: August 2001
 // Auth: Christoph Hormann, Chris Huff and Rune S. Johansen.
@@ -8,9 +7,11 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
+#version 3.6;
+
 #include "screen.inc"
 
-global_settings {charset utf8}
+global_settings {charset utf8 assumed_gamma 1.0}
 
 // Screen.inc will enable you to place objects and textures right in front
 // of the camera. One use of this is to place your signature or a logo in

@@ -1,4 +1,4 @@
-//      Persistence of Vision Raytracer Version 3.5 Scene Description File
+//      Persistence of Vision Raytracer Scene Description File
 //      File: math.pov
 //      Last updated: 9. Sept. 2001
 //      Authors: Chris Huff / Bob Hughes / Tor Olav Kristensen
@@ -8,13 +8,12 @@
 // -w320 -h320
 // -w800 -h800 +a0.3
 
-#version 3.5;
+#version 3.6;
+global_settings { assumed_gamma 1.0 }
 
 #include "stdinc.inc"
 
 //-------------------------------------------
-
-global_settings { assumed_gamma 1 }
 
 #default { finish { ambient 1 diffuse 0 } }
 

@@ -1,10 +1,14 @@
-// Persistence Of Vision Raytracer version 3.5 sample file.
+// Persistence Of Vision Raytracer sample file.
 // FLOAT4.POV
 // Animate this scene with clock values +ki0.0 to +kf1.0
 // Demonstrate sqrt, pow, degrees & atan2 as well as Pythagorean Theorm
 // using a 3-4-5 triangle and some boxes.
 
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  }
 
 #include "colors.inc"
 

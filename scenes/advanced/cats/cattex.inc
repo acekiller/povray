@@ -6,8 +6,11 @@
 // Updated: 2001/07/27
 // Auth: ingo
 //
+// Updated: 09Aug2008 (jh) for v3.7 distribution
 
-#version 3.5;
+#if (version < 3.7)
+  #version 3.5;
+#end
 
 #ifndef (CatTex)
    #declare CatTex= texture {

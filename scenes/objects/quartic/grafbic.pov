@@ -7,6 +7,10 @@
 // by Alexander Enzmann
 
 // Bicorn
+#version  3.6;
+global_settings { 
+  assumed_gamma 1.0
+}
 
 #include "shapes.inc"
 #include "colors.inc"

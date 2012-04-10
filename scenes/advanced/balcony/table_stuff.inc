@@ -1,13 +1,16 @@
 // Persistence Of Vision Ray Tracer Include File
 // File: table_stuff.inc
-// Vers: 3.5
 // Desc: stuff on the table for 'balcony.pov' demonstration scene
 // Date: July/August 2001
 // Auth: Christoph Hormann
 
+// Updated: 09Aug2008 (jh) for v3.7 distribution
+
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-#version 3.5;
+#if (version < 3.7)
+  #version 3.5;
+#end
 
 #declare Mat_Glass=
 material {

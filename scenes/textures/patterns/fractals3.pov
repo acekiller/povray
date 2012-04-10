@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //	File: fractals3.pov
 //	Last updated: 6/5/02
 //	Author: Juha Nieminen
@@ -9,6 +9,12 @@
 // In WinPov, use the right mouse button to copy the following
 // to the command line:
 // +W800 +H267 +a0.1
+
+#version 3.6;
+
+global_settings {
+  assumed_gamma 1.0
+}
 
 #declare P =
   box

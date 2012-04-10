@@ -1,11 +1,13 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 
 // Teapot.inc - #include file for teapot.pov
 // Bezier patch definition of the utah Teapot
 // Adapted by Alexander Enzmann
 
-//#declare Flat_Enough = 0.01;
-#declare Flat_Enough = 0.01;
+// Updated: 09Aug2008 (jh) for v3.7 distribution
+// Updated: 28Sep2008 (cjc): change Flat_Enough to 0.0001 (was 0.01) and fix error in one patch (line 179).
+
+#declare Flat_Enough = 0.0001;
 
 union { // The teapot
    bicubic_patch { type 1 flatness Flat_Enough u_steps 5 v_steps 5
@@ -174,7 +176,7 @@ union { // The teapot
          <2.70000, 0.00000, 2.40000> <2.70000, -0.25000, 2.40000> <3.30000, -0.25000, 2.40000> <3.30000, 0.00000, 2.40000>
          <2.80000, 0.00000, 2.47500> <2.80000, -0.25000, 2.47500> <3.52500, -0.25000, 2.49375> <3.52500, 0.00000, 2.49375>
          <2.90000, 0.00000, 2.47500> <2.90000, -0.15000, 2.47500> <3.45000, -0.15000, 2.51250> <3.45000, 0.00000, 2.51250>
-         <2.80000, 0.00000, 2.40000> <2.80000, -0.15000, 2.40000> <3.20000, 0.00000, 2.40000> <3.20000, 0.00000, 2.40000>
+         <2.80000, 0.00000, 2.40000> <2.80000, -0.15000, 2.40000> <3.20000, -0.15000, 2.40000> <3.20000, 0.00000, 2.40000>
 
       texture { Teapot_Texture }
    }

@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: landscape.pov
-// Vers: 3.5
 // Desc: Use of 'trace' for placing objects on isosurfaces/heightfields
 //       Furthermore showing the following techniques:
 //          - use of piment functions for creatig isosurface terrain
@@ -16,18 +15,17 @@
 // -w320 -h240
 // -w512 -h384 +a0.3
 
-#version 3.5;
+#version 3.6;
 
 #declare Test_Render=false;   // use simplified trees if true
 #declare use_iso=false;       // use an isosurface object (HF with function image type otherwise)
 #declare Viewpoint=1;
 
 global_settings {
-  assumed_gamma 1
-  max_trace_level 25      
-  noise_generator 2
+  assumed_gamma 1.0
+  max_trace_level 25
+  noise_generator 2  
 }
-
 
 #if (Viewpoint=1)
   camera {

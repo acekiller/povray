@@ -1,0 +1,2028 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--  This file copyright Persistence of Vision Raytracer Pty. Ltd. 2009-2011  -->
+
+<html lang="en">
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<title>Reference Section 3</title>
+<link rel="StyleSheet" href="povray37.css" type="text/css">
+<link rel="shortcut icon" href="favicon.ico">
+
+<!--  NOTE: In order to help users find information about POV-Ray using web      -->
+<!--  search engines, we ask that you *not* let them index documentation         -->
+<!--  mirrors because effectively, when searching, users will get hundreds of    -->
+<!--  results containing the same information! For this reason, these meta tags  -->
+<!--  below disable archiving of this page by search engines.                    -->
+
+<meta name="robots" content="noarchive">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+</head>
+<body>
+
+<div class="Page">
+
+<!-- NavPanel Begin -->
+<div class="NavPanel">
+<table class="NavTable">
+<tr>
+  <td class="FixedPanelHeading"><a title="3.3" href="#r3_3">Scene Settings</a></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.3.1" href="#r3_3_1">Camera</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.1.1" href="#r3_3_1_1">Placing the Camera</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.1.1" href="#r3_3_1_1_1">Location and Look_At</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.1.2" href="#r3_3_1_1_2">The Sky Vector</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.1.3" href="#r3_3_1_1_3">Angles</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.1.4" href="#r3_3_1_1_4">The Direction Vector</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.1.5" href="#r3_3_1_1_5">Up and Right Vectors</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.1.6" href="#r3_3_1_1_6">Aspect Ratio</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.1.7" href="#r3_3_1_1_7">Handedness</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.1.8" href="#r3_3_1_1_8">Transforming the Camera</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.1.2" href="#r3_3_1_2">Types of Projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.1" href="#r3_3_1_2_1">Perspective projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.2" href="#r3_3_1_2_2">Orthographic projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.3" href="#r3_3_1_2_3">Mesh projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh5"><a title="3.3.1.2.3.1" href="#r3_3_1_2_3_1">Rays Per Pixel</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh5"><a title="3.3.1.2.3.2" href="#r3_3_1_2_3_2">Distribution Type</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh5"><a title="3.3.1.2.3.3" href="#r3_3_1_2_3_3">Max Distance</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh5"><a title="3.3.1.2.3.4" href="#r3_3_1_2_3_4">Mesh Object</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh5"><a title="3.3.1.2.3.5" href="#r3_3_1_2_3_5">About the Location Vector</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh5"><a title="3.3.1.2.3.6" href="#r3_3_1_2_3_6">About the Direction Vector</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh5"><a title="3.3.1.2.3.7" href="#r3_3_1_2_3_7">The Smooth Modifier</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.4" href="#r3_3_1_2_4">Fisheye projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.5" href="#r3_3_1_2_5">Ultra wide angle projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.6" href="#r3_3_1_2_6">Omnimax projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.7" href="#r3_3_1_2_7">Panoramic projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.8" href="#r3_3_1_2_8">Cylindrical projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.1.2.9" href="#r3_3_1_2_9">Spherical projection</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.1.3" href="#r3_3_1_3">Focal Blur</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.1.4" href="#r3_3_1_4">Camera Ray Perturbation</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.1.5" href="#r3_3_1_5">Camera Identifiers</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.3.2" href="#r3_3_2">Atmospheric Effects</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.2.1" href="#r3_3_2_1">Atmospheric Media</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.2.2" href="#r3_3_2_2">Background</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.2.3" href="#r3_3_2_3">Fog</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.2.4" href="#r3_3_2_4">Sky Sphere</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.2.5" href="#r3_3_2_5">Rainbow</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.3.3" href="#r3_3_3">Global Settings</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.1" href="#r3_3_3_1">ADC_Bailout</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.2" href="#r3_3_3_2">Ambient_Light</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.3" href="#r3_3_3_3">Assumed_Gamma</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.4" href="#r3_3_3_4">HF_Gray_16</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.5" href="#r3_3_3_5">Irid_Wavelength</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.6" href="#r3_3_3_6">Charset</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.7" href="#r3_3_3_7">Max_Trace_Level</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.8" href="#r3_3_3_8">Max_Intersections</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.9" href="#r3_3_3_9">Mm_Per_Unit</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.10" href="#r3_3_3_10">Number_Of_Waves</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.11" href="#r3_3_3_11">Noise_generator</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.3.12" href="#r3_3_3_12">Subsurface</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh2"><strong><a title="3.3.4" href="#r3_3_4">Radiosity</a></strong></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.4.1" href="#r3_3_4_1">Radiosity Basics</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.4.2" href="#r3_3_4_2">How Radiosity Works</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.4.3" href="#r3_3_4_3">Adjusting Radiosity</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.1" href="#r3_3_4_3_1">adc_bailout</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.2" href="#r3_3_4_3_2">always_sample</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.3" href="#r3_3_4_3_3">brightness</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.4" href="#r3_3_4_3_4">count</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.5" href="#r3_3_4_3_5">error_bound</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.6" href="#r3_3_4_3_6">gray_threshold</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.7" href="#r3_3_4_3_7">low_error_factor</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.8" href="#r3_3_4_3_8">max_sample</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.9" href="#r3_3_4_3_9">maximum_reuse</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.10" href="#r3_3_4_3_10">minimum_reuse</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.11" href="#r3_3_4_3_11">nearest_count</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.12" href="#r3_3_4_3_12">pretrace_start and pretrace_end</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.3.13" href="#r3_3_4_3_13">recursion_limit</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.4.4" href="#r3_3_4_4">Configuring Radiosity</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.4.1" href="#r3_3_4_4_1">Importance</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.4.2" href="#r3_3_4_4_2">Media and Radiosity</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.4.3" href="#r3_3_4_4_3">No Radiosity</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.4.4" href="#r3_3_4_4_4">Normal and Radiosity</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.4.5" href="#r3_3_4_4_5">Save and Load Radiosity Data</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh4"><a title="3.3.4.4.6" href="#r3_3_4_4_6">Subsurface and Radiosity</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh3"><a title="3.3.4.5" href="#r3_3_4_5">Tips on Radiosity</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh1">&nbsp;</div></td>
+</tr>
+<tr>
+  <td><div class="divh1">&nbsp;</div></td>
+</tr>
+</table>
+</div>
+<!-- NavPanel End -->
+
+<div class="Content">
+<table class="HeaderFooter" width="100%">
+<tr>
+  <td colspan=5 align="left" class="HeaderFooter">
+    POV-Ray for Unix <strong class="HeaderFooter">version 3.7</strong>
+  </td>
+</tr>
+<tr >
+  <td colspan=5>
+    <hr align="right" width="70%">
+  </td>
+</tr>
+<tr>
+  <td width="30%"></td>
+  <td class="NavBar"><a href="index.html" title="The Front Door">Home</a></td>
+  <td class="NavBar"><a href="u1_0.html" title="Unix Table of Contents">POV-Ray for Unix</a></td>
+  <td class="NavBar"><a href="t2_0.html" title="Tutorial Table of Contents">POV-Ray Tutorial</a></td>
+  <td class="NavBar"><a href="r3_0.html" title="Reference Table of Contents">POV-Ray Reference</a></td>
+</tr>
+</table>
+
+<a name="r3_3"></a>
+<div class="content-level-h2" contains="Scene Settings" id="r3_3">
+<h2>3.3 Scene Settings</h2>
+</div>
+<a name="r3_3_1"></a>
+<div class="content-level-h3" contains="Camera" id="r3_3_1">
+<h3>3.3.1 Camera</h3>
+<p>The camera definition describes the position, projection type and
+properties of the camera viewing the scene. Its syntax is:</p>
+<pre>
+CAMERA:
+  camera{ [CAMERA_ITEMS...] }
+CAMERA_ITEMS:
+  CAMERA_TYPE | CAMERA_VECTOR | CAMERA_MODIFIER |
+  CAMERA_IDENTIFIER
+CAMERA_TYPE:
+  perspective | orthographic | mesh_camera{MESHCAM_MODIFIERS} | fisheye | ultra_wide_angle |
+  omnimax | panoramic | cylinder CylinderType | spherical
+CAMERA_VECTOR:
+  location &lt;Location&gt; | right &lt;Right&gt; | up &lt;Up&gt; | 
+  direction &lt;Direction&gt; | sky &lt;Sky&gt;
+CAMERA_MODIFIER:
+  angle HORIZONTAL [VERTICAL] | look_at &lt;Look_At&gt; |
+  blur_samples [MIN_SAMPLES,] MAX_SAMPLES | aperture Size |
+  focal_point &lt;Point&gt; | confidence Blur_Confidence |
+  variance Blur_Variance | [bokeh{pigment{BOKEH}}] |
+  NORMAL | TRANSFORMATION | [MESHCAM_SMOOTH]
+MESHCAM_MODIFIERS:
+  rays per pixel & distribution type & [max distance] & MESH_OBJECT & [MESH_OBJECT...]
+BOKEH:
+  a COLOR_VECTOR in the range of &lt;0,0,0&gt; ... &lt;1,1,0&gt;
+MESHCAM_SMOOTH:
+  optional smooth modifier valid only when using mesh_camera
+</pre>
+<p>
+Camera default values:</p>
+<pre>
+DEFAULT CAMERA:
+camera {
+  perspective
+  location &lt;0,0,0&gt;
+  direction &lt;0,0,1&gt;
+  right 1.33*x
+  up y
+  sky &lt;0,1,0&gt;
+  }
+
+CAMERA TYPE: perspective
+  angle      : ~67.380 ( direction_length=0.5*
+             right_length/tan(angle/2) )
+  confidence : 0.9 (90%)
+  direction  : &lt;0,0,1&gt;
+  focal_point: &lt;0,0,0&gt;
+  location   : &lt;0,0,0&gt;
+  look_at    : z
+  right      : 1.33*x
+  sky        : &lt;0,1,0&gt;
+  up         : y
+  variance   : 1/128
+</pre>
+
+<p>Depending on the projection type zero or more of the parameters are required:</p>
+<ul>
+<li>If no camera is specified the default camera is used.</li>
+<li>If no projection type is given the perspective camera will be used
+(pinhole camera).</li>
+<li>The <em>CAMERA_TYPE</em> has to be the first item in the camera
+statement.</li>
+<li>Other <em>CAMERA_ITEMs</em> may legally appear in any order.</li>
+<li>For other than the perspective camera, the minimum that has to be
+specified is the CAMERA_TYPE, the cylindrical camera also requires the
+<em>CAMERA_TYPE</em> to be followed by a float.</li>
+<li>The Orthographic camera has two 'modes'. For the pure orthographic
+projection up or right have to be specified. For an orthographic camera,
+with the same area of view as a perspective camera at the plane which goes
+through the look_at point, the angle keyword has to be use. A value for the
+angle is optional.</li>
+<li>All other <em>CAMERA_ITEM</em>s are taken from the default camera,
+unless they are specified differently.</li>
+</ul>
+
+</div>
+<a name="r3_3_1_1"></a>
+<div class="content-level-h4" contains="Placing the Camera" id="r3_3_1_1">
+<h4>3.3.1.1 Placing the Camera</h4>
+<p>The POV-Ray camera has 9 different models and they are as follows:</p>
+
+<ol>
+  <li><a href="r3_3.html#r3_3_1_2_1">perspective</a></li>
+  <li><a href="r3_3.html#r3_3_1_2_2">orthographic</a></li>
+  <li><a href="r3_3.html#r3_3_1_2_3">mesh</a></li>
+  <li><a href="r3_3.html#r3_3_1_2_4">fisheye</a></li>
+  <li><a href="r3_3.html#r3_3_1_2_5">ultra-wide angle</a></li>
+  <li><a href="r3_3.html#r3_3_1_2_6">onmimax</a></li>
+  <li><a href="r3_3.html#r3_3_1_2_7">panoramic</a></li>
+  <li><a href="r3_3.html#r3_3_1_2_8">cylindrical</a></li>
+  <li><a href="r3_3.html#r3_3_1_2_9">spherical</a></li>
+</ol>
+
+<p>Each of which uses a different projection method to project the scene onto your screen. Regardless of the projection type all cameras use <code>location</code>, <code>right</code>, <code>up</code>, <code>direction</code>, and other keywords to determine the location and orientation of the camera. The type keywords and these four vectors fully define the camera. All other camera modifiers adjust how the camera does its job. The meaning of these vectors and other modifiers differ with the projection type used. A more detailed explanation of the camera types follows later. In the sub-sections which follows, we explain how to place and orient the camera by the use of these four vectors and the <code>sky</code> and <code>look_at</code> modifiers. You may wish to refer to the illustration of the perspective camera below as you read about these
+vectors.</p>
+
+<table class="centered" width="660x" cellpadding="0" cellspacing="10">
+<tr>
+  <td>
+  <img class="center" width="640px" src="images/f/fd/RefImgPerspcam.gif">
+  </td>
+</tr>
+<tr>
+  <td>
+    <p class="caption">Basic (default) camera geometry</p>
+  </td>
+</tr>
+</table>
+
+</div>
+<a name="r3_3_1_1_1"></a>
+<div class="content-level-h5" contains="Location and Look_At" id="r3_3_1_1_1">
+<h5>3.3.1.1.1 Location and Look_At</h5>
+<p>Under many circumstances just two vectors in the camera statement are all
+you need to position the camera: <code>location</code> and <code>look_at</code>
+vectors. For example:</p>
+<pre>
+camera {
+  location &lt;3,5,-10&gt;
+  look_at &lt;0,2,1&gt;
+  }
+</pre>
+
+<p>The location is simply the x, y, z coordinates of the camera. The camera
+can be located anywhere in the ray-tracing universe. The default location is
+<code>&lt;0,0,0&gt;</code>. The <code>look_at</code> vector tells POV-Ray to
+pan and tilt the camera until it is looking at the specified x, y, z
+coordinates. By default the camera looks at a point one unit in the
+z-direction from the location.</p>
+<p>
+The <code>look_at</code> modifier should almost always be the last item in
+the camera statement. If other camera items are placed after the <code>
+look_at</code> vector then the camera may not continue to look at the
+specified point.</p>
+
+</div>
+<a name="r3_3_1_1_2"></a>
+<div class="content-level-h5" contains="The Sky Vector" id="r3_3_1_1_2">
+<h5>3.3.1.1.2 The Sky Vector</h5>
+<p>Normally POV-Ray pans left or right by rotating about the y-axis until it
+lines up with the <code>look_at</code> point and then tilts straight up or
+down until the point is met exactly. However you may want to slant the camera
+sideways like an airplane making a banked turn. You may change the tilt of
+the camera using the <code>sky</code> vector. For example:</p>
+<pre>
+camera {
+  location &lt;3,5,-10&gt;
+  sky   &lt;1,1,0&gt;
+  look_at &lt;0,2,1&gt;
+  }
+</pre>
+
+<p>This tells POV-Ray to roll the camera until the top of the camera is in
+line with the sky vector. Imagine that the sky vector is an antenna pointing
+out of the top of the camera. Then it uses the <code>sky</code> vector as the
+axis of rotation left or right and then to tilt up or down in line with the
+<code>sky</code> until pointing at the <code>look_at</code> point. In effect
+you are telling POV-Ray to assume that the sky isn't straight up.</p>
+<p>
+The <code>sky</code> vector does nothing on its own. It only modifies the
+way the <code>look_at</code> vector turns the camera. The default value is
+<code>sky&lt;0,1,0&gt;</code>.</p>
+
+</div>
+<a name="r3_3_1_1_3"></a>
+<div class="content-level-h5" contains="Angles" id="r3_3_1_1_3">
+<h5>3.3.1.1.3 Angles</h5>
+<p>The <code>angle</code> keyword followed by a float expression specifies
+the (horizontal) viewing angle in degrees of the camera used. Even though it
+is possible to use the <code>direction</code> vector to determine the viewing
+angle for the perspective camera it is much easier to use the <code>
+angle</code> keyword.</p>
+<p>
+When you specify the <code>angle</code>, POV-Ray adjusts the length of the
+<code>direction</code> vector accordingly. The formula used is <em>
+direction_length = 0.5 * right_length / tan(angle / 2)</em> where <em>
+right_length</em> is the length of the <code>right</code> vector. You should
+therefore specify the <code>direction</code> and <code>right</code> vectors
+before the <code>angle</code> keyword. The <code>right</code> vector is
+explained in the next section.</p>
+<p>
+There is no limitation to the viewing angle except for the perspective
+projection. If you choose viewing angles larger than 360 degrees you will
+see repeated images of the scene (the way the repetition takes place depends
+on the camera). This might be useful for special effects.</p>
+<p>
+The <code>spherical</code> camera has the option to also specify a vertical
+angle. If not specified it defaults to the horizontal angle/2</p>
+<p>
+For example if you render an image with a 2:1 aspect ratio and map it 
+to a sphere using spherical mapping, it will recreate the scene. Another 
+use is to map it onto an object and if you specify transformations for 
+the object before the texture, say in an animation, it will look like 
+reflections of the environment (sometimes called environment mapping).</p>
+
+</div>
+<a name="r3_3_1_1_4"></a>
+<div class="content-level-h5" contains="The Direction Vector" id="r3_3_1_1_4">
+<h5>3.3.1.1.4 The Direction Vector</h5>
+<p>You will probably not need to explicitly specify or change the camera
+<code>direction</code> vector but it is described here in case you do. It
+tells POV-Ray the initial direction to point the camera before moving it with
+the <code>look_at</code> or <code>rotate</code> vectors (the default value is
+<code>direction&lt;0,0,1&gt;</code>). It may also be used to control the
+(horizontal) field of view with some types of projection. The length of the
+vector determines the distance of the viewing plane from the camera's
+location. A shorter <code>direction</code> vector gives a wider view while a
+longer vector zooms in for close-ups. In early versions of POV-Ray, this was
+the only way to adjust field of view. However zooming should now be done
+using the easier to use <code>angle</code> keyword.</p>
+<p>
+If you are using the <code>ultra_wide_angle</code>, <code>panoramic</code>,
+or <code>cylindrical</code> projection you should use a unit length <code>
+direction</code> vector to avoid strange results. The length of the <code>
+direction</code> vector does not matter when using the <code>
+orthographic</code>, <code>fisheye</code>, or <code>omnimax</code> projection
+types.</p>
+
+</div>
+<a name="r3_3_1_1_5"></a>
+<div class="content-level-h5" contains="Up and Right Vectors" id="r3_3_1_1_5">
+<h5>3.3.1.1.5 Up and Right Vectors</h5>
+<p>The primary purpose of the <code>up</code> and <code>right</code> vectors
+is to tell POV-Ray the relative height and width of the view screen. The
+default values are:</p>
+<pre>
+right 4/3*x
+up y
+</pre>
+
+<p>In the default <code>perspective</code> camera, these two vectors also
+define the initial plane of the view screen before moving it with the <code>
+look_at</code> or <code>rotate</code> vectors. The length of the <code>
+right</code> vector (together with the <code>direction</code> vector) may
+also be used to control the (horizontal) field of view with some types of
+projection. The <code>look_at</code> modifier changes both the <code>up</code>
+and <code>right</code> vectors. The <code>angle</code> calculation depends on the <code>
+right</code> vector.</p>
+<p>
+Most camera types treat the <code>up</code> and <code>right</code> vectors
+the same as the <code>perspective</code> type. However several make special
+use of them. In the <code>orthographic</code> projection: The lengths of the
+<code>up</code> and <code>right</code> vectors set the size of the viewing
+window regardless of the <code>direction</code> vector length, which is not
+used by the orthographic camera.</p>
+<p>
+When using <code>cylindrical</code> projection: types 1 and 3, the axis of
+the cylinder lies along the <code>up</code> vector and the width is
+determined by the length of <code>right</code> vector or it may be overridden
+with the <code>angle</code> vector. In type 3 the <code>up</code> vector
+determines how many units high the image is. For example if you have <code>up
+4*y</code> on a camera at the origin. Only points from y=2 to y=-2 are
+visible. All viewing rays are perpendicular to the y-axis. For type 2 and 4,
+the cylinder lies along the <code>right</code> vector. Viewing rays for type
+4 are perpendicular to the <code>right</code> vector.</p>
+<p class="Note"><strong>Note:</strong> The <code>up</code>, <code>right</code>, and <code>direction</code> vectors should always remain perpendicular to each other or the image will be distorted. If this is not the case a warning message will be printed. The vista buffer will not work for non-perpendicular camera vectors.</p>
+
+</div>
+<a name="r3_3_1_1_6"></a>
+<div class="content-level-h5" contains="Aspect Ratio" id="r3_3_1_1_6">
+<h5>3.3.1.1.6 Aspect Ratio</h5>
+<p>Together the <code>up</code> and <code>right</code> vectors define the
+<em>aspect ratio</em> (height to width ratio) of the resulting image. The
+default values <code>up&lt;0,1,0&gt;</code> and <code>
+right&lt;1.33,0,0&gt;</code> result in an aspect ratio of 4 to 3. This is the
+aspect ratio of a typical computer monitor. If you wanted a tall skinny image
+or a short wide panoramic image or a perfectly square image you should adjust
+the <code>up</code> and <code>right</code> vectors to the appropriate
+proportions.</p>
+<p>
+Most computer video modes and graphics printers use perfectly square pixels.
+For example Macintosh displays and IBM SVGA modes 640x480, 800x600 and
+1024x768 all use square pixels. When your intended viewing method uses square
+pixels then the width and height you set with the <code>Width</code> and
+<code>Height</code> options or <code>+W</code> or <code>+H</code> switches
+should also have the same ratio as the <code>up</code> and <code>right</code>
+vectors.</p>
+<p class="Note"><strong>Note:</strong> 640/480 = 4/3 so the ratio is proper for this square pixel mode.</p>
+<p>
+Not all display modes use square pixels however. For example IBM VGA mode
+320x200 and Amiga 320x400 modes do not use square pixels. These two modes
+still produce a 4/3 aspect ratio image. Therefore images intended to be
+viewed on such hardware should still use 4/3 ratio on their <code>up</code>
+and <code>right</code> vectors but the pixel settings will not be 4/3.</p>
+<p>
+For example:</p>
+<pre>
+camera {
+  location &lt;3,5,-10&gt;
+  up    &lt;0,1,0&gt;
+  right  &lt;1,0,0&gt;
+  look_at &lt;0,2,1&gt;
+  }
+</pre>
+
+<p>This specifies a perfectly square image. On a square pixel display like
+SVGA you would use pixel settings such as <code>+W480 +H480</code> or <code>
++W600 +H600</code>. However on the non-square pixel Amiga 320x400 mode you
+would want to use values of <code>+W240 +H400</code> to render a square
+image.</p>
+<p>
+The bottom line issue is this: the <code>up</code> and <code>right</code>
+vectors should specify the artist's intended aspect ratio for the image
+and the pixel settings should be adjusted to that same ratio for square
+pixels and to an adjusted pixel resolution for non-square pixels. The <code>
+up</code> and <code>right</code> vectors should <em> not</em> be adjusted
+based on non-square pixels.</p>
+
+</div>
+<a name="r3_3_1_1_7"></a>
+<div class="content-level-h5" contains="Handedness" id="r3_3_1_1_7">
+<h5>3.3.1.1.7 Handedness</h5>
+<p>The <code>right</code> vector also describes the direction to the right of
+the camera. It tells POV-Ray where the right side of your screen is. The sign
+of the <code>right</code> vector can be used to determine the handedness of
+the coordinate system in use. The default value is: <code>
+right&lt;1.33,0,0&gt;</code>. This means that the +x-direction is to the
+right. It is called a <em>left-handed</em> system because you can use your
+left hand to keep track of the axes. Hold out your left hand with your palm
+facing to your right. Stick your thumb up. Point straight ahead with your
+index finger. Point your other fingers to the right. Your bent fingers are
+pointing to the +x-direction. Your thumb now points into +y-direction. Your
+index finger points into the +z-direction.</p>
+<p>
+To use a right-handed coordinate system, as is popular in some CAD programs
+and other ray-tracers, make the same shape using your right hand. Your thumb
+still points up in the +y-direction and your index finger still points
+forward in the +z-direction but your other fingers now say the +x-direction
+is to the left. That means that the right side of your screen is now in the
+-x-direction. To tell POV-Ray to act like this you can use a negative x value
+in the <code>right</code> vector such as: <code>
+right&lt;-1.33,0,0&gt;</code>. Since having x values increasing to the left
+does not make much sense on a 2D screen you now rotate the whole thing 180
+degrees around by using a positive z value in your camera's location. You
+end up with something like this.</p>
+<pre>
+camera {
+  location &lt;0,0,10&gt;
+  up    &lt;0,1,0&gt;
+  right  &lt;-1.33,0,0&gt;
+  look_at &lt;0,0,0&gt;
+  }
+</pre>
+
+<p>Now when you do your ray-tracer's aerobics, as explained in the
+section <a href="t2_2.html#t2_2_1_1">Understanding POV-Ray's Coordinate System</a>, you use your right hand to determine the direction of rotations.</p>
+<p>
+In a two dimensional grid, x is always to the right and y is up. The two
+versions of handedness arise from the question of whether z points into the
+screen or out of it and which axis in your computer model relates to up in
+the real world.</p>
+<p>
+Architectural CAD systems, like AutoCAD, tend to use the <em> God's
+Eye</em> orientation that the z-axis is the elevation and is the model's
+up direction. This approach makes sense if you are an architect looking at
+a building blueprint on a computer screen. z means up, and it increases
+towards you, with x and y still across and up the screen. This is the basic
+right handed system.</p>
+<p>
+Stand alone rendering systems, like POV-Ray, tend to consider you as a
+participant. You are looking at the screen as if you were a photographer
+standing in the scene. The up direction in the model is now y, the same as up
+in the real world and x is still to the right, so z must be depth, which
+increases away from you into the screen. This is the basic left handed
+system.</p>
+
+</div>
+<a name="r3_3_1_1_8"></a>
+<div class="content-level-h5" contains="Transforming the Camera" id="r3_3_1_1_8">
+<h5>3.3.1.1.8 Transforming the Camera</h5>
+<p>The various transformations such as <code>translate</code> and <code>
+rotate</code> modifiers can re-position the camera once you have defined
+it. For example:</p>
+<pre>
+camera {
+  location &lt; 0, 0, 0&gt;
+  direction &lt; 0, 0, 1&gt;
+  up    &lt; 0, 1, 0&gt;
+  right   &lt; 1, 0, 0&gt;
+  rotate  &lt;30, 60, 30&gt;
+  translate &lt; 5, 3, 4&gt;
+  }
+</pre>
+
+<p>In this example, the camera is created, then rotated by 30 degrees about
+the x-axis, 60 degrees about the y-axis and 30 degrees about the z-axis, then
+translated to another point in space.</p>
+
+</div>
+<a name="r3_3_1_2"></a>
+<div class="content-level-h4" contains="Types of Projection" id="r3_3_1_2">
+<h4>3.3.1.2 Types of Projection</h4>
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/0/09/RefImgCameraSampleScene.jpg">
+</td>
+<td>
+  <p class="tabletext">The following sections explain the different projection types that can be used with the scene camera. The most common types are the  perspective and orthographic projections. The <em>CAMERA_TYPE</em> should be the <em>first</em> item in a  <code>camera</code> statement. If none is specified, the <code>perspective</code> camera is the default.</p>
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The camera sample scene global view</p>
+</td>
+<td></td>
+</tr>
+</table>
+
+<p class="Note"><strong>Note:</strong> The <a href="r3_1.html#r3_1_2_3_3">vista buffer</a> feature can only be used with the perspective and orthographic camera.</p>
+
+</div>
+<a name="r3_3_1_2_1"></a>
+<div class="content-level-h5" contains="Perspective projection" id="r3_3_1_2_1">
+<h5>3.3.1.2.1 Perspective projection</h5>
+<p>The <code>perspective</code> keyword specifies the default perspective camera which simulates the classic pinhole camera. The <em>horizontal</em> viewing angle is either determined by the ratio between the length of the <code>direction</code> vector and the length of the <code>right</code> vector or by the optional keyword <code>angle</code>, which is the preferred way. The viewing angle has to be larger than 0 degrees and smaller than 180 degrees.</p>
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/8/82/RefImgCameraViewPerspective.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/f/f6/RefImgCameraSampleperspective.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The perspective projection diagram</p>
+</td>
+<td>
+  <p class="caption">A perspective camera sample image</p>
+</td>
+</tr>
+</table>
+
+<p class="Note"><strong>Note:</strong> The <code>angle</code> keyword can be used as long as less than 180 degrees. It recomputes the length of right and up vectors using <code>direction</code>. The proper aspect ratio between the <code>up</code> and <code>right</code> vectors is maintained.</p>
+
+</div>
+<a name="r3_3_1_2_2"></a>
+<div class="content-level-h5" contains="Orthographic projection" id="r3_3_1_2_2">
+<h5>3.3.1.2.2 Orthographic projection</h5>
+<p>The orthographic camera offers two modes of operation:</p>
+
+<p>The pure <code>orthographic</code> projection. This projection uses parallel camera rays to create an image of the scene. The area of view is determined by the lengths of the <code>right</code> and <code>up</code> vectors. One of these has to be specified, they are not taken from the default camera. If omitted the second method of the camera is used.</p>
+
+<p>If, in a perspective camera, you replace the <code>perspective</code> keyword by <code>orthographic</code> and leave all other parameters the same, you will get an orthographic view with the same image area, i.e. the size of the image is
+the same. The same can be achieved by adding the <code>angle</code> keyword to an orthographic camera. A value for the angle is optional. So this second mode is active if no up and right are within the camera statement, or when the angle keyword is within the camera statement.</p>
+
+<p>You should be aware though that the visible parts of the scene change when switching from perspective to orthographic view. As long as all objects of interest are near the look_at point they will be still visible if the orthographic camera is used. Objects farther away may get out of view while nearer objects will stay in view.</p>
+
+<p>If objects are too close to the camera location they may disappear. Too close here means, behind the orthographic camera projection plane (the plane that goes through the <code>location</code> point).</p> 
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/c/ce/RefImgCameraViewOrthographic.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/b/b2/RefImgCameraSampleorthographic.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The orthographic projection diagram</p>
+</td>
+<td>
+  <p class="caption">An orthographic camera sample image</p>
+</td>
+</tr>
+</table>
+
+<p class="Note"><strong>Note:</strong> The length of direction is irrelevant unless angle is used. The lengths of up and right define the dimensions of the view. The <code>angle</code> keyword can be used, as long as less than 180. It will override the length of the right and up vectors (the aspect ratio between up and right will be kept nevertheless) with a scope of a perspective camera having the same direction and angle.</p>
+
+</div>
+<a name="r3_3_1_2_3"></a>
+<div class="content-level-h5" contains="Mesh projection" id="r3_3_1_2_3">
+<h5>3.3.1.2.3 Mesh projection</h5>
+<p>The mesh projection is a special camera type that allows complete control of the ray origin and direction for each pixel of the output image. The basic concept is to associate pixels with faces defined within a <code>mesh</code> or <code>mesh2</code> object. The mesh need not be instantiated in the scene, though it can be, and doing so can lead to some interesting uses, such as texture baking or illumination calculations.</p>
+<p>In its simplest form, each pixel of the output image is assigned to a face of the mesh according to <code>(width * (int) y) + (int) x</code>, however, more complex mapping is possible via multiple meshes and multiple rays per pixel. The type of mapping in use is determined by the distribution type parameter in the camera declaration. Except for mapping #3, the ray origin will be set to the centroid of the face, and the direction will be that of the face's normal. For mapping #3, barycentric co-ordinates are determined from the UV co-ordinates of the first face to match the X and Y position, and those are then converted to a position on the face which will serve as the ray origin. Support is provided to move the origin off the face along the normal, and to reverse the ray direction.</p>
+<p>For most of the distribution methods, any POV feature that causes sub-pixel positioning to be used for shooting rays (e.g. anti-aliasing or jitter) will not do anything useful, because X and Y are converted to integers for indexing purposes. At this time, no warning is issued if anti-aliasing or jitter is requested when rendering a non-applicable distribution; this may be added later.</p>
+<p>The syntax for the mesh camera is as follows:</p>
+<pre>
+camera {
+  mesh_camera {
+    rays per pixel
+    distribution type
+    [max distance]
+    mesh {
+      MESH_OBJECT_IDENTIFIER
+      [TRANSFORMATIONS]
+    }
+    [mesh ...]
+  }
+  [location]
+  [direction]
+  [smooth]
+  } 
+</pre>
+
+<p class="Note"><strong>Note:</strong> The mesh camera is an <strong>experimental feature</strong> introduced in version 3.7 beta 39 and its syntax is likely to change. Additionally, many of the normal camera concepts presented in this section (such as location and direction) either do not work as they do for other cameras or do not work at all (for example, the concept of 'up' simply does not apply to a mesh camera). It should also be kept in mind that the camera has not yet been tested with many of POV-Ray's advanced features such as photons and radiosity, and more work in that area is likely to be needed.</p>
+
+</div>
+<a name="r3_3_1_2_3_1"></a>
+<div class="content-level-h6" contains="Rays Per Pixel" id="r3_3_1_2_3_1">
+<h6>3.3.1.2.3.1 Rays Per Pixel</h6>
+<p>This float parameter controls the number of rays that will be shot for each pixel in the output image. Each distribution allows different values, but the minimum is always 1.</p>
+
+</div>
+<a name="r3_3_1_2_3_2"></a>
+<div class="content-level-h6" contains="Distribution Type" id="r3_3_1_2_3_2">
+<h6>3.3.1.2.3.2 Distribution Type</h6>
+<p>This float parameter controls how pixels are assigned to faces as documented below:</p>
+<ul>
+<li><strong>distribution #0</strong></li>
+</ul>
+<p>This method allows single or multiple rays per pixel, with the ray number for that pixel allocated to each mesh in turn. The index into the meshes is the ray number, where <em>rays per pixel</em> is greater than one, and the index into the selected mesh is the pixel number within the output image. If there is no face at that pixel position, the resulting output pixel is unaffected.</p>
+<p>You must supply at least as many meshes as <em>rays per pixel</em>. Each pixel is shot <em>rays per pixel</em> times, and the results averaged. Any ray that does not correspond with a face (i.e. the pixel number is greater than or equal to the face count) does not affect the resulting pixel color. Generally, it would be expected that the number of faces in each mesh is the same, but this is not a requirement. Keep in mind that a ray that is not associated with a face is not the same thing as a ray that is but that, when shot, hits nothing. The latter will return a pixel (even if it is transparent or the background color), whereas the former causes the ray to not be shot in the first place; hence, it is not included in the calculation of the average for the pixel.</p>
+<p>Using multiple rays per pixel is useful for generating anti-aliasing (since standard AA won't work) or for special effects such as focal blur, motion blur, and so forth, with each additional mesh specified in the camera representing a slightly different camera position.</p>
+<p class="Note"><strong>Note:</strong> It is legal to use transformations on meshes specified in the camera body, hence it's possible to obtain basic anti-aliasing by using a single mesh multiple times, with subsequent ones jittered slightly from the first combined with a suitable <em>rays per pixel</em> count.</p>
+<ul>
+<li><strong>distribution #1</strong></li>
+</ul>
+<p>This method allows both multiple rays per pixel and summing of meshes, in other words the faces of all the supplied meshes are logically summed together as if they were one single mesh. In this mode, if you specify more than one ray per pixel, the second ray for a given pixel will go to the face at <code>(width * height * ray_number) + pixel_number</code>, where <em>ray_number</em> is the count of rays shot into a specific pixel. If the calculated face index exceeds the total number of faces for all the meshes, no ray is shot.</p>
+<p>The primary use for this summing method is convenience in generation of the meshes, as some modelers slow down to an irritating extent with very large meshes. Using <em>distribution #1</em> allows these to be split up.</p>
+<ul>
+<li><strong>distribution #2</strong></li>
+</ul>
+<p>Distribution method 2 is a horizontal array of sub-cameras, one per mesh (i.e. like method #0, it does not sum meshes). The image is divided horizontally into <em>#num_meshes</em> blocks, with the first mesh listed being the left-most camera, and the last being the right-most. The most obvious use of this would be with two meshes to generate a stereo camera arrangement.</p>
+<p>In this mode, you can (currently) only have a single ray per pixel.</p>
+<ul>
+<li><strong>distribution #3</strong></li>
+</ul>
+<p>This method will reverse-map the face from the UV co-ordinates. Currently, only a single ray per pixel is supported, however, unlike the preceding methods, standard AA and jitter will work. This method is particularly useful for texture baking and resolution-independent mesh cameras, but requires that the mesh have a UV map supplied with it.</p>
+<p>You can use the smooth modifier to allow interpolation of the normals at the vertices. This allows for use of UV mapped meshes as cameras with the benefit of not being resolution dependent, unlike the other distributions. The interpolation is identical to that used for smooth_triangles.</p>
+<p>If used for texture baking, the generated image may have visible seams when applied back to the mesh, this can be mitigated. Also, depending on the way the original UV map was set up, using AA may produce incorrect pixels on the outside edge of the generated maps.</p>
+
+</div>
+<a name="r3_3_1_2_3_3"></a>
+<div class="content-level-h6" contains="Max Distance" id="r3_3_1_2_3_3">
+<h6>3.3.1.2.3.3 Max Distance</h6>
+This is an optional floating-point value which, if greater than EPSILON (a very small value used internally for comparisons with 0), will be used as the limit for the length of any rays cast. Objects at a distance greater than this from the ray origin will not be intersected by the ray.
+
+The primary use for this parameter is to allow a mesh camera to 'probe' a scene in order to determine whether or not a given location contains a visible object. Two examples would be a camera that divides the scene into slices for use in 3d printing or to generate an STL file, and a camera that divides the scene into cubes to generate voxel information. In both cases, some external means of processing the generated image into a useful form would be required.
+
+It should be kept in mind that this method of determining spatial information is not guaranteed to generate an accurate result, as it is entirely possible for a ray to miss an object that is within its section of the scene, should that object have features that are smaller than the resolution of the mesh being used. In other words, it is (literally) hit and miss. This issue is conceptually similar to aliasing in a normal render.
+
+It is left as an exercise for the reader to come up with means of generating pixel information that carries useful information, given the lack of light sources within the interior of an opaque object (hint: try ambient).
+
+</div>
+<a name="r3_3_1_2_3_4"></a>
+<div class="content-level-h6" contains="Mesh Object" id="r3_3_1_2_3_4">
+<h6>3.3.1.2.3.4 Mesh Object</h6>
+<p>One or more <code>mesh</code> or <code>mesh2</code> objects to be used for the camera. These will be treated differently depending on the distribution method, as explained above. Transformations on the meshes can be used here, and will reflect on the resulting image as it would be expected for a regular camera.</p>
+
+</div>
+<a name="r3_3_1_2_3_5"></a>
+<div class="content-level-h6" contains="About the Location Vector" id="r3_3_1_2_3_5">
+<h6>3.3.1.2.3.5 About the Location Vector</h6>
+<p>With this special camera, location doesn't affect where the camera is placed per se (that information is on the mesh object itself), but is used to move the origin of the ray off the face, along the normal of that face. This would typically be done for texture baking or illumination calculation scenes where the camera mesh is also instantiated into the scene, usually only a tiny amount of displacement is needed. The X and Y for location is not currently used, and the Z always refers to the normal of the face, rather than the real Z direction in the scene.</p>
+
+</div>
+<a name="r3_3_1_2_3_6"></a>
+<div class="content-level-h6" contains="About the Direction Vector" id="r3_3_1_2_3_6">
+<h6>3.3.1.2.3.6 About the Direction Vector</h6>
+<p>Like location, this doesn't correspond to the real direction vector of the camera. It serves only to reverse the normal of all the faces, if necessary. If the Z component is less than -EPSILON, then the rays will be shot in the opposite direction than they would otherwise have been. X and Y are not used.</p>
+
+</div>
+<a name="r3_3_1_2_3_7"></a>
+<div class="content-level-h6" contains="The Smooth Modifier" id="r3_3_1_2_3_7">
+<h6>3.3.1.2.3.7 The Smooth Modifier</h6>
+<p>This optional parameter is only useful with distribution #3, and will cause the ray direction to be interpolated according to the same rules as are applied to smooth triangles. For this to work, the mesh must have provided a normal for each vertex.</p>
+<p class="Note"><strong>Note:</strong> See the sample scene files located in <em>~scenes/camera/mesh_camera/</em> for additional usages and other samples of mesh cameras. There are also some useful macros to assist in generating and processing meshes for use as cameras.</p>
+
+</div>
+<a name="r3_3_1_2_4"></a>
+<div class="content-level-h5" contains="Fisheye projection" id="r3_3_1_2_4">
+<h5>3.3.1.2.4 Fisheye projection</h5>
+<p> This is a spherical projection. The viewing angle is specified by the <code>angle</code> keyword. An angle of 180 degrees creates the &quot;standard&quot; fisheye while an angle of 360 degrees creates a super-fisheye  or &quot;I-see-everything-view&quot;. If you use this projection you should get a circular image. If this is not the case, i.e. you get an elliptical image, you should read <a href="r3_3.html#r3_3_1_1_6">Aspect Ratio</a>.</p>
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/a/a1/RefImgCameraViewFisheye.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/f/f5/RefImgCameraSamplefisheye.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The fisheye projection diagram</p>
+</td>
+<td>
+  <p class="caption">A fisheye camera sample image</p>
+</td>
+</tr>
+</table>
+
+<p class="Note"><strong>Note:</strong> The length of the direction, up and right vectors are irrelevant. The <code>angle</code> keyword is the important setting.</p>
+
+</div>
+<a name="r3_3_1_2_5"></a>
+<div class="content-level-h5" contains="Ultra wide angle projection" id="r3_3_1_2_5">
+<h5>3.3.1.2.5 Ultra wide angle projection</h5>
+<p>The ultra wide angle projection is somewhat similar to the fisheye, but it projects the image onto a rectangle instead of a circle. The viewing angle can be specified by using the <code>angle</code> keyword. The aspect ratio of the lengths of the up/right vectors are used to provide the vertical angle from the horizontal angle, so that the ratio of vertical angle on horizontal angle is identical to the ratio of the length of up on length of right. When the ratio is one, a square is wrapped on a quartic surface defined as follows:</p>
+<p>x<sup>2</sup>+y<sup>2</sup>+z<sup>2</sup>&nbsp;=&nbsp;x<sup>2</sup>y<sup>2</sup>&nbsp;+&nbsp;1</p>
+<p>The section where z=0 is a square, the section where x=0 or y=0 is a circle, and the sections parallel to x=0 or y=0 are ellipses. When the ratio is not one, the bigger angle obviously gets wrapped further. When the angle reaches 180, the border meets the square section. The angle can be greater than 180, in that case, when both (vertical and horizontal) angles are greater than 180, the parts around the corners of the square section will be wrapped more than once. The classical usage (using an angle of 360) but with a up/right ratio of 1/2 <code>up 10*y</code> and <code>right 20*x</code> will keep the top of the image as the zenith, and the bottom of the image as the nadir, avoiding perception issues and giving a full 360 degree view.</p>
+
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/3/3d/RefImgCameraViewUltrawideangle.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/0/01/RefImgCameraSampleultra_wide_angle.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The ultra wide angle projection diagram</p>
+</td>
+<td>
+  <p class="caption">An ultra wide angle sample image</p>
+</td>
+</tr>
+</table>
+
+</div>
+<a name="r3_3_1_2_6"></a>
+<div class="content-level-h5" contains="Omnimax projection" id="r3_3_1_2_6">
+<h5>3.3.1.2.6 Omnimax projection</h5>
+<p>The omnimax projection is a 180 degrees fisheye that has a reduced viewing angle in the vertical direction. In reality this projection is used to make movies that can be viewed in the dome-like Omnimax theaters. The image will look somewhat elliptical.</p>
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/5/56/RefImgCameraViewOmnimax.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/b/bb/RefImgCameraSampleomnimax.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The omnimax projection diagram</p>
+</td>
+<td>
+  <p class="caption">An omnimax camera sample image</p>
+</td>
+</tr>
+</table>
+
+<p class="Note"><strong>Note:</strong> The use of the <code>angle</code> keyword is irrelevant, the relative length of up and right vectors are what is important.</p>
+
+</div>
+<a name="r3_3_1_2_7"></a>
+<div class="content-level-h5" contains="Panoramic projection" id="r3_3_1_2_7">
+<h5>3.3.1.2.7 Panoramic projection</h5>
+<p>This projection is called &quot;cylindrical equirectangular projection&quot;. It overcomes the degeneration problem of the perspective projection if the viewing angle approaches 180 degrees. It uses a type of cylindrical projection to be able to use viewing angles larger than 180 degrees with a tolerable lateral-stretching distortion. The <code>angle</code> keyword is used to determine the viewing angle.</p>
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/b/b1/RefImgCameraViewPanoramic.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/7/77/RefImgCameraSamplepanoramic.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The panoramic projection diagram</p>
+</td>
+<td>
+  <p class="caption">A panoramic camera sample image</p>
+</td>
+</tr>
+</table>
+
+<p class="Note"><strong>Note:</strong> The <code>angle</code> keyword is irrelevant. The relative length of direction, up and right vectors are important as they define the lengths of the 3 axis of the ellipsoid. With identical length and orthogonal vectors (both strongly recommended, unless used on purpose), it's identical to a spherical camera with angle 180,90.</p>
+
+</div>
+<a name="r3_3_1_2_8"></a>
+<div class="content-level-h5" contains="Cylindrical projection" id="r3_3_1_2_8">
+<h5>3.3.1.2.8 Cylindrical projection</h5>
+<p>Using this projection the scene is projected onto a cylinder. There are four different types of cylindrical projections depending on the orientation of the cylinder and the position of the viewpoint. An integer value in the range 1 to 4 must follow the <code>cylinder</code> keyword. The viewing angle and the length of the <code>up</code> or <code>right</code> vector determine the dimensions of the camera and the visible image. The characteristics of different types are as follows:</p>
+
+<ol>
+<li>vertical cylinder, fixed viewpoint</li>
+<li>horizontal cylinder, fixed viewpoint</li>
+<li>vertical cylinder, viewpoint moves along the cylinder's axis</li>
+<li>horizontal cylinder, viewpoint moves along the cylinder's axis</li>
+</ol>
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/7/73/RefImgCameraViewCylinder1.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/4/46/RefImgCameraSamplecylinder_1.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The type 1 cylindrical projection diagram</p>
+</td>
+<td>
+  <p class="caption">A type 1 cylindrical camera sample image</p>
+</td>
+</tr>
+</table>
+<p></p>
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/a/ae/RefImgCameraViewCylinder2.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/6/61/RefImgCameraSamplecylinder_2.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The type 2 cylindrical projection diagram</p>
+</td>
+<td>
+  <p class="caption">A type 2 cylindrical camera sample image</p>
+</td>
+</tr>
+</table>
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/d/d3/RefImgCameraViewCylinder3.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/2/2c/RefImgCameraSamplecylinder_3.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The type 3 cylindrical projection diagram</p>
+</td>
+<td>
+  <p class="caption">A type 3 cylindrical camera sample image</p>
+</td>
+</tr>
+</table>
+<p></p>
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/8/81/RefImgCameraViewCylinder4.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/3/33/RefImgCameraSamplecylinder_4.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The type 4 cylindrical projection diagram</p>
+</td>
+<td>
+  <p class="caption">A type 4 cylindrical camera sample image</p>
+</td>
+</tr>
+</table>
+
+</div>
+<a name="r3_3_1_2_9"></a>
+<div class="content-level-h5" contains="Spherical projection" id="r3_3_1_2_9">
+<h5>3.3.1.2.9 Spherical projection</h5>
+<p>Using this projection the scene is  projected onto a sphere.</p>
+<p>The syntax is:</p>
+<pre>
+camera {
+  spherical
+  [angle HORIZONTAL [VERTICAL]]
+  [CAMERA_ITEMS...]
+  }
+</pre>
+<p>The first value after <code>angle</code> sets the horizontal viewing angle of the camera. With the optional second value, the vertical viewing angle is set: both in degrees. If the vertical angle is not specified, it defaults to half the horizontal angle.</p>
+
+<p>The spherical projection is similar to the fisheye projection, in that the scene is projected on a sphere. But unlike the fisheye camera, it uses rectangular coordinates instead of polar coordinates; in this it works the same way as spherical mapping (map_type 1).</p>
+
+<p>This has a number of uses. Firstly, it allows an image rendered with the spherical camera to be mapped on a sphere without distortion (with the fisheye camera, you first have to convert the image from polar to rectangular coordinates in some image editor). Also, it allows effects such as &quot;environment mapping&quot;, often used for simulating reflections in scanline renderers.</p>
+
+<table class="centered" width="670px" cellpadding="0" cellspacing="10">
+<tr>
+<td>
+  <img class="leftpanel" width="320px" src="images/e/e6/RefImgCameraViewSpherical.png">
+</td>
+<td>
+  <img class="rightpanel" width="320px" src="images/4/47/RefImgCameraSamplespherical.jpg">
+</td>
+</tr>
+<tr>
+<td>
+  <p class="caption">The spherical projection diagram</p>
+</td>
+<td>
+  <p class="caption">A spherical camera sample image</p>
+</td>
+</tr>
+</table>
+
+<p class="Note"><strong>Note:</strong> The lengths of the direction, up and right vectors are irrelevant. Angle is the important setting, and it gets two values separated by a comma: the first is the horizontal angle, the second is the vertical angle. Both values can reach 360. If the second value is missing, it is set to half the value of the first.</p>
+
+</div>
+<a name="r3_3_1_3"></a>
+<div class="content-level-h4" contains="Focal Blur" id="r3_3_1_3">
+<h4>3.3.1.3 Focal Blur</h4>
+<p>POV-Ray can simulate focal depth-of-field by shooting a number of sample rays from jittered points within each pixel and averaging the results.</p>
+<p>To turn on focal blur, you must specify the <code>aperture</code> keyword followed by a float value which determines the depth of the sharpness zone. Large apertures give a lot of blurring, while narrow apertures will give a wide zone of sharpness.</p>
+<p class="Note"><strong>Note:</strong> While this behaves as a real camera does, the values for aperture are purely arbitrary and are not related to <em>f</em>-stops.</p>
+<p>You must also specify the <code>blur_samples</code> keyword followed by an integer value specifying the maximum number of rays to use for each pixel. More rays give a smoother appearance but is slower. By default no focal blur is used, i. e. the default aperture is 0 and the default number of samples is 0.</p>
+
+<p>The center of the <em>zone of sharpness</em> is specified by the <code>focal_point</code> vector. The <em>zone of sharpness</em> is a plane through the <code>focal_point</code> and is parallel to the camera. Objects close to this plane of focus are in focus and those farther from that plane are more blurred. The default value is <code>focal_point&lt;0,0,0&gt;</code>.</p>
+
+<p>Although <code>blur_samples</code> specifies the maximum number of samples, there is an adaptive mechanism that stops shooting rays when a certain degree of confidence has been reached. At that point, shooting more rays would not result in a significant change.</p>
+<p>Extra samples are generated in a circular rather than square pattern when <code>blur_samples</code> is <strong>not</strong> set to either 4, 7, 19 or 37, leading to a circular rather than square bokeh. The extra samples are generated from a <em>Halton</em> sequence rather than a random stream. You can also optionally specify a minimum number of samples to be taken before testing against the <code>confidence</code> and <code>variance</code> settings. The default is 4, if the <code>blur_samples</code> maximum is less than 7, otherwise the default is 7, to provide a means to get rid of stray non-blurred pixels.</p>
+<p>The syntax is:</p>
+<pre>
+blur_samples [ MIN_SAMPLES, ] MAX_SAMPLES
+</pre>
+
+<p>The <code>confidence</code> and <code>
+variance</code> keywords are followed by float values to control the adaptive function. The <code>confidence</code> value is used to determine when the samples seem to be <em>close enough</em> to the correct color. The <code>variance</code> value specifies an acceptable tolerance on the variance of the samples taken so far. In other words, the process of shooting sample rays is terminated when the estimated color value is very likely (as controlled by the confidence probability) near the real color value.</p>
+<p>Since the <code>confidence</code> is a probability its values can range from 0 to less than 1 (the default is 0.9, i. e. 90%). The value for the <code>variance</code> should be in the range of the smallest displayable color difference (the default is 1/128). If 1 is used POV-Ray will issue a warning and then use the default instead.</p>
+<p>Rendering with the default settings can result in quite grainy images. This can be improved by using a lower <code>variance</code>. A value of 1/10000 gives a fairly good result (with default confidence and blur_samples set to something like 100) without being unacceptably slow.</p>
+<p>Larger <code>confidence</code> values will lead to more samples, slower traces and better images. The same holds for smaller <code>variance</code> thresholds.</p>
+<p>Focal blur can also support a user-defined <code>bokeh</code> using the following syntax:</p>
+<pre>
+camera {
+  // ... focal blur camera definition
+  bokeh {
+    pigment { ... }
+    }
+  }
+</pre>
+<p>If <code>bokeh</code> is specified, focal blur will use a custom sampling sequence based on the specified pigment's brightness in the range &lt;0,0,0&gt; to &lt;1,1,0&gt; i.e. the unit square in the XY plane.</p>
+
+</div>
+<a name="r3_3_1_4"></a>
+<div class="content-level-h4" contains="Camera Ray Perturbation" id="r3_3_1_4">
+<h4>3.3.1.4 Camera Ray Perturbation</h4>
+
+<p>The optional <code><a href="r3_5.html#r3_5_2">normal</a></code> may be used to assign a normal pattern to
+the camera. For example:</p>
+<pre>
+camera{
+  location Here
+  look_at There
+  normal { bumps 0.5 }
+  }
+</pre>
+
+<p>All camera rays will be perturbed using this pattern. The image will be distorted as though you were looking through bumpy glass or seeing a reflection off of a bumpy surface. This lets you create special effects. See the animated scene <code>camera2.pov</code> for an example. See <a href="r3_5.html#r3_5_2">Normal</a> for information on normal patterns.</p>
+
+</div>
+<a name="r3_3_1_5"></a>
+<div class="content-level-h4" contains="Camera Identifiers" id="r3_3_1_5">
+<h4>3.3.1.5 Camera Identifiers</h4>
+<p>Camera identifiers may be declared to make scene files more readable and
+to parameterize scenes so that changing a single declaration changes many
+values. You may declare several camera identifiers if you wish. This makes it
+easy to quickly change cameras. An identifier is declared as follows.</p>
+<pre>
+CAMERA_DECLARATION:
+  #declare IDENTIFIER = CAMERA |
+  #local IDENTIFIER = CAMERA
+</pre>
+
+<p>Where <em>IDENTIFIER</em> is the name of the identifier up to 40
+characters long and <em>CAMERA</em> is any valid camera statement. See
+<a href="r3_2.html#r3_2_2_2_2">#declare vs. #local</a> for information on identifier scope. Here is an example...</p>
+<pre>
+#declare Long_Lens =
+camera {
+  location -z*100
+  look_at &lt;0,0,0&gt;
+  angle 3
+  }
+
+#declare Short_Lens =
+camera {
+  location -z*50
+  look_at &lt;0,0,0&gt;
+  angle 15
+  }
+
+camera {
+  Long_Lens  // edit this line to change lenses
+  translate &lt;33,2,0&gt;
+  }
+</pre>
+
+<p class="Note"><strong>Note:</strong> Only camera transformations can be added to an already declared camera. Camera behaviour changing keywords are not allowed, as they are needed in an earlier stage for resolving the keyword order dependencies.</p>
+
+</div>
+
+<a name="r3_3_2"></a>
+<div class="content-level-h3" contains="Atmospheric Effects" id="r3_3_2">
+<h3>3.3.2 Atmospheric Effects</h3>
+<p>Atmospheric effects are a loosely-knit group of features that affect the
+background and/or the atmosphere enclosing the scene. POV-Ray includes the
+ability to render a number of atmospheric effects, such as fog, haze, mist,
+rainbows and skies.</p>
+
+</div>
+<a name="r3_3_2_1"></a>
+<div class="content-level-h4" contains="Atmospheric Media" id="r3_3_2_1">
+<h4>3.3.2.1 Atmospheric Media</h4>
+<p>Atmospheric effects such as fog, dust, haze, or visible gas may be
+simulated by a <code>media</code> statement specified in the scene but not
+attached to any object. All areas not inside a non-hollow object in the
+entire scene. A very simple approach to add fog to a scene is explained in the section <a href="r3_3.html#r3_3_2_3">Fog</a> however this kind of fog does not interact with any
+light sources like <code><a href="r3_6.html#r3_6_2">media</a></code> does. It will not show light beams or other effects and is therefore not very realistic.</p>
+<p>
+The atmosphere media effect overcomes some of the fog's limitations by
+calculating the interaction between light and the particles in the atmosphere
+using volume sampling. Thus shafts of light beams will become visible and
+objects will cast shadows onto smoke or fog.</p>
+
+<p class="Note"><strong>Note:</strong> POV-Ray cannot sample media along an infinitely long ray. The ray must be finite in order to be possible to sample. This means that sampling media is only possible for rays that hit an object, so no atmospheric media will show up against the <code>background</code> or&nbsp;<code>sky_sphere</code>. Another way of being able to sample media is using spotlights, because in this case the ray is not infinite, as it is sampled only inside the spotlight cone.</p>
+
+<p>With <a href="r3_4.html#r3_4_5_2">spotlights</a> you will be able to create the best results because their
+cone of light will become visible. Pointlights can be used to create effects
+like street lights in fog. Lights can be made to not interact with the
+atmosphere by adding <code>media_interaction off</code> to the light source.
+They can be used to increase the overall light level of the scene to make it
+look more realistic.</p>
+<p>
+Complete details on <code>media</code> are given in the section
+<a href="r3_6.html#r3_6_2">Media</a>. Earlier versions of POV-Ray used an
+<code>atmosphere</code> statement for atmospheric effects but that system was
+incompatible with the old object <code>halo</code> system. So <code>
+atmosphere</code> has been eliminated and replaced with a simpler and more
+powerful media feature. The user now only has to learn one <code>
+media</code> system for either atmospheric or object use.</p>
+<p>
+If you only want media effects in a particular area, you should use object
+media rather than only relying upon the media pattern. In general it will be
+faster and more accurate because it only calculates inside the constraining
+object.</p>
+<p class="Note"><strong>Note:</strong> The atmosphere feature will not work if the camera is
+inside a non-hollow object (see the section <a href="r3_6.html#r3_6_1_2">Empty and Solid Objects</a> for a detailed explanation).</p>
+
+</div>
+<a name="r3_3_2_2"></a>
+<div class="content-level-h4" contains="Background" id="r3_3_2_2">
+<h4>3.3.2.2 Background</h4>
+<p>A background color can be specified if desired. Any ray that does not hit an object will be colored with this color. The default background is black. The syntax for <code>background</code> is:</p>
+<pre>
+BACKGROUND: 
+ background {COLOR}
+</pre>
+<p class ="Note"><strong>Note:</strong> As of version 3.7 some changes have been made to the way alpha is handled when <code>+ua</code> is activated. </p>
+<ul>
+<li> In previous versions, specifying a background with the <code>background</code> keyword would by default supply a background with transmit set to 1.0 (i.e. fully transparent provided that <code>+ua</code> is being used). This is no longer the case. While the default background is transparent, any background specified in a scene file (unless 3.6 or earlier compatibility is being used) will now be opaque unless transmit is explicitly given. In other words, use <code>rgbft&lt;&gt;</code> rather than <code>rgb&lt;&gt;</code> in the background statement if you want the old behavior.</li>
+<li> The way that objects are blended with the background has changed. Previously the color of the background was not taken into account when calculating effects of transmission through translucent objects when <code>+ua</code> is in effect (i.e. where the background could otherwise have been seen through the object). Now, however, the background color is taken into account, even if it is not otherwise visible. Blending is performed in the same way regardless of the presence of background transparency.</li>
+</ul>
+<p class="Note"><strong>Note:</strong> When using <code>Output_Alpha=on</code> or <code>+ua</code> with legacy scenes (the <code>#version</code> directive set to less than 3.7) the <code>background</code> will be suppressed, except in reflections.</p>
+
+</div>
+<a name="r3_3_2_3"></a>
+<div class="content-level-h4" contains="Fog" id="r3_3_2_3">
+<h4>3.3.2.3 Fog</h4>
+<p>If it is not necessary for light beams to interact with atmospheric media,
+then <code>fog</code> may be a faster way to simulate haze or fog. This
+feature artificially adds color to every pixel based on the distance the ray
+has traveled. The syntax for fog is:</p>
+<pre>
+FOG:
+  fog { [FOG_IDENTIFIER] [FOG_ITEMS...] }
+FOG_ITEMS:
+  fog_type Fog_Type | distance Distance | COLOR | 
+  turbulence &lt;Turbulence&gt; | turb_depth Turb_Depth |
+  omega Omega | lambda Lambda | octaves Octaves |
+  fog_offset Fog_Offset | fog_alt Fog_Alt | 
+  up &lt;Fog_Up&gt; | TRANSFORMATION
+</pre>
+
+<p>Fog default values:</p>
+<pre>
+lambda     : 2.0
+fog_type   : 1
+fog_offset : 0.0
+fog_alt    : 0.0
+octaves    : 6
+omega      : 0.5 
+turbulence : &lt;0,0,0&gt;
+turb_depth : 0.5
+up         : &lt;0,1,0&gt;
+</pre>
+
+<p>Currently there are two fog types, the default <code>fog_type 1</code> is
+a constant fog and <code>fog_type 2</code> is ground fog. The constant fog
+has a constant density everywhere while the ground fog has a constant density
+for all heights below a given point on the up axis and thins out along this
+axis.</p>
+<p>
+The color of a pixel with an intersection depth <em>d</em> is calculated
+by</p>
+<p>
+<em> PIXEL_COLOR = exp(-d/D) * OBJECT_COLOR + (1-exp(-d/D)) *
+FOG_COLOR</em></p>
+<p>
+where <em>D</em> is the specified value of the required fog <code>distance</code>
+keyword. At depth 0 the final color is the object's color. If the 
+intersection depth equals the fog distance the final color consists of 64% 
+of the object's color and 36% of the fog's color.</p>
+<p class="Note"><strong>Note:</strong> For this equation, a distance of zero is undefined.  In 
+practice, povray will treat this value as &quot;fog is off&quot;.  To use an
+extremely thick fog, use a small nonzero number such as 1e-6 or 1e-10.
+</p>
+<p>
+For ground fog, the height below which the fog has constant density is
+specified by the <code>fog_offset</code> keyword. The <code>fog_alt</code>
+keyword is used to specify the rate by which the fog fades away. The default
+values for both are 0.0 so be sure to specify them if ground fog is used. At
+an altitude of <em><code> Fog_Offset+Fog_Alt</code></em> the fog has a
+density of 25%. The density of the fog at height less than or equal to 
+<em>Fog_Offset</em> is 1.0 and for height larger than than <em>Fog_Offset</em>
+is calculated by:</p>
+<p>
+<em> <code> 1/(1 + (y - Fog_Offset) / Fog_Alt) ^2</code></em></p>
+<p>
+The total density along a ray is calculated by integrating from the height
+of the starting point to the height of the end point.</p>
+<p>
+The optional <code>up</code> vector specifies a direction pointing up,
+generally the same as the camera's up vector. All calculations done
+during the ground fog evaluation are done relative to this up vector, i. e.
+the actual heights are calculated along this vector. The up vector can also
+be modified using any of the known transformations described in
+<a href="r3_8.html#r3_8_5">Transformations</a>. Though it may not be a good idea to scale the up
+vector - the results are hardly predictable - it is quite useful to be able
+to rotate it. You should also note that translations do not affect the up
+direction (and thus do not affect the fog).</p>
+<p>
+The required fog color has three purposes. First it defines the color to be
+used in blending the fog and the background. Second it is used to specify a
+translucency threshold. By using a transmittance larger than zero one can
+make sure that at least that amount of light will be seen through the fog.
+With a transmittance of 0.3 you will see at least 30% of the background.
+Third it can be used to make a filtering fog. With a filter value larger than
+zero the amount of background light given by the filter value will be
+multiplied with the fog color. A filter value of 0.7 will lead to a fog that
+filters 70% of the background light and leaves 30% unfiltered.</p>
+<p>
+Fogs may be layered. That is, you can apply as many layers of fog as you
+like. Generally this is most effective if each layer is a ground fog of
+different color, altitude and with different turbulence values. To use
+multiple layers of fogs, just add all of them to the scene.</p>
+<p>
+You may optionally stir up the fog by adding turbulence. The <code>turbulence</code>
+keyword may be followed by a float or vector to specify an amount of 
+turbulence to be used. The <code>omega</code>, <code>lambda</code> and 
+<code> octaves</code> turbulence parameters may also be specified. See 
+section <a href="r3_8.html#r3_8_10_8">Pattern Modifiers</a> for details on all of these turbulence parameters.</p>
+<p>
+Additionally the fog turbulence may be scaled along the direction of the
+viewing ray using the <code>turb_depth</code> amount. Typical values are from
+0.0 to 1.0 or more. The default value is 0.5 but any float value may be
+used.</p>
+<p class="Note"><strong>Note:</strong> The fog feature will not work if the camera is inside a
+non-hollow object (see the section <a href="r3_6.html#r3_6_1_2">Empty and Solid Objects</a> for a detailed explanation).</p>
+
+</div>
+<a name="r3_3_2_4"></a>
+<div class="content-level-h4" contains="Sky Sphere" id="r3_3_2_4">
+<h4>3.3.2.4 Sky Sphere</h4>
+<p>The sky sphere is used create a realistic sky background without the need of an additional sphere to simulate the sky. Its syntax is:</p>
+<pre>
+SKY_SPHERE:
+  sky_sphere { [SKY_SPHERE_IDENTIFIER] [SKY_SPHERE_ITEMS...] }
+SKY_SPHERE_ITEM:
+  PIGMENT | TRANSFORMATION | [emission]
+</pre>
+<p class="Note"><strong>Note:</strong> When using <code>Output_Alpha=on</code> or <code>+ua</code> with legacy scenes (the <code>#version</code> directive set to less than 3.7) the <code>sky_sphere</code> will be suppressed, except in reflections.</p>
+<p>The sky sphere can contain several pigment layers with the last pigment being at the top, i. e. it is evaluated last, and the first pigment being at the bottom, i. e. it is evaluated first. If the upper layers contain filtering and/or transmitting components lower layers will shine through. If not lower layers will be invisible.</p>
+
+<p class="Note"><strong>Note:</strong> Version 3.7 changed the effect of filter in a layered-pigment <code>sky_sphere</code> to match the behavior of a corresponding layered-texture large regular sphere. The old behavior, though probably having been unintentional, is automatically re-activated for backward compatibility when a <code>#version</code> of less than 3.7 is specified. </p>
+
+<p>The sky sphere is calculated by using the direction vector as the parameter for evaluating the pigment patterns. This leads to results independent from the view point, which fairly accurately models a real sky, where the distance to the sky is much larger than the distances between visible objects.</p>
+<p>Optionally adding the <code>emission</code> keyword allows for brightness tuning of image-mapped sky sphere's. The default is rgb &lt;1,1,1&gt; with higher values increasing the brightness, and lower values correspondingly decrease it. Although primarily intended for easy tuning of light probe skies, the parameter also works with procedural sky pigments.</p> 
+<p>If you want to add a nice color blend to your background you can easily do this by using the following example.</p>
+<pre>
+sky_sphere {
+  pigment {
+    gradient y
+      color_map {
+        [ 0.5  color CornflowerBlue ]
+        [ 1.0  color MidnightBlue ]
+        }
+    scale 2
+    translate -1
+    }
+  emission rgb &lt;0.8,0.8,1&gt;
+  }
+</pre>
+
+<p>This gives a soft blend from <code>CornflowerBlue</code> at the horizon to <code>MidnightBlue</code> at the zenith. The scale and translate operations are used to map the direction vector values, which lie in the range from &lt;-1, -1, -1&gt; to &lt;1, 1, 1&gt;, onto the range from &lt;0, 0, 0&gt; to &lt;1, 1, 1&gt;. Thus a repetition of the color blend is avoided for parts of the sky below the horizon.</p>
+<p>
+In order to easily animate a sky sphere you can transform it using the usual transformations described in <a href="r3_8.html#r3_8_5">Transformations</a>. Though it may not be a good idea to translate or scale a sky sphere - the results are hardly predictable - it is quite useful to be able to rotate it. In an animation the color blendings of the sky can be made to follow the rising sun for example.</p>
+<p class="Note"><strong>Note:</strong> Only one sky sphere can be used in any scene. It also will not work as you might expect if you use camera types like the <a href="r3_3.html#r3_3_1_2_2">orthographic</a> or <a href="r3_3.html#r3_3_1_2_8">cylindrical</a> camera. The orthographic camera uses parallel rays and thus you will only see a very small part of the sky sphere (you will get one color skies in most cases). Reflections in curved surface will work though, e. g. you will
+clearly see the sky in a mirrored ball.</p>
+
+</div>
+<a name="r3_3_2_5"></a>
+<div class="content-level-h4" contains="Rainbow" id="r3_3_2_5">
+<h4>3.3.2.5 Rainbow</h4>
+<p>Rainbows are implemented using fog-like, circular arcs. Their syntax
+is:</p>
+<pre>
+RAINBOW:
+  rainbow { [RAINBOW_IDENTIFIER] [RAINBOW_ITEMS...] }
+RAINBOW_ITEM:
+  direction &lt;Dir&gt; | angle Angle | width Width |
+  distance Distance | COLOR_MAP | jitter Jitter | up &lt;Up&gt; |
+  arc_angle Arc_Angle | falloff_angle Falloff_Angle
+</pre>
+
+<p>Rainbow default values:</p>
+<pre>
+arc_angle     : 180.0
+falloff_angle : 180.0
+jitter        : 0.0
+up            : y
+</pre>
+
+<p>The required <code>direction</code> vector determines the direction of the
+(virtual) light that is responsible for the rainbow. Ideally this is an
+infinitely far away light source like the sun that emits parallel light rays.
+The position and size of the rainbow are specified by the required <code>angle</code>
+and <code>width</code> keywords. To understand how they work you should 
+first know how the rainbow is calculated.</p>
+<p>
+For each ray the angle between the rainbow's direction vector and the
+ray's direction vector is calculated. If this angle lies in the interval
+from <em><code> Angle-Width/2</code></em> to <em><code>
+Angle+Width/2</code></em> the rainbow is hit by the ray. The color is then
+determined by using the angle as an index into the rainbow's color_map.
+After the color has been determined it will be mixed with the background
+color in the same way like it is done for fogs.</p>
+
+<p>Thus the angle and width parameters determine the angles under which the
+rainbow will be seen. The optional <code> jitter</code> keyword can be used
+to add random noise to the index. This adds some irregularity to the rainbow
+that makes it look more realistic.</p>
+
+<p>The required <code>distance</code> keyword is the same like the one used
+with fogs. Since the rainbow is a fog-like effect it is possible that the
+rainbow is noticeable on objects. If this effect is not wanted it can be
+avoided by using a large distance value. By default a sufficiently large
+value is used to make sure that this effect does not occur.</p>
+
+<p>The <code>color_map</code> statement is used to assign a color map that
+will be mapped onto the rainbow. To be able to create realistic rainbows it
+is important to know that the index into the color map increases with the
+angle between the ray's and rainbow's direction vector. The index is
+zero at the innermost ring and one at the outermost ring. The filter and
+transmittance values of the colors in the color map have the same meaning as
+the ones used with fogs (see the section <a href="r3_3.html#r3_3_2_3">Fog</a>).</p>
+
+<p>The default rainbow is a 360 degree arc that looks like a circle. This is no
+problem as long as you have a ground plane that hides the lower, non-visible
+part of the rainbow. If this is not the case or if you do not want the
+full arc to be visible you can use the optional keywords <code>up</code>,
+<code> arc_angle</code> and <code>falloff_angle</code> to specify a smaller
+arc.</p>
+
+<p>The <code>arc_angle</code> keyword determines the size of the arc in degrees
+(from 0 to 360 degrees). A value smaller than 360 degrees results in an arc
+that abruptly vanishes. Since this does not look nice you can use the
+<code>falloff_angle</code> keyword to specify a region in which the rainbow
+will smoothly blend into the background making it vanish softly. The falloff
+angle has to be smaller or equal to the arc angle.</p>
+
+<p>The <code> up</code> keyword determines were the zero angle position is. By
+changing this vector you can rotate the rainbow about its direction. You
+should note that the arc goes from <em>-Arc_Angle/2</em> to <em>
++Arc_Angle/2</em>. The soft regions go from <em>-Arc_Angle/2</em> to <em>
+-Falloff_Angle/2</em> and from <em>+Falloff_Angle/2</em> to <em>
++Arc_Angle/2</em>.</p>
+<p>
+The following example generates a 120 degrees rainbow arc that has a falloff
+region of 30 degrees at both ends:</p>
+<pre>
+rainbow {
+  direction &lt;0, 0, 1&gt;
+  angle 42.5
+  width 5
+  distance 1000
+  jitter 0.01
+  color_map { Rainbow_Color_Map }
+  up &lt;0, 1, 0&gt;
+  arc_angle 120
+  falloff_angle 30
+  }
+</pre>
+
+<p>It is possible to use any number of rainbows and to combine them with
+other atmospheric effects.</p>
+
+</div>
+<a name="r3_3_3"></a>
+<div class="content-level-h3" contains="Global Settings" id="r3_3_3">
+<h3>3.3.3 Global Settings</h3>
+<p>The <code>global_settings</code> statement is a catch-all statement that
+gathers together a number of global parameters. The statement may appear
+anywhere in a scene as long as it is not inside any other statement. You may
+have multiple <code>global_settings</code> statements in a scene. Whatever
+values were specified in the last <code>global_settings</code> statement
+override any previous settings.</p>
+<p class="Note"><strong>Note:</strong> Some items which were language directives in earlier versions of
+POV-Ray have been moved inside the <code>global_settings</code> statement so
+that it is more obvious to the user that their effect is global. The old
+syntax is permitted but generates a warning.</p>
+<p> The new syntax is:</p>
+<pre>
+GLOBAL_SETTINGS:
+  global_settings { [GLOBAL_SETTINGS_ITEMS...] }
+GLOBAL_SETTINGS_ITEM:
+  adc_bailout Value | ambient_light COLOR | assumed_gamma GAMMA_VALUE | 
+  hf_gray_16 [Bool] | irid_wavelength COLOR | charset GLOBAL_CHARSET |
+  max_intersections Number | max_trace_level Number |
+  mm_per_unit Number | number_of_waves Number | noise_generator Number |
+  radiosity { RADIOSITY_ITEMS... } | subsurface { SUBSURFACE_ITEMS } |
+  photon { PHOTON_ITEMS... }
+GLOBAL_CHARSET:
+  ascii | utf8 | sys
+GAMMA_VALUE:
+  Value | srgb
+</pre>
+
+<p>Global setting default values:</p>
+<pre>
+charset		   : ascii
+adc_bailout	   : 1/255
+ambient_light	   : &lt;1,1,1&gt;
+assumed_gamma	   : 1.0 (undefined for legacy scenes)
+hf_gray_16	   : deprecated
+irid_wavelength	   : &lt;0.25,0.18,0.14&gt;
+max_trace_level	   : 5
+max_intersections  : 64
+mm_per_unit        : 10
+number_of_waves	   : 10
+noise_generator	   : 2
+
+Radiosity:
+adc_bailout	   : 0.01
+always_sample	   : off
+brightness	   : 1.0
+count		   : 35  (supports adaptive mode)
+error_bound	   : 1.8
+gray_threshold	   : 0.0
+low_error_factor   : 0.5
+max_sample	   : non-positive value
+maximum_reuse      : 0.2
+minimum_reuse	   : 0.015
+nearest_count	   : 5   (max = 20; supports adaptive mode)
+normal		   : off 
+pretrace_start	   : 0.08
+pretrace_end	   : 0.04
+recursion_limit	   : 2
+subsurface 	   : off
+
+Subsurface:
+radiosity	   : off
+samples		   : 50,50 
+</pre>
+
+<p>Each item is optional and may appear in any order. If an item is specified
+more than once, the last setting overrides previous values. Details on each
+item are given in the following sections.</p>
+
+</div>
+<a name="r3_3_3_1"></a>
+<div class="content-level-h4" contains="ADC_Bailout" id="r3_3_3_1">
+<h4>3.3.3.1 ADC_Bailout</h4>
+<p>In scenes with many reflective and transparent surfaces, POV-Ray can get
+bogged down tracing multiple reflections and refractions that contribute very
+little to the color of a particular pixel. The program uses a system called
+<em>Adaptive Depth Control</em> (ADC) to stop computing additional reflected
+or refracted rays when their contribution is insignificant.</p>
+<p>
+You may use the global setting <code>adc_bailout</code> keyword followed by
+float value to specify the point at which a ray's contribution is
+considered insignificant. For example:</p>
+<pre>
+global_settings { adc_bailout 0.01 }
+</pre>
+
+<p>The default value is 1/255, or approximately 0.0039, since a change
+smaller than that could not be visible in a 24 bit image. Generally this
+setting is perfectly adequate and should be left alone. Setting
+<code>adc_bailout</code> to 0 will disable ADC, relying completely on
+<code><a href="r3_3.html#r3_3_3_7">max_trace_level</a></code> to set an
+upper limit on the number of rays spawned.</p>
+<p>
+See the section <a href="r3_3.html#r3_3_3_7">Max_Trace_Level</a> for details on how ADC and <code>max_trace_level</code> interact.</p>
+
+</div>
+<a name="r3_3_3_2"></a>
+<div class="content-level-h4" contains="Ambient_Light" id="r3_3_3_2">
+<h4>3.3.3.2 Ambient_Light</h4>
+<p>Ambient light is used to simulate the effect of inter-diffuse reflection
+that is responsible for lighting areas that partially or completely lie in
+shadow. POV-Ray provides the <code>ambient_light</code> keyword to let you
+easily change the brightness of the ambient lighting without changing every
+ambient value in all finish statements. It also lets you create interesting
+effects by changing the color of the ambient light source. The syntax is:</p>
+<pre>
+global_settings { ambient_light COLOR }
+</pre>
+
+<p>The default is a white ambient light source set at <code>rgb
+&lt;1,1,1&gt;</code>. Only the rgb components are used. The actual ambient
+used is: <em>Ambient = Finish_Ambient * Global_Ambient</em>.</p>
+<p>
+See the section <a href="r3_5.html#r3_5_3_1">Ambient</a> for more information.</p>
+
+</div>
+<a name="r3_3_3_3"></a>
+<div class="content-level-h4" contains="Assumed_Gamma" id="r3_3_3_3">
+<h4>3.3.3.3 Assumed_Gamma</h4>
+<p>The <code>assumed_gamma</code> statement specifies a dsiplay gamma for which all color literals in the scene are presumed to be pre-corrected; at the same time it also defines the <em>working gamma space</em> in which POV-Ray will perform all its color computations.</p>
+
+<p class="Note"><strong>Note:</strong> Using any value other than 1.0 will produce physically inaccurate results. Furthermore, if you decide to go for a different value for convenience, it is highly recommended to set this value to the same as your <code>Display_Gamma</code>. Using this parameter for artistic purposes is strongly discouraged.</p>
+
+<p class="Note"><strong>Note:</strong> As of POV-Ray 3.7, this keyword is considered mandatory except in legacy scenes. Future versions of POV-Ray may treat the absence of this keyword in non-legacy scenes as an error.</p>
+
+<p>See section <a href="t2_3.html#t2_3_4">Gamma Handling</a> for more information about gamma.</p>
+
+</div>
+<a name="r3_3_3_4"></a>
+<div class="content-level-h4" contains="HF_Gray_16" id="r3_3_3_4">
+<h4>3.3.3.4 HF_Gray_16</h4>
+<p>Grayscale output can be used to generate heightfields for use in other POV-Ray scenes, and may be specified via <code>Grayscale_Output=true</code> as an INI option, or <code>+Fxg</code> (for output type 'x') as a command-line option. For example, <code>+Fng</code> for PNG and <code>+Fpg</code> for PPM (effectively PGM) grayscale output. By default this option is off.</p>
+
+<p class="Note"><strong>Note:</strong> In version 3.7 the <code>hf_gray_16</code> keyword in the <code>global_settings</code> block has been deprecated. If encountered, it has no effect on the output type and will additionally generate a warning message.</p>
+
+<p>With <code>Grayscale_Output=true</code>, the output file will be in the form of a heightfield, with the height at any point being dependent on the brightness of the pixel. The brightness of a pixel is calculated in the same way that color images are converted to grayscale images:<em><code> height = 0.3 * red + 0.59 * green + 0.11 * blue</code></em>.</p>
+
+<p>
+Setting the <code>Grayscale_Output=true</code> option will cause the preview display, if used, to be grayscale rather than color. This is to allow you to see how the heightfield will look because some file formats store heightfields in a way that is difficult to understand afterwards. See the section <a href="r3_4.html#r3_4_1_5">Height Field</a> for a description of how POV-Ray heightfields are stored for each file type.</p>
+
+<p class="Warning"><strong>Caveat:</strong> Grayscale output implies the maximum bit-depth the format supports is 16, it is not valid to specify bits per color channel with 'g' (e.g. <code>+Fng16</code> is not allowed, and nor for that matter is <code>+Fn16g</code>). If bits per channel is provided via an INI option, it is ignored.</p>
+
+<p>Currently PNG, and PPM are the only file formats that support grayscale output.</p>
+
+</div>
+<a name="r3_3_3_5"></a>
+<div class="content-level-h4" contains="Irid_Wavelength" id="r3_3_3_5">
+<h4>3.3.3.5 Irid_Wavelength</h4>
+<p>Iridescence calculations depend upon the dominant wavelengths of the
+primary colors of red, green and blue light. You may adjust the values using
+the global setting <code>irid_wavelength</code> as follows...</p>
+<pre>
+global_settings { irid_wavelength COLOR }
+</pre>
+
+<p>The default value is <code>rgb &lt;0.70,0.52,0.48&gt;</code> and any
+filter or transmit values are ignored. These values are proportional to the
+wavelength of light but they represent no real world units.</p>
+<p>
+In general, the default values should prove adequate but we provide this
+option as a means to experiment with other values.</p>
+
+</div>
+<a name="r3_3_3_6"></a>
+<div class="content-level-h4" contains="Charset" id="r3_3_3_6">
+<h4>3.3.3.6 Charset</h4>
+<p>This allows you to specify the assumed character set of all text strings.
+If you specify <code>ascii</code> only standard ASCII character codes in the
+range from 0 to 127 are valid. You can easily find a table of ASCII 
+characters on the internet. The option <code>utf8</code> is a special Unicode
+text encoding and it allows you to specify characters of nearly all languages
+in use today. We suggest you use a text editor with the capability to export
+text to UTF8 to generate input files. You can find more information, 
+including tables with codes of valid characters on the
+<a href="http://www.unicode.org/">Unicode website</a>
+The last possible option is to use a system specific character set. For 
+details about the <code>sys</code> character set option refer to the platform 
+specific documentation.</p>
+
+</div>
+<a name="r3_3_3_7"></a>
+<div class="content-level-h4" contains="Max_Trace_Level" id="r3_3_3_7">
+<h4>3.3.3.7 Max_Trace_Level</h4>
+<p>In scenes with many reflective and transparent surfaces POV-Ray can get
+bogged down tracing multiple reflections and refractions that contribute very
+little to the color of a particular pixel. The global setting <code>
+max_trace_level</code> defines the integer maximum number of recursive levels
+that POV-Ray will trace a ray.</p>
+<pre>
+global_settings { max_trace_level Level }
+</pre>
+
+<p>This is used when a ray is reflected or is passing through a transparent
+object and when shadow rays are cast. When a ray hits a reflective surface,
+it spawns another ray to see what that point reflects. That is trace level
+one. If it hits another reflective surface another ray is spawned and it goes
+to trace level two. The maximum level by default is five.</p>
+<p>
+One speed enhancement added to POV-Ray in version 3.0 is <em>Adaptive Depth
+Control</em> (ADC). Each time a new ray is spawned as a result of reflection
+or refraction its contribution to the overall color of the pixel is reduced
+by the amount of reflection or the filter value of the refractive surface. At
+some point this contribution can be considered to be insignificant and there
+is no point in tracing any more rays. Adaptive depth control is what tracks
+this contribution and makes the decision of when to bail out. On scenes that
+use a lot of partially reflective or refractive surfaces this can result in a
+considerable reduction in the number of rays fired and makes it safer to use
+much higher <code> max_trace_level</code> values.</p>
+<p>
+This reduction in color contribution is a result of scaling by the
+reflection amount and/or the filter values of each surface, so a perfect
+mirror or perfectly clear surface will not be optimizable by ADC. You can see
+the results of ADC by watching the <code> Rays Saved</code> and <code>Highest
+Trace Level</code> displays on the statistics screen.</p>
+<p>
+The point at which a ray's contribution is considered insignificant is
+controlled by the <code>adc_bailout</code> value. The default is 1/255 or
+approximately 0.0039 since a change smaller than that could not be visible in
+a 24 bit image. Generally this setting is perfectly adequate and should be
+left alone. Setting <code><a href="r3_3.html#r3_3_3_1">adc_bailout</a></code> to 0 will disable ADC, relying
+completely on <code> max_trace_level</code> to set an upper limit on the
+number of rays spawned.</p>
+<p>
+If <code>max_trace_level</code> is reached before a non-reflecting surface
+is found and if ADC has not allowed an early exit from the ray tree the
+color is returned as black. Raise <code>max_trace_level</code> if you see
+black areas in a reflective surface where there should be a color.</p>
+<p>
+The other symptom you could see is with transparent objects. For instance,
+try making a union of concentric spheres with a clear texture on them. Make
+ten of them in the union with radius's from 1 to 10 and render the scene.
+The image will show the first few spheres correctly, then black. This is
+because a new level is used every time you pass through a transparent
+surface. Raise <code>max_trace_level</code> to fix this problem.</p>
+<p class="Note"><strong>Note:</strong> Raising <code>max_trace_level</code> will use more memory and time
+and it could cause the program to crash with a stack overflow error, although
+ADC will alleviate this to a large extent.</p>
+<p>Values for <code>max_trace_level</code> can be set up to a maximum of 256.
+If there is no <code>max_trace_level</code> set and during rendering the default value is reached, a warning is issued.
+</p>
+
+</div>
+
+
+<a name="r3_3_3_8"></a>
+<div class="content-level-h4" contains="Max_Intersections" id="r3_3_3_8">
+<h4>3.3.3.8 Max_Intersections</h4>
+<p>POV-Ray uses a set of internal stacks to collect ray/object intersection points. The usual maximum number of entries in these <em>I-Stacks</em> is 64. Complex scenes may cause these stacks to overflow. POV-Ray does not stop but it may incorrectly render your scene. When POV-Ray finishes rendering, a number of statistics are displayed. If you see <code>I-Stack overflows</code> reported in the statistics you should increase the stack size. Add a global setting to your scene as follows:</p>
+<pre>
+global_settings { max_intersections Integer }
+</pre>
+
+<p>If the <code>I-Stack Overflows</code> remain increase this value until they stop.</p>
+
+</div>
+<a name="r3_3_3_9"></a>
+<div class="content-level-h4" contains="Mm_Per_Unit" id="r3_3_3_9">
+<h4>3.3.3.9 Mm_Per_Unit</h4>
+<p>See the section <a href="r3_5.html#r3_5_3_3_4">Subsurface Light Transport</a> for more information about the role of <code>mm_per_unit</code> in the global settings block.</p>
+
+</div>
+<a name="r3_3_3_10"></a>
+<div class="content-level-h4" contains="Number_Of_Waves" id="r3_3_3_10">
+<h4>3.3.3.10 Number_Of_Waves</h4>
+<p>The <code><a href="r3_5.html#r3_5_11_41">waves</a></code> and <code><a href="r3_5.html#r3_5_11_32">ripples</a></code>
+patterns are generated by summing a series of waves, each with a slightly different center and size. By default, ten waves are summed but this amount can be globally controlled by changing the <code>number_of_waves</code> setting.</p>
+<pre>
+global_settings { number_of_waves Integer }
+</pre>
+
+<p>Changing this value affects both waves and ripples alike on all patterns in the scene.</p>
+
+</div>
+<a name="r3_3_3_11"></a>
+<div class="content-level-h4" contains="Noise_generator" id="r3_3_3_11">
+<h4>3.3.3.11 Noise_generator</h4>
+<p> There are three noise generators implemented. </p>
+<ul>
+<li><code>noise_generator 1</code> the noise that was used in POV_Ray 3.1</li>
+<li><code>noise_generator 2</code> 'range corrected' version of the old noise, it does not show the plateaus seen with <code>noise_generator 1</code> </li>
+<li><code>noise_generator 3</code> generates Perlin noise</li>
+</ul>
+<p>The default is <code>noise_generator 2</code></p>
+<p class="Note"><strong>Note:</strong> The noise_generators can also be used within the pigment/normal/etc. statement.</p>
+
+</div>
+<a name="r3_3_3_12"></a>
+<div class="content-level-h4" contains="Subsurface" id="r3_3_3_12">
+<h4>3.3.3.12 Subsurface</h4>
+<p>See the section <a href="r3_5.html#r3_5_3_3_4">Subsurface Light Transport</a> for more information about the role of <code>subsurface</code> in the global settings block.</p>
+
+</div>
+<a name="r3_3_4"></a>
+<div class="content-level-h3" contains="Radiosity" id="r3_3_4">
+<h3>3.3.4 Radiosity</h3>
+
+</div>
+<a name="r3_3_4_1"></a>
+<div class="content-level-h4" contains="Radiosity Basics" id="r3_3_4_1">
+<h4>3.3.4.1 Radiosity Basics</h4>
+<p>Radiosity is an extra calculation that more realistically computes the diffuse inter-reflection of light. This diffuse inter-reflection can be seen if you place a white chair in a room full of blue carpet, blue walls and blue curtains. The chair will pick up a blue tint from light reflecting off of other parts of the room. Also notice that the shadowed areas of your surroundings are not totally dark even if no light source shines directly on the surface. Diffuse light reflecting off of other objects fills in the shadows. Typically ray-tracing uses a trick called <em> ambient</em> light to simulate such effects but it is not very accurate.</p>
+<p>Radiosity calculations are only made when a <code>radiosity{}</code> block is used inside the <code>global_settings{}</code> block.</p>
+<p>The following sections describes how radiosity works, how to control it with various global settings and tips on trading quality vs. speed.</p>
+
+</div>
+<a name="r3_3_4_2"></a>
+<div class="content-level-h4" contains="How Radiosity Works" id="r3_3_4_2">
+<h4>3.3.4.2 How Radiosity Works</h4>
+<p>The problem of ray-tracing is to figure out what the light level is at each point that you can see in a scene. Traditionally, in ray tracing, this is broken into the sum of these components:</p>
+
+<dl>
+<dt>Diffuse</dt><dd>the effect that makes the side of things facing the light brighter;</dd>
+<dt>Specular</dt><dd>the effect that makes shiny things have dings or sparkles on them;</dd>
+<dt>Reflection</dt><dd>the effect that mirrors give; and</dd>
+<dt>Ambient</dt><dd>the general all-over light level that any scene has, which keeps things in shadow from being pure black.</dd>
+</dl>
+
+<p>POV-Ray's radiosity system, based on a method by Greg Ward, provides a way to replace the last term - the constant ambient light value - with a light level which is based on what surfaces are nearby and how bright in turn they are.</p>
+<p>The first thing you might notice about this definition is that it is circular: the brightness and color of everything is dependent on everything else and vice versa. This is true in real life but in the world of ray-tracing, we can make an approximation. The approximation that is used is: the objects you are looking at have their <code>ambient</code> values calculated for you by
+checking the other objects nearby. When those objects are checked during this process, however, their <code>diffuse</code> term is used. The brightness of radiosity in POV-Ray is based on two things:</p>
+
+<ol>
+<li>the amount of light gathered</li>
+<li>the diffuse property of the surface finish</li>
+</ol>
+
+<p class="Note"><strong>Note:</strong> The following is an <em>important</em> behavior change!</p>
+<p>Previously an object could have both radiosity and an ambient term. This is no longer the case, as when radiosity is used an objects ambient term is effectively set to zero. See the <code><a href="r3_5.html#r3_5_3_2">emission</a></code> keyword that has been added to the <code>finish</code> block if the intent is to model a glowing object.</p>
+<p>How does POV-Ray calculate the ambient term for each point? By sending out more rays, in many different directions, and averaging the results. A typical point might use 200 or more rays to calculate its ambient light level correctly.</p>
+<p>Now this sounds like it would make the ray-tracer 200 times slower. This is true, except that the software takes advantage of the fact that ambient light levels change quite slowly (remember, shadows are calculated separately, so sharp shadow edges are not a problem). Therefore, these extra rays are sent out only <em>once in a while</em> (about 1 time in 50), then these calculated
+values are saved and reused for nearby pixels in the image when possible.</p>
+<p>This process of saving and reusing values is what causes the need for a variety of tuning parameters, so you can get the scene to look just the way you want.</p>
+
+</div>
+<a name="r3_3_4_3"></a>
+<div class="content-level-h4" contains="Adjusting Radiosity" id="r3_3_4_3">
+<h4>3.3.4.3 Adjusting Radiosity</h4>
+<p>As described earlier, radiosity is turned on by using the <code>radiosity{}</code> block in <code>global_setting</code>.
+Radiosity has many parameters that are specified as follows:</p>
+<pre>
+global_settings { radiosity { [RADIOSITY_ITEMS...] } }
+RADIOSITY_ITEMS:
+  adc_bailout Float | always_sample Bool | brightness Float | 
+  count Integer [,Integer] | error_bound Float | gray_threshold Float |
+  low_error_factor Float | max_sample Float | media Bool |
+  maximum_reuse Float | minimum_reuse Float | nearest_count Integer [,Integer] |
+  normal Bool | pretrace_start Float | 
+  pretrace_end Float | recursion_limit Integer | subsurface Bool
+</pre>
+
+<p>Each item is optional and may appear in any order. If an item is specified more than once the last setting overrides previous values. Details on each item is given in the following sections.</p>
+
+<p class="Note"><strong>Note:</strong> Considerable changes have been made to the way radiosity works in POV-Ray 3.7
+compared to previous versions. Old scenes will not render with exactly the same results. It is <em>not</em> possible to use the <code>#version</code> directive to get backward compatibility for radiosity.</p>  
+
+</div>
+<a name="r3_3_4_3_1"></a>
+<div class="content-level-h5" contains="adc_bailout" id="r3_3_4_3_1">
+<h5>3.3.4.3.1 adc_bailout</h5>
+<p>You can specify an adc_bailout for radiosity rays. Usually the default of 0.01 will give good results, but for scenes with bright emissive objects it should be set to <code>adc_bailout = 0.01 / brightest_emissive_object</code>.</p>
+
+</div>
+<a name="r3_3_4_3_2"></a>
+<div class="content-level-h5" contains="always_sample" id="r3_3_4_3_2">
+<h5>3.3.4.3.2 always_sample</h5>
+<p>Since <code>always_sample off</code> is the default, POV-Ray will only use the data from the pretrace step and not gather any new samples during the final radiosity pass. This produces higher quality results, and quicker renders. It may also reduce the splotchy appearance of the radiosity samples, and can be very useful when reusing previously saved radiosity data. If you find the need to override the behavior, you can do so by specifying <code>always_sample on</code>.</p>
+
+</div>
+<a name="r3_3_4_3_3"></a>
+<div class="content-level-h5" contains="brightness" id="r3_3_4_3_3">
+<h5>3.3.4.3.3 brightness</h5>
+<p>The <code>brightness</code> keyword specifies a float value that is the degree to which objects are brightened before being returned upwards to the rest of the system. Ideally brightness should be set to the default value of 1.0. If the overall brightness doesn't seem to fit, the diffuse color of objects and/or the overall brightness of light sources (including emission &gt; 0 objects) should be adjusted.</p>
+<p>As an example, a typical problem encountered in radiosity scenes is, when setting <code>pigment {rgb 1}</code> and <code>diffuse 1.0</code>, then tweaking the light source(s) and <code>ambient_light</code> setting to make the image look right. It just doesn't work properly in radiosity scenes, as it will give too strong inter-reflections. While you <em>can</em> compensate for this by reducing radiosity brightness, it's generally discouraged. In this case the surface properties should be fixed (e.g. diffuse set to something around 0.7, which is much more realistic).</p>
+<p>An exception, calling for the adjustment of radiosity brightness, would be to compensate for a low <code>recursion_limit</code> setting (e.g <code>recursion_limit 1</code>). In such a case, increasing <code>brightness</code> will help maintain a realistic overall brightness.</p>
+
+</div>
+<a name="r3_3_4_3_4"></a>
+<div class="content-level-h5" contains="count" id="r3_3_4_3_4">
+<h5>3.3.4.3.4 count</h5>
+<p>The integer number of rays that are sent out whenever a new radiosity value has to be calculated is given by <code>count</code>. The default value is 35, if the value exceeds 1600, POV-Ray will use a <em>Halton</em> sequence instead of the default built-in sequence. When this value is too low, the light level will tend to look a little bit blotchy, as if the surfaces you are looking at were slightly warped. If this is not important to your scene (as in the case that you have a bump map or if you have a strong texture) then by all means use a lower number.</p>
+<p>By default, POV-Ray uses the same set of directions for each new radiosity value to calculate. In order to cover more directions in total without increasing the number of rays to trace, <code>count</code> accepts an optional second parameter which specifies the total number of directions from which to choose. POV-Ray will then draw directions from this pool in a round-robin fashion.</p>
+
+</div>
+<a name="r3_3_4_3_5"></a>
+<div class="content-level-h5" contains="error_bound" id="r3_3_4_3_5">
+<h5>3.3.4.3.5 error_bound</h5>
+<p>The <code>error_bound</code> float value is one of the two main speed/quality tuning values (the other is of course the number of rays shot).  In an ideal world, this would be the <em>only</em> value needed. It is intended to mean the fraction of error tolerated. For example, if it were set to 1 the algorithm would not calculate a new value until the error on the last one was estimated at as high as 100%. Ignoring the error introduced by rotation for the moment, on flat surfaces this is equal to the fraction of the reuse distance, which in turn is the distance to the closest item hit. If you have an old sample on the floor 10 inches from a wall, an error bound of 0.5 will get you a new sample at a distance of about 5 inches from the wall.</p>
+<p>The default value of 1.8 is good for a smooth general lighting effect. Using lower values is more accurate, but it will strongly increase the danger of artifacts and therefore require higher <code>count</code>.  You can use values even lower than 0.1 but both render time and memory use can become extremely high.</p>
+
+</div>
+<a name="r3_3_4_3_6"></a>
+<div class="content-level-h5" contains="gray_threshold" id="r3_3_4_3_6">
+<h5>3.3.4.3.6 gray_threshold</h5>
+<p>Diffusely inter-reflected light is a function of the objects around the point in question. Since this is recursively defined to millions of levels of recursion, in any real life scene, every point is illuminated at least in part by every other part of the scene. Since we cannot afford to compute this, if we only do one bounce, the calculated ambient light is very strongly affected by the colors of the objects near it. This is known as color bleed and it really happens but not as much as this calculation method would have you believe. The <code>gray_threshold</code> float value grays it down a little, to make your scene more believable. A value of .6 means to calculate the ambient value as 60% of the equivalent gray value calculated, plus 40% of the actual value calculated. At 0%, this feature does nothing. At 100%, you always get white/gray ambient light, with no hue.</p>
+<p class="Note"><strong>Note:</strong> This does not change the lightness/darkness, only the strength of hue/grayness (in HLS
+terms, it changes S only). The default value is 0.0</p>
+
+</div>
+<a name="r3_3_4_3_7"></a>
+<div class="content-level-h5" contains="low_error_factor" id="r3_3_4_3_7">
+<h5>3.3.4.3.7 low_error_factor</h5>
+<p>If you calculate just enough samples, but no more, you will get an image which has slightly blotchy lighting. What you want is just a few extra interspersed, so that the blending will be nice and smooth. The solution to this is the mosaic preview, controlled by 
+<a href="r3_3.html#r3_3_4_3_12">pretrace</a>, it goes over the image one or more times beforehand, calculating radiosity values. To ensure that you get a few extra, the radiosity algorithm lowers the error bound during the pre-final passes, then sets it back just before the final pass. The <code>low_error_factor</code> is a float tuning value which sets the amount that the error bound is dropped during the preliminary image passes. If your low error factor is 0.8 and your error bound is set to 0.4 it will really use an error bound of 0.32 during the first passes and 0.4 on the final pass. The default value is 0.5.</p>
+
+</div>
+<a name="r3_3_4_3_8"></a>
+<div class="content-level-h5" contains="max_sample" id="r3_3_4_3_8">
+<h5>3.3.4.3.8 max_sample</h5>
+<p>Sometimes there can be splotchy patches that are caused by objects that are very bright. This can be sometimes avoided by using the <code>max_sample</code> keyword. <code>max_sample</code> takes a float parameter which specifies the brightest that any gathered sample is allowed to be. Any samples brighter than this will have their brightness decreased (without affecting color). Note however that this mechanism will somewhat darken the overall brightness in an unrealistic way. Specifying a non-positive value for <code>max_sample</code> will allow any brightness of samples (which is the default).</p>
+
+</div>
+<a name="r3_3_4_3_9"></a>
+<div class="content-level-h5" contains="maximum_reuse" id="r3_3_4_3_9">
+<h5>3.3.4.3.9 maximum_reuse</h5>
+<p>The <code>maximum_reuse</code> parameter works in conjunction with, and is similar to that of <code>minimum_reuse</code>, the only difference being that it is an upper bound rather than a lower one. The default value is 0.200.</p>
+<p class="Note"><strong>Note:</strong> If you choose to adjust either the <code>minimum_reuse</code> or <code>maximum_reuse</code> settings they are subject to the criteria listed below:</p>
+<ul>
+<li>If <code>minimum_reuse &gt; maximum_reuse/2</code> with only one value is specified, a warning is issued and the unspecified value is adjusted.</li>
+<li>If <code>minimum_reuse &gt; maximum_reuse/2</code> with both values specified, a warning is issued and neither value is modified.</li>
+<li>If <code>minimum_reuse &gt;= maximum_reuse</code>, an error is generated.</li>
+</ul>
+
+</div>
+<a name="r3_3_4_3_10"></a>
+<div class="content-level-h5" contains="minimum_reuse" id="r3_3_4_3_10">
+<h5>3.3.4.3.10 minimum_reuse</h5>
+<p>The minimum effective radius ratio is set by <code>minimum_reuse</code> float value. This is the fraction of the screen width which sets the minimum radius of reuse for each sample point (actually, it is the fraction of the distance from the eye but the two are roughly equal for normal camera angles). For example, if the value is 0.02, the radius of maximum reuse for every sample is set to whatever ground distance corresponds to 2% of the width of the screen. Imagine you sent a ray off to the horizon and it hits the ground at a distance of 100 miles from your eye point. The reuse distance for that sample will be set to 2 miles. At a resolution of 300*400 this will correspond to (very roughly) 8 pixels. The theory is that you do not want to calculate values for every pixel into every crevice everywhere in the scene, it will take too long. This sets a minimum bound for the reuse. If this value is too low, (which it should be in theory) rendering gets slow, and inside corners can get a little grainy. If it is set too high, you do not get the natural darkening of illumination near inside edges, since it reuses. At values higher than 2% you start getting more just plain errors, like reusing the illumination of the open table underneath the apple. Remember that this is a unit less ratio. The default value is 0.015.</p>
+
+</div>
+<a name="r3_3_4_3_11"></a>
+<div class="content-level-h5" contains="nearest_count" id="r3_3_4_3_11">
+<h5>3.3.4.3.11 nearest_count</h5>
+<p>The <code>nearest_count</code> integer value is the minimum number of old radiosity values blended together to create a new interpolated value. There is no upper limit on the number of samples blended, all available samples are blended that match the <code>error_bound</code> and <code>maximum_reuse</code> settings. When an optional second parameter (adaptive radiosity pretrace) is specified after the <code>nearest_count</code> keyword, pretrace will stop re-iterating over areas where, on average, that many average-quality samples are already present per ray. (The actual number of samples required to satisfy the <code>nearest_count</code> settings is influenced by sample quality, with high-quality samples reducing the effective number of samples required, down to 1/4 of the parameter value in extreme cases, and low-quality samples increasing the number.) With a setting lower than 4, things can get pretty patchy, this can be useful for debugging. Conversely, the <code>nearest_count</code> upper limit setting is 20, since values greater than 20 are not very useful in practice,  and that is currently the size of the array allocated. The default value is 5.</p>  
+
+</div>
+<a name="r3_3_4_3_12"></a>
+<div class="content-level-h5" contains="pretrace_start and pretrace_end" id="r3_3_4_3_12">
+<h5>3.3.4.3.12 pretrace_start and pretrace_end</h5>
+<p>To control the radiosity pre-trace gathering step, use the keywords <code>pretrace_start</code> and <code>pretrace_end</code>. Each of these is followed by a decimal value between 0.0 and 1.0 which specifies the size of the blocks in the mosaic preview as a percentage of the image size. The defaults are 0.08 for <code>pretrace_start</code> and 0.04 for <code>pretrace_end</code>.</p>
+
+</div>
+<a name="r3_3_4_3_13"></a>
+<div class="content-level-h5" contains="recursion_limit" id="r3_3_4_3_13">
+<h5>3.3.4.3.13 recursion_limit</h5>
+<p>The <code>recursion_limit</code> is an integer value which determines how many recursion levels are used to calculate the diffuse inter-reflection. The default value is 2, the upper limit is 20. In practice, values greater than 3 are seldom useful.</p>
+
+</div>
+<a name="r3_3_4_4"></a>
+<div class="content-level-h4" contains="Configuring Radiosity" id="r3_3_4_4">
+<h4>3.3.4.4 Configuring Radiosity</h4>
+<p>The following parameters deal with configuring radiosity and how it interacts with other features. See also these additional command line <a href="r3_1.html#r3_1_2_8_8">options</a> for more control.</p>
+
+</div>
+<a name="r3_3_4_4_1"></a>
+<div class="content-level-h5" contains="Importance" id="r3_3_4_4_1">
+<h5>3.3.4.4.1 Importance</h5>
+<p>If you have some comparatively small yet bright objects in your scene, radiosity will tend to produce bright splotchy artifacts unless you use a pretty high number of rays, which in turn will tremendously increase rendering time. To somewhat mitigate this issue, full ray computations are performed only for a certain portion of sample rays, depending on the ''importance'' of the first object each ray encounters. Importance can be assigned on a per-object basis using the following syntax:
+</p>
+<pre>
+sphere { ... radiosity { importance IMPORTANCE } }
+</pre>
+<p>Where IMPORTANCE is a value in the range of <em>greater than 0.0 to less than or equal to 1.0</em> specifying the percentage of rays to actually compute on average. A particular ray will only be fully computed if it is within the first COUNT*IMPORTANCE rays of the sampling sequence; due to the low-discrepancy sub-random nature of the sequence, this is mostly equivalent to a per-ray weighted random choice, while maintaining a low-discrepancy uniform distribution on a per-object basis. Rays actually computed are weighted to compensate for those not computed.</p>
+<p>Objects derived from previously defined objects will default to the <em>inherited</em> importance. CSG components without an explicit importance value set will default to their parent object's importance. Other objects will normally default to <code>importance 1.0</code>, however this can be changed in a <code>default{}</code> block:</p>
+<pre>
+default { radiosity { importance DEFAULT_IMPORTANCE } }
+</pre>
+
+</div>
+<a name="r3_3_4_4_2"></a>
+<div class="content-level-h5" contains="Media and Radiosity" id="r3_3_4_4_2">
+<h5>3.3.4.4.2 Media and Radiosity</h5>
+<p>Radiosity estimation can be affected by media. To enable this feature, add <code>media on</code> to the <code>radiosity{}</code> block. The default is <code>off</code></p>
+
+</div>
+<a name="r3_3_4_4_3"></a>
+<div class="content-level-h5" contains="No Radiosity" id="r3_3_4_4_3">
+<h5>3.3.4.4.3 No Radiosity</h5>
+<p>Specifying <code>no_radiosity</code> in an object block makes that object invisible to radiosity rays, in the same way as <code>no_image</code>, <code>no_reflection</code> and <code>no_shadow</code> make an object invisible to primary, reflected and shadow test rays, respectively.</p>
+
+</div>
+<a name="r3_3_4_4_4"></a>
+<div class="content-level-h5" contains="Normal and Radiosity" id="r3_3_4_4_4">
+<h5>3.3.4.4.4 Normal and Radiosity</h5>
+<p> Radiosity estimation can be affected by normals. To enable this feature, add <code>normal on</code> to the <code>radiosity{}</code> block. The default is <code>off</code></p>
+
+</div>
+<a name="r3_3_4_4_5"></a>
+<div class="content-level-h5" contains="Save and Load Radiosity Data" id="r3_3_4_4_5">
+<h5>3.3.4.4.5 Save and Load Radiosity Data</h5>
+<p>In general, it is not a good idea to save and load radiosity data if scene objects are moving. Even after the data is loaded, more samples may be taken during the final rendering phase, particularly if you've specified <code>always_sample on</code>.</p>
+<p class="Note"><strong>Note:</strong> The method to load and save radiosity data has been changed to a command line option. Look <a href="r3_1.html#r3_1_2_8_8_2">here</a> for more details.</p>
+
+</div>
+<a name="r3_3_4_4_6"></a>
+<div class="content-level-h5" contains="Subsurface and Radiosity" id="r3_3_4_4_6">
+<h5>3.3.4.4.6 Subsurface and Radiosity</h5>
+<p>To specify whether radiosity sampling should <em>honor</em> subsurface light transport, you should place the following in the global settings <code>radiosity</code> block:</p>
+<pre>
+  global_settings {
+    radiosity { subsurface BOOL }
+    }
+</pre>
+<p>If this setting is <code>off</code>, the default, radiosity based diffuse illumination is computed as if the surrounding objects had subsurface light transport turned off. Setting this to <code>on</code> may improve realism especially in the presence of materials with high translucency, but at some cost in rendering time.</p>
+<p>See the section <a href="r3_5.html#r3_5_3_3_4">Subsurface Light Transport</a> for more information about the role of <code>subsurface</code> in the global settings block.</p>
+
+</div>
+<a name="r3_3_4_5"></a>
+<div class="content-level-h4" contains="Tips on Radiosity" id="r3_3_4_5">
+<h4>3.3.4.5 Tips on Radiosity</h4>
+<p>Have a look at the <a href="t2_3.html#t2_3_8">Radiosity Tutorial</a> to get a feel for what the visual result of changing radiosity parameters is.</p>
+
+<p>If you want to see where your values are being calculated set radiosity <code>count</code> down to about 20, set radiosity <code>nearest_count</code> to 1 and set <code>gray_threshold</code> to 0. This will make everything maximally patchy, so you will be able to see the borders between patches. There will have been a radiosity calculation at the center of most patches. As a bonus, this is quick to run. You can then change the <code> error_bound</code> up and down to see how it changes things. Likewise
+modify <code>minimum_reuse</code>.</p>
+<p>One way to get extra smooth results: crank up the sample count (we have gone as high as 1300) and drop the <code>low_error_factor</code> to something small like 0.6. Bump up the <code> nearest_count</code> to 7 or 8. This will get better values, and more of them, then interpolate among more of them on the last pass. This is not for people with a lack of patience since it is like a squared function. If your blotchiness is only in certain corners or near certain objects try tuning the error bound instead. Never drop it by more than a little at a time, since the run time will get very long.</p>
+<p>Sometimes extra samples are taken during the final rendering pass, if you've specified <code>always_sample on</code>. These newer samples can cause discontinuities in the radiosity in some scenes. To decrease these artifacts, use a <code>pretrace_end</code> of 0.04 (or even 0.02 if you are really patient and picky). This will cause the majority of the samples to be taken during the preview passes, and decrease the artifacts created during the final rendering pass. Be sure to force POV-Ray to only use the data from the pretrace step and not gather any new samples during the final radiosity pass, by removing <code>always_sample on</code> from within the <code>global_settings</code> radiosity block.</p>
+<p>If your scene uses ambient objects (especially small ambient objects) as light sources, you should probably use a higher count (100-150 and higher). For such scenes, an error_bound of 1.0 is usually good. A higher value causes too much error, but lower causes very slow rendering. It is important to adjust adc_bailout.</p>
+
+
+</div>
+
+</div>
+
+</div>
+</body>
+</html>

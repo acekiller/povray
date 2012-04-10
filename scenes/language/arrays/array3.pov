@@ -1,10 +1,13 @@
-// Persistence Of Vision Ray Tracer POV-Ray 3.5 sample Scene
+// Persistence Of Vision Ray Tracer sample Scene
 // by Chris Young
 // ARRAY3.POV demonstrates basic use of the float functions
 // dimensions(ARRAY_ID) and dimension_size(ARRAY_ID,INT).
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 #include "colors.inc"
 

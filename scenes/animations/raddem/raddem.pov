@@ -1,10 +1,10 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // File by Dan Farmer
 // Radiosity demonstration
 
 // updated to 3.5 radiosity by Christoph Hormann
 
-global_settings { assumed_gamma 2.2 }
+#version 3.6;
 
 #include "colors.inc"
 #include "textures.inc"
@@ -12,6 +12,8 @@ global_settings { assumed_gamma 2.2 }
 #include "rad_def.inc"
 
 global_settings {
+  assumed_gamma 2.2
+  
   radiosity {
     Rad_Settings(Radiosity_Default, off, off)
     //Rad_Settings(Radiosity_Debug, off, off)

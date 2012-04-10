@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: GlassChess.pov
-// Vers: 3.5
 // Desc: Three glass chesspieces.
 // Date: 1999-06-22
 // Updated: 2001-07-27
@@ -9,20 +8,18 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 //
-
-
 // with +w400 +h300 +a0.3
 // on a PII, 233 MHz
 // it takes 26 min to render
 // so with the current GHz monsters ...
 
+#version 3.6;
 
-#version 3.5;
 #include "chesspiece1.inc"
 
 global_settings {
-   assumed_gamma 1.0
-   max_trace_level 15
+  assumed_gamma 1.0
+  max_trace_level 15
 }
 
 light_source {

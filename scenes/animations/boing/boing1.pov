@@ -1,8 +1,13 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 // Simpler but faster version of Joel NewKirk's GlassBoing animation
 
+#version 3.6;
+
+global_settings {
+  assumed_gamma 2.2
+  }
+
 #include "colors.inc"
-global_settings { assumed_gamma 2.2 }
 
 #declare xfactor = clock*4;
 #declare spherey = 5+abs(50*sin((clock)*2*pi));

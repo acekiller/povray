@@ -1,4 +1,4 @@
-// Persistence Of Vision raytracer version 3.5 sample file.
+// Persistence Of Vision raytracer sample file.
 //
 //=================================================================================
 //                                 WICKER WORK with "trace ()".
@@ -8,9 +8,12 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-//This scene demonstrates the use of the "trace" fonction to create shapes
+//This scene demonstrates the use of the "trace" function to create shapes
 //that fits irregular shapes.  We are going to model a wicker work surrounding
 //a bottle, like the old Italian wine bottles.
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 #include "colors.inc"
 
@@ -19,6 +22,9 @@
 //freq : frequency, amplit : amplitude, phase : phase between -1 et 1 (usually 1)
 //radius1 : big radius of ring, radius2 : radius of wicker
 //Degree_Resolution : lenght of the little cylinders making the ring
+
+// Updated: 10Aug2008 (jh) for v3.7 distribution
+
 #macro WickerRing (Freq, Amplit, Phase, Radius1, Radius2,Degree_Resolution)
  union {
   #local P1=<Radius1,0,0>+.0001;

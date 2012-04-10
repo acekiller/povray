@@ -1,7 +1,7 @@
 /*
  * planet.pov
  *
- * POV-Ray 3.5 scene description for Earth-like planet
+ * POV-Ray scene description for Earth-like planet
  *
  * Copyright (c) 1990, 1996 Ville Saari
  *
@@ -21,9 +21,10 @@
 // -w320 -h240
 // -w800 -h600 +a0.3
 
-global_settings { assumed_gamma 1 }
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
-default { finish { ambient 0.000002 diffuse 0.999998 } }
+#default { finish { ambient 0.000002 diffuse 0.999998 } }
 
 camera { location -80*z }
 

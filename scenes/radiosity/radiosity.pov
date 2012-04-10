@@ -1,6 +1,5 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 // File: radiosity.pov
-// Vers: 3.5
 // Desc: radiosity demo scene
 // Date: August 2001
 // Auth: Christoph Hormann
@@ -8,11 +7,11 @@
 // -w320 -h240
 // -w512 -h384 +a0.3
 
-#version 3.5;
+#version 3.6;
 
 global_settings {
-  assumed_gamma 1
-
+  assumed_gamma 1.0
+  
   radiosity {             // --- Settings 1 (fast) ---
     pretrace_start 0.08
     pretrace_end   0.02

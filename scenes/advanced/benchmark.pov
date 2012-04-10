@@ -1,9 +1,8 @@
 // Persistence Of Vision Ray Tracer Scene Description File
 //
 // File:            benchmark.pov
-// POV-Ray Vers:    3.5
-// Benchmark Vers:  1.02
-// Desc:            POV-Ray 3.5 benchmark scene
+// Benchmark Vers:  2.00 Scene File Version
+// Desc:            POV-Ray benchmark scene
 // Date:            October/November 2001
 //
 // Assembled by Christoph Hormann
@@ -13,9 +12,9 @@
 //
 // ==================================================================
 //
-//          Standard POV-Ray v3.5 benchmark version 1.02
+//    Standard POV-Ray benchmark version 2.00 Scene File Version
 //
-// This is the official POV-Ray v3.5 benchmark scene.  It is designed
+// This is the official POV-Ray benchmark scene.  It is designed
 // to test a variety of POV-Ray features and should render in a
 // reasonable amount of time on current machines.  Note that the
 // radiosity feature is still experimental and not very suitable for
@@ -30,7 +29,8 @@
 // make sure the differences are made clear when publishing them.
 //
 // When publishing results, be sure to quote the exact version of the
-// benchmark scene used (1.02), and the exact version of POV-Ray.
+// benchmark scene used (2.00 Scene File Version), and the exact
+// version of POV-Ray.
 //
 // ==================================================================
 //
@@ -41,6 +41,7 @@
 // Jan. 2002   using 'max()' instead of '&' in isosurface
 // Apr. 2002   changed max_gradient of isosurface (new ver is 1.01)
 // Jun. 2002   added photons pass_through to clouds (new ver is 1.02)
+// Dec. 2010   made ready for v3.7 release (new ver is 2.00)
 //
 // ==================================================================
 //
@@ -54,28 +55,29 @@
 //
 // Suggested command line options if not using an INI file:
 //
-// -w384 -h384 +a0.3 +v -d -f -x
+// -w512 -h512 +a0.3 +v -d -f -x
 //
 // The following INI options are used when the 'Run Benchmark' command
 // is chosen on versions of POV-Ray that support the built-in version.
 //
-// All_Console=Off
+// All_Console=On
+// All_File=
 // Antialias_Depth=3
 // Antialias=On
+// Antialias_Gamma=2.5
 // Antialias_Threshold=0.3
 // Bits_Per_Color=8
 // Bounding=On
+// Bounding_Method=1
 // Bounding_Threshold=3
-// Buffer_Output=Off
-// Buffer_Size=0
 // Clock=0
 // Continue_Trace=Off
-// Create_Histogram=Off
+// Clockless_Animation=off
 // Cyclic_Animation=Off
 // Debug_Console=On
 // Display=Off
-// Display_Gamma=1.0
-// Draw_Vistas=Off
+// Display_Gamma=2.2
+// Dither=off
 // End_Column=1
 // End_Row=1
 // Fatal_Console=On
@@ -84,19 +86,20 @@
 // Field_Render=Off
 // Final_Clock=1
 // Final_Frame=1
-// Height=384
-// Histogram_Name=
-// Histogram_Grid_Size=0.0
+// Grayscale_Output=off
+// Height=512
+// High_Reproducibility=off
 // Initial_Clock=0
 // Initial_Frame=1
 // Include_Header=
-// Jitter_Amount=1
+// Input_File_Name=benchmark.pov
+// Jitter_Amount=0.3
 // Jitter=On
 // Light_Buffer=On
 // Odd_Field=Off
 // Output_Alpha=Off
 // Output_File_Name=
-// Output_File_Type=s
+// Output_File_Type=n
 // Output_To_File=Off
 // Palette=3
 // Pause_When_Done=Off
@@ -108,11 +111,18 @@
 // Preview_Start_Size=1
 // Pre_Frame_Command=
 // Pre_Frame_Return=I
-// Pre_Scene_command=
+// Pre_Scene_Command=
 // Pre_Scene_Return=I
 // Quality=9
+// Radiosity_From_File=off
+// Radiosity_To_File=off
+// Radiosity_Vain_Pretrace=on
+// Real_Time_Raytracing=off
 // Remove_Bounds=On
+// Render_Block_Size=16
+// Render_Block_Step=0
 // Render_Console=On
+// Render_Pattern=0
 // Sampling_Method=1
 // Split_Unions=Off
 // Start_Column=0
@@ -125,25 +135,21 @@
 // User_Abort_Command=
 // User_Abort_Return=I
 // Verbose=On
-// Version=3.5
-// Video_Mode=0
-// Vista_Buffer=On
+// Version=3.7
 // Warning_Console=On
-// Width=384
+// Width=512
 //
 // ==================================================================
 
-#version 3.5;
+#version 3.7;
+
+#default { texture { finish { ambient 0 diffuse 1 }}}
 
 #include "functions.inc"
 #include "colors.inc"
 #include "logo.inc"
 
-
 #declare use_radiosity = false;
-// #declare use_radiosity = true;
-
-
 
 #declare use_photons = true;
 #declare use_area_light = true;
@@ -702,16 +708,27 @@ text {
    rotate -90*z
 }
 
-object {
-   POV_Text
-   translate <-1.97,  0.86, 0.5>
-   texture { Stone_Tex2 }
+#declare Version_Text =
+text {
+   ttf
+   "timrom.ttf"
+   "Version 3.7"
+   0.25,0
+   scale 0.3
+   rotate 90*x
+   rotate -90*z
 }
 
 object {
    POV_Text
+   translate <-1.97,  0.995, 0.575>
+   texture { Stone_Tex2 }
+}
+
+object {
+   Version_Text
    rotate 90*z
-   translate <-0.5, -1.6, 0.5>
+   translate <-0.5, -1.5, 0.575>
    texture { Stone_Tex2 }
 }
 
@@ -1179,4 +1196,3 @@ object { Obj_Msh }
 
 
 #end
-

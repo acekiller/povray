@@ -1,6 +1,5 @@
-// Persistence Of Vision Ray Tracer Scene Description File
+// Persistence Of Vision Raytracer Scene Description File
 // File: logo.pov
-// Vers: 3.5
 // Desc: logo.inc demo scene
 // Date: September 2001
 // Auth: Rune S. Johansen
@@ -14,6 +13,9 @@
 //
 // -w320 -h240
 // -w800 -h600 +a0.3
+
+#version 3.6;
+global_settings {assumed_gamma 1.0}
 
 #include "logo.inc"
 
